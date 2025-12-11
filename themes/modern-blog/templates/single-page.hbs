@@ -1,0 +1,28 @@
+{{> header}}
+
+<article class="single-page">
+  <div class="container-narrow">
+    <!-- Page Header -->
+    <header class="page-header">
+      <h1 class="page-title">{{page.title}}</h1>
+      {{#if page.excerpt}}
+      <p class="page-excerpt">{{page.excerpt}}</p>
+      {{/if}}
+    </header>
+
+    <!-- Featured Image -->
+    {{#if page.featuredImage}}
+    <div class="page-featured-image">
+      <img src="{{page.featuredImage}}" alt="{{page.title}}">
+    </div>
+    {{/if}}
+
+    <!-- Page Content -->
+    <div class="page-body">
+      {{{page.content}}}
+    </div>
+  </div>
+</article>
+
+{{> footer}}
+

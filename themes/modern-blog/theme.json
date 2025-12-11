@@ -1,0 +1,35 @@
+{
+  "name": "Modern Blog",
+  "version": "1.0.0",
+  "author": "WordPress Node",
+  "description": "A beautiful, modern blog theme with clean typography, responsive design, and elegant animations. Perfect for bloggers, writers, and content creators.",
+  "thumbnail": "/themes/modern-blog/screenshot.png",
+  "templates": [
+    "home.hbs",
+    "archive.hbs",
+    "single-post.hbs",
+    "single-page.hbs",
+    "header.hbs",
+    "footer.hbs"
+  ],
+  "supports": {
+    "widgets": true,
+    "menus": true,
+    "customHeader": true,
+    "customBackground": true,
+    "postThumbnails": true,
+    "responsiveEmbeds": true
+  },
+  "colors": {
+    "primary": "#2563eb",
+    "secondary": "#64748b",
+    "accent": "#f59e0b",
+    "background": "#ffffff",
+    "text": "#1e293b"
+  },
+  "fonts": {
+    "heading": "Inter, system-ui, sans-serif",
+    "body": "Inter, system-ui, sans-serif"
+  }
+}
+

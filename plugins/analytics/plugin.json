@@ -1,0 +1,9 @@
+{
+  "name": "Analytics Plugin",
+  "version": "1.0.0",
+  "author": "WordPress Node",
+  "description": "Tracks page views and provides basic analytics dashboard",
+  "entry": "index.js",
+  "hooks": ["onActivate", "registerRoutes"]
+}
+

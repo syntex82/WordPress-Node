@@ -1,0 +1,15 @@
+{
+  "name": "Modern Blog",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "A modern, minimalist blog theme with dark mode support",
+  "templates": ["home", "single-post", "single-page", "archive"],
+  "settings": {
+    "primaryColor": "#3B82F6",
+    "darkMode": true,
+    "showAuthor": true,
+    "showDate": true,
+    "postsPerPage": 10
+  }
+}
+

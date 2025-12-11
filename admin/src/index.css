@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Rich Text Editor Styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p {
+  margin: 1em 0;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 1em 0 0.5em;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin: 1em 0 0.5em;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 2em;
+  margin: 1em 0;
+}
+
+.ProseMirror code {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+}
+
+.ProseMirror pre {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 1em;
+  border-radius: 0.5em;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.ProseMirror pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5em;
+  margin: 1em 0;
+}
+
+.ProseMirror a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+/* Custom Block Styles */
+.ProseMirror .image-figure {
+  margin: 2em 0;
+  text-align: center;
+}
+
+.ProseMirror .image-figure.align-left {
+  float: left;
+  margin-right: 1.5em;
+  margin-bottom: 1em;
+  max-width: 50%;
+}
+
+.ProseMirror .image-figure.align-right {
+  float: right;
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+  max-width: 50%;
+}
+
+.ProseMirror .image-figure.align-center {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.ProseMirror .image-figure img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5em;
+}
+
+.ProseMirror .image-figure figcaption {
+  margin-top: 0.5em;
+  font-size: 0.875em;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.ProseMirror .video-figure,
+.ProseMirror .audio-figure {
+  margin: 2em 0;
+}
+
+.ProseMirror .video-figure video,
+.ProseMirror .audio-figure audio {
+  max-width: 100%;
+  border-radius: 0.5em;
+}
+
+.ProseMirror .video-figure figcaption,
+.ProseMirror .audio-figure figcaption {
+  margin-top: 0.5em;
+  font-size: 0.875em;
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+}
+
+.ProseMirror .gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1em;
+  margin: 2em 0;
+}
+
+.ProseMirror .gallery-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 0.5em;
+}
+
+.ProseMirror .button-wrapper {
+  margin: 2em 0;
+  text-align: center;
+}
+
+.ProseMirror .btn {
+  display: inline-block;
+  padding: 0.75em 1.5em;
+  border-radius: 0.5em;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.ProseMirror .btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.ProseMirror .btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.ProseMirror .btn-secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.ProseMirror .btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+/* YouTube Embed */
+.ProseMirror iframe[data-youtube-video] {
+  max-width: 100%;
+  margin: 2em 0;
+  border-radius: 0.5em;
+}
+
+/* Blockquote */
+.ProseMirror blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1.5em;
+  margin: 1.5em 0;
+  font-style: italic;
+  color: #4b5563;
+}
+
+/* Highlight */
+.ProseMirror mark {
+  background-color: #fef08a;
+  padding: 0.1em 0.2em;
+  border-radius: 0.2em;
+}
+

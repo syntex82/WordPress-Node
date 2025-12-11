@@ -1,0 +1,43 @@
+{
+  "name": "wordpress-node-admin",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
+    "@tiptap/extension-blockquote": "^3.13.0",
+    "@tiptap/extension-highlight": "^3.13.0",
+    "@tiptap/extension-image": "^3.13.0",
+    "@tiptap/extension-link": "^3.13.0",
+    "@tiptap/extension-text-align": "^3.13.0",
+    "@tiptap/extension-youtube": "^3.13.0",
+    "@tiptap/react": "^3.13.0",
+    "@tiptap/starter-kit": "^3.13.0",
+    "axios": "^1.6.5",
+    "photoswipe": "^5.4.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
+    "react-player": "^3.4.0",
+    "react-router-dom": "^6.21.1",
+    "socket.io-client": "^4.8.1",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.47",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11"
+  }
+}

@@ -1,0 +1,851 @@
+// Prisma Schema for WordPress Node CMS
+// This defines all database models for our CMS platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model with role-based access control
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String   // Hashed with bcrypt
+  role      UserRole @default(AUTHOR)
+  avatar    String?
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 2FA fields
+  twoFactorEnabled Boolean  @default(false)
+  twoFactorSecret  String?  // Encrypted TOTP secret
+  recoveryCodes    Json?    // Array of hashed recovery codes
+
+  // Security tracking
+  failedLoginAttempts Int      @default(0)
+  lastFailedLogin     DateTime?
+  accountLockedUntil  DateTime?
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+
+  // Relations
+  posts           Post[]
+  pages           Page[]
+  media           Media[]
+  pageViews       PageView[]
+  sessions        Session[]
+  securityEvents  SecurityEvent[]
+  passwordHistory PasswordHistory[]
+  ownedGroups     Group[]         @relation("GroupOwner")
+  groupMemberships GroupMember[]
+  groupMessages   GroupMessage[]
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  AUTHOR
+  VIEWER
+}
+
+// Content Type model - allows defining custom content types
+model ContentType {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g., "Product", "Event"
+  slug        String   @unique
+  description String?
+  icon        String?
+  fields      Json     // Array of field definitions
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Post model - blog posts
+model Post {
+  id            String      @id @default(uuid())
+  title         String
+  slug          String      @unique
+  content       String      @db.Text
+  excerpt       String?
+  featuredImage String?
+  status        PostStatus  @default(DRAFT)
+  publishedAt   DateTime?
+  authorId      String
+  author        User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // SEO fields (can be extended by plugins)
+  metaTitle       String?
+  metaDescription String?
+
+  // Custom fields (JSON for flexibility)
+  customFields  Json?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Menu items linking to this post
+  menuItems     MenuItem[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([authorId])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Page model - static pages
+model Page {
+  id            String     @id @default(uuid())
+  title         String
+  slug          String     @unique
+  content       String     @db.Text
+  template      String?    // Template name from theme
+  featuredImage String?
+  status        PostStatus @default(DRAFT)
+  publishedAt   DateTime?
+  authorId      String
+  author        User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // SEO fields
+  metaTitle       String?
+  metaDescription String?
+
+  // Custom fields
+  customFields  Json?
+
+  // Hierarchy support
+  parentId      String?
+  parent        Page?      @relation("PageHierarchy", fields: [parentId], references: [id])
+  children      Page[]     @relation("PageHierarchy")
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Menu items linking to this page
+  menuItems     MenuItem[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([authorId])
+}
+
+// Media Library model
+model Media {
+  id          String   @id @default(uuid())
+  filename    String
+  originalName String
+  path        String   // Relative path or URL
+  mimeType    String
+  size        Int      // Size in bytes
+  width       Int?     // For images
+  height      Int?     // For images
+  alt         String?
+  caption     String?
+  uploadedById String
+  uploadedBy   User    @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([uploadedById])
+  @@index([mimeType])
+}
+
+// Theme model - manages installed themes
+model Theme {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  version     String
+  author      String?
+  description String?
+  thumbnail   String?
+  path        String   // Path to theme directory
+  config      Json     // theme.json content
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+// Plugin model - manages installed plugins
+model Plugin {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  version     String
+  author      String?
+  description String?
+  path        String   // Path to plugin directory
+  config      Json     // plugin.json content
+  isActive    Boolean  @default(false)
+  settings    Json?    // Plugin-specific settings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+// Settings model - global site settings
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  type      String   // 'string', 'number', 'boolean', 'json'
+  group     String?  // Group settings together (e.g., 'general', 'seo', 'theme')
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([group])
+}
+
+// Session model - for admin session management
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  ip           String?
+  userAgent    String?
+  lastActivity DateTime @default(now())
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token])
+}
+
+// PageView model - for analytics plugin
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}
+
+// SecurityEvent model - tracks all security-related events
+model SecurityEvent {
+  id        String            @id @default(uuid())
+  userId    String?
+  user      User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type      SecurityEventType
+  ip        String?
+  userAgent String?
+  metadata  Json?             // Additional event-specific data
+  createdAt DateTime          @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([ip])
+  @@index([createdAt])
+}
+
+enum SecurityEventType {
+  SUCCESS_LOGIN
+  FAILED_LOGIN
+  LOGOUT
+  FAILED_2FA
+  LOCKOUT_TRIGGERED
+  LOCKOUT_RELEASED
+  PASSWORD_CHANGE
+  EMAIL_CHANGE
+  TWO_FA_ENABLED
+  TWO_FA_DISABLED
+  BLOCKED_REQUEST
+  INTEGRITY_SCAN
+  IP_BLOCKED
+  IP_UNBLOCKED
+  SECURITY_CHECK
+}
+
+// BlockedIP model - manages IP-based access control
+model BlockedIP {
+  id        String    @id @default(uuid())
+  ip        String    @unique
+  reason    String
+  expiresAt DateTime? // Null for permanent blocks
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([ip])
+  @@index([expiresAt])
+}
+
+// Rate Limiting Configuration
+model RateLimitConfig {
+  id            String   @id @default(uuid())
+  endpoint      String   @unique // e.g., "/api/auth/login", "global"
+  windowMs      Int      @default(60000) // Time window in milliseconds
+  maxRequests   Int      @default(100) // Max requests per window
+  enabled       Boolean  @default(true)
+  blockDuration Int?     // Duration to block IP in minutes if exceeded
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Rate Limit Violations - tracks IPs that exceeded limits
+model RateLimitViolation {
+  id         String   @id @default(uuid())
+  ip         String
+  endpoint   String
+  requests   Int      // Number of requests made
+  limit      Int      // Limit that was exceeded
+  blockedAt  DateTime @default(now())
+  expiresAt  DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([ip])
+  @@index([endpoint])
+}
+
+// Password Policy Configuration
+model PasswordPolicy {
+  id                      String   @id @default(uuid())
+  minLength               Int      @default(8)
+  requireUppercase        Boolean  @default(true)
+  requireLowercase        Boolean  @default(true)
+  requireNumbers          Boolean  @default(true)
+  requireSpecialChars     Boolean  @default(true)
+  expirationDays          Int?     // null = no expiration
+  preventReuse            Int      @default(5) // number of previous passwords to check
+  checkBreachedPasswords  Boolean  @default(false)
+  enabled                 Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+// Password History for preventing reuse
+model PasswordHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  password  String   // hashed password
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// GROUPS & LIVE CHAT MODELS
+// ============================================
+
+// Group model for community groups with live chat
+model Group {
+  id          String          @id @default(uuid())
+  name        String
+  slug        String          @unique
+  description String?
+  visibility  GroupVisibility @default(PUBLIC)
+  ownerId     String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // Relations
+  owner    User           @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members  GroupMember[]
+  messages GroupMessage[]
+
+  @@index([slug])
+  @@index([ownerId])
+  @@index([visibility])
+  @@index([createdAt])
+}
+
+enum GroupVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+// Group membership with roles and moderation
+model GroupMember {
+  id       String          @id @default(uuid())
+  groupId  String
+  userId   String
+  role     GroupMemberRole @default(MEMBER)
+  isBanned Boolean         @default(false)
+  joinedAt DateTime        @default(now())
+
+  // Relations
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@index([joinedAt])
+}
+
+enum GroupMemberRole {
+  OWNER
+  MODERATOR
+  MEMBER
+}
+
+// Group chat messages
+model GroupMessage {
+  id        String   @id @default(uuid())
+  groupId   String
+  senderId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // Relations
+  group  Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender User  @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+// Navigation Menu model
+model Menu {
+  id        String     @id @default(uuid())
+  name      String     @unique // e.g., "main", "footer", "sidebar"
+  location  String     @unique // e.g., "header", "footer"
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  items MenuItem[]
+}
+
+// Menu Item model
+model MenuItem {
+  id         String     @id @default(uuid())
+  menuId     String
+  parentId   String?    // For nested/dropdown menus
+  label      String     // Display text
+  url        String?    // Custom URL
+  target     String     @default("_self") // _self, _blank
+  type       MenuItemType @default(CUSTOM)
+  pageId     String?    // Link to Page
+  postId     String?    // Link to Post
+  order      Int        @default(0)
+  cssClass   String?    // Optional custom CSS class
+  icon       String?    // Optional icon class
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relations
+  menu     Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent   MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id])
+  children MenuItem[] @relation("MenuItemChildren")
+  page     Page?      @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  post     Post?      @relation(fields: [postId], references: [id], onDelete: SetNull)
+
+  @@index([menuId])
+  @@index([parentId])
+  @@index([order])
+}
+
+enum MenuItemType {
+  CUSTOM    // Custom URL
+  PAGE      // Link to a page
+  POST      // Link to a post
+  HOME      // Home page link
+  CATEGORY  // Category archive (future)
+}
+
+// ============================================
+// E-COMMERCE / SHOP MODELS
+// ============================================
+
+// Product Category
+model ProductCategory {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  parentId    String?
+  parent      ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    ProductCategory[] @relation("CategoryHierarchy")
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+// Product model
+model Product {
+  id              String          @id @default(uuid())
+  name            String
+  slug            String          @unique
+  description     String?         @db.Text
+  shortDescription String?
+  sku             String?         @unique
+  price           Decimal         @db.Decimal(10, 2)
+  salePrice       Decimal?        @db.Decimal(10, 2)
+  costPrice       Decimal?        @db.Decimal(10, 2)
+  stock           Int             @default(0)
+  lowStockThreshold Int           @default(5)
+  trackStock      Boolean         @default(true)
+  status          ProductStatus   @default(DRAFT)
+  type            ProductType     @default(PHYSICAL)
+  featuredImage   String?
+  images          Json?           // Array of image URLs
+  weight          Decimal?        @db.Decimal(10, 3)
+  dimensions      Json?           // {length, width, height}
+
+  // Digital product fields
+  downloadUrl     String?
+  downloadLimit   Int?
+  downloadExpiry  Int?            // Days after purchase
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // Relations
+  categoryId      String?
+  category        ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants        ProductVariant[]
+  tags            ProductTag[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  reviews         ProductReview[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([categoryId])
+  @@index([sku])
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+  SERVICE
+}
+
+// Product Variant (size, color, etc.)
+model ProductVariant {
+  id          String    @id @default(uuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name        String    // e.g., "Large / Red"
+  sku         String?   @unique
+  price       Decimal?  @db.Decimal(10, 2)  // Override product price
+  salePrice   Decimal?  @db.Decimal(10, 2)
+  stock       Int       @default(0)
+  image       String?
+  options     Json      // {size: "Large", color: "Red"}
+  isDefault   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+
+  @@index([productId])
+  @@index([sku])
+}
+
+// Product Tags
+model ProductTag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+
+  @@index([slug])
+}
+
+
+// Shopping Cart
+model Cart {
+  id          String     @id @default(uuid())
+  userId      String?    @unique // Null for guest carts
+  sessionId   String?    @unique // For guest carts
+  items       CartItem[]
+  couponCode  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+}
+
+// Cart Item
+model CartItem {
+  id          String          @id @default(uuid())
+  cartId      String
+  cart        Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId   String?
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  quantity    Int             @default(1)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([cartId, productId, variantId])
+  @@index([cartId])
+  @@index([productId])
+}
+
+// Customer addresses
+model CustomerAddress {
+  id          String    @id @default(uuid())
+  userId      String
+  type        AddressType @default(SHIPPING)
+  isDefault   Boolean   @default(false)
+  firstName   String
+  lastName    String
+  company     String?
+  address1    String
+  address2    String?
+  city        String
+  state       String?
+  postalCode  String
+  country     String
+  phone       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([type])
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+// Order
+model Order {
+  id              String        @id @default(uuid())
+  orderNumber     String        @unique
+  userId          String?
+  email           String
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(UNPAID)
+
+  // Pricing
+  subtotal        Decimal       @db.Decimal(10, 2)
+  tax             Decimal       @db.Decimal(10, 2) @default(0)
+  shipping        Decimal       @db.Decimal(10, 2) @default(0)
+  discount        Decimal       @db.Decimal(10, 2) @default(0)
+  total           Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+
+  // Coupon
+  couponCode      String?
+  couponDiscount  Decimal?      @db.Decimal(10, 2)
+
+  // Addresses
+  billingAddress  Json
+  shippingAddress Json?
+
+  // Shipping
+  shippingMethod  String?
+  trackingNumber  String?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+
+  // Notes
+  customerNote    String?
+  adminNote       String?
+
+  // Relations
+  items           OrderItem[]
+  payments        Payment[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([orderNumber])
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  PARTIALLY_REFUNDED
+  REFUNDED
+  FAILED
+}
+
+// Order Item
+model OrderItem {
+  id          String          @id @default(uuid())
+  orderId     String
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product         @relation(fields: [productId], references: [id])
+  variantId   String?
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  name        String          // Snapshot of product name
+  sku         String?         // Snapshot of SKU
+  price       Decimal         @db.Decimal(10, 2)
+  quantity    Int
+  total       Decimal         @db.Decimal(10, 2)
+  options     Json?           // Snapshot of variant options
+
+  createdAt   DateTime        @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// Payment
+model Payment {
+  id                  String        @id @default(uuid())
+  orderId             String
+  order               Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount              Decimal       @db.Decimal(10, 2)
+  currency            String        @default("USD")
+  status              PaymentStatus @default(UNPAID)
+  method              String        @default("stripe")
+
+  // Stripe fields
+  stripePaymentIntentId String?     @unique
+  stripeChargeId      String?
+  stripeCustomerId    String?
+  stripeReceiptUrl    String?
+
+  // Refund info
+  refundedAmount      Decimal?      @db.Decimal(10, 2)
+  refundReason        String?
+  refundedAt          DateTime?
+
+  metadata            Json?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([stripePaymentIntentId])
+  @@index([status])
+}
+
+// Coupon/Discount
+model Coupon {
+  id              String      @id @default(uuid())
+  code            String      @unique
+  description     String?
+  type            CouponType  @default(PERCENTAGE)
+  value           Decimal     @db.Decimal(10, 2)
+  minOrderAmount  Decimal?    @db.Decimal(10, 2)
+  maxDiscount     Decimal?    @db.Decimal(10, 2)
+  usageLimit      Int?
+  usageCount      Int         @default(0)
+  perUserLimit    Int?
+  startsAt        DateTime?
+  expiresAt       DateTime?
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+  FREE_SHIPPING
+}
+
+// Product Review
+model ProductReview {
+  id          String    @id @default(uuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId      String?
+  name        String
+  email       String
+  rating      Int       // 1-5
+  title       String?
+  content     String?   @db.Text
+  isVerified  Boolean   @default(false) // Verified purchase
+  isApproved  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([productId])
+  @@index([rating])
+  @@index([isApproved])
+}
+
+// Tax Rate
+model TaxRate {
+  id          String    @id @default(uuid())
+  name        String
+  rate        Decimal   @db.Decimal(5, 4) // e.g., 0.0825 for 8.25%
+  country     String
+  state       String?
+  postalCodes String?   // Comma-separated postal codes or ranges
+  isDefault   Boolean   @default(false)
+  priority    Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([country])
+  @@index([isActive])
+}
+
+// Shipping Method
+model ShippingMethod {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  cost        Decimal   @db.Decimal(10, 2)
+  freeAbove   Decimal?  @db.Decimal(10, 2) // Free shipping above this amount
+  minDays     Int?
+  maxDays     Int?
+  countries   String?   // Comma-separated country codes, null = all
+  isActive    Boolean   @default(true)
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+}

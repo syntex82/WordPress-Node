@@ -1,0 +1,85 @@
+{{> header}}
+
+<!-- Page Header -->
+<section class="page-header">
+  <div class="container">
+    <h1 class="page-title">Blog Archive</h1>
+    <p class="page-subtitle">Explore all our articles and insights</p>
+  </div>
+</section>
+
+<!-- Blog Posts -->
+<section class="blog-archive">
+  <div class="container">
+    {{#if posts}}
+      <div class="posts-grid">
+        {{#each posts}}
+          <article class="post-card">
+            {{#if featuredImage}}
+              <div class="post-image">
+                <img src="{{featuredImage}}" alt="{{title}}" loading="lazy">
+              </div>
+            {{/if}}
+
+            <div class="post-content">
+              <div class="post-meta">
+                <time class="post-date" datetime="{{createdAt}}">
+                  {{formatDate createdAt}}
+                </time>
+                <span class="post-author">by {{author.name}}</span>
+              </div>
+
+              <h2 class="post-title">
+                <a href="/post/{{slug}}">{{title}}</a>
+              </h2>
+
+              <p class="post-excerpt">{{excerpt content 200}}</p>
+
+              <a href="/post/{{slug}}" class="read-more">
+                Read More
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </a>
+            </div>
+          </article>
+        {{/each}}
+      </div>
+
+      <!-- Pagination -->
+      {{#if pagination}}
+        <div class="pagination">
+          {{#if pagination.hasPrev}}
+            <a href="/blog?page={{pagination.prevPage}}" class="pagination-link pagination-prev">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Previous
+            </a>
+          {{/if}}
+
+          <div class="pagination-numbers">
+            <span class="pagination-current">Page {{pagination.page}} of {{pagination.totalPages}}</span>
+          </div>
+
+          {{#if pagination.hasNext}}
+            <a href="/blog?page={{pagination.nextPage}}" class="pagination-link pagination-next">
+              Next
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          {{/if}}
+        </div>
+      {{/if}}
+    {{else}}
+      <div class="empty-state">
+        <h2>No Posts Found</h2>
+        <p>There are no published posts yet. Check back soon!</p>
+      </div>
+    {{/if}}
+  </div>
+</section>
+
+{{> footer}}
+

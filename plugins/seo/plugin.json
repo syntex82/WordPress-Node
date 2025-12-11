@@ -1,0 +1,9 @@
+{
+  "name": "SEO Plugin",
+  "version": "1.0.0",
+  "author": "WordPress Node",
+  "description": "Adds SEO meta fields to posts and pages for better search engine optimization",
+  "entry": "index.js",
+  "hooks": ["beforeSave", "registerFields"]
+}
+

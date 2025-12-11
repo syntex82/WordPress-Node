@@ -1,0 +1,58 @@
+/**
+ * Shop Module
+ * E-commerce functionality with Stripe payments
+ */
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '../../database/prisma.module';
+
+// Services
+import { ProductsService } from './services/products.service';
+import { CategoriesService } from './services/categories.service';
+import { CartService } from './services/cart.service';
+import { OrdersService } from './services/orders.service';
+import { StripeService } from './services/stripe.service';
+
+// Controllers
+import { ProductsController } from './controllers/products.controller';
+import { CategoriesController } from './controllers/categories.controller';
+import { CartController } from './controllers/cart.controller';
+import { AdminOrdersController, OrdersController, UserOrdersController } from './controllers/orders.controller';
+import { CheckoutController, RefundsController } from './controllers/checkout.controller';
+import { StorefrontController } from './controllers/storefront.controller';
+
+@Module({
+  imports: [
+    PrismaModule,
+    ConfigModule,
+  ],
+  controllers: [
+    // Admin controllers
+    ProductsController,
+    CategoriesController,
+    AdminOrdersController,
+    RefundsController,
+    // Public controllers
+    CartController,
+    OrdersController,
+    UserOrdersController,
+    CheckoutController,
+    StorefrontController,
+  ],
+  providers: [
+    ProductsService,
+    CategoriesService,
+    CartService,
+    OrdersService,
+    StripeService,
+  ],
+  exports: [
+    ProductsService,
+    CategoriesService,
+    CartService,
+    OrdersService,
+    StripeService,
+  ],
+})
+export class ShopModule {}
+

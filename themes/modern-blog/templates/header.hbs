@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{#if post}}{{post.title}} - {{/if}}{{site.name}}</title>
+  <meta name="description" content="{{#if post}}{{post.excerpt}}{{else}}{{site.description}}{{/if}}">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Theme Styles -->
+  <link rel="stylesheet" href="/themes/modern-blog/assets/css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-wrapper">
+        <a href="/" class="logo">
+          <span class="logo-text">{{site.name}}</span>
+        </a>
+        
+        <button class="mobile-menu-toggle" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <div class="nav-menu">
+          {{#if menus.header}}
+            {{#each menus.header.items}}
+              <a href="{{this.url}}" class="nav-link{{#if this.cssClass}} {{this.cssClass}}{{/if}}" target="{{this.target}}">{{this.label}}</a>
+            {{/each}}
+          {{else}}
+            <a href="/" class="nav-link">Home</a>
+            <a href="/blog" class="nav-link">Blog</a>
+            <a href="/about" class="nav-link">About</a>
+            <a href="/contact" class="nav-link">Contact</a>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
