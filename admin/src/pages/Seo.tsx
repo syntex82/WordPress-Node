@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { seoApi } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
-import { FiArrowRight, FiPlus, FiTrash2, FiEdit2, FiExternalLink, FiMap, FiCode, FiRefreshCw } from 'react-icons/fi';
+import { FiArrowRight, FiPlus, FiTrash2, FiExternalLink, FiMap, FiCode } from 'react-icons/fi';
 
 type TabType = 'redirects' | 'sitemap' | 'schema';
 

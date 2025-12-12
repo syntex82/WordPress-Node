@@ -1,11 +1,11 @@
 /**
- * Group Chat Page
- * Real-time chat interface for group messaging
+ * Group Chat Page - Professional Real-time Chat Interface
+ * Modern design with beautiful UI and smooth interactions
  */
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiSend, FiArrowLeft, FiUsers } from 'react-icons/fi';
+import { FiSend, FiArrowLeft, FiUsers, FiLogOut, FiSearch, FiCheck, FiShield, FiStar, FiHash, FiMessageSquare } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 import { groupsApi } from '../services/api';
@@ -45,7 +45,38 @@ interface Group {
     id: string;
     name: string;
   };
+  _count?: {
+    members: number;
+  };
 }
+
+// Avatar colors
+const avatarColors = [
+  'from-blue-400 to-blue-600',
+  'from-purple-400 to-purple-600',
+  'from-pink-400 to-pink-600',
+  'from-emerald-400 to-emerald-600',
+  'from-orange-400 to-orange-600',
+  'from-cyan-400 to-cyan-600',
+  'from-rose-400 to-rose-600',
+  'from-indigo-400 to-indigo-600',
+];
+
+const getAvatarColor = (name: string) => {
+  const index = name.charCodeAt(0) % avatarColors.length;
+  return avatarColors[index];
+};
+
+const getRoleBadge = (role: string) => {
+  switch (role) {
+    case 'OWNER':
+      return { icon: FiStar, color: 'text-yellow-500', bg: 'bg-yellow-100', label: 'Owner' };
+    case 'MODERATOR':
+      return { icon: FiShield, color: 'text-blue-500', bg: 'bg-blue-100', label: 'Mod' };
+    default:
+      return null;
+  }
+};
 
 export default function GroupChat() {
   const { id } = useParams<{ id: string }>();
@@ -55,11 +86,13 @@ export default function GroupChat() {
   const [members, setMembers] = useState<Member[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showMembers, setShowMembers] = useState(false);
+  const [showMembers, setShowMembers] = useState(true);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [searchMembers, setSearchMembers] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -72,17 +105,12 @@ export default function GroupChat() {
 
   useEffect(() => {
     if (group?.isMember && token) {
-      // Connect to WebSocket
-      const newSocket = io('/groups', {
-        auth: { token },
-      });
+      const newSocket = io('/groups', { auth: { token } });
 
       newSocket.on('connect', () => {
         console.log('Connected to groups gateway');
         newSocket.emit('group:join', { groupId: id }, (response: any) => {
-          if (response.onlineUsers) {
-            setOnlineUsers(response.onlineUsers);
-          }
+          if (response.onlineUsers) setOnlineUsers(response.onlineUsers);
         });
       });
 
@@ -96,7 +124,7 @@ export default function GroupChat() {
       });
 
       newSocket.on('group:user:offline', (data: { userId: string }) => {
-        setOnlineUsers((prev) => prev.filter((id) => id !== data.userId));
+        setOnlineUsers((prev) => prev.filter((uid) => uid !== data.userId));
       });
 
       newSocket.on('group:typing', (data: { userId: string; userName: string; isTyping: boolean }) => {
@@ -108,7 +136,6 @@ export default function GroupChat() {
       });
 
       setSocket(newSocket);
-
       return () => {
         newSocket.emit('group:leave', { groupId: id });
         newSocket.disconnect();
@@ -157,24 +184,17 @@ export default function GroupChat() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !socket) return;
-
     socket.emit('group:message:send', { groupId: id, content: newMessage.trim() });
     setNewMessage('');
     handleStopTyping();
+    inputRef.current?.focus();
   };
 
   const handleTyping = () => {
     if (!socket) return;
-
     socket.emit('group:typing:start', { groupId: id });
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      handleStopTyping();
-    }, 2000);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => handleStopTyping(), 2000);
   };
 
   const handleStopTyping = () => {
@@ -185,7 +205,7 @@ export default function GroupChat() {
   const handleJoinGroup = async () => {
     try {
       await groupsApi.join(id!);
-      toast.success('Joined group successfully');
+      toast.success('Welcome to the group!');
       loadGroup();
       loadMessages();
       loadMembers();
@@ -194,125 +214,204 @@ export default function GroupChat() {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    if (!confirm('Are you sure you want to leave this group?')) return;
+    try {
+      await groupsApi.leave(id!);
+      toast.success('You left the group');
+      loadGroup();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to leave group');
+    }
+  };
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const formatMessageDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === now.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+  };
+
+  // Group messages by date
+  const groupedMessages = messages.reduce((groups: { date: string; messages: Message[] }[], message) => {
+    const date = new Date(message.createdAt).toDateString();
+    const lastGroup = groups[groups.length - 1];
+    if (lastGroup && new Date(lastGroup.messages[0].createdAt).toDateString() === date) {
+      lastGroup.messages.push(message);
+    } else {
+      groups.push({ date, messages: [message] });
+    }
+    return groups;
+  }, []);
+
+  const filteredMembers = members.filter(m =>
+    m.user.name.toLowerCase().includes(searchMembers.toLowerCase()) ||
+    m.user.email.toLowerCase().includes(searchMembers.toLowerCase())
+  );
+
+  const onlineCount = members.filter(m => onlineUsers.includes(m.user.id)).length;
 
   if (!group) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading group...</p>
+        </div>
       </div>
     );
   }
 
   if (!group.isMember) {
     return (
-      <div className="p-6">
-        <Link to="/groups" className="flex items-center gap-2 text-blue-600 hover:underline mb-6">
-          <FiArrowLeft /> Back to Groups
-        </Link>
-        <div className="bg-white rounded-lg shadow p-8 text-center max-w-md mx-auto">
-          <h2 className="text-2xl font-bold mb-2">{group.name}</h2>
-          <p className="text-gray-600 mb-6">{group.description || 'No description'}</p>
-          <button
-            onClick={handleJoinGroup}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Join Group
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative">
+            <Link to="/groups" className="absolute top-4 left-4 p-2 bg-white/20 backdrop-blur-sm rounded-xl text-white hover:bg-white/30 transition-colors">
+              <FiArrowLeft size={20} />
+            </Link>
+          </div>
+          <div className="p-8 text-center -mt-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto shadow-lg">
+              <FiHash size={28} />
+            </div>
+            <h2 className="text-2xl font-bold mt-4 mb-2">{group.name}</h2>
+            <p className="text-gray-500 mb-6">{group.description || 'Join this community to start chatting!'}</p>
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-400 mb-8">
+              <span className="flex items-center gap-1"><FiUsers /> {group._count?.members || 0} members</span>
+            </div>
+            <button onClick={handleJoinGroup} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg">
+              Join Group
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-screen bg-slate-100">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="bg-white border-b px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-4">
-            <Link to="/groups" className="text-gray-500 hover:text-gray-700">
+            <Link to="/groups" className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors">
               <FiArrowLeft size={20} />
             </Link>
-            <div>
-              <h2 className="font-semibold text-lg">{group.name}</h2>
-              <p className="text-sm text-gray-500">{onlineUsers.length} online</p>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
+                <FiHash size={20} />
+              </div>
+              <div>
+                <h2 className="font-bold text-lg text-gray-900">{group.name}</h2>
+                <p className="text-sm text-gray-500">{onlineCount} online · {members.length} members</p>
+              </div>
             </div>
           </div>
-          <button
-            onClick={() => setShowMembers(!showMembers)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <FiUsers size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowMembers(!showMembers)} className={`p-2.5 rounded-xl transition-colors ${showMembers ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'}`}>
+              <FiUsers size={20} />
+            </button>
+            <button onClick={handleLeaveGroup} className="p-2.5 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-xl transition-colors">
+              <FiLogOut size={20} />
+            </button>
+          </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-b from-slate-50 to-white">
           {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600"></div>
             </div>
           ) : messages.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No messages yet. Start the conversation!
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mb-4">
+                <FiMessageSquare className="text-3xl text-indigo-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No messages yet</h3>
+              <p className="text-gray-500">Be the first to start the conversation!</p>
             </div>
           ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender.id === user?.id ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                    message.sender.id === user?.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white shadow'
-                  }`}
-                >
-                  {message.sender.id !== user?.id && (
-                    <p className="text-xs font-medium text-gray-500 mb-1">{message.sender.name}</p>
-                  )}
-                  <p>{message.content}</p>
-                  <p className={`text-xs mt-1 ${message.sender.id === user?.id ? 'text-blue-200' : 'text-gray-400'}`}>
-                    {formatTime(message.createdAt)}
-                  </p>
+            <div className="space-y-6">
+              {groupedMessages.map((group, groupIdx) => (
+                <div key={groupIdx}>
+                  {/* Date Divider */}
+                  <div className="flex items-center justify-center my-6">
+                    <div className="px-4 py-1.5 bg-white rounded-full shadow-sm border text-xs font-medium text-gray-500">
+                      {formatMessageDate(group.messages[0].createdAt)}
+                    </div>
+                  </div>
+                  {/* Messages */}
+                  <div className="space-y-3">
+                    {group.messages.map((message, idx) => {
+                      const isOwn = message.sender.id === user?.id;
+                      const showAvatar = idx === 0 || group.messages[idx - 1].sender.id !== message.sender.id;
+                      return (
+                        <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!showAvatar ? (isOwn ? 'pr-12' : 'pl-12') : ''}`}>
+                          {!isOwn && showAvatar && (
+                            <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(message.sender.name)} flex items-center justify-center text-white text-sm font-semibold mr-3 flex-shrink-0 shadow-sm`}>
+                              {message.sender.avatar ? <img src={message.sender.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : message.sender.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className={`max-w-[65%] ${isOwn ? 'items-end' : 'items-start'}`}>
+                            {!isOwn && showAvatar && <p className="text-xs font-medium text-gray-500 mb-1 ml-1">{message.sender.name}</p>}
+                            <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-md' : 'bg-white text-gray-800 shadow-sm border rounded-bl-md'}`}>
+                              <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
+                            </div>
+                            <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                              <span className={`text-[11px] ${isOwn ? 'text-gray-400' : 'text-gray-400'}`}>{formatTime(message.createdAt)}</span>
+                              {isOwn && <FiCheck className="text-gray-400" size={12} />}
+                            </div>
+                          </div>
+                          {isOwn && showAvatar && (
+                            <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(message.sender.name)} flex items-center justify-center text-white text-sm font-semibold ml-3 flex-shrink-0 shadow-sm`}>
+                              {message.sender.avatar ? <img src={message.sender.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : message.sender.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Typing Indicator */}
         {typingUsers.length > 0 && (
-          <div className="px-6 py-2 text-sm text-gray-500 bg-gray-50">
-            {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+          <div className="px-6 py-2 bg-white border-t">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              </div>
+              <span>{typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...</span>
+            </div>
           </div>
         )}
 
         {/* Message Input */}
-        <form onSubmit={handleSendMessage} className="bg-white border-t p-4">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                handleTyping();
-              }}
-              placeholder="Type a message..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="submit"
-              disabled={!newMessage.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              <FiSend />
+        <form onSubmit={handleSendMessage} className="bg-white border-t p-4 shadow-lg">
+          <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-2">
+            <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
+              placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-gray-800 placeholder-gray-400 focus:outline-none text-[15px]" />
+            <button type="submit" disabled={!newMessage.trim()} className={`p-3 rounded-xl transition-all ${newMessage.trim() ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md hover:shadow-lg' : 'bg-gray-200 text-gray-400'}`}>
+              <FiSend size={18} />
             </button>
           </div>
         </form>
@@ -320,27 +419,65 @@ export default function GroupChat() {
 
       {/* Members Sidebar */}
       {showMembers && (
-        <div className="w-64 bg-white border-l overflow-y-auto">
+        <div className="w-80 bg-white border-l flex flex-col">
           <div className="p-4 border-b">
-            <h3 className="font-semibold">Members ({members.length})</h3>
+            <h3 className="font-bold text-gray-900 mb-3">Members ({members.length})</h3>
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="text" placeholder="Search members..." value={searchMembers} onChange={(e) => setSearchMembers(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
           </div>
-          <div className="p-2">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
-                <div className="relative">
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium">
-                    {member.user.name.charAt(0).toUpperCase()}
+
+          <div className="flex-1 overflow-y-auto">
+            {/* Online Members */}
+            <div className="p-3">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Online — {onlineCount}</p>
+              {filteredMembers.filter(m => onlineUsers.includes(m.user.id)).map((member) => {
+                const badge = getRoleBadge(member.role);
+                return (
+                  <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+                    <div className="relative">
+                      <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(member.user.name)} flex items-center justify-center text-white text-sm font-semibold shadow-sm`}>
+                        {member.user.avatar ? <img src={member.user.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : member.user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">{member.user.name}</p>
+                        {badge && <span className={`px-1.5 py-0.5 ${badge.bg} ${badge.color} rounded text-[10px] font-semibold`}>{badge.label}</span>}
+                      </div>
+                      <p className="text-xs text-gray-400 truncate">{member.user.email}</p>
+                    </div>
                   </div>
-                  {onlineUsers.includes(member.user.id) && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{member.user.name}</p>
-                  <p className="text-xs text-gray-500">{member.role}</p>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
+
+            {/* Offline Members */}
+            <div className="p-3 border-t">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Offline — {members.length - onlineCount}</p>
+              {filteredMembers.filter(m => !onlineUsers.includes(m.user.id)).map((member) => {
+                const badge = getRoleBadge(member.role);
+                return (
+                  <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer opacity-60">
+                    <div className="relative">
+                      <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(member.user.name)} flex items-center justify-center text-white text-sm font-semibold`}>
+                        {member.user.avatar ? <img src={member.user.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : member.user.name.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">{member.user.name}</p>
+                        {badge && <span className={`px-1.5 py-0.5 ${badge.bg} ${badge.color} rounded text-[10px] font-semibold`}>{badge.label}</span>}
+                      </div>
+                      <p className="text-xs text-gray-400 truncate">{member.user.email}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
