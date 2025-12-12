@@ -3,13 +3,14 @@
  * View and edit user profile with stunning design
  */
 
-import { useState, useEffect } from 'react';
-import { profileApi, UserProfile, ProfileStats, ActivityItem } from '../../services/api';
+import { useState, useEffect, useRef } from 'react';
+import { profileApi, mediaApi, UserProfile, ProfileStats, ActivityItem } from '../../services/api';
 import {
   FiUser, FiEdit2, FiMapPin, FiBriefcase, FiCalendar, FiUsers, FiBook, FiAward,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiGlobe, FiCamera,
-  FiCheck, FiX, FiPlus, FiActivity
+  FiCheck, FiX, FiPlus, FiActivity, FiUpload
 } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 
 export default function MyProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -22,6 +23,10 @@ export default function MyProfile() {
   const [formData, setFormData] = useState<Partial<UserProfile>>({});
   const [newSkill, setNewSkill] = useState('');
   const [newInterest, setNewInterest] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadProfile();
@@ -88,6 +93,58 @@ export default function MyProfile() {
     setFormData({ ...formData, interests: formData.interests?.filter(i => i !== interest) });
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const res = await mediaApi.upload(file);
+      const imageUrl = res.data.url;
+      setFormData({ ...formData, avatar: imageUrl });
+      // Save immediately
+      await profileApi.updateMyProfile({ avatar: imageUrl });
+      setProfile(prev => prev ? { ...prev, avatar: imageUrl } : prev);
+      toast.success('Profile picture updated!');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    setUploadingCover(true);
+    try {
+      const res = await mediaApi.upload(file);
+      const imageUrl = res.data.url;
+      setFormData({ ...formData, coverImage: imageUrl });
+      // Save immediately
+      await profileApi.updateMyProfile({ coverImage: imageUrl });
+      setProfile(prev => prev ? { ...prev, coverImage: imageUrl } : prev);
+      toast.success('Cover image updated!');
+    } catch (error) {
+      console.error('Error uploading cover:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -117,11 +174,18 @@ export default function MyProfile() {
           <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-black/20" />
-        {editing && (
-          <button className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-lg flex items-center gap-2 transition">
-            <FiCamera className="w-4 h-4" /> Change Cover
-          </button>
-        )}
+        <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
+        <button
+          onClick={() => coverInputRef.current?.click()}
+          disabled={uploadingCover}
+          className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-lg flex items-center gap-2 transition disabled:opacity-50"
+        >
+          {uploadingCover ? (
+            <><div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div> Uploading...</>
+          ) : (
+            <><FiCamera className="w-4 h-4" /> Change Cover</>
+          )}
+        </button>
       </div>
 
       {/* Profile Header */}

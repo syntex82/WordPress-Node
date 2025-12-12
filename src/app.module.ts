@@ -23,6 +23,7 @@ import { ShopModule } from './modules/shop/shop.module';
 import { LmsModule } from './modules/lms/lms.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SeoModule } from './modules/seo/seo.module';
+import { MessagesModule } from './modules/messages/messages.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { SeoModule } from './modules/seo/seo.module';
     LmsModule,
     AnalyticsModule,
     SeoModule,
+    MessagesModule,
   ],
 })
 export class AppModule {}

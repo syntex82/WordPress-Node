@@ -836,3 +836,16 @@ export const profileApi = {
   searchUsers: (query: string, page?: number, limit?: number) =>
     api.get('/profiles/search', { params: { q: query, page, limit } }),
 };
+
+// Direct Messages API
+export const messagesApi = {
+  getConversations: () => api.get('/messages/conversations'),
+  startConversation: (userId: string) => api.post('/messages/conversations', { userId }),
+  getMessages: (conversationId: string, cursor?: string, limit?: number) =>
+    api.get(`/messages/conversations/${conversationId}/messages`, { params: { cursor, limit } }),
+  sendMessage: (conversationId: string, content: string) =>
+    api.post(`/messages/conversations/${conversationId}/messages`, { content }),
+  markAsRead: (conversationId: string) => api.post(`/messages/conversations/${conversationId}/read`),
+  getUnreadCount: () => api.get('/messages/unread-count'),
+  getOnlineUsers: () => api.get('/messages/online-users'),
+};

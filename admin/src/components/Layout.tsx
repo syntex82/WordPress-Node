@@ -5,13 +5,27 @@
 
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch } from 'react-icons/fi';
-import { useState } from 'react';
+import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { messagesApi } from '../services/api';
 
 export default function Layout() {
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await messagesApi.getUnreadCount();
+        setUnreadMessages(res.data.count);
+      } catch { /* ignore */ }
+    };
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   const navigation = [
     { name: 'Dashboard', path: '/', icon: FiHome },
@@ -22,6 +36,7 @@ export default function Layout() {
     { name: 'Media', path: '/media', icon: FiImage },
     { name: 'Menus', path: '/menus', icon: FiMenu },
     { name: 'Users', path: '/users', icon: FiUsers },
+    { name: 'Messages', path: '/messages', icon: FiMail, badge: unreadMessages },
     { name: 'Groups', path: '/groups', icon: FiMessageSquare },
     { name: 'Security', path: '/security', icon: FiShield },
     { name: 'Settings', path: '/settings', icon: FiSettings },
@@ -56,7 +71,7 @@ export default function Layout() {
         </div>
 
         <nav className="mt-6 flex-1">
-          {navigation.map((item) => {
+          {navigation.map((item: any) => {
             const Icon = item.icon;
             return (
               <Link
@@ -69,7 +84,10 @@ export default function Layout() {
                 }`}
               >
                 <Icon className="mr-3" size={18} />
-                {item.name}
+                <span className="flex-1">{item.name}</span>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">{item.badge}</span>
+                )}
               </Link>
             );
           })}
@@ -133,18 +151,18 @@ export default function Layout() {
         </nav>
 
         {/* User Profile Section */}
-        <div className="border-t border-gray-800">
+        <div className="border-t border-gray-800 bg-gray-900">
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center w-full px-6 py-4 hover:bg-gray-800 transition-colors"
+              className="flex items-center w-full px-6 py-4 hover:bg-gray-800 transition-colors bg-gray-900"
             >
               <div className="flex items-center flex-1">
-                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center mr-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-3 text-white shadow-lg">
                   <FiUser size={20} />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-medium">{user?.name}</p>
+                  <p className="text-sm font-medium text-white">{user?.name}</p>
                   <p className="text-xs text-gray-400">{user?.role}</p>
                 </div>
               </div>

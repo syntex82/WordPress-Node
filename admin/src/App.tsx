@@ -56,6 +56,8 @@ import PublicProfile from './pages/profile/PublicProfile';
 import Analytics from './pages/Analytics';
 // SEO
 import Seo from './pages/Seo';
+// Messages
+import Messages from './pages/Messages';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -96,6 +98,7 @@ function App() {
               <Route path="pages/edit/:id" element={<PageEditor />} />
               <Route path="media" element={<Media />} />
               <Route path="users" element={<Users />} />
+              <Route path="messages" element={<Messages />} />
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:id/chat" element={<GroupChat />} />
               <Route path="theme-builder" element={<ThemeBuilder />} />

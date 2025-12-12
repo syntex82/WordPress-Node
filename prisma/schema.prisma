@@ -81,6 +81,11 @@ model User {
 
   // Badges/Achievements
   badges        UserBadge[]
+
+  // Direct Messaging
+  conversationsAsP1 Conversation[]  @relation("ConversationParticipant1")
+  conversationsAsP2 Conversation[]  @relation("ConversationParticipant2")
+  directMessages    DirectMessage[] @relation("DirectMessageSender")
 }
 
 // Follow relationship for users
@@ -544,6 +549,50 @@ model PasswordHistory {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+// ============================================
+// DIRECT MESSAGING MODELS
+// ============================================
+
+// Conversation model - represents a DM conversation between two users
+model Conversation {
+  id           String    @id @default(uuid())
+  participant1Id String
+  participant2Id String
+  lastMessageAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  participant1 User   @relation("ConversationParticipant1", fields: [participant1Id], references: [id], onDelete: Cascade)
+  participant2 User   @relation("ConversationParticipant2", fields: [participant2Id], references: [id], onDelete: Cascade)
+  messages     DirectMessage[]
+
+  @@unique([participant1Id, participant2Id])
+  @@index([participant1Id])
+  @@index([participant2Id])
+  @@index([lastMessageAt])
+}
+
+// DirectMessage model - individual messages in a conversation
+model DirectMessage {
+  id             String    @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String    @db.Text
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("DirectMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@index([isRead])
 }
 
 // ============================================
