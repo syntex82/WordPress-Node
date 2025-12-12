@@ -93,7 +93,10 @@ export class CoursesService {
       where: { id },
       include: {
         instructor: { select: { id: true, name: true, avatar: true, bio: true } },
-        lessons: { orderBy: { orderIndex: 'asc' } },
+        lessons: {
+          orderBy: { orderIndex: 'asc' },
+          include: { videoAsset: true, quiz: true }
+        },
         quizzes: { include: { _count: { select: { questions: true } } } },
         _count: { select: { lessons: true, enrollments: true, quizzes: true } },
       },
@@ -153,6 +156,59 @@ export class CoursesService {
       distinct: ['category'],
     });
     return courses.map(c => c.category).filter(Boolean);
+  }
+
+  async getAdminDashboardStats(instructorId?: string) {
+    const courseWhere = instructorId ? { instructorId } : {};
+    const enrollmentWhere = instructorId ? { course: { instructorId } } : {};
+
+    const [
+      totalCourses,
+      publishedCourses,
+      draftCourses,
+      totalEnrollments,
+      activeEnrollments,
+      completedEnrollments,
+      totalRevenue,
+      recentEnrollments,
+      topCourses,
+    ] = await Promise.all([
+      this.prisma.course.count({ where: courseWhere }),
+      this.prisma.course.count({ where: { ...courseWhere, status: 'PUBLISHED' } }),
+      this.prisma.course.count({ where: { ...courseWhere, status: 'DRAFT' } }),
+      this.prisma.enrollment.count({ where: enrollmentWhere }),
+      this.prisma.enrollment.count({ where: { ...enrollmentWhere, status: 'ACTIVE' } }),
+      this.prisma.enrollment.count({ where: { ...enrollmentWhere, status: 'COMPLETED' } }),
+      this.prisma.enrollment.aggregate({
+        where: enrollmentWhere,
+        _sum: { pricePaid: true },
+      }),
+      this.prisma.enrollment.findMany({
+        where: enrollmentWhere,
+        orderBy: { enrolledAt: 'desc' },
+        take: 10,
+        include: {
+          user: { select: { id: true, name: true, email: true, avatar: true } },
+          course: { select: { id: true, title: true, slug: true } },
+        },
+      }),
+      this.prisma.course.findMany({
+        where: { ...courseWhere, status: 'PUBLISHED' },
+        orderBy: { enrollments: { _count: 'desc' } },
+        take: 5,
+        include: {
+          _count: { select: { enrollments: true, lessons: true } },
+        },
+      }),
+    ]);
+
+    return {
+      courses: { total: totalCourses, published: publishedCourses, draft: draftCourses },
+      enrollments: { total: totalEnrollments, active: activeEnrollments, completed: completedEnrollments },
+      revenue: totalRevenue._sum.pricePaid || 0,
+      recentEnrollments,
+      topCourses,
+    };
   }
 }
 

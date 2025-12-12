@@ -35,6 +35,7 @@ import StorefrontCart from './pages/storefront/Cart';
 import StorefrontCheckout from './pages/storefront/Checkout';
 import StorefrontOrderSuccess from './pages/storefront/OrderSuccess';
 // LMS admin pages
+import LmsAdminDashboard from './pages/lms/AdminDashboard';
 import LmsCourses from './pages/lms/Courses';
 import LmsCourseEditor from './pages/lms/CourseEditor';
 import LmsLessons from './pages/lms/Lessons';
@@ -45,6 +46,8 @@ import LmsCourseCatalog from './pages/lms/CourseCatalog';
 import LmsCourseLanding from './pages/lms/CourseLanding';
 import LmsLearningPlayer from './pages/lms/LearningPlayer';
 import LmsStudentDashboard from './pages/lms/StudentDashboard';
+import LmsQuizPlayer from './pages/lms/QuizPlayer';
+import LmsCertificate from './pages/lms/Certificate';
 // Profile pages
 import MyProfile from './pages/profile/MyProfile';
 import PublicProfile from './pages/profile/PublicProfile';
@@ -96,7 +99,8 @@ function App() {
               <Route path="shop/orders" element={<ShopOrders />} />
               <Route path="shop/orders/:id" element={<ShopOrderDetail />} />
               <Route path="shop/categories" element={<ShopCategories />} />
-              {/* LMS routes */}
+              {/* LMS admin routes */}
+              <Route path="lms" element={<LmsAdminDashboard />} />
               <Route path="lms/courses" element={<LmsCourses />} />
               <Route path="lms/courses/new" element={<LmsCourseEditor />} />
               <Route path="lms/courses/:id" element={<LmsCourseEditor />} />
@@ -107,6 +111,8 @@ function App() {
               <Route path="lms/dashboard" element={<LmsStudentDashboard />} />
               <Route path="lms/learn/:courseId" element={<LmsLearningPlayer />} />
               <Route path="lms/learn/:courseId/lesson/:lessonId" element={<LmsLearningPlayer />} />
+              <Route path="lms/quiz/:courseId/:quizId" element={<LmsQuizPlayer />} />
+              <Route path="lms/certificate/:courseId" element={<LmsCertificate />} />
               {/* Profile routes */}
               <Route path="profile" element={<MyProfile />} />
               <Route path="profile/:identifier" element={<PublicProfile />} />

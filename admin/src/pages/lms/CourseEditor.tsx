@@ -24,7 +24,7 @@ const defaultCourse: Partial<Course> = {
 export default function CourseEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
   const [course, setCourse] = useState<Partial<Course>>(defaultCourse);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -52,21 +52,35 @@ export default function CourseEditor() {
     e.preventDefault();
     setSaving(true);
     try {
+      // Only send allowed fields - exclude read-only properties
       const data = {
-        ...course,
+        title: course.title,
+        description: course.description,
+        shortDescription: course.shortDescription,
+        category: course.category,
+        level: course.level,
+        featuredImage: course.featuredImage,
+        priceType: course.priceType,
+        priceAmount: course.priceType === 'PAID' ? Number(course.priceAmount) || 0 : undefined,
+        status: course.status,
+        passingScorePercent: Number(course.passingScorePercent) || 80,
+        certificateEnabled: course.certificateEnabled,
+        estimatedHours: Number(course.estimatedHours) || 0,
         whatYouLearn: whatYouLearnText.split('\n').filter(Boolean),
         requirements: requirementsText.split('\n').filter(Boolean),
       };
       if (isNew) {
         const { data: newCourse } = await lmsAdminApi.createCourse(data);
         navigate(`/lms/courses/${newCourse.id}`);
+        alert('Course created successfully!');
       } else {
         await lmsAdminApi.updateCourse(id!, data);
+        alert('Course saved successfully!');
       }
-      alert('Course saved successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save course:', error);
-      alert('Failed to save course');
+      const message = error.response?.data?.message || 'Failed to save course';
+      alert(Array.isArray(message) ? message.join(', ') : message);
     } finally {
       setSaving(false);
     }

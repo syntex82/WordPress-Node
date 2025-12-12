@@ -255,6 +255,19 @@ async function main() {
   });
   console.log('✅ Sample course created:', course.title);
 
+  // Create a sample video asset first
+  const videoAsset = await prisma.videoAsset.upsert({
+    where: { id: 'video-1-intro' },
+    update: {},
+    create: {
+      id: 'video-1-intro',
+      provider: 'YOUTUBE',
+      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Sample video
+      playbackId: 'dQw4w9WgXcQ',
+      durationSeconds: 212,
+    },
+  });
+
   // Create lessons for the course
   const lesson1 = await prisma.lesson.upsert({
     where: { id: 'lesson-1-intro' },
@@ -263,12 +276,13 @@ async function main() {
       id: 'lesson-1-intro',
       title: 'Welcome to Web Development',
       content: '<p>Welcome to this course! In this lesson, we will introduce you to the world of web development.</p>',
-      type: 'ARTICLE',
+      type: 'VIDEO',
       orderIndex: 1,
       estimatedMinutes: 10,
       isPreview: true,
       isRequired: true,
       courseId: course.id,
+      videoAssetId: videoAsset.id,
     },
   });
 
@@ -301,7 +315,7 @@ async function main() {
       courseId: course.id,
     },
   });
-  console.log('✅ Sample lessons created');
+  console.log('✅ Sample lessons created with video asset');
 
   // Create a quiz for the course
   const quiz = await prisma.quiz.upsert({

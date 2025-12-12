@@ -468,6 +468,8 @@ export const cartApi = {
   get: () => api.get<Cart>('/shop/cart'),
   add: (productId: string, quantity: number, variantId?: string) =>
     api.post<Cart>('/shop/cart/add', { productId, quantity, variantId }),
+  addCourse: (courseId: string) =>
+    api.post<Cart>('/shop/cart/add-course', { courseId }),
   update: (itemId: string, quantity: number) =>
     api.put<Cart>(`/shop/cart/item/${itemId}`, { quantity }),
   remove: (itemId: string) => api.delete<Cart>(`/shop/cart/item/${itemId}`),
@@ -590,6 +592,9 @@ export interface Certificate {
 
 // LMS Admin API
 export const lmsAdminApi = {
+  // Dashboard
+  getDashboardStats: () => api.get('/lms/admin/courses/dashboard/stats'),
+
   // Courses
   getCourses: (params?: { page?: number; limit?: number; status?: string; category?: string }) =>
     api.get<{ courses: Course[]; pagination: { page: number; limit: number; total: number; pages: number } }>('/lms/admin/courses', { params }),
@@ -606,6 +611,12 @@ export const lmsAdminApi = {
   updateLesson: (courseId: string, id: string, data: Partial<Lesson>) => api.put<Lesson>(`/lms/admin/courses/${courseId}/lessons/${id}`, data),
   deleteLesson: (courseId: string, id: string) => api.delete(`/lms/admin/courses/${courseId}/lessons/${id}`),
   reorderLessons: (courseId: string, lessonIds: string[]) => api.put(`/lms/admin/courses/${courseId}/lessons/reorder`, { lessonIds }),
+
+  // Video management
+  attachExternalVideo: (courseId: string, lessonId: string, data: { provider: string; url: string; playbackId?: string; durationSeconds?: number }) =>
+    api.post<Lesson>(`/lms/admin/courses/${courseId}/lessons/${lessonId}/attach-video`, data),
+  removeVideo: (courseId: string, lessonId: string) =>
+    api.delete(`/lms/admin/courses/${courseId}/lessons/${lessonId}/video`),
 
   // Quizzes
   getQuizzes: (courseId: string) => api.get<Quiz[]>(`/lms/admin/courses/${courseId}/quizzes`),

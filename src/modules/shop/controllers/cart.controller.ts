@@ -57,6 +57,16 @@ export class CartController {
     return this.cartService.addToCart(dto, userId, sessionId);
   }
 
+  @Post('add-course')
+  async addCourseToCart(
+    @Body() dto: { courseId: string },
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { userId, sessionId } = this.getCartIdentifiers(req, res);
+    return this.cartService.addCourseToCart(dto.courseId, userId, sessionId);
+  }
+
   @Put('item/:itemId')
   async updateItem(
     @Param('itemId') itemId: string,

@@ -5,6 +5,7 @@
 
 import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
+import { join } from 'path';
 import { PostsService } from '../content/services/posts.service';
 import { PagesService } from '../content/services/pages.service';
 import { ThemeRendererService } from '../themes/theme-renderer.service';
@@ -54,6 +55,22 @@ export class PublicController {
       console.error('Error rendering home page:', error);
       res.status(500).send(`Error rendering home page: ${error.message}`);
     }
+  }
+
+  /**
+   * LMS SPA fallback - serves admin panel for all /lms/* routes
+   * This enables the React app to handle LMS routing
+   * Must be before any catch-all routes
+   */
+  @Get('lms')
+  async lmsRoot(@Res() res: Response) {
+    res.redirect('http://localhost:5173/lms');
+  }
+
+  @Get('lms/*')
+  async lmsFallback(@Res() res: Response) {
+    // In development, redirect to Vite dev server
+    res.redirect(`http://localhost:5173${res.req?.originalUrl || '/lms'}`);
   }
 
   /**
@@ -207,6 +224,30 @@ export class PublicController {
 
       const html = await this.themeRenderer.renderCourse(course);
       res.send(html);
+    } catch (error) {
+      res.status(404).send('Course not found');
+    }
+  }
+
+  /**
+   * Course enrollment redirect
+   * GET /courses/:slug/enroll
+   * Redirects to admin app for enrollment process
+   */
+  @Get('courses/:slug/enroll')
+  async enrollCourse(@Param('slug') slug: string, @Res() res: Response) {
+    try {
+      const course = await this.coursesService.findBySlug(slug);
+
+      if (!course || course.status !== 'PUBLISHED') {
+        res.status(404).send('Course not found');
+        return;
+      }
+
+      // Redirect to the React app for the enrollment flow
+      // For free courses, they'll be enrolled directly
+      // For paid courses, they'll be redirected to checkout
+      res.redirect(`/lms/course/${slug}?enroll=true`);
     } catch (error) {
       res.status(404).send('Course not found');
     }

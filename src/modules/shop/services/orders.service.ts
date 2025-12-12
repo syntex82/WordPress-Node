@@ -22,7 +22,7 @@ export class OrdersService {
 
   // Create order from cart
   async createFromCart(dto: CreateOrderDto, userId?: string, sessionId?: string) {
-    // Get cart
+    // Get cart with products and courses
     const cart = await this.prisma.cart.findFirst({
       where: userId ? { userId } : { sessionId },
       include: {
@@ -30,6 +30,7 @@ export class OrdersService {
           include: {
             product: true,
             variant: true,
+            course: true,
           },
         },
       },
@@ -39,24 +40,35 @@ export class OrdersService {
       throw new BadRequestException('Cart is empty');
     }
 
+    // Separate product and course items
+    const productItems = cart.items.filter(item => item.itemType === 'PRODUCT' && item.product);
+    const courseItems = cart.items.filter(item => item.itemType === 'COURSE' && item.course);
+
     // Calculate totals
     let subtotal = new Decimal(0);
-    const orderItems = cart.items.map(item => {
-      const price = item.variant?.price || item.product.salePrice || item.product.price;
+    const orderItems = productItems.map(item => {
+      const price = item.variant?.price || item.product!.salePrice || item.product!.price;
       const total = new Decimal(price).times(item.quantity);
       subtotal = subtotal.plus(total);
 
       return {
-        product: { connect: { id: item.productId } },
+        product: { connect: { id: item.productId! } },
         variant: item.variantId ? { connect: { id: item.variantId } } : undefined,
-        name: item.product.name + (item.variant ? ` - ${item.variant.name}` : ''),
-        sku: item.variant?.sku || item.product.sku,
+        name: item.product!.name + (item.variant ? ` - ${item.variant.name}` : ''),
+        sku: item.variant?.sku || item.product!.sku,
         price,
         quantity: item.quantity,
         total,
         options: item.variant?.options ?? undefined,
       };
     });
+
+    // Add course prices to subtotal
+    for (const item of courseItems) {
+      if (item.course?.priceAmount) {
+        subtotal = subtotal.plus(item.course.priceAmount);
+      }
+    }
 
     // Get shipping cost
     let shipping = new Decimal(0);
@@ -136,14 +148,14 @@ export class OrdersService {
     });
 
     // Update product stock
-    for (const item of cart.items) {
-      if (item.product.trackStock) {
+    for (const item of productItems) {
+      if (item.product?.trackStock) {
         if (item.variantId) {
           await this.prisma.productVariant.update({
             where: { id: item.variantId },
             data: { stock: { decrement: item.quantity } },
           });
-        } else {
+        } else if (item.productId) {
           await this.prisma.product.update({
             where: { id: item.productId },
             data: { stock: { decrement: item.quantity } },
@@ -152,10 +164,36 @@ export class OrdersService {
       }
     }
 
+    // Create course enrollments for purchased courses
+    if (userId && courseItems.length > 0) {
+      for (const item of courseItems) {
+        if (item.courseId) {
+          // Check if already enrolled
+          const existingEnrollment = await this.prisma.enrollment.findUnique({
+            where: { courseId_userId: { courseId: item.courseId, userId } },
+          });
+
+          if (!existingEnrollment) {
+            await this.prisma.enrollment.create({
+              data: {
+                courseId: item.courseId,
+                userId,
+                status: 'ACTIVE',
+                paymentId: order.id, // Link to order
+              },
+            });
+          }
+        }
+      }
+    }
+
     // Clear cart
     await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
 
-    return order;
+    return {
+      ...order,
+      coursesEnrolled: courseItems.map(item => item.course?.title).filter(Boolean),
+    };
   }
 
   // Get all orders with pagination

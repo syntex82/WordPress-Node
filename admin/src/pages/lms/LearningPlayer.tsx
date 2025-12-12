@@ -1,9 +1,12 @@
 /**
  * LMS Learning Player - Course learning interface
+ * Enhanced with video progress tracking and external video support
  */
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { lmsApi } from '../../services/api';
+import toast from 'react-hot-toast';
+import { FiCheck, FiPlay, FiChevronLeft, FiChevronRight, FiAward, FiBookOpen, FiFileText } from 'react-icons/fi';
 
 interface LessonProgress {
   id: string;
@@ -24,10 +27,13 @@ interface CourseProgress {
 
 export default function LearningPlayer() {
   const { courseId, lessonId } = useParams();
+  useNavigate(); // Keep hook for potential future use
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [course, setCourse] = useState<any>(null);
   const [progress, setProgress] = useState<CourseProgress | null>(null);
   const [currentLesson, setCurrentLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const lastProgressUpdate = useRef(0);
 
   useEffect(() => {
     loadCourseData();
@@ -69,14 +75,92 @@ export default function LearningPlayer() {
     if (!currentLesson) return;
     try {
       await lmsApi.markLessonComplete(courseId!, currentLesson.id);
+      toast.success('Lesson completed!');
       loadCourseData(); // Refresh progress
     } catch (error) {
       console.error('Failed to mark complete:', error);
     }
   };
 
+  const handleVideoProgress = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    const percent = (video.currentTime / video.duration) * 100;
+
+    // Update progress every 10 seconds
+    if (video.currentTime - lastProgressUpdate.current >= 10) {
+      lastProgressUpdate.current = video.currentTime;
+      lmsApi.updateProgress(courseId!, currentLesson.id, {
+        videoWatchedSeconds: Math.floor(video.currentTime),
+      }).catch(console.error);
+    }
+
+    // Auto-complete at 90%
+    if (percent >= 90 && !isLessonComplete(currentLesson.id)) {
+      handleMarkComplete();
+    }
+  };
+
   const isLessonComplete = (lessonId: string) => {
     return progress?.lessons.find(l => l.id === lessonId)?.completed || false;
+  };
+
+  const getCurrentLessonIndex = () => {
+    return course?.lessons?.findIndex((l: any) => l.id === currentLesson?.id) ?? -1;
+  };
+
+  const goToNextLesson = () => {
+    const idx = getCurrentLessonIndex();
+    if (idx >= 0 && idx < course.lessons.length - 1) {
+      loadLesson(course.lessons[idx + 1].id);
+    }
+  };
+
+  const goToPrevLesson = () => {
+    const idx = getCurrentLessonIndex();
+    if (idx > 0) {
+      loadLesson(course.lessons[idx - 1].id);
+    }
+  };
+
+  const getVideoEmbed = (videoAsset: any) => {
+    if (!videoAsset) return null;
+
+    const { provider, url, playbackId } = videoAsset;
+
+    if (provider === 'YOUTUBE') {
+      const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1] || playbackId;
+      return (
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}`}
+          className="w-full h-full rounded-lg"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
+
+    if (provider === 'VIMEO') {
+      const videoId = url.match(/vimeo\.com\/(\d+)/)?.[1] || playbackId;
+      return (
+        <iframe
+          src={`https://player.vimeo.com/video/${videoId}`}
+          className="w-full h-full rounded-lg"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
+
+    // Default: direct video file
+    return (
+      <video
+        ref={videoRef}
+        src={url}
+        controls
+        className="w-full h-full rounded-lg"
+        onTimeUpdate={handleVideoProgress}
+      />
+    );
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -126,36 +210,93 @@ export default function LearningPlayer() {
       <main className="flex-1 overflow-y-auto">
         {currentLesson ? (
           <div className="max-w-4xl mx-auto p-8">
-            <h1 className="text-2xl font-bold mb-4">{currentLesson.title}</h1>
-            
-            {currentLesson.type === 'VIDEO' && currentLesson.videoAsset?.url && (
-              <div className="aspect-video bg-black rounded-lg mb-6">
-                <video src={currentLesson.videoAsset.url} controls className="w-full h-full rounded-lg" />
+            {/* Lesson Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className={`p-2 rounded-lg ${
+                  currentLesson.type === 'VIDEO' ? 'bg-purple-100 text-purple-600' :
+                  currentLesson.type === 'QUIZ' ? 'bg-orange-100 text-orange-600' :
+                  'bg-blue-100 text-blue-600'
+                }`}>
+                  {currentLesson.type === 'VIDEO' ? <FiPlay /> :
+                   currentLesson.type === 'QUIZ' ? <FiFileText /> : <FiBookOpen />}
+                </span>
+                <div>
+                  <h1 className="text-2xl font-bold">{currentLesson.title}</h1>
+                  <p className="text-sm text-gray-500">
+                    Lesson {getCurrentLessonIndex() + 1} of {course.lessons?.length || 0}
+                  </p>
+                </div>
+              </div>
+              {isLessonComplete(currentLesson.id) && (
+                <span className="flex items-center gap-1 text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                  <FiCheck /> Completed
+                </span>
+              )}
+            </div>
+
+            {/* Video Player */}
+            {currentLesson.type === 'VIDEO' && currentLesson.videoAsset && (
+              <div className="aspect-video bg-black rounded-lg mb-6 overflow-hidden">
+                {getVideoEmbed(currentLesson.videoAsset)}
               </div>
             )}
 
+            {/* Quiz Link */}
+            {currentLesson.type === 'QUIZ' && currentLesson.quiz && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 mb-6 text-center">
+                <FiFileText className="text-4xl text-orange-500 mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2">{currentLesson.quiz.title}</h3>
+                <p className="text-gray-600 mb-4">Test your knowledge with this quiz</p>
+                <Link
+                  to={`/lms/quiz/${courseId}/${currentLesson.quiz.id}`}
+                  className="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
+                >
+                  Start Quiz
+                </Link>
+              </div>
+            )}
+
+            {/* Lesson Content */}
             {currentLesson.content && (
               <div className="prose max-w-none bg-white rounded-lg p-6 shadow mb-6">
                 <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
               </div>
             )}
 
-            <div className="flex justify-between items-center">
-              {!isLessonComplete(currentLesson.id) ? (
-                <button onClick={handleMarkComplete}
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
-                  Mark as Complete
-                </button>
-              ) : (
-                <span className="text-green-600 font-medium">✓ Completed</span>
-              )}
+            {/* Actions */}
+            <div className="flex justify-between items-center bg-white rounded-lg p-4 shadow">
+              <button
+                onClick={goToPrevLesson}
+                disabled={getCurrentLessonIndex() <= 0}
+                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FiChevronLeft /> Previous
+              </button>
 
-              {progress?.isComplete && (
-                <Link to={`/lms/certificate/${courseId}`}
-                  className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600">
-                  🏆 Get Certificate
-                </Link>
-              )}
+              <div className="flex items-center gap-4">
+                {!isLessonComplete(currentLesson.id) && currentLesson.type !== 'VIDEO' && (
+                  <button onClick={handleMarkComplete}
+                    className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                    <FiCheck /> Mark Complete
+                  </button>
+                )}
+
+                {progress?.isComplete && course.certificateEnabled && (
+                  <Link to={`/lms/certificate/${courseId}`}
+                    className="flex items-center gap-2 bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600">
+                    <FiAward /> Get Certificate
+                  </Link>
+                )}
+              </div>
+
+              <button
+                onClick={goToNextLesson}
+                disabled={getCurrentLessonIndex() >= (course.lessons?.length || 0) - 1}
+                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next <FiChevronRight />
+              </button>
             </div>
           </div>
         ) : (

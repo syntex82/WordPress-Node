@@ -1,13 +1,28 @@
 /**
  * Lessons Service for LMS Module
+ * Enhanced with video upload and external video support
  */
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateLessonDto, UpdateLessonDto, CreateVideoAssetDto } from '../dto/lesson.dto';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 @Injectable()
 export class LessonsService {
-  constructor(private prisma: PrismaService) {}
+  private videoUploadDir = path.join(process.cwd(), 'uploads', 'videos');
+
+  constructor(private prisma: PrismaService) {
+    this.ensureVideoDir();
+  }
+
+  private async ensureVideoDir() {
+    try {
+      await fs.access(this.videoUploadDir);
+    } catch {
+      await fs.mkdir(this.videoUploadDir, { recursive: true });
+    }
+  }
 
   async create(courseId: string, dto: CreateLessonDto) {
     // Get the max order index for existing lessons
@@ -142,6 +157,100 @@ export class LessonsService {
     });
 
     return { lesson, progress, isEnrolled: !!enrollment };
+  }
+
+  // Upload video file for a lesson
+  async uploadVideo(courseId: string, lessonId: string, file: Express.Multer.File, userId: string) {
+    const lesson = await this.findOne(lessonId);
+
+    // Verify course ownership
+    const course = await this.prisma.course.findUnique({ where: { id: courseId } });
+    if (!course) throw new NotFoundException('Course not found');
+    if (course.instructorId !== userId) {
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (user?.role !== 'ADMIN') {
+        throw new ForbiddenException('Not authorized to upload videos to this course');
+      }
+    }
+
+    // Generate unique filename
+    const ext = path.extname(file.originalname);
+    const filename = `${courseId}-${lessonId}-${Date.now()}${ext}`;
+    const filepath = path.join(this.videoUploadDir, filename);
+
+    // Save file
+    await fs.writeFile(filepath, file.buffer);
+
+    // Create video asset
+    const videoAsset = await this.prisma.videoAsset.create({
+      data: {
+        provider: 'UPLOAD',
+        url: `/uploads/videos/${filename}`,
+        filePath: filepath,
+        isProtected: true,
+      },
+    });
+
+    // Attach to lesson
+    const updatedLesson = await this.prisma.lesson.update({
+      where: { id: lessonId },
+      data: { videoAssetId: videoAsset.id },
+      include: { videoAsset: true },
+    });
+
+    return updatedLesson;
+  }
+
+  // Attach external video (YouTube, Vimeo, Wistia, etc.)
+  async attachExternalVideo(
+    lessonId: string,
+    dto: { provider: string; url: string; playbackId?: string; durationSeconds?: number }
+  ) {
+    await this.findOne(lessonId);
+
+    // Create video asset for external video
+    const videoAsset = await this.prisma.videoAsset.create({
+      data: {
+        provider: dto.provider.toUpperCase() as any,
+        url: dto.url,
+        playbackId: dto.playbackId,
+        durationSeconds: dto.durationSeconds,
+        isProtected: false, // External videos handle their own protection
+      },
+    });
+
+    // Attach to lesson
+    const updatedLesson = await this.prisma.lesson.update({
+      where: { id: lessonId },
+      data: { videoAssetId: videoAsset.id, type: 'VIDEO' },
+      include: { videoAsset: true },
+    });
+
+    return updatedLesson;
+  }
+
+  // Remove video from lesson
+  async removeVideo(lessonId: string) {
+    const lesson = await this.findOne(lessonId);
+
+    if (lesson.videoAsset) {
+      // Delete file if it's an upload
+      if (lesson.videoAsset.filePath) {
+        try {
+          await fs.unlink(lesson.videoAsset.filePath);
+        } catch (e) {
+          console.error('Failed to delete video file:', e);
+        }
+      }
+
+      // Delete video asset
+      await this.prisma.videoAsset.delete({ where: { id: lesson.videoAsset.id } });
+    }
+
+    return this.prisma.lesson.update({
+      where: { id: lessonId },
+      data: { videoAssetId: null },
+    });
   }
 }
 

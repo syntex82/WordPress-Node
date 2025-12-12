@@ -1,6 +1,6 @@
 /**
  * Cart Service
- * Handles shopping cart operations
+ * Handles shopping cart operations for products and courses
  */
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
@@ -24,6 +24,17 @@ export class CartService {
           include: {
             product: { include: { category: true } },
             variant: true,
+            course: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                featuredImage: true,
+                priceAmount: true,
+                priceType: true,
+                instructor: { select: { id: true, name: true } },
+              },
+            },
           },
         },
       },
@@ -37,6 +48,17 @@ export class CartService {
             include: {
               product: { include: { category: true } },
               variant: true,
+              course: {
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                  featuredImage: true,
+                  priceAmount: true,
+                  priceType: true,
+                  instructor: { select: { id: true, name: true } },
+                },
+              },
             },
           },
         },
@@ -98,6 +120,55 @@ export class CartService {
     return this.getOrCreateCart(userId, sessionId);
   }
 
+  // Add course to cart
+  async addCourseToCart(courseId: string, userId?: string, sessionId?: string) {
+    const cart = await this.getOrCreateCart(userId, sessionId);
+
+    // Validate course exists and is published
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+    });
+
+    if (!course || course.status !== 'PUBLISHED') {
+      throw new NotFoundException('Course not found or not available');
+    }
+
+    if (course.priceType === 'FREE') {
+      throw new BadRequestException('Free courses cannot be added to cart. Enroll directly.');
+    }
+
+    // Check if user is already enrolled
+    if (userId) {
+      const existingEnrollment = await this.prisma.enrollment.findUnique({
+        where: { courseId_userId: { courseId, userId } },
+      });
+      if (existingEnrollment) {
+        throw new BadRequestException('You are already enrolled in this course');
+      }
+    }
+
+    // Check if course already in cart
+    const existingItem = await this.prisma.cartItem.findFirst({
+      where: { cartId: cart.id, courseId },
+    });
+
+    if (existingItem) {
+      throw new BadRequestException('Course is already in your cart');
+    }
+
+    // Add course to cart
+    await this.prisma.cartItem.create({
+      data: {
+        cartId: cart.id,
+        courseId,
+        itemType: 'COURSE',
+        quantity: 1, // Courses always have quantity 1
+      },
+    });
+
+    return this.getOrCreateCart(userId, sessionId);
+  }
+
   // Update cart item quantity
   async updateCartItem(itemId: string, dto: UpdateCartItemDto, userId?: string, sessionId?: string) {
     const cart = await this.getOrCreateCart(userId, sessionId);
@@ -149,10 +220,28 @@ export class CartService {
   private calculateCartTotals(cart: any) {
     let subtotal = new Decimal(0);
     const itemsWithTotals = cart.items.map((item: any) => {
-      const price = item.variant?.price || item.product.salePrice || item.product.price;
+      let price: Decimal;
+
+      if (item.itemType === 'COURSE' && item.course) {
+        // Course pricing
+        price = item.course.priceAmount || new Decimal(0);
+      } else if (item.product) {
+        // Product pricing
+        price = item.variant?.price || item.product.salePrice || item.product.price;
+      } else {
+        price = new Decimal(0);
+      }
+
       const itemTotal = new Decimal(price).times(item.quantity);
       subtotal = subtotal.plus(itemTotal);
-      return { ...item, price, itemTotal: itemTotal.toNumber() };
+
+      return {
+        ...item,
+        price: new Decimal(price).toNumber(),
+        itemTotal: itemTotal.toNumber(),
+        name: item.course?.title || item.product?.name || 'Unknown Item',
+        image: item.course?.featuredImage || item.product?.images?.[0] || null,
+      };
     });
 
     return {
@@ -160,6 +249,8 @@ export class CartService {
       items: itemsWithTotals,
       subtotal: subtotal.toNumber(),
       itemCount: cart.items.reduce((sum: number, item: any) => sum + item.quantity, 0),
+      hasCourses: cart.items.some((item: any) => item.itemType === 'COURSE'),
+      hasProducts: cart.items.some((item: any) => item.itemType === 'PRODUCT'),
     };
   }
 }

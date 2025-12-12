@@ -45,6 +45,10 @@ export class CertificatesService {
     // Check if certificate already exists
     const existing = await this.prisma.certificate.findFirst({
       where: { courseId, userId, revokedAt: null },
+      include: {
+        course: { select: { title: true, instructor: { select: { name: true } } } },
+        user: { select: { name: true } },
+      },
     });
     if (existing) return existing;
 

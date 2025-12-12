@@ -1,6 +1,6 @@
 /**
  * Lessons Controller for LMS Module
- * Handles admin lesson management
+ * Handles admin lesson management with video upload support
  */
 import {
   Controller,
@@ -11,7 +11,11 @@ import {
   Body,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Request,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { LessonsService } from '../services/lessons.service';
 import { CreateLessonDto, UpdateLessonDto, ReorderLessonsDto, CreateVideoAssetDto } from '../dto/lesson.dto';
@@ -71,6 +75,36 @@ export class LessonsController {
   @Delete('video-assets/:id')
   async deleteVideoAsset(@Param('id') id: string) {
     return this.lessonsService.deleteVideoAsset(id);
+  }
+
+  // Video upload endpoint
+  @Post(':id/upload-video')
+  @UseInterceptors(FileInterceptor('video', {
+    limits: { fileSize: 500 * 1024 * 1024 }, // 500MB max
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only video files are allowed'), false);
+      }
+    },
+  }))
+  async uploadVideo(
+    @Param('courseId') courseId: string,
+    @Param('id') lessonId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req,
+  ) {
+    return this.lessonsService.uploadVideo(courseId, lessonId, file, req.user.id);
+  }
+
+  // Attach external video (YouTube, Vimeo, etc.)
+  @Post(':id/attach-video')
+  async attachExternalVideo(
+    @Param('id') lessonId: string,
+    @Body() dto: { provider: string; url: string; playbackId?: string; durationSeconds?: number },
+  ) {
+    return this.lessonsService.attachExternalVideo(lessonId, dto);
   }
 }
 

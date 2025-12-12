@@ -56,6 +56,10 @@ export class CreateCourseDto {
   priceAmount?: number;
 
   @IsOptional()
+  @IsEnum(CourseStatus)
+  status?: CourseStatus;
+
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(100)
@@ -81,11 +85,7 @@ export class CreateCourseDto {
   requirements?: string[];
 }
 
-export class UpdateCourseDto extends CreateCourseDto {
-  @IsOptional()
-  @IsEnum(CourseStatus)
-  status?: CourseStatus;
-}
+export class UpdateCourseDto extends CreateCourseDto {}
 
 export class CourseQueryDto {
   @IsOptional()

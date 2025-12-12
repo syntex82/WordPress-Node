@@ -63,5 +63,11 @@ export class CoursesController {
   async getCategories() {
     return this.coursesService.getCategories();
   }
+
+  @Get('dashboard/stats')
+  async getDashboardStats(@Request() req) {
+    const isAdmin = req.user.role === 'ADMIN';
+    return this.coursesService.getAdminDashboardStats(isAdmin ? undefined : req.user.id);
+  }
 }
 

@@ -1,23 +1,36 @@
 /**
  * LMS Course Landing Page
+ * Supports free enrollment and paid course purchases
  */
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { lmsApi, Course } from '../../services/api';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { lmsApi, cartApi, Course } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
+import toast from 'react-hot-toast';
+import { FiShoppingCart, FiPlay, FiCheck, FiClock, FiUsers, FiAward, FiBookOpen } from 'react-icons/fi';
 
 export default function CourseLanding() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const autoEnrollTriggered = useRef(false);
 
   useEffect(() => {
     loadCourse();
   }, [slug]);
+
+  // Auto-enroll if redirected from theme with ?enroll=true
+  useEffect(() => {
+    if (course && !loading && searchParams.get('enroll') === 'true' && !autoEnrollTriggered.current && !isEnrolled) {
+      autoEnrollTriggered.current = true;
+      handleEnroll();
+    }
+  }, [course, loading, searchParams, isEnrolled]);
 
   const loadCourse = async () => {
     try {
@@ -46,13 +59,30 @@ export default function CourseLanding() {
     }
     if (!course) return;
 
+    // For paid courses, add to cart
+    if (course.priceType === 'PAID' && course.priceAmount && course.priceAmount > 0) {
+      setEnrolling(true);
+      try {
+        await cartApi.addCourse(course.id);
+        toast.success('Course added to cart!');
+        navigate('/cart');
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Failed to add to cart');
+      } finally {
+        setEnrolling(false);
+      }
+      return;
+    }
+
+    // For free courses, enroll directly
     setEnrolling(true);
     try {
       await lmsApi.enroll(course.id);
       setIsEnrolled(true);
+      toast.success('Successfully enrolled!');
       navigate(`/lms/learn/${course.id}`);
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to enroll');
+      toast.error(error.response?.data?.message || 'Failed to enroll');
     } finally {
       setEnrolling(false);
     }
@@ -90,18 +120,31 @@ export default function CourseLanding() {
               </div>
               {isEnrolled ? (
                 <button onClick={() => navigate(`/lms/learn/${course.id}`)}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
-                  Continue Learning
+                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center gap-2">
+                  <FiPlay /> Continue Learning
+                </button>
+              ) : course.priceType === 'FREE' ? (
+                <button onClick={handleEnroll} disabled={enrolling}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {enrolling ? 'Enrolling...' : <><FiCheck /> Enroll for Free</>}
                 </button>
               ) : (
                 <button onClick={handleEnroll} disabled={enrolling}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50">
-                  {enrolling ? 'Enrolling...' : course.priceType === 'FREE' ? 'Enroll for Free' : 'Enroll Now'}
+                  className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {enrolling ? 'Adding to Cart...' : <><FiShoppingCart /> Add to Cart</>}
                 </button>
               )}
-              {course.certificateEnabled && (
-                <p className="text-sm text-gray-500 mt-4 text-center">🏆 Certificate on completion</p>
-              )}
+
+              <div className="mt-4 space-y-2 text-sm text-gray-600">
+                {course.certificateEnabled && (
+                  <p className="flex items-center gap-2"><FiAward className="text-yellow-500" /> Certificate on completion</p>
+                )}
+                <p className="flex items-center gap-2"><FiBookOpen /> {course._count?.lessons || 0} lessons</p>
+                {course.estimatedHours && (
+                  <p className="flex items-center gap-2"><FiClock /> {course.estimatedHours} hours of content</p>
+                )}
+                <p className="flex items-center gap-2"><FiUsers /> {course._count?.enrollments || 0} students enrolled</p>
+              </div>
             </div>
           </div>
         </div>
