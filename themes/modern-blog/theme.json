@@ -9,6 +9,11 @@
     "archive.hbs",
     "single-post.hbs",
     "single-page.hbs",
+    "shop.hbs",
+    "single-product.hbs",
+    "courses.hbs",
+    "single-course.hbs",
+    "certificate-verify.hbs",
     "header.hbs",
     "footer.hbs"
   ],

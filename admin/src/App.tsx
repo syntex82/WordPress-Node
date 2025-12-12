@@ -34,6 +34,20 @@ import StorefrontProduct from './pages/storefront/ProductPage';
 import StorefrontCart from './pages/storefront/Cart';
 import StorefrontCheckout from './pages/storefront/Checkout';
 import StorefrontOrderSuccess from './pages/storefront/OrderSuccess';
+// LMS admin pages
+import LmsCourses from './pages/lms/Courses';
+import LmsCourseEditor from './pages/lms/CourseEditor';
+import LmsLessons from './pages/lms/Lessons';
+import LmsQuizzes from './pages/lms/Quizzes';
+import LmsQuizQuestions from './pages/lms/QuizQuestions';
+// LMS student pages
+import LmsCourseCatalog from './pages/lms/CourseCatalog';
+import LmsCourseLanding from './pages/lms/CourseLanding';
+import LmsLearningPlayer from './pages/lms/LearningPlayer';
+import LmsStudentDashboard from './pages/lms/StudentDashboard';
+// Profile pages
+import MyProfile from './pages/profile/MyProfile';
+import PublicProfile from './pages/profile/PublicProfile';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -51,6 +65,13 @@ function App() {
           <Route path="/shop/cart" element={<StorefrontCart />} />
           <Route path="/shop/checkout" element={<StorefrontCheckout />} />
           <Route path="/shop/order-success" element={<StorefrontOrderSuccess />} />
+
+          {/* Public LMS Routes */}
+          <Route path="/lms/catalog" element={<LmsCourseCatalog />} />
+          <Route path="/lms/course/:slug" element={<LmsCourseLanding />} />
+
+          {/* Public Profile Routes */}
+          <Route path="/u/:identifier" element={<PublicProfile />} />
 
           {isAuthenticated ? (
             <Route path="/" element={<Layout />}>
@@ -75,6 +96,20 @@ function App() {
               <Route path="shop/orders" element={<ShopOrders />} />
               <Route path="shop/orders/:id" element={<ShopOrderDetail />} />
               <Route path="shop/categories" element={<ShopCategories />} />
+              {/* LMS routes */}
+              <Route path="lms/courses" element={<LmsCourses />} />
+              <Route path="lms/courses/new" element={<LmsCourseEditor />} />
+              <Route path="lms/courses/:id" element={<LmsCourseEditor />} />
+              <Route path="lms/courses/:courseId/lessons" element={<LmsLessons />} />
+              <Route path="lms/courses/:courseId/quizzes" element={<LmsQuizzes />} />
+              <Route path="lms/courses/:courseId/quizzes/:quizId/questions" element={<LmsQuizQuestions />} />
+              {/* LMS student routes (authenticated) */}
+              <Route path="lms/dashboard" element={<LmsStudentDashboard />} />
+              <Route path="lms/learn/:courseId" element={<LmsLearningPlayer />} />
+              <Route path="lms/learn/:courseId/lesson/:lessonId" element={<LmsLearningPlayer />} />
+              {/* Profile routes */}
+              <Route path="profile" element={<MyProfile />} />
+              <Route path="profile/:identifier" element={<PublicProfile />} />
               <Route path="security/*" element={<Security />} />
               <Route path="settings" element={<Settings />} />
             </Route>

@@ -78,7 +78,7 @@ export default function OrderDetail() {
           <h1 className="text-2xl font-bold">Order {order.orderNumber}</h1>
           <p className="text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
         </div>
-        <button onClick={() => navigate('/admin/shop/orders')} className="text-blue-600 hover:underline">
+        <button onClick={() => navigate('/shop/orders')} className="text-blue-600 hover:underline">
           ← Back to Orders
         </button>
       </div>

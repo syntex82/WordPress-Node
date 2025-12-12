@@ -1,0 +1,117 @@
+{{> header}}
+
+<main class="course-landing">
+  <!-- Hero -->
+  <section class="course-hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-info">
+          <div class="course-badges">
+            <span class="level level-{{lowercase course.level}}">{{course.level}}</span>
+            {{#if course.category}}<span class="category">{{course.category}}</span>{{/if}}
+          </div>
+          <h1>{{course.title}}</h1>
+          <p class="lead">{{course.shortDescription}}</p>
+          <div class="course-stats">
+            <span>👤 {{course.instructor.name}}</span>
+            <span>📚 {{course._count.lessons}} lessons</span>
+            {{#if course.estimatedHours}}<span>⏱️ {{course.estimatedHours}} hours</span>{{/if}}
+            <span>👥 {{course._count.enrollments}} students</span>
+          </div>
+        </div>
+        <div class="hero-cta">
+          {{#if course.featuredImage}}
+            <img src="{{course.featuredImage}}" alt="{{course.title}}" class="course-thumbnail">
+          {{/if}}
+          <div class="price-box">
+            <div class="price">
+              {{#if (eq course.priceType "FREE")}}
+                <span class="free">Free</span>
+              {{else}}
+                ${{course.priceAmount}}
+              {{/if}}
+            </div>
+            {{#if isEnrolled}}
+              <a href="/learn/{{course.id}}" class="btn btn-success btn-lg">Continue Learning</a>
+            {{else}}
+              <a href="/courses/{{course.slug}}/enroll" class="btn btn-primary btn-lg">
+                {{#if (eq course.priceType "FREE")}}Enroll for Free{{else}}Enroll Now{{/if}}
+              </a>
+            {{/if}}
+            {{#if course.certificateEnabled}}
+              <p class="certificate-note">🏆 Certificate on completion</p>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <section class="course-content">
+    <div class="container">
+      <div class="content-grid">
+        <div class="main-content">
+          <!-- What you'll learn -->
+          {{#if course.whatYouLearn.length}}
+            <div class="content-block">
+              <h2>What you'll learn</h2>
+              <ul class="learn-list">
+                {{#each course.whatYouLearn}}
+                  <li>✓ {{this}}</li>
+                {{/each}}
+              </ul>
+            </div>
+          {{/if}}
+
+          <!-- Description -->
+          <div class="content-block">
+            <h2>Description</h2>
+            <div class="description">{{{course.description}}}</div>
+          </div>
+
+          <!-- Curriculum -->
+          <div class="content-block">
+            <h2>Curriculum</h2>
+            <ul class="curriculum-list">
+              {{#each course.lessons}}
+                <li class="lesson-item">
+                  <span class="lesson-number">{{add @index 1}}</span>
+                  <span class="lesson-title">{{title}}</span>
+                  {{#if isPreview}}<span class="preview-badge">Preview</span>{{/if}}
+                  <span class="lesson-duration">{{estimatedMinutes}} min</span>
+                </li>
+              {{/each}}
+            </ul>
+          </div>
+        </div>
+
+        <aside class="sidebar">
+          {{#if course.requirements.length}}
+            <div class="sidebar-block">
+              <h3>Requirements</h3>
+              <ul>
+                {{#each course.requirements}}
+                  <li>• {{this}}</li>
+                {{/each}}
+              </ul>
+            </div>
+          {{/if}}
+
+          <div class="sidebar-block">
+            <h3>Instructor</h3>
+            <div class="instructor-info">
+              <div class="instructor-avatar">👤</div>
+              <div>
+                <strong>{{course.instructor.name}}</strong>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+

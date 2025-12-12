@@ -222,6 +222,156 @@ async function main() {
   });
   console.log('✅ Analytics plugin created:', analyticsPlugin.name);
 
+  // Create sample LMS course
+  const course = await prisma.course.upsert({
+    where: { slug: 'introduction-to-web-development' },
+    update: {},
+    create: {
+      title: 'Introduction to Web Development',
+      slug: 'introduction-to-web-development',
+      description: `
+        <p>Learn the fundamentals of web development from scratch. This comprehensive course covers HTML, CSS, and JavaScript basics.</p>
+        <p>By the end of this course, you'll be able to build your own responsive websites and understand core web technologies.</p>
+      `,
+      shortDescription: 'Master the basics of HTML, CSS, and JavaScript to build modern websites.',
+      category: 'Web Development',
+      level: 'BEGINNER',
+      priceType: 'FREE',
+      status: 'PUBLISHED',
+      instructorId: admin.id,
+      estimatedHours: 10,
+      certificateEnabled: true,
+      whatYouLearn: [
+        'Build responsive websites with HTML and CSS',
+        'Understand JavaScript fundamentals',
+        'Work with the DOM and events',
+        'Create interactive web pages',
+      ],
+      requirements: [
+        'A computer with internet access',
+        'No prior programming experience required',
+      ],
+    },
+  });
+  console.log('✅ Sample course created:', course.title);
+
+  // Create lessons for the course
+  const lesson1 = await prisma.lesson.upsert({
+    where: { id: 'lesson-1-intro' },
+    update: {},
+    create: {
+      id: 'lesson-1-intro',
+      title: 'Welcome to Web Development',
+      content: '<p>Welcome to this course! In this lesson, we will introduce you to the world of web development.</p>',
+      type: 'ARTICLE',
+      orderIndex: 1,
+      estimatedMinutes: 10,
+      isPreview: true,
+      isRequired: true,
+      courseId: course.id,
+    },
+  });
+
+  const lesson2 = await prisma.lesson.upsert({
+    where: { id: 'lesson-2-html' },
+    update: {},
+    create: {
+      id: 'lesson-2-html',
+      title: 'HTML Basics',
+      content: '<p>Learn the structure of HTML documents and common HTML elements.</p>',
+      type: 'ARTICLE',
+      orderIndex: 2,
+      estimatedMinutes: 30,
+      isRequired: true,
+      courseId: course.id,
+    },
+  });
+
+  const lesson3 = await prisma.lesson.upsert({
+    where: { id: 'lesson-3-css' },
+    update: {},
+    create: {
+      id: 'lesson-3-css',
+      title: 'CSS Fundamentals',
+      content: '<p>Style your web pages with CSS selectors, properties, and layouts.</p>',
+      type: 'ARTICLE',
+      orderIndex: 3,
+      estimatedMinutes: 45,
+      isRequired: true,
+      courseId: course.id,
+    },
+  });
+  console.log('✅ Sample lessons created');
+
+  // Create a quiz for the course
+  const quiz = await prisma.quiz.upsert({
+    where: { id: 'quiz-1-html-basics' },
+    update: {},
+    create: {
+      id: 'quiz-1-html-basics',
+      title: 'HTML Basics Quiz',
+      description: 'Test your knowledge of HTML fundamentals',
+      passingScorePercent: 70,
+      attemptsAllowed: 3,
+      timeLimitSeconds: 900, // 15 minutes
+      isRequired: true,
+      orderIndex: 1,
+      courseId: course.id,
+    },
+  });
+
+  // Create quiz questions
+  await prisma.question.upsert({
+    where: { id: 'q1-html-tag' },
+    update: {},
+    create: {
+      id: 'q1-html-tag',
+      type: 'MCQ',
+      prompt: 'What does HTML stand for?',
+      optionsJson: [
+        'Hyper Text Markup Language',
+        'High Tech Modern Language',
+        'Hyper Transfer Markup Language',
+        'Home Tool Markup Language',
+      ],
+      correctAnswerJson: 'Hyper Text Markup Language',
+      points: 10,
+      orderIndex: 1,
+      quizId: quiz.id,
+    },
+  });
+
+  await prisma.question.upsert({
+    where: { id: 'q2-html-element' },
+    update: {},
+    create: {
+      id: 'q2-html-element',
+      type: 'MCQ',
+      prompt: 'Which HTML element is used for the largest heading?',
+      optionsJson: ['<h6>', '<heading>', '<h1>', '<head>'],
+      correctAnswerJson: '<h1>',
+      points: 10,
+      orderIndex: 2,
+      quizId: quiz.id,
+    },
+  });
+
+  await prisma.question.upsert({
+    where: { id: 'q3-html-link' },
+    update: {},
+    create: {
+      id: 'q3-html-link',
+      type: 'TRUE_FALSE',
+      prompt: 'The <a> tag is used to create hyperlinks in HTML.',
+      optionsJson: ['True', 'False'],
+      correctAnswerJson: 'True',
+      points: 10,
+      orderIndex: 3,
+      quizId: quiz.id,
+    },
+  });
+  console.log('✅ Sample quiz and questions created');
+
   console.log('🎉 Database seed completed successfully!');
 }
 

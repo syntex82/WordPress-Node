@@ -1,0 +1,54 @@
+{{> header}}
+
+<main class="certificate-verify-page">
+  <div class="container">
+    <div class="verify-card">
+      {{#if valid}}
+        <div class="verify-success">
+          <div class="verify-icon">✓</div>
+          <h1>Certificate Verified</h1>
+          <p class="subtitle">This certificate is authentic and valid</p>
+          
+          <div class="certificate-details">
+            <div class="detail-row">
+              <span class="label">Certificate Number</span>
+              <span class="value">{{certificate.certificateNumber}}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Awarded To</span>
+              <span class="value">{{certificate.studentName}}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Course</span>
+              <span class="value">{{certificate.courseName}}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Issue Date</span>
+              <span class="value">{{formatDate certificate.issuedAt}}</span>
+            </div>
+          </div>
+        </div>
+      {{else}}
+        <div class="verify-failed">
+          <div class="verify-icon">✗</div>
+          <h1>Verification Failed</h1>
+          <p class="subtitle">{{message}}</p>
+          
+          {{#if revokedAt}}
+            <div class="revoked-info">
+              <p><strong>Revoked on:</strong> {{formatDate revokedAt}}</p>
+              {{#if revokedReason}}<p><strong>Reason:</strong> {{revokedReason}}</p>{{/if}}
+            </div>
+          {{/if}}
+        </div>
+      {{/if}}
+      
+      <div class="verify-footer">
+        <a href="/courses" class="btn btn-secondary">Browse Courses</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+{{> footer}}
+

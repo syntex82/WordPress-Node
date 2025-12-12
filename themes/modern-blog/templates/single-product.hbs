@@ -1,0 +1,130 @@
+{{> header}}
+
+<article class="product-single">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="/">Home</a>
+      <span class="separator">/</span>
+      <a href="/shop">Shop</a>
+      <span class="separator">/</span>
+      <span class="current">{{product.name}}</span>
+    </nav>
+
+    <div class="product-layout">
+      <!-- Product Images -->
+      <div class="product-gallery">
+        {{#if product.images.[0]}}
+        <div class="main-image">
+          <img src="{{product.images.[0]}}" alt="{{product.name}}" id="mainImage">
+        </div>
+        {{#if product.images.length}}
+        <div class="thumbnail-grid">
+          {{#each product.images}}
+          <button class="thumbnail" onclick="document.getElementById('mainImage').src='{{this}}'">
+            <img src="{{this}}" alt="Product image">
+          </button>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{else}}
+        <div class="main-image placeholder">
+          <svg width="120" height="120" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+        {{/if}}
+      </div>
+
+      <!-- Product Details -->
+      <div class="product-details">
+        <h1 class="product-title">{{product.name}}</h1>
+        
+        {{#if product.category}}
+        <div class="product-category">
+          <a href="/shop?category={{product.category.slug}}">{{product.category.name}}</a>
+        </div>
+        {{/if}}
+
+        <div class="product-pricing">
+          {{#if product.salePrice}}
+          <span class="price-original">${{product.price}}</span>
+          <span class="price-sale">${{product.salePrice}}</span>
+          <span class="discount-badge">
+            Save ${{subtract product.price product.salePrice}}
+          </span>
+          {{else}}
+          <span class="price-current">${{product.price}}</span>
+          {{/if}}
+        </div>
+
+        {{#if product.shortDescription}}
+        <div class="product-short-desc">
+          {{{product.shortDescription}}}
+        </div>
+        {{/if}}
+
+        <div class="product-stock">
+          {{#if product.trackInventory}}
+            {{#if product.stock}}
+            <span class="in-stock">✓ In Stock ({{product.stock}} available)</span>
+            {{else}}
+            <span class="out-of-stock">✗ Out of Stock</span>
+            {{/if}}
+          {{else}}
+          <span class="in-stock">✓ In Stock</span>
+          {{/if}}
+        </div>
+
+        <div class="product-actions">
+          <div class="quantity-selector">
+            <button type="button" class="qty-btn" onclick="decreaseQty()">−</button>
+            <input type="number" id="quantity" value="1" min="1" max="{{#if product.stock}}{{product.stock}}{{else}}99{{/if}}">
+            <button type="button" class="qty-btn" onclick="increaseQty()">+</button>
+          </div>
+          <button class="btn btn-primary btn-lg add-to-cart" onclick="addToCart('{{product.id}}')">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Add to Cart
+          </button>
+        </div>
+
+        {{#if product.sku}}
+        <div class="product-meta">
+          <span class="meta-label">SKU:</span>
+          <span class="meta-value">{{product.sku}}</span>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+
+    {{#if product.description}}
+    <div class="product-description">
+      <h2>Description</h2>
+      <div class="description-content">
+        {{{product.description}}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+</article>
+
+<script>
+function decreaseQty() {
+  const input = document.getElementById('quantity');
+  if (parseInt(input.value) > 1) input.value = parseInt(input.value) - 1;
+}
+function increaseQty() {
+  const input = document.getElementById('quantity');
+  const max = parseInt(input.max) || 99;
+  if (parseInt(input.value) < max) input.value = parseInt(input.value) + 1;
+}
+function addToCart(productId) {
+  const qty = document.getElementById('quantity').value;
+  // Redirect to React cart with product info
+  window.location.href = '/admin/shop/cart?add=' + productId + '&qty=' + qty;
+}
+</script>
+
+{{> footer}}
+

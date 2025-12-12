@@ -1,0 +1,113 @@
+{{> header}}
+
+<!-- Shop Header -->
+<section class="shop-header">
+  <div class="container">
+    <h1 class="page-title">Shop</h1>
+    <p class="page-subtitle">Discover our collection of products</p>
+  </div>
+</section>
+
+<!-- Shop Content -->
+<section class="shop-content">
+  <div class="container">
+    <div class="shop-layout">
+      <!-- Sidebar with Categories -->
+      <aside class="shop-sidebar">
+        <div class="sidebar-section">
+          <h3 class="sidebar-title">Categories</h3>
+          <ul class="category-list">
+            <li>
+              <a href="/shop" class="category-link{{#unless activeCategory}} active{{/unless}}">
+                All Products
+              </a>
+            </li>
+            {{#each categories}}
+            <li>
+              <a href="/shop?category={{this.slug}}" class="category-link{{#if (eq this.slug ../activeCategory)}} active{{/if}}">
+                {{this.name}}
+              </a>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Products Grid -->
+      <main class="shop-main">
+        {{#if products.length}}
+        <div class="products-grid">
+          {{#each products}}
+          <article class="product-card">
+            <div class="product-image">
+              {{#if images.[0]}}
+              <a href="/shop/product/{{slug}}">
+                <img src="{{images.[0]}}" alt="{{name}}" loading="lazy">
+              </a>
+              {{else}}
+              <a href="/shop/product/{{slug}}" class="product-placeholder">
+                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+              </a>
+              {{/if}}
+              {{#if salePrice}}
+              <span class="product-badge sale">Sale</span>
+              {{/if}}
+            </div>
+            
+            <div class="product-info">
+              <h3 class="product-name">
+                <a href="/shop/product/{{slug}}">{{name}}</a>
+              </h3>
+              
+              <div class="product-price">
+                {{#if salePrice}}
+                <span class="price-original">${{price}}</span>
+                <span class="price-sale">${{salePrice}}</span>
+                {{else}}
+                <span class="price-current">${{price}}</span>
+                {{/if}}
+              </div>
+              
+              <a href="/shop/product/{{slug}}" class="btn btn-sm btn-primary">View Product</a>
+            </div>
+          </article>
+          {{/each}}
+        </div>
+
+        <!-- Pagination -->
+        {{#if pagination}}
+        <nav class="pagination">
+          {{#if pagination.hasPrev}}
+          <a href="/shop?page={{pagination.prevPage}}{{#if activeCategory}}&category={{activeCategory}}{{/if}}" class="btn btn-outline">
+            ← Previous
+          </a>
+          {{/if}}
+          
+          <span class="pagination-info">
+            Page {{pagination.page}} of {{pagination.totalPages}}
+          </span>
+          
+          {{#if pagination.hasNext}}
+          <a href="/shop?page={{pagination.nextPage}}{{#if activeCategory}}&category={{activeCategory}}{{/if}}" class="btn btn-outline">
+            Next →
+          </a>
+          {{/if}}
+        </nav>
+        {{/if}}
+        {{else}}
+        <div class="empty-state">
+          <div class="empty-icon">🛍️</div>
+          <h3>No Products Found</h3>
+          <p>We couldn't find any products matching your criteria.</p>
+          <a href="/shop" class="btn btn-primary">View All Products</a>
+        </div>
+        {{/if}}
+      </main>
+    </div>
+  </div>
+</section>
+
+{{> footer}}
+

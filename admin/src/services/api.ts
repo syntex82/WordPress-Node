@@ -480,3 +480,283 @@ export const checkoutApi = {
     api.post<{ order: Order; clientSecret: string; paymentIntentId: string }>('/shop/checkout/create-order', data),
   getOrder: (id: string) => api.get<Order>(`/shop/orders/${id}`),
 };
+
+// ============================================
+// LMS API
+// ============================================
+
+export interface Course {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  shortDescription?: string;
+  category?: string;
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ALL_LEVELS';
+  featuredImage?: string;
+  instructorId: string;
+  instructor?: { id: string; name: string; avatar?: string };
+  priceType: 'FREE' | 'PAID';
+  priceAmount?: number;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  passingScorePercent: number;
+  certificateEnabled: boolean;
+  estimatedHours?: number;
+  whatYouLearn?: string[];
+  requirements?: string[];
+  createdAt: string;
+  updatedAt: string;
+  _count?: { lessons: number; enrollments: number; quizzes: number };
+  lessons?: Lesson[];
+}
+
+export interface Lesson {
+  id: string;
+  courseId: string;
+  title: string;
+  content?: string;
+  orderIndex: number;
+  type: 'VIDEO' | 'ARTICLE' | 'QUIZ' | 'ASSIGNMENT';
+  videoAssetId?: string;
+  videoAsset?: VideoAsset;
+  estimatedMinutes?: number;
+  isPreview: boolean;
+  isRequired: boolean;
+}
+
+export interface VideoAsset {
+  id: string;
+  provider: 'UPLOAD' | 'HLS' | 'YOUTUBE' | 'VIMEO';
+  url?: string;
+  playbackId?: string;
+  filePath?: string;
+  durationSeconds?: number;
+  isProtected: boolean;
+  thumbnailUrl?: string;
+}
+
+export interface Quiz {
+  id: string;
+  courseId: string;
+  lessonId?: string;
+  title: string;
+  description?: string;
+  timeLimitSeconds?: number;
+  attemptsAllowed?: number;
+  shuffleQuestions: boolean;
+  passingScorePercent?: number;
+  isRequired: boolean;
+  orderIndex: number;
+  questions?: Question[];
+  _count?: { questions: number; attempts: number };
+}
+
+export interface Question {
+  id: string;
+  quizId: string;
+  type: 'MCQ' | 'MCQ_MULTI' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'ESSAY';
+  prompt: string;
+  optionsJson?: string[];
+  correctAnswerJson: any;
+  explanation?: string;
+  points: number;
+  orderIndex: number;
+}
+
+export interface Enrollment {
+  id: string;
+  courseId: string;
+  userId: string;
+  status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
+  enrolledAt: string;
+  completedAt?: string;
+  course?: Course;
+  user?: { id: string; name: string; email: string; avatar?: string };
+  progress?: { completedLessons: number; totalLessons: number; percent: number };
+}
+
+export interface Certificate {
+  id: string;
+  certificateNumber: string;
+  courseId: string;
+  userId: string;
+  issuedAt: string;
+  pdfPath?: string;
+  pdfUrl?: string;
+  verificationHash: string;
+  course?: { title: string };
+  user?: { name: string };
+}
+
+// LMS Admin API
+export const lmsAdminApi = {
+  // Courses
+  getCourses: (params?: { page?: number; limit?: number; status?: string; category?: string }) =>
+    api.get<{ courses: Course[]; pagination: { page: number; limit: number; total: number; pages: number } }>('/lms/admin/courses', { params }),
+  getCourse: (id: string) => api.get<Course>(`/lms/admin/courses/${id}`),
+  createCourse: (data: Partial<Course>) => api.post<Course>('/lms/admin/courses', data),
+  updateCourse: (id: string, data: Partial<Course>) => api.put<Course>(`/lms/admin/courses/${id}`, data),
+  deleteCourse: (id: string) => api.delete(`/lms/admin/courses/${id}`),
+  getCategories: () => api.get<string[]>('/lms/admin/courses/categories/list'),
+
+  // Lessons
+  getLessons: (courseId: string) => api.get<Lesson[]>(`/lms/admin/courses/${courseId}/lessons`),
+  getLesson: (courseId: string, id: string) => api.get<Lesson>(`/lms/admin/courses/${courseId}/lessons/${id}`),
+  createLesson: (courseId: string, data: Partial<Lesson>) => api.post<Lesson>(`/lms/admin/courses/${courseId}/lessons`, data),
+  updateLesson: (courseId: string, id: string, data: Partial<Lesson>) => api.put<Lesson>(`/lms/admin/courses/${courseId}/lessons/${id}`, data),
+  deleteLesson: (courseId: string, id: string) => api.delete(`/lms/admin/courses/${courseId}/lessons/${id}`),
+  reorderLessons: (courseId: string, lessonIds: string[]) => api.put(`/lms/admin/courses/${courseId}/lessons/reorder`, { lessonIds }),
+
+  // Quizzes
+  getQuizzes: (courseId: string) => api.get<Quiz[]>(`/lms/admin/courses/${courseId}/quizzes`),
+  getQuiz: (courseId: string, id: string) => api.get<Quiz>(`/lms/admin/courses/${courseId}/quizzes/${id}`),
+  createQuiz: (courseId: string, data: Partial<Quiz>) => api.post<Quiz>(`/lms/admin/courses/${courseId}/quizzes`, data),
+  updateQuiz: (courseId: string, id: string, data: Partial<Quiz>) => api.put<Quiz>(`/lms/admin/courses/${courseId}/quizzes/${id}`, data),
+  deleteQuiz: (courseId: string, id: string) => api.delete(`/lms/admin/courses/${courseId}/quizzes/${id}`),
+
+  // Questions
+  addQuestion: (courseId: string, quizId: string, data: Partial<Question>) => api.post<Question>(`/lms/admin/courses/${courseId}/quizzes/${quizId}/questions`, data),
+  updateQuestion: (courseId: string, questionId: string, data: Partial<Question>) => api.put<Question>(`/lms/admin/courses/${courseId}/quizzes/questions/${questionId}`, data),
+  deleteQuestion: (courseId: string, questionId: string) => api.delete(`/lms/admin/courses/${courseId}/quizzes/questions/${questionId}`),
+
+  // Enrollments
+  getEnrollments: (courseId: string) => api.get<Enrollment[]>(`/lms/admin/courses/${courseId}/enrollments`),
+  getEnrollmentStats: (courseId: string) => api.get<{ total: number; active: number; completed: number }>(`/lms/admin/courses/${courseId}/enrollments/stats`),
+  updateEnrollment: (courseId: string, userId: string, data: { status: string }) => api.put(`/lms/admin/courses/${courseId}/enrollments/${userId}`, data),
+
+  // Certificates
+  revokeCertificate: (id: string, reason: string) => api.put(`/lms/admin/certificates/${id}/revoke`, { reason }),
+};
+
+// LMS Student API
+export const lmsApi = {
+  // Public courses
+  getCourses: (params?: { page?: number; limit?: number; category?: string; level?: string; priceType?: string }) =>
+    api.get<{ courses: Course[]; pagination: { page: number; limit: number; total: number; pages: number } }>('/lms/courses', { params }),
+  getCourse: (slug: string) => api.get<Course>(`/lms/courses/${slug}`),
+  getCategories: () => api.get<string[]>('/lms/courses/categories'),
+
+  // Enrollment
+  enroll: (courseId: string, paymentId?: string) => api.post<Enrollment>(`/lms/courses/${courseId}/enroll`, { paymentId }),
+  getMyEnrollments: () => api.get<Enrollment[]>('/lms/my-enrollments'),
+  getEnrollment: (courseId: string) => api.get<Enrollment>(`/lms/courses/${courseId}/enrollment`),
+  cancelEnrollment: (courseId: string) => api.delete(`/lms/courses/${courseId}/enrollment`),
+
+  // Learning
+  getCourseForLearning: (courseId: string) => api.get(`/lms/learn/${courseId}`),
+  getLesson: (courseId: string, lessonId: string) => api.get(`/lms/learn/${courseId}/lessons/${lessonId}`),
+  updateProgress: (courseId: string, lessonId: string, data: { videoWatchedSeconds?: number; lessonCompleted?: boolean }) =>
+    api.put(`/lms/learn/${courseId}/lessons/${lessonId}/progress`, data),
+  markLessonComplete: (courseId: string, lessonId: string) => api.post(`/lms/learn/${courseId}/lessons/${lessonId}/complete`),
+
+  // Quizzes
+  getQuiz: (courseId: string, quizId: string) => api.get(`/lms/learn/${courseId}/quizzes/${quizId}`),
+  startQuiz: (courseId: string, quizId: string) => api.post(`/lms/learn/${courseId}/quizzes/${quizId}/start`),
+  submitQuiz: (courseId: string, quizId: string, attemptId: string, answers: { questionId: string; answer: any }[]) =>
+    api.post(`/lms/learn/${courseId}/quizzes/${quizId}/attempts/${attemptId}/submit`, { answers }),
+
+  // Dashboard & Certificates
+  getDashboard: () => api.get('/lms/dashboard'),
+  getMyCertificates: () => api.get<Certificate[]>('/lms/my-certificates'),
+  getCertificate: (id: string) => api.get<Certificate>(`/lms/certificates/${id}`),
+  requestCertificate: (courseId: string) => api.post<Certificate>(`/lms/courses/${courseId}/certificate`),
+  verifyCertificate: (hash: string) => api.get(`/lms/certificates/verify/${hash}`),
+};
+
+// Profile types
+export interface UserProfile {
+  id: string;
+  username?: string;
+  name: string;
+  email?: string;
+  avatar?: string;
+  coverImage?: string;
+  bio?: string;
+  about?: string;
+  headline?: string;
+  location?: string;
+  website?: string;
+  company?: string;
+  jobTitle?: string;
+  skills: string[];
+  interests: string[];
+  isPublic: boolean;
+  socialLinks?: {
+    twitter?: string;
+    linkedin?: string;
+    github?: string;
+    youtube?: string;
+    instagram?: string;
+    facebook?: string;
+  };
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  coursesCount: number;
+  createdAt: string;
+  role: string;
+  twoFactorEnabled?: boolean;
+  posts?: { id: string; title: string; slug: string; excerpt?: string; featuredImage?: string; createdAt: string }[];
+  instructedCourses?: { id: string; title: string; slug: string; shortDescription?: string; thumbnail?: string }[];
+  certificates?: { id: string; issuedAt: string; course: { title: string; slug: string } }[];
+  badges?: { id: string; earnedAt: string; badge: Badge }[];
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  category?: string;
+}
+
+export interface ProfileStats {
+  postsPublished: number;
+  coursesCreated: number;
+  coursesEnrolled: number;
+  coursesCompleted: number;
+  certificatesEarned: number;
+}
+
+export interface ActivityItem {
+  type: 'post_published' | 'course_enrolled' | 'course_completed' | 'certificate_earned';
+  title: string;
+  link: string;
+  date: string;
+}
+
+// Profile API
+export const profileApi = {
+  // My profile
+  getMyProfile: () => api.get<UserProfile>('/profiles/me'),
+  updateMyProfile: (data: Partial<UserProfile>) => api.put<UserProfile>('/profiles/me', data),
+  getMyStats: () => api.get<ProfileStats>('/profiles/me/stats'),
+  getMyActivity: (page?: number, limit?: number) =>
+    api.get<{ activities: ActivityItem[] }>('/profiles/me/activity', { params: { page, limit } }),
+  getMyFollowers: (page?: number, limit?: number) =>
+    api.get('/profiles/me/followers', { params: { page, limit } }),
+  getMyFollowing: (page?: number, limit?: number) =>
+    api.get('/profiles/me/following', { params: { page, limit } }),
+
+  // Public profiles
+  getProfile: (identifier: string) => api.get<UserProfile>(`/profiles/${identifier}`),
+  getProfileStats: (identifier: string) => api.get<ProfileStats>(`/profiles/${identifier}/stats`),
+  getProfileActivity: (identifier: string, page?: number, limit?: number) =>
+    api.get<{ activities: ActivityItem[] }>(`/profiles/${identifier}/activity`, { params: { page, limit } }),
+  getProfileFollowers: (identifier: string, page?: number, limit?: number) =>
+    api.get(`/profiles/${identifier}/followers`, { params: { page, limit } }),
+  getProfileFollowing: (identifier: string, page?: number, limit?: number) =>
+    api.get(`/profiles/${identifier}/following`, { params: { page, limit } }),
+
+  // Follow actions
+  getFollowingStatus: (identifier: string) =>
+    api.get<{ isFollowing: boolean }>(`/profiles/${identifier}/following-status`),
+  followUser: (identifier: string) => api.post(`/profiles/${identifier}/follow`),
+  unfollowUser: (identifier: string) => api.delete(`/profiles/${identifier}/follow`),
+
+  // Search
+  searchUsers: (query: string, page?: number, limit?: number) =>
+    api.get('/profiles/search', { params: { q: query, page, limit } }),
+};

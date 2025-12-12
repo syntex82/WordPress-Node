@@ -56,6 +56,34 @@ export class ThemeRendererService {
     // Conditional helpers
     Handlebars.registerHelper('eq', (a, b) => a === b);
     Handlebars.registerHelper('ne', (a, b) => a !== b);
+
+    // Math helpers
+    Handlebars.registerHelper('subtract', (a, b) => {
+      const numA = parseFloat(a) || 0;
+      const numB = parseFloat(b) || 0;
+      return (numA - numB).toFixed(2);
+    });
+
+    Handlebars.registerHelper('add', (a, b) => {
+      const numA = parseInt(a) || 0;
+      const numB = parseInt(b) || 0;
+      return numA + numB;
+    });
+
+    // Comparison helpers
+    Handlebars.registerHelper('gt', (a, b) => a > b);
+    Handlebars.registerHelper('lt', (a, b) => a < b);
+    Handlebars.registerHelper('gte', (a, b) => a >= b);
+    Handlebars.registerHelper('lte', (a, b) => a <= b);
+
+    // String helpers
+    Handlebars.registerHelper('lowercase', (str) => {
+      return str ? String(str).toLowerCase() : '';
+    });
+
+    Handlebars.registerHelper('uppercase', (str) => {
+      return str ? String(str).toUpperCase() : '';
+    });
   }
 
   /**
@@ -134,8 +162,13 @@ export class ThemeRendererService {
   /**
    * Render home page
    */
-  async renderHome(posts: any[]) {
-    return this.render('home', { posts });
+  async renderHome(posts: any[], shopData?: { featuredProducts?: any[]; categories?: any[]; featuredCourses?: any[] }) {
+    return this.render('home', {
+      posts,
+      featuredProducts: shopData?.featuredProducts || [],
+      categories: shopData?.categories || [],
+      featuredCourses: shopData?.featuredCourses || [],
+    });
   }
 
   /**
@@ -158,6 +191,67 @@ export class ThemeRendererService {
    */
   async renderArchive(posts: any[], pagination: any) {
     return this.render('archive', { posts, pagination });
+  }
+
+  /**
+   * Render shop page
+   */
+  async renderShop(products: any[], categories: any[], pagination: any, activeCategory?: string | null) {
+    return this.render('shop', {
+      products,
+      categories,
+      pagination,
+      activeCategory,
+    });
+  }
+
+  /**
+   * Render single product page
+   */
+  async renderProduct(product: any) {
+    return this.render('single-product', { product });
+  }
+
+  /**
+   * Render courses catalog page
+   */
+  async renderCourses(courses: any[], categories: string[], pagination: any, filters: { category?: string; level?: string; priceType?: string }) {
+    return this.render('courses', {
+      courses,
+      categories,
+      pagination,
+      currentCategory: filters.category,
+      currentLevel: filters.level,
+      currentPriceType: filters.priceType,
+    });
+  }
+
+  /**
+   * Render single course landing page
+   */
+  async renderCourse(course: any, isEnrolled = false) {
+    return this.render('single-course', { course, isEnrolled });
+  }
+
+  /**
+   * Render certificate verification page
+   */
+  async renderCertificateVerify(result: any) {
+    return this.render('certificate-verify', result);
+  }
+
+  /**
+   * Render user profile page
+   */
+  async renderProfile(profile: any, stats: any) {
+    return this.render('profile', {
+      profile,
+      stats,
+      posts: profile.posts || [],
+      courses: profile.instructedCourses || [],
+      badges: profile.badges || [],
+      certificates: profile.certificates || [],
+    });
   }
 }
 

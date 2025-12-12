@@ -1,0 +1,96 @@
+{{> header}}
+
+<main class="courses-page">
+  <!-- Hero Section -->
+  <section class="courses-hero">
+    <div class="container">
+      <h1>Course Catalog</h1>
+      <p>Expand your skills with our expert-led courses</p>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="courses-filters">
+    <div class="container">
+      <form class="filter-form" method="GET" action="/courses">
+        <select name="category">
+          <option value="">All Categories</option>
+          {{#each categories}}
+            <option value="{{this}}" {{#if (eq this ../currentCategory)}}selected{{/if}}>{{this}}</option>
+          {{/each}}
+        </select>
+        <select name="level">
+          <option value="">All Levels</option>
+          <option value="BEGINNER" {{#if (eq currentLevel "BEGINNER")}}selected{{/if}}>Beginner</option>
+          <option value="INTERMEDIATE" {{#if (eq currentLevel "INTERMEDIATE")}}selected{{/if}}>Intermediate</option>
+          <option value="ADVANCED" {{#if (eq currentLevel "ADVANCED")}}selected{{/if}}>Advanced</option>
+        </select>
+        <select name="priceType">
+          <option value="">All Prices</option>
+          <option value="FREE" {{#if (eq currentPriceType "FREE")}}selected{{/if}}>Free</option>
+          <option value="PAID" {{#if (eq currentPriceType "PAID")}}selected{{/if}}>Paid</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Course Grid -->
+  <section class="courses-grid">
+    <div class="container">
+      {{#if courses.length}}
+        <div class="grid">
+          {{#each courses}}
+            <article class="course-card">
+              <a href="/courses/{{slug}}">
+                {{#if featuredImage}}
+                  <img src="{{featuredImage}}" alt="{{title}}" class="course-image">
+                {{else}}
+                  <div class="course-image-placeholder">📚</div>
+                {{/if}}
+                <div class="course-content">
+                  <div class="course-meta">
+                    <span class="level level-{{lowercase level}}">{{level}}</span>
+                    {{#if category}}<span class="category">{{category}}</span>{{/if}}
+                  </div>
+                  <h3>{{title}}</h3>
+                  <p>{{shortDescription}}</p>
+                  <div class="course-footer">
+                    <span class="lessons">{{_count.lessons}} lessons</span>
+                    <span class="price">
+                      {{#if (eq priceType "FREE")}}
+                        <span class="free">Free</span>
+                      {{else}}
+                        ${{priceAmount}}
+                      {{/if}}
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </article>
+          {{/each}}
+        </div>
+
+        <!-- Pagination -->
+        {{#if (gt pagination.pages 1)}}
+          <nav class="pagination">
+            {{#if (gt pagination.page 1)}}
+              <a href="?page={{subtract pagination.page 1}}" class="prev">← Previous</a>
+            {{/if}}
+            <span class="page-info">Page {{pagination.page}} of {{pagination.pages}}</span>
+            {{#if (lt pagination.page pagination.pages)}}
+              <a href="?page={{add pagination.page 1}}" class="next">Next →</a>
+            {{/if}}
+          </nav>
+        {{/if}}
+      {{else}}
+        <div class="no-courses">
+          <p>No courses found. Check back soon!</p>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+</main>
+
+{{> footer}}
+

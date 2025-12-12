@@ -20,6 +20,7 @@ import { SecurityModule } from './modules/security/security.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { MenusModule } from './modules/menus/menus.module';
 import { ShopModule } from './modules/shop/shop.module';
+import { LmsModule } from './modules/lms/lms.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ShopModule } from './modules/shop/shop.module';
     GroupsModule,
     MenusModule,
     ShopModule,
+    LmsModule,
   ],
 })
 export class AppModule {}

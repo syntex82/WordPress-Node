@@ -179,7 +179,7 @@ export default function Orders() {
                   </td>
                   <td className="px-4 py-3 text-sm">{new Date(order.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
-                    <Link to={`/admin/shop/orders/${order.id}`} className="text-blue-600 hover:underline text-sm">
+                    <Link to={`/shop/orders/${order.id}`} className="text-blue-600 hover:underline text-sm">
                       View
                     </Link>
                   </td>
