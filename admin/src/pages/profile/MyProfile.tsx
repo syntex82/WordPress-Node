@@ -8,7 +8,7 @@ import { profileApi, mediaApi, UserProfile, ProfileStats, ActivityItem } from '.
 import {
   FiUser, FiEdit2, FiMapPin, FiBriefcase, FiCalendar, FiUsers, FiBook, FiAward,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiGlobe, FiCamera,
-  FiCheck, FiX, FiPlus, FiActivity, FiUpload
+  FiCheck, FiX, FiPlus, FiActivity
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -173,12 +173,16 @@ export default function MyProfile() {
         {profile.coverImage && (
           <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover" />
         )}
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
         <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
         <button
-          onClick={() => coverInputRef.current?.click()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            coverInputRef.current?.click();
+          }}
           disabled={uploadingCover}
-          className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-lg flex items-center gap-2 transition disabled:opacity-50"
+          className="absolute bottom-4 right-4 z-10 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-lg flex items-center gap-2 transition disabled:opacity-50 cursor-pointer shadow-lg"
         >
           {uploadingCover ? (
             <><div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div> Uploading...</>
@@ -192,7 +196,7 @@ export default function MyProfile() {
       <div className="relative px-6 pb-6">
         <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-20 md:-mt-24">
           {/* Avatar */}
-          <div className="relative">
+          <div className="relative group">
             <div className="w-36 h-36 md:w-44 md:h-44 rounded-2xl border-4 border-white bg-white shadow-xl overflow-hidden">
               {profile.avatar ? (
                 <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
@@ -201,12 +205,33 @@ export default function MyProfile() {
                   <span className="text-5xl font-bold text-white">{profile.name.charAt(0)}</span>
                 </div>
               )}
+              {/* Hover overlay for upload */}
+              <div
+                onClick={() => avatarInputRef.current?.click()}
+                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity"
+              >
+                {uploadingAvatar ? (
+                  <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <div className="text-center text-white">
+                    <FiCamera className="w-8 h-8 mx-auto mb-1" />
+                    <span className="text-sm font-medium">Change Photo</span>
+                  </div>
+                )}
+              </div>
             </div>
-            {editing && (
-              <button className="absolute bottom-2 right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-full shadow-lg transition">
+            <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute bottom-2 right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-full shadow-lg transition disabled:opacity-50"
+            >
+              {uploadingAvatar ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
                 <FiCamera className="w-4 h-4" />
-              </button>
-            )}
+              )}
+            </button>
           </div>
 
           {/* Name & Actions */}
