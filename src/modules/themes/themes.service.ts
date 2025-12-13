@@ -1097,6 +1097,38 @@ p { margin-bottom: var(--element-spacing); }
     const wysiwygContent = this.generateMediaBlocksHtml(config.mediaBlocks, slug);
     const hasSidebar = layout.sidebarPosition !== 'none';
 
+    // Admin bar styles and HTML
+    const adminBarStyles = `
+  <style id="admin-bar-styles">
+    .admin-bar { display: none; position: fixed; top: 0; left: 0; right: 0; height: 32px; background: #1e1e1e; color: #fff; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; z-index: 99999; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .admin-bar.visible { display: flex; }
+    .admin-bar-container { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; padding: 0 16px; height: 100%; }
+    .admin-bar-left, .admin-bar-right { display: flex; align-items: center; gap: 12px; }
+    .admin-bar a { color: #a0aec0; text-decoration: none; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
+    .admin-bar a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .admin-bar .customize-btn { background: #3b82f6; color: #fff; font-weight: 500; }
+    .admin-bar .customize-btn:hover { background: #2563eb; }
+    .admin-bar .user-info { color: #718096; }
+    body.has-admin-bar { padding-top: 32px; }
+    body.has-admin-bar .site-header { top: 32px; }
+  </style>`;
+
+    const adminBarHtml = `
+  <div id="admin-bar" class="admin-bar">
+    <div class="admin-bar-container">
+      <div class="admin-bar-left">
+        <a id="admin-link-dashboard" href="#">← Dashboard</a>
+        <a id="admin-link-posts" href="#">Posts</a>
+        <a id="admin-link-pages" href="#">Pages</a>
+        <a id="admin-link-customize" href="#" class="customize-btn">✎ Customize</a>
+      </div>
+      <div class="admin-bar-right">
+        <span class="user-info" id="admin-bar-user"></span>
+        <a id="admin-link-settings" href="#">Settings</a>
+      </div>
+    </div>
+  </div>`;
+
     // Common layout wrapper
     const layoutStart = `<!DOCTYPE html>
 <html lang="en">
@@ -1105,8 +1137,10 @@ p { margin-bottom: var(--element-spacing); }
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{#if title}}{{title}} - {{/if}}{{site.name}}</title>
   <link rel="stylesheet" href="/themes/${slug}/assets/css/theme.css">
+  ${adminBarStyles}
 </head>
 <body>
+  ${adminBarHtml}
   <header class="site-header ${headerClass}">
     <div class="container">
       <h1 class="site-title"><a href="/">{{site.name}}</a></h1>
@@ -1158,6 +1192,33 @@ p { margin-bottom: var(--element-spacing); }
           </div>
         </aside>` : '';
 
+    // Admin bar script
+    const adminBarScript = `
+  <script>
+    (function() {
+      try {
+        var authData = localStorage.getItem('auth-storage');
+        if (!authData) return;
+        var parsed = JSON.parse(authData);
+        var user = parsed && parsed.state && parsed.state.user;
+        if (user && (user.role === 'ADMIN' || user.role === 'EDITOR')) {
+          var adminBar = document.getElementById('admin-bar');
+          var userInfo = document.getElementById('admin-bar-user');
+          if (adminBar) { adminBar.classList.add('visible'); document.body.classList.add('has-admin-bar'); }
+          if (userInfo) { userInfo.textContent = 'Logged in as ' + user.name + ' (' + user.role + ')'; }
+          // Set admin panel URLs dynamically
+          var adminBase = window.location.port === '3000' ? 'http://localhost:5173' : '';
+          var setLink = function(id, path) { var el = document.getElementById(id); if (el) el.href = adminBase + path; };
+          setLink('admin-link-dashboard', '/admin');
+          setLink('admin-link-posts', '/admin/posts');
+          setLink('admin-link-pages', '/admin/pages');
+          setLink('admin-link-customize', '/admin/customize');
+          setLink('admin-link-settings', '/admin/settings');
+        }
+      } catch (e) {}
+    })();
+  </script>`;
+
     const layoutEnd = `
         </div>${sidebarContent}
       </div>
@@ -1176,6 +1237,7 @@ p { margin-bottom: var(--element-spacing); }
       <p>&copy; {{year}} {{site.name}}. All rights reserved.</p>
     </div>
   </footer>
+  ${adminBarScript}
 </body>
 </html>`;
 

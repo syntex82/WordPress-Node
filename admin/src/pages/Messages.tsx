@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
-import { messagesApi, usersApi } from '../services/api';
+import { messagesApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
 interface User {
@@ -172,7 +172,8 @@ export default function Messages() {
   const searchForUsers = async (query: string) => {
     if (!query.trim()) { setUserResults([]); return; }
     try {
-      const res = await usersApi.getAll({ search: query, limit: 10 });
+      // Use profileApi.searchUsers which is accessible to all authenticated users
+      const res = await profileApi.searchUsers(query, 1, 10);
       setUserResults((res.data.users || []).filter((u: User) => u.id !== user?.id));
     } catch { setUserResults([]); }
   };

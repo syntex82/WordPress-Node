@@ -5,16 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{#if post}}{{post.title}} - {{/if}}{{site.name}}</title>
   <meta name="description" content="{{#if post}}{{post.excerpt}}{{else}}{{site.description}}{{/if}}">
-  
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+
   <!-- Theme Styles -->
   <link rel="stylesheet" href="/themes/modern-blog/assets/css/style.css">
+
+  <!-- Admin Bar Styles (hidden by default, shown via JS for admins/editors) -->
+  <style id="admin-bar-styles">
+    .admin-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 32px;
+      background: #1e1e1e;
+      color: #fff;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      z-index: 99999;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .admin-bar.visible { display: flex; }
+    .admin-bar-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 16px;
+      height: 100%;
+    }
+    .admin-bar-left, .admin-bar-right { display: flex; align-items: center; gap: 12px; }
+    .admin-bar a {
+      color: #a0aec0;
+      text-decoration: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .admin-bar a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .admin-bar .customize-btn {
+      background: #3b82f6;
+      color: #fff;
+      font-weight: 500;
+    }
+    .admin-bar .customize-btn:hover { background: #2563eb; }
+    .admin-bar .user-info { color: #718096; }
+    body.has-admin-bar { padding-top: 32px; }
+    body.has-admin-bar .navbar { top: 32px; }
+  </style>
 </head>
 <body>
+  <!-- Admin Bar (shown for ADMIN/EDITOR users via JavaScript) -->
+  <div id="admin-bar" class="admin-bar">
+    <div class="admin-bar-container">
+      <div class="admin-bar-left">
+        <a id="admin-link-dashboard" href="#">← Dashboard</a>
+        <a id="admin-link-posts" href="#">Posts</a>
+        <a id="admin-link-pages" href="#">Pages</a>
+        <a id="admin-link-customize" href="#" class="customize-btn">✎ Customize</a>
+      </div>
+      <div class="admin-bar-right">
+        <span class="user-info" id="admin-bar-user"></span>
+        <a id="admin-link-settings" href="#">Settings</a>
+      </div>
+    </div>
+  </div>
+
   <!-- Navigation -->
   <nav class="navbar">
     <div class="container">

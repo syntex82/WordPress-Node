@@ -49,6 +49,50 @@
 
   <!-- Theme Scripts -->
   <script src="/themes/modern-blog/assets/js/main.js"></script>
+
+  <!-- Admin Bar Script - Shows customize button for ADMIN/EDITOR users -->
+  <script>
+    (function() {
+      try {
+        // Check localStorage for auth data (same key as React admin)
+        const authData = localStorage.getItem('auth-storage');
+        if (!authData) return;
+
+        const parsed = JSON.parse(authData);
+        const user = parsed?.state?.user;
+
+        // Only show for ADMIN or EDITOR roles
+        if (user && (user.role === 'ADMIN' || user.role === 'EDITOR')) {
+          const adminBar = document.getElementById('admin-bar');
+          const userInfo = document.getElementById('admin-bar-user');
+
+          if (adminBar) {
+            adminBar.classList.add('visible');
+            document.body.classList.add('has-admin-bar');
+          }
+
+          if (userInfo) {
+            userInfo.textContent = 'Logged in as ' + user.name + ' (' + user.role + ')';
+          }
+
+          // Set admin panel URLs - detect if running on different port (dev) or same origin (production)
+          // In development, admin panel is on port 5173; in production it might be on same origin
+          const adminBase = window.location.port === '3000' ? 'http://localhost:5173' : '';
+          const setLink = (id, path) => {
+            const el = document.getElementById(id);
+            if (el) el.href = adminBase + path;
+          };
+          setLink('admin-link-dashboard', '/admin');
+          setLink('admin-link-posts', '/admin/posts');
+          setLink('admin-link-pages', '/admin/pages');
+          setLink('admin-link-customize', '/admin/customize');
+          setLink('admin-link-settings', '/admin/settings');
+        }
+      } catch (e) {
+        // Silently fail if localStorage is not available or data is invalid
+      }
+    })();
+  </script>
 </body>
 </html>
 

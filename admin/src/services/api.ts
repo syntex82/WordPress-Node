@@ -194,6 +194,17 @@ export interface CustomThemeSettings {
     mobile?: Partial<CustomThemeSettings>;
   };
   darkMode?: Partial<CustomThemeSettings['colors']>;
+  homepage?: {
+    type: 'posts' | 'static';
+    pageId?: string;
+    blogPageId?: string;
+    postsPerPage?: number;
+    showHero?: boolean;
+    showFeaturedPosts?: boolean;
+    showFeaturedProducts?: boolean;
+    showFeaturedCourses?: boolean;
+    showNewsletter?: boolean;
+  };
 }
 
 // Theme Page structure for multi-page themes

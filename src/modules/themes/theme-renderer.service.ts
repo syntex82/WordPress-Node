@@ -110,7 +110,7 @@ export class ThemeRendererService {
   /**
    * Render a template with data
    */
-  async render(template: string, data: any): Promise<string> {
+  async render(template: string, data: any, user?: { id: string; role: string } | null): Promise<string> {
     try {
       const activeTheme = await this.themesService.getActiveTheme();
 
@@ -140,6 +140,9 @@ export class ThemeRendererService {
       // Add current year helper
       const currentYear = new Date().getFullYear();
 
+      // Check if user can customize (ADMIN or EDITOR)
+      const canCustomize = user && (user.role === 'ADMIN' || user.role === 'EDITOR');
+
       // Merge data with site settings and menus
       const renderData = {
         ...data,
@@ -149,6 +152,12 @@ export class ThemeRendererService {
           header: headerMenu,
           footer: footerMenu,
         },
+        // User info for admin bar
+        currentUser: user ? {
+          id: user.id,
+          role: user.role,
+          canCustomize,
+        } : null,
       };
 
       // Render template
@@ -162,60 +171,60 @@ export class ThemeRendererService {
   /**
    * Render home page
    */
-  async renderHome(posts: any[], shopData?: { featuredProducts?: any[]; categories?: any[]; featuredCourses?: any[] }) {
+  async renderHome(posts: any[], shopData?: { featuredProducts?: any[]; categories?: any[]; featuredCourses?: any[] }, user?: { id: string; role: string } | null) {
     return this.render('home', {
       posts,
       featuredProducts: shopData?.featuredProducts || [],
       categories: shopData?.categories || [],
       featuredCourses: shopData?.featuredCourses || [],
-    });
+    }, user);
   }
 
   /**
    * Render single post
    */
-  async renderPost(post: any) {
-    return this.render('single-post', { post });
+  async renderPost(post: any, user?: { id: string; role: string } | null) {
+    return this.render('single-post', { post }, user);
   }
 
   /**
    * Render single page
    */
-  async renderPage(page: any) {
+  async renderPage(page: any, user?: { id: string; role: string } | null) {
     const template = page.template || 'single-page';
-    return this.render(template, { page });
+    return this.render(template, { page }, user);
   }
 
   /**
    * Render archive/listing
    */
-  async renderArchive(posts: any[], pagination: any) {
-    return this.render('archive', { posts, pagination });
+  async renderArchive(posts: any[], pagination: any, user?: { id: string; role: string } | null) {
+    return this.render('archive', { posts, pagination }, user);
   }
 
   /**
    * Render shop page
    */
-  async renderShop(products: any[], categories: any[], pagination: any, activeCategory?: string | null) {
+  async renderShop(products: any[], categories: any[], pagination: any, activeCategory?: string | null, user?: { id: string; role: string } | null) {
     return this.render('shop', {
       products,
       categories,
       pagination,
       activeCategory,
-    });
+    }, user);
   }
 
   /**
    * Render single product page
    */
-  async renderProduct(product: any) {
-    return this.render('single-product', { product });
+  async renderProduct(product: any, user?: { id: string; role: string } | null) {
+    return this.render('single-product', { product }, user);
   }
 
   /**
    * Render courses catalog page
    */
-  async renderCourses(courses: any[], categories: string[], pagination: any, filters: { category?: string; level?: string; priceType?: string }) {
+  async renderCourses(courses: any[], categories: string[], pagination: any, filters: { category?: string; level?: string; priceType?: string }, user?: { id: string; role: string } | null) {
     return this.render('courses', {
       courses,
       categories,
@@ -223,27 +232,27 @@ export class ThemeRendererService {
       currentCategory: filters.category,
       currentLevel: filters.level,
       currentPriceType: filters.priceType,
-    });
+    }, user);
   }
 
   /**
    * Render single course landing page
    */
-  async renderCourse(course: any, isEnrolled = false) {
-    return this.render('single-course', { course, isEnrolled });
+  async renderCourse(course: any, isEnrolled = false, user?: { id: string; role: string } | null) {
+    return this.render('single-course', { course, isEnrolled }, user);
   }
 
   /**
    * Render certificate verification page
    */
-  async renderCertificateVerify(result: any) {
-    return this.render('certificate-verify', result);
+  async renderCertificateVerify(result: any, user?: { id: string; role: string } | null) {
+    return this.render('certificate-verify', result, user);
   }
 
   /**
    * Render user profile page
    */
-  async renderProfile(profile: any, stats: any) {
+  async renderProfile(profile: any, stats: any, user?: { id: string; role: string } | null) {
     return this.render('profile', {
       profile,
       stats,
@@ -251,7 +260,7 @@ export class ThemeRendererService {
       courses: profile.instructedCourses || [],
       badges: profile.badges || [],
       certificates: profile.certificates || [],
-    });
+    }, user);
   }
 }
 
