@@ -1,0 +1,116 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# WordPress Node CMS - Build & Test Workflow
+# ═══════════════════════════════════════════════════════════════════════════════
+# This workflow runs on every push and pull request to build and test the project
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: 🚀 Build & Test
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Backend Build & Test (NestJS)
+  # ─────────────────────────────────────────────────────────────────────────────
+  backend:
+    name: 🔧 Backend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🗄️ Generate Prisma Client
+        run: npx prisma generate
+
+      - name: 🔍 Run ESLint
+        run: npm run lint
+
+      - name: 🏗️ Build Backend
+        run: npm run build
+
+      - name: 🧪 Run Tests
+        run: npm run test --passWithNoTests
+
+      - name: 📊 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: dist/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Frontend Build (Vite + React)
+  # ─────────────────────────────────────────────────────────────────────────────
+  frontend:
+    name: 💻 Frontend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: admin/package-lock.json
+
+      - name: 📦 Install dependencies
+        working-directory: admin
+        run: npm ci
+
+      - name: 🔍 TypeScript Type Check
+        working-directory: admin
+        run: npx tsc --noEmit
+
+      - name: 🏗️ Build Frontend (Vite)
+        working-directory: admin
+        run: npm run build
+
+      - name: 📊 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: admin/dist/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Build Status Check
+  # ─────────────────────────────────────────────────────────────────────────────
+  build-status:
+    name: ✅ Build Status
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check build results
+        run: |
+          if [[ "${{ needs.backend.result }}" == "success" && "${{ needs.frontend.result }}" == "success" ]]; then
+            echo "✅ All builds passed successfully!"
+            exit 0
+          else
+            echo "❌ One or more builds failed"
+            echo "Backend: ${{ needs.backend.result }}"
+            echo "Frontend: ${{ needs.frontend.result }}"
+            exit 1
+          fi
+
