@@ -14,4 +14,3 @@ import { PrismaService } from '../../database/prisma.service';
   exports: [MenusService],
 })
 export class MenusModule {}
-

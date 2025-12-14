@@ -18,7 +18,7 @@ export class PostsService {
    * Generate unique slug from title
    */
   private async generateSlug(title: string, excludeId?: string): Promise<string> {
-    let slug = slugify(title, { lower: true, strict: true });
+    const slug = slugify(title, { lower: true, strict: true });
     let counter = 1;
     let uniqueSlug = slug;
 
@@ -66,12 +66,7 @@ export class PostsService {
   /**
    * Find all posts with filters and pagination
    */
-  async findAll(
-    page = 1,
-    limit = 10,
-    status?: PostStatus,
-    authorId?: string,
-  ) {
+  async findAll(page = 1, limit = 10, status?: PostStatus, authorId?: string) {
     const skip = (page - 1) * limit;
     const where: any = {};
 
@@ -210,4 +205,3 @@ export class PostsService {
     });
   }
 }
-

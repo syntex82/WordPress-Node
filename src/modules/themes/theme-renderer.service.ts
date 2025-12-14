@@ -110,7 +110,11 @@ export class ThemeRendererService {
   /**
    * Render a template with data
    */
-  async render(template: string, data: any, user?: { id: string; role: string } | null): Promise<string> {
+  async render(
+    template: string,
+    data: any,
+    user?: { id: string; role: string } | null,
+  ): Promise<string> {
     try {
       const activeTheme = await this.themesService.getActiveTheme();
 
@@ -153,11 +157,13 @@ export class ThemeRendererService {
           footer: footerMenu,
         },
         // User info for admin bar
-        currentUser: user ? {
-          id: user.id,
-          role: user.role,
-          canCustomize,
-        } : null,
+        currentUser: user
+          ? {
+              id: user.id,
+              role: user.role,
+              canCustomize,
+            }
+          : null,
       };
 
       // Render template
@@ -171,13 +177,21 @@ export class ThemeRendererService {
   /**
    * Render home page
    */
-  async renderHome(posts: any[], shopData?: { featuredProducts?: any[]; categories?: any[]; featuredCourses?: any[] }, user?: { id: string; role: string } | null) {
-    return this.render('home', {
-      posts,
-      featuredProducts: shopData?.featuredProducts || [],
-      categories: shopData?.categories || [],
-      featuredCourses: shopData?.featuredCourses || [],
-    }, user);
+  async renderHome(
+    posts: any[],
+    shopData?: { featuredProducts?: any[]; categories?: any[]; featuredCourses?: any[] },
+    user?: { id: string; role: string } | null,
+  ) {
+    return this.render(
+      'home',
+      {
+        posts,
+        featuredProducts: shopData?.featuredProducts || [],
+        categories: shopData?.categories || [],
+        featuredCourses: shopData?.featuredCourses || [],
+      },
+      user,
+    );
   }
 
   /**
@@ -205,13 +219,23 @@ export class ThemeRendererService {
   /**
    * Render shop page
    */
-  async renderShop(products: any[], categories: any[], pagination: any, activeCategory?: string | null, user?: { id: string; role: string } | null) {
-    return this.render('shop', {
-      products,
-      categories,
-      pagination,
-      activeCategory,
-    }, user);
+  async renderShop(
+    products: any[],
+    categories: any[],
+    pagination: any,
+    activeCategory?: string | null,
+    user?: { id: string; role: string } | null,
+  ) {
+    return this.render(
+      'shop',
+      {
+        products,
+        categories,
+        pagination,
+        activeCategory,
+      },
+      user,
+    );
   }
 
   /**
@@ -224,15 +248,25 @@ export class ThemeRendererService {
   /**
    * Render courses catalog page
    */
-  async renderCourses(courses: any[], categories: string[], pagination: any, filters: { category?: string; level?: string; priceType?: string }, user?: { id: string; role: string } | null) {
-    return this.render('courses', {
-      courses,
-      categories,
-      pagination,
-      currentCategory: filters.category,
-      currentLevel: filters.level,
-      currentPriceType: filters.priceType,
-    }, user);
+  async renderCourses(
+    courses: any[],
+    categories: string[],
+    pagination: any,
+    filters: { category?: string; level?: string; priceType?: string },
+    user?: { id: string; role: string } | null,
+  ) {
+    return this.render(
+      'courses',
+      {
+        courses,
+        categories,
+        pagination,
+        currentCategory: filters.category,
+        currentLevel: filters.level,
+        currentPriceType: filters.priceType,
+      },
+      user,
+    );
   }
 
   /**
@@ -253,14 +287,17 @@ export class ThemeRendererService {
    * Render user profile page
    */
   async renderProfile(profile: any, stats: any, user?: { id: string; role: string } | null) {
-    return this.render('profile', {
-      profile,
-      stats,
-      posts: profile.posts || [],
-      courses: profile.instructedCourses || [],
-      badges: profile.badges || [],
-      certificates: profile.certificates || [],
-    }, user);
+    return this.render(
+      'profile',
+      {
+        profile,
+        stats,
+        posts: profile.posts || [],
+        courses: profile.instructedCourses || [],
+        badges: profile.badges || [],
+        certificates: profile.certificates || [],
+      },
+      user,
+    );
   }
 }
-

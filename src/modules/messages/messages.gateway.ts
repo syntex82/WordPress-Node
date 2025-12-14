@@ -36,7 +36,8 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   async handleConnection(client: Socket) {
     try {
-      const token = client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
+      const token =
+        client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
       if (!token) throw new UnauthorizedException('No token provided');
 
       const payload = this.jwtService.verify(token);
@@ -77,7 +78,11 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     const user = this.socketUsers.get(client.id);
     if (!user) return { error: 'Unauthorized' };
 
-    const message = await this.messagesService.sendMessage(data.conversationId, user.id, data.content);
+    const message = await this.messagesService.sendMessage(
+      data.conversationId,
+      user.id,
+      data.content,
+    );
 
     // Get conversation to find recipient
     const conversation = await this.prisma.conversation.findUnique({
@@ -85,11 +90,14 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     });
 
     if (conversation) {
-      const recipientId = conversation.participant1Id === user.id ? conversation.participant2Id : conversation.participant1Id;
-      
+      const recipientId =
+        conversation.participant1Id === user.id
+          ? conversation.participant2Id
+          : conversation.participant1Id;
+
       // Send to sender
       client.emit('dm:message:new', message);
-      
+
       // Send to recipient if online
       const recipientSocketId = this.userSockets.get(recipientId);
       if (recipientSocketId) {
@@ -108,10 +116,15 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     const user = this.socketUsers.get(client.id);
     if (!user) return;
 
-    const conversation = await this.prisma.conversation.findUnique({ where: { id: data.conversationId } });
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: data.conversationId },
+    });
     if (!conversation) return;
 
-    const recipientId = conversation.participant1Id === user.id ? conversation.participant2Id : conversation.participant1Id;
+    const recipientId =
+      conversation.participant1Id === user.id
+        ? conversation.participant2Id
+        : conversation.participant1Id;
     const recipientSocketId = this.userSockets.get(recipientId);
 
     if (recipientSocketId) {
@@ -132,10 +145,15 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     const user = this.socketUsers.get(client.id);
     if (!user) return;
 
-    const conversation = await this.prisma.conversation.findUnique({ where: { id: data.conversationId } });
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: data.conversationId },
+    });
     if (!conversation) return;
 
-    const recipientId = conversation.participant1Id === user.id ? conversation.participant2Id : conversation.participant1Id;
+    const recipientId =
+      conversation.participant1Id === user.id
+        ? conversation.participant2Id
+        : conversation.participant1Id;
     const recipientSocketId = this.userSockets.get(recipientId);
 
     if (recipientSocketId) {
@@ -159,12 +177,19 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     await this.messagesService.markAsRead(data.conversationId, user.id);
 
     // Notify the other user that messages were read
-    const conversation = await this.prisma.conversation.findUnique({ where: { id: data.conversationId } });
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: data.conversationId },
+    });
     if (conversation) {
-      const recipientId = conversation.participant1Id === user.id ? conversation.participant2Id : conversation.participant1Id;
+      const recipientId =
+        conversation.participant1Id === user.id
+          ? conversation.participant2Id
+          : conversation.participant1Id;
       const recipientSocketId = this.userSockets.get(recipientId);
       if (recipientSocketId) {
-        this.server.to(recipientSocketId).emit('dm:read', { conversationId: data.conversationId, readBy: user.id });
+        this.server
+          .to(recipientSocketId)
+          .emit('dm:read', { conversationId: data.conversationId, readBy: user.id });
       }
     }
   }
@@ -190,14 +215,25 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     await this.prisma.directMessage.delete({ where: { id: data.messageId } });
 
     // Notify both users
-    client.emit('dm:message:deleted', { messageId: data.messageId, conversationId: data.conversationId });
+    client.emit('dm:message:deleted', {
+      messageId: data.messageId,
+      conversationId: data.conversationId,
+    });
 
-    const conversation = await this.prisma.conversation.findUnique({ where: { id: data.conversationId } });
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: data.conversationId },
+    });
     if (conversation) {
-      const recipientId = conversation.participant1Id === user.id ? conversation.participant2Id : conversation.participant1Id;
+      const recipientId =
+        conversation.participant1Id === user.id
+          ? conversation.participant2Id
+          : conversation.participant1Id;
       const recipientSocketId = this.userSockets.get(recipientId);
       if (recipientSocketId) {
-        this.server.to(recipientSocketId).emit('dm:message:deleted', { messageId: data.messageId, conversationId: data.conversationId });
+        this.server.to(recipientSocketId).emit('dm:message:deleted', {
+          messageId: data.messageId,
+          conversationId: data.conversationId,
+        });
       }
     }
 
@@ -213,4 +249,3 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     return this.userSockets.has(userId);
   }
 }
-

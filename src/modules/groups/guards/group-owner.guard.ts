@@ -36,4 +36,3 @@ export class GroupOwnerGuard implements CanActivate {
     return true;
   }
 }
-

@@ -168,10 +168,7 @@ export class ProfilesController {
    */
   @Get(':identifier/following-status')
   @UseGuards(JwtAuthGuard)
-  async getFollowingStatus(
-    @Request() req,
-    @Param('identifier') identifier: string,
-  ) {
+  async getFollowingStatus(@Request() req, @Param('identifier') identifier: string) {
     const profile = await this.profilesService.getPublicProfile(identifier);
     return this.profilesService.isFollowing(req.user.id, profile.id);
   }
@@ -234,4 +231,3 @@ export class ProfilesController {
     );
   }
 }
-

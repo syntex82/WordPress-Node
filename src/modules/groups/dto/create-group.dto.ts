@@ -23,4 +23,3 @@ export class CreateGroupDto {
   @IsEnum(GroupVisibility)
   visibility: GroupVisibility;
 }
-

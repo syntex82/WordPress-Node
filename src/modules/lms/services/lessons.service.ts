@@ -2,7 +2,12 @@
  * Lessons Service for LMS Module
  * Enhanced with video upload and external video support
  */
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateLessonDto, UpdateLessonDto, CreateVideoAssetDto } from '../dto/lesson.dto';
 import * as fs from 'fs/promises';
@@ -93,7 +98,7 @@ export class LessonsService {
       this.prisma.lesson.update({
         where: { id },
         data: { orderIndex: index },
-      })
+      }),
     );
     await this.prisma.$transaction(updates);
     return this.findByCourse(courseId);
@@ -103,7 +108,7 @@ export class LessonsService {
   async createVideoAsset(dto: CreateVideoAssetDto) {
     return this.prisma.videoAsset.create({
       data: {
-        provider: dto.provider as any || 'UPLOAD',
+        provider: (dto.provider as any) || 'UPLOAD',
         url: dto.url,
         playbackId: dto.playbackId,
         filePath: dto.filePath,
@@ -129,7 +134,7 @@ export class LessonsService {
   // Get lesson for learning (with access check)
   async getLessonForLearning(lessonId: string, userId: string) {
     const lesson = await this.findOne(lessonId);
-    
+
     // Check enrollment
     const enrollment = await this.prisma.enrollment.findUnique({
       where: {
@@ -204,7 +209,7 @@ export class LessonsService {
   // Attach external video (YouTube, Vimeo, Wistia, etc.)
   async attachExternalVideo(
     lessonId: string,
-    dto: { provider: string; url: string; playbackId?: string; durationSeconds?: number }
+    dto: { provider: string; url: string; playbackId?: string; durationSeconds?: number },
   ) {
     await this.findOne(lessonId);
 
@@ -253,4 +258,3 @@ export class LessonsService {
     });
   }
 }
-

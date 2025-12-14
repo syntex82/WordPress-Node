@@ -70,7 +70,7 @@ export class CartService {
 
     // Validate variant if provided
     if (dto.variantId) {
-      const variant = product.variants.find(v => v.id === dto.variantId);
+      const variant = product.variants.find((v) => v.id === dto.variantId);
       if (!variant) {
         throw new NotFoundException('Variant not found');
       }
@@ -156,7 +156,12 @@ export class CartService {
   }
 
   // Update cart item quantity
-  async updateCartItem(itemId: string, dto: UpdateCartItemDto, userId?: string, sessionId?: string) {
+  async updateCartItem(
+    itemId: string,
+    dto: UpdateCartItemDto,
+    userId?: string,
+    sessionId?: string,
+  ) {
     const cart = await this.getOrCreateCart(userId, sessionId);
 
     const item = await this.prisma.cartItem.findFirst({
@@ -240,4 +245,3 @@ export class CartService {
     };
   }
 }
-

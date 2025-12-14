@@ -118,4 +118,3 @@ export class ThemesController {
     return this.themesService.deleteTheme(id);
   }
 }
-

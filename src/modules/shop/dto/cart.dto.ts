@@ -26,4 +26,3 @@ export class ApplyCouponDto {
   @IsString()
   code: string;
 }
-

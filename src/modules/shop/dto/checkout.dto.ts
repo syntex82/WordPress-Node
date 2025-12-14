@@ -44,4 +44,3 @@ export class ConfirmPaymentDto {
   @IsString()
   paymentMethodId?: string;
 }
-

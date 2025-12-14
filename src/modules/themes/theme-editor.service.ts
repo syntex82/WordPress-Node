@@ -42,7 +42,7 @@ export class ThemeEditorService {
    */
   async getFileTree(themeSlug: string): Promise<FileNode> {
     const themePath = path.join(this.themesDir, themeSlug);
-    
+
     try {
       await fs.access(themePath);
     } catch {
@@ -101,11 +101,11 @@ export class ThemeEditorService {
    */
   async readFile(themeSlug: string, filePath: string): Promise<{ content: string; path: string }> {
     const fullPath = path.join(this.themesDir, themeSlug, filePath);
-    
+
     // Security check: ensure path is within theme directory
     const normalizedPath = path.normalize(fullPath);
     const themePath = path.normalize(path.join(this.themesDir, themeSlug));
-    
+
     if (!normalizedPath.startsWith(themePath)) {
       throw new BadRequestException('Invalid file path');
     }
@@ -121,13 +121,17 @@ export class ThemeEditorService {
   /**
    * Save file content
    */
-  async saveFile(themeSlug: string, filePath: string, content: string): Promise<{ success: boolean; message: string }> {
+  async saveFile(
+    themeSlug: string,
+    filePath: string,
+    content: string,
+  ): Promise<{ success: boolean; message: string }> {
     const fullPath = path.join(this.themesDir, themeSlug, filePath);
-    
+
     // Security check
     const normalizedPath = path.normalize(fullPath);
     const themePath = path.normalize(path.join(this.themesDir, themeSlug));
-    
+
     if (!normalizedPath.startsWith(themePath)) {
       throw new BadRequestException('Invalid file path');
     }
@@ -136,7 +140,7 @@ export class ThemeEditorService {
       // Validate file extension (only allow specific file types)
       const ext = path.extname(filePath).toLowerCase();
       const allowedExtensions = ['.hbs', '.css', '.js', '.json', '.md'];
-      
+
       if (!allowedExtensions.includes(ext)) {
         throw new BadRequestException('File type not allowed for editing');
       }
@@ -159,7 +163,10 @@ export class ThemeEditorService {
   /**
    * Create backup of theme
    */
-  async createBackup(themeSlug: string, backupName?: string): Promise<{ success: boolean; backupId: string; message: string }> {
+  async createBackup(
+    themeSlug: string,
+    backupName?: string,
+  ): Promise<{ success: boolean; backupId: string; message: string }> {
     const themePath = path.join(this.themesDir, themeSlug);
 
     try {
@@ -215,7 +222,9 @@ export class ThemeEditorService {
   /**
    * List backups for a theme
    */
-  async listBackups(themeSlug: string): Promise<Array<{ id: string; name: string; date: Date; size: number }>> {
+  async listBackups(
+    themeSlug: string,
+  ): Promise<Array<{ id: string; name: string; date: Date; size: number }>> {
     try {
       const files = await fs.readdir(this.backupsDir);
       const backups: Array<{ id: string; name: string; date: Date; size: number }> = [];
@@ -244,7 +253,10 @@ export class ThemeEditorService {
   /**
    * Restore theme from backup
    */
-  async restoreBackup(themeSlug: string, backupId: string): Promise<{ success: boolean; message: string }> {
+  async restoreBackup(
+    themeSlug: string,
+    backupId: string,
+  ): Promise<{ success: boolean; message: string }> {
     const backupFileName = `${themeSlug}-${backupId}.zip`;
     const backupPath = path.join(this.backupsDir, backupFileName);
     const themePath = path.join(this.themesDir, themeSlug);
@@ -278,7 +290,10 @@ export class ThemeEditorService {
   /**
    * Delete a backup
    */
-  async deleteBackup(themeSlug: string, backupId: string): Promise<{ success: boolean; message: string }> {
+  async deleteBackup(
+    themeSlug: string,
+    backupId: string,
+  ): Promise<{ success: boolean; message: string }> {
     const backupFileName = `${themeSlug}-${backupId}.zip`;
     const backupPath = path.join(this.backupsDir, backupFileName);
 
@@ -296,7 +311,10 @@ export class ThemeEditorService {
   /**
    * Validate file syntax (basic validation)
    */
-  async validateFile(filePath: string, content: string): Promise<{ valid: boolean; errors?: string[] }> {
+  async validateFile(
+    filePath: string,
+    content: string,
+  ): Promise<{ valid: boolean; errors?: string[] }> {
     const ext = path.extname(filePath).toLowerCase();
     const errors: string[] = [];
 

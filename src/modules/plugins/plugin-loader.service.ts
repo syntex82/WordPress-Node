@@ -119,4 +119,3 @@ export class PluginLoaderService implements OnModuleInit {
     return this.loadedPlugins.has(slug);
   }
 }
-

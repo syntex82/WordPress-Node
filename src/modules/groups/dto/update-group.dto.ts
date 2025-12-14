@@ -17,4 +17,3 @@ export class UpdateGroupDto {
   @IsEnum(GroupVisibility)
   visibility?: GroupVisibility;
 }
-

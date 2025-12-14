@@ -37,4 +37,3 @@ export class GroupMemberGuard implements CanActivate {
     return true;
   }
 }
-

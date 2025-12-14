@@ -22,4 +22,3 @@ import { MenusModule } from '../menus/menus.module';
   exports: [ThemesService, ThemeRendererService, ThemeEditorService, CustomThemesService],
 })
 export class ThemesModule {}
-

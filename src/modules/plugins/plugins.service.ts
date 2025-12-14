@@ -44,7 +44,7 @@ export class PluginsService {
 
         if (stat.isDirectory()) {
           const configPath = path.join(pluginPath, 'plugin.json');
-          
+
           try {
             const configContent = await fs.readFile(configPath, 'utf-8');
             const config = JSON.parse(configContent);
@@ -178,20 +178,20 @@ export class PluginsService {
       const zip = new AdmZip(file.buffer);
       const zipEntries = zip.getEntries();
       const entryNames = zipEntries
-        .filter(e => !e.entryName.includes('__MACOSX'))
-        .map(e => e.entryName);
+        .filter((e) => !e.entryName.includes('__MACOSX'))
+        .map((e) => e.entryName);
 
       // Find root folder (if any)
       let rootFolder: string | undefined;
-      const dirs = entryNames.filter(name => name.endsWith('/') && !name.includes('/', 0));
+      const dirs = entryNames.filter((name) => name.endsWith('/') && !name.includes('/', 0));
       if (dirs.length === 1) {
         rootFolder = dirs[0].replace('/', '');
       }
 
       // Find plugin.json
       const pluginJsonPath = rootFolder
-        ? entryNames.find(name => name === `${rootFolder}/plugin.json`)
-        : entryNames.find(name => name === 'plugin.json');
+        ? entryNames.find((name) => name === `${rootFolder}/plugin.json`)
+        : entryNames.find((name) => name === 'plugin.json');
 
       if (!pluginJsonPath) {
         errors.push('plugin.json not found in the archive');
@@ -221,12 +221,17 @@ export class PluginsService {
       }
 
       // Determine plugin slug
-      const pluginSlug = rootFolder || path.basename(file.originalname, '.zip').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const pluginSlug =
+        rootFolder ||
+        path
+          .basename(file.originalname, '.zip')
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, '-');
 
       // Check for entry file
       const entryFile = pluginConfig.entry || 'index.js';
       const entryPath = rootFolder ? `${rootFolder}/${entryFile}` : entryFile;
-      if (!entryNames.some(name => name === entryPath)) {
+      if (!entryNames.some((name) => name === entryPath)) {
         warnings.push(`Entry file "${entryFile}" not found - plugin may not load correctly`);
       }
 
@@ -252,7 +257,9 @@ export class PluginsService {
   /**
    * Validate plugin without installing
    */
-  async validatePlugin(file: Express.Multer.File): Promise<PluginValidationResult & { exists?: boolean }> {
+  async validatePlugin(
+    file: Express.Multer.File,
+  ): Promise<PluginValidationResult & { exists?: boolean }> {
     const validation = this.validatePluginZip(file);
 
     if (validation.valid && validation.pluginSlug) {
@@ -260,7 +267,9 @@ export class PluginsService {
         where: { slug: validation.pluginSlug },
       });
       if (existingPlugin) {
-        validation.errors.push(`Plugin "${validation.pluginSlug}" already exists. Please delete it first or use a different folder name.`);
+        validation.errors.push(
+          `Plugin "${validation.pluginSlug}" already exists. Please delete it first or use a different folder name.`,
+        );
         validation.valid = false;
         return { ...validation, exists: true };
       }
@@ -295,9 +304,11 @@ export class PluginsService {
       // Extract files
       if (rootFolder) {
         // Extract contents of root folder directly to plugin directory
-        const entries = zip.getEntries().filter(
-          e => !e.entryName.includes('__MACOSX') && e.entryName.startsWith(rootFolder + '/')
-        );
+        const entries = zip
+          .getEntries()
+          .filter(
+            (e) => !e.entryName.includes('__MACOSX') && e.entryName.startsWith(rootFolder + '/'),
+          );
         for (const entry of entries) {
           const relativePath = entry.entryName.substring(rootFolder.length + 1);
           if (!relativePath) continue;
@@ -371,4 +382,3 @@ export class PluginsService {
     });
   }
 }
-

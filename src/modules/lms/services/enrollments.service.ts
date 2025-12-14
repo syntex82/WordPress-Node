@@ -1,7 +1,12 @@
 /**
  * Enrollments Service for LMS Module
  */
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { EnrollCourseDto, UpdateEnrollmentDto } from '../dto/enrollment.dto';
 
@@ -13,7 +18,8 @@ export class EnrollmentsService {
     // Check if course exists and is published
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
-    if (course.status !== 'PUBLISHED') throw new BadRequestException('Course is not available for enrollment');
+    if (course.status !== 'PUBLISHED')
+      throw new BadRequestException('Course is not available for enrollment');
 
     // Check if already enrolled
     const existing = await this.prisma.enrollment.findUnique({
@@ -73,7 +79,7 @@ export class EnrollmentsService {
             percent: totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0,
           },
         };
-      })
+      }),
     );
 
     return enrollmentsWithProgress;
@@ -141,4 +147,3 @@ export class EnrollmentsService {
     return { total, active, completed };
   }
 }
-

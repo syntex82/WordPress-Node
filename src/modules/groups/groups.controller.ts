@@ -98,7 +98,11 @@ export class GroupsController {
    */
   @Get(':id/messages')
   @UseGuards(GroupMemberGuard)
-  async getMessages(@Param('id') id: string, @Query('limit') limit?: string, @Query('before') before?: string) {
+  async getMessages(
+    @Param('id') id: string,
+    @Query('limit') limit?: string,
+    @Query('before') before?: string,
+  ) {
     return this.groupsService.getMessages(id, {
       limit: limit ? parseInt(limit) : undefined,
       before,
@@ -137,8 +141,11 @@ export class GroupsController {
    */
   @Delete(':id/messages/:messageId')
   @UseGuards(GroupMemberGuard)
-  async deleteMessage(@Request() req, @Param('id') id: string, @Param('messageId') messageId: string) {
+  async deleteMessage(
+    @Request() req,
+    @Param('id') id: string,
+    @Param('messageId') messageId: string,
+  ) {
     return this.groupsService.deleteMessage(id, messageId, req.user.id, req.user.role);
   }
 }
-

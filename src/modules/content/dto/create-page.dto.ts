@@ -46,4 +46,3 @@ export class CreatePageDto {
   @IsOptional()
   customFields?: any;
 }
-

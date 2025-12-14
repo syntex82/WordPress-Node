@@ -16,9 +16,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Security middleware
-  app.use(helmet({
-    contentSecurityPolicy: false, // Disable for development; configure properly in production
-  }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Disable for development; configure properly in production
+    }),
+  );
 
   // Cookie parser for session management
   app.use(cookieParser());
@@ -84,4 +86,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-

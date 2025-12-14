@@ -43,7 +43,8 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     try {
       // Extract JWT token from handshake
-      const token = client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
+      const token =
+        client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
 
       if (!token) {
         throw new UnauthorizedException('No token provided');
@@ -106,7 +107,10 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * Join a group room
    */
   @SubscribeMessage('group:join')
-  async handleJoinGroup(@ConnectedSocket() client: Socket, @MessageBody() data: { groupId: string }) {
+  async handleJoinGroup(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { groupId: string },
+  ) {
     const user = this.socketUsers.get(client.id);
 
     if (!user) {
@@ -154,7 +158,10 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * Leave a group room
    */
   @SubscribeMessage('group:leave')
-  async handleLeaveGroup(@ConnectedSocket() client: Socket, @MessageBody() data: { groupId: string }) {
+  async handleLeaveGroup(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { groupId: string },
+  ) {
     const user = this.socketUsers.get(client.id);
 
     if (!user) {
@@ -239,7 +246,10 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * User started typing
    */
   @SubscribeMessage('group:typing:start')
-  async handleTypingStart(@ConnectedSocket() client: Socket, @MessageBody() data: { groupId: string }) {
+  async handleTypingStart(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { groupId: string },
+  ) {
     const user = this.socketUsers.get(client.id);
 
     if (!user) {
@@ -260,7 +270,10 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * User stopped typing
    */
   @SubscribeMessage('group:typing:stop')
-  async handleTypingStop(@ConnectedSocket() client: Socket, @MessageBody() data: { groupId: string }) {
+  async handleTypingStop(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { groupId: string },
+  ) {
     const user = this.socketUsers.get(client.id);
 
     if (!user) {
@@ -308,9 +321,10 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       where: { groupId_userId: { groupId, userId: user.id } },
     });
 
-    const canDelete = message.senderId === user.id ||
-                      message.group.ownerId === user.id ||
-                      membership?.role === 'MODERATOR';
+    const canDelete =
+      message.senderId === user.id ||
+      message.group.ownerId === user.id ||
+      membership?.role === 'MODERATOR';
 
     if (!canDelete) {
       return { error: 'You cannot delete this message' };
@@ -339,4 +353,3 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(`group:${groupId}`).emit('group:member:left', { userId });
   }
 }
-

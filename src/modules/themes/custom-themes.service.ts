@@ -3,7 +3,12 @@
  * Handles CRUD operations for user-created themes from Theme Designer
  */
 
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 export interface CustomThemeSettings {
@@ -223,7 +228,9 @@ export class CustomThemesService {
     const theme = await this.findById(id);
 
     if (theme.isActive) {
-      throw new BadRequestException('Cannot delete the active theme. Please activate another theme first.');
+      throw new BadRequestException(
+        'Cannot delete the active theme. Please activate another theme first.',
+      );
     }
 
     return this.prisma.customTheme.delete({
@@ -381,4 +388,3 @@ export class CustomThemesService {
     return css;
   }
 }
-

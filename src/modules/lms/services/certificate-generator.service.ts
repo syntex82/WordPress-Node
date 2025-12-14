@@ -24,23 +24,25 @@ export class CertificateGeneratorService {
   constructor(private configService: ConfigService) {
     this.uploadsDir = path.join(process.cwd(), 'uploads', 'certificates');
     this.baseUrl = this.configService.get('BASE_URL') || 'http://localhost:3000';
-    
+
     // Ensure certificates directory exists
     if (!fs.existsSync(this.uploadsDir)) {
       fs.mkdirSync(this.uploadsDir, { recursive: true });
     }
   }
 
-  async generateCertificatePDF(data: CertificateData): Promise<{ filePath: string; pdfUrl: string }> {
+  async generateCertificatePDF(
+    data: CertificateData,
+  ): Promise<{ filePath: string; pdfUrl: string }> {
     const fileName = `certificate-${data.certificateNumber}.html`;
     const filePath = path.join(this.uploadsDir, fileName);
     const verifyUrl = `${this.baseUrl}/verify/${data.verificationHash}`;
-    
+
     // Generate HTML certificate (can be converted to PDF with a headless browser)
     const html = this.generateCertificateHTML(data, verifyUrl);
-    
+
     fs.writeFileSync(filePath, html);
-    
+
     return {
       filePath: `/uploads/certificates/${fileName}`,
       pdfUrl: `${this.baseUrl}/uploads/certificates/${fileName}`,
@@ -191,4 +193,3 @@ export class CertificateGeneratorService {
 </html>`;
   }
 }
-

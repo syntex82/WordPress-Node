@@ -33,10 +33,7 @@ export class AuthController {
    */
   @Post('verify-2fa')
   @HttpCode(HttpStatus.OK)
-  async verify2FA(
-    @Body() body: { tempToken: string; code: string },
-    @Req() req: Request
-  ) {
+  async verify2FA(@Body() body: { tempToken: string; code: string }, @Req() req: Request) {
     const ip = req.ip;
     const userAgent = req.headers['user-agent'];
     return this.authService.verify2FAAndLogin(body.tempToken, body.code, ip, userAgent);
@@ -72,4 +69,3 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 }
-

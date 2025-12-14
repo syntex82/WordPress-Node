@@ -66,4 +66,3 @@ export class UpdateMenuDto {
   @IsOptional()
   items?: UpdateMenuItemDto[];
 }
-

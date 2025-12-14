@@ -35,18 +35,20 @@ export class PasswordPolicyService {
     const policy = await this.prisma.passwordPolicy.findFirst({
       orderBy: { createdAt: 'desc' },
     });
-    
-    return policy ? {
-      minLength: policy.minLength,
-      requireUppercase: policy.requireUppercase,
-      requireLowercase: policy.requireLowercase,
-      requireNumbers: policy.requireNumbers,
-      requireSpecialChars: policy.requireSpecialChars,
-      expirationDays: policy.expirationDays,
-      preventReuse: policy.preventReuse,
-      checkBreachedPasswords: policy.checkBreachedPasswords,
-      enabled: policy.enabled,
-    } : null;
+
+    return policy
+      ? {
+          minLength: policy.minLength,
+          requireUppercase: policy.requireUppercase,
+          requireLowercase: policy.requireLowercase,
+          requireNumbers: policy.requireNumbers,
+          requireSpecialChars: policy.requireSpecialChars,
+          expirationDays: policy.expirationDays,
+          preventReuse: policy.preventReuse,
+          checkBreachedPasswords: policy.checkBreachedPasswords,
+          enabled: policy.enabled,
+        }
+      : null;
   }
 
   /**
@@ -55,7 +57,7 @@ export class PasswordPolicyService {
   async updatePolicy(config: Partial<PasswordPolicyConfig>): Promise<PasswordPolicyConfig> {
     // Delete old policies and create new one
     await this.prisma.passwordPolicy.deleteMany({});
-    
+
     const policy = await this.prisma.passwordPolicy.create({
       data: {
         minLength: config.minLength ?? 8,
@@ -131,7 +133,9 @@ export class PasswordPolicyService {
     if (policy.checkBreachedPasswords) {
       const isBreached = await this.checkBreachedPassword(password);
       if (isBreached) {
-        errors.push('This password has been found in a data breach. Please choose a different password');
+        errors.push(
+          'This password has been found in a data breach. Please choose a different password',
+        );
       }
     }
 
@@ -144,7 +148,11 @@ export class PasswordPolicyService {
   /**
    * Check if password was used recently
    */
-  private async checkPasswordReuse(userId: string, password: string, count: number): Promise<boolean> {
+  private async checkPasswordReuse(
+    userId: string,
+    password: string,
+    count: number,
+  ): Promise<boolean> {
     const history = await this.prisma.passwordHistory.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -174,27 +182,31 @@ export class PasswordPolicyService {
       const suffix = sha1.substring(5);
 
       return new Promise((resolve) => {
-        const req = https.get(`https://api.pwnedpasswords.com/range/${prefix}`, {
-          timeout: 5000,
-        }, (res: any) => {
-          let data = '';
+        const req = https.get(
+          `https://api.pwnedpasswords.com/range/${prefix}`,
+          {
+            timeout: 5000,
+          },
+          (res: any) => {
+            let data = '';
 
-          res.on('data', (chunk: any) => {
-            data += chunk;
-          });
+            res.on('data', (chunk: any) => {
+              data += chunk;
+            });
 
-          res.on('end', () => {
-            const hashes = data.split('\n');
-            for (const hash of hashes) {
-              const [hashSuffix] = hash.split(':');
-              if (hashSuffix === suffix) {
-                resolve(true);
-                return;
+            res.on('end', () => {
+              const hashes = data.split('\n');
+              for (const hash of hashes) {
+                const [hashSuffix] = hash.split(':');
+                if (hashSuffix === suffix) {
+                  resolve(true);
+                  return;
+                }
               }
-            }
-            resolve(false);
-          });
-        });
+              resolve(false);
+            });
+          },
+        );
 
         req.on('error', () => {
           // If API fails, don't block the password change
@@ -237,7 +249,7 @@ export class PasswordPolicyService {
       if (toDelete.length > 0) {
         await this.prisma.passwordHistory.deleteMany({
           where: {
-            id: { in: toDelete.map(h => h.id) },
+            id: { in: toDelete.map((h) => h.id) },
           },
         });
       }

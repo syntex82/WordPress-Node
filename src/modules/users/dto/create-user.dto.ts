@@ -32,4 +32,3 @@ export class CreateUserDto {
   @IsOptional()
   bio?: string;
 }
-

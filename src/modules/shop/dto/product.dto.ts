@@ -1,7 +1,17 @@
 /**
  * Product DTOs
  */
-import { IsString, IsNumber, IsOptional, IsBoolean, IsEnum, IsArray, IsUUID, Min, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsEnum,
+  IsArray,
+  IsUUID,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ProductStatus {
@@ -179,4 +189,3 @@ export class ProductQueryDto {
   @Type(() => Number)
   limit?: number = 20;
 }
-

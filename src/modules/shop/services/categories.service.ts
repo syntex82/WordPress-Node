@@ -18,7 +18,7 @@ export class CategoriesService {
 
   async create(dto: CreateCategoryDto) {
     const slug = this.generateSlug(dto.name);
-    
+
     const existing = await this.prisma.productCategory.findUnique({ where: { slug } });
     if (existing) {
       throw new ConflictException('Category with this name already exists');
@@ -125,4 +125,3 @@ export class CategoriesService {
     return { message: 'Category deleted successfully' };
   }
 }
-

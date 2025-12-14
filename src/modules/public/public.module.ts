@@ -16,4 +16,3 @@ import { UsersModule } from '../users/users.module';
   controllers: [PublicController],
 })
 export class PublicModule {}
-

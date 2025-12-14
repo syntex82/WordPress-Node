@@ -2,16 +2,7 @@
  * Certificates Controller for LMS Module
  * Handles certificate management and verification
  */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Body,
-  Param,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CertificatesService } from '../services/certificates.service';
 
@@ -47,11 +38,7 @@ export class CertificatesController {
   // Admin endpoints
   @Put('admin/certificates/:id/revoke')
   @UseGuards(JwtAuthGuard)
-  async revokeCertificate(
-    @Param('id') id: string,
-    @Body() body: { reason: string },
-  ) {
+  async revokeCertificate(@Param('id') id: string, @Body() body: { reason: string }) {
     return this.certificatesService.revoke(id, body.reason);
   }
 }
-

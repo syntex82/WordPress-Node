@@ -15,4 +15,3 @@ import { ProfilesController } from './profiles.controller';
   exports: [UsersService, ProfilesService],
 })
 export class UsersModule {}
-

@@ -64,9 +64,7 @@ export class TwoFactorService {
 
     // Generate recovery codes
     const recoveryCodes = this.generateRecoveryCodes(8);
-    const hashedCodes = await Promise.all(
-      recoveryCodes.map(code => bcrypt.hash(code, 10))
-    );
+    const hashedCodes = await Promise.all(recoveryCodes.map((code) => bcrypt.hash(code, 10)));
 
     // Update user
     await this.prisma.user.update({
@@ -155,7 +153,7 @@ export class TwoFactorService {
         if (matches) {
           // Remove used recovery code
           const updatedCodes = (user.recoveryCodes as string[]).filter(
-            code => code !== hashedCode
+            (code) => code !== hashedCode,
           );
           await this.prisma.user.update({
             where: { id: userId },
@@ -181,4 +179,3 @@ export class TwoFactorService {
     return codes;
   }
 }
-

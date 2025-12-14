@@ -27,4 +27,3 @@ import { GroupOwnerGuard } from './guards/group-owner.guard';
   exports: [GroupsService],
 })
 export class GroupsModule {}
-

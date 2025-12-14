@@ -46,19 +46,21 @@ export class FileIntegrityService {
    */
   private async scanDirectory(dirPath: string, baseDir: string = dirPath): Promise<FileHash[]> {
     const hashes: FileHash[] = [];
-    
+
     try {
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
-        
+
         // Skip node_modules, dist, uploads, etc.
-        if (entry.name === 'node_modules' || 
-            entry.name === 'dist' || 
-            entry.name === 'uploads' ||
-            entry.name === '.git' ||
-            entry.name.startsWith('.')) {
+        if (
+          entry.name === 'node_modules' ||
+          entry.name === 'dist' ||
+          entry.name === 'uploads' ||
+          entry.name === '.git' ||
+          entry.name.startsWith('.')
+        ) {
           continue;
         }
 
@@ -86,10 +88,10 @@ export class FileIntegrityService {
 
     for (const dir of this.MONITORED_DIRS) {
       const dirPath = path.join(process.cwd(), dir);
-      
+
       try {
         const stats = await fs.stat(dirPath);
-        
+
         if (stats.isDirectory()) {
           const hashes = await this.scanDirectory(dirPath);
           allHashes.push(...hashes);
@@ -145,11 +147,11 @@ export class FileIntegrityService {
     }
 
     const baseline = baselineSetting.value as unknown as FileHash[];
-    const baselineMap = new Map(baseline.map(f => [f.path, f.hash]));
+    const baselineMap = new Map(baseline.map((f) => [f.path, f.hash]));
 
     // Get current state
     const current = await this.generateCurrentHashes();
-    const currentMap = new Map(current.map(f => [f.path, f.hash]));
+    const currentMap = new Map(current.map((f) => [f.path, f.hash]));
 
     // Compare
     const result: ScanResult = {
@@ -200,10 +202,10 @@ export class FileIntegrityService {
 
     for (const dir of this.MONITORED_DIRS) {
       const dirPath = path.join(process.cwd(), dir);
-      
+
       try {
         const stats = await fs.stat(dirPath);
-        
+
         if (stats.isDirectory()) {
           const hashes = await this.scanDirectory(dirPath);
           allHashes.push(...hashes);
@@ -219,4 +221,3 @@ export class FileIntegrityService {
     return allHashes;
   }
 }
-

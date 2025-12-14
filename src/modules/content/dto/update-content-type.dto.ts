@@ -25,4 +25,3 @@ export class UpdateContentTypeDto {
   @IsOptional()
   isActive?: boolean;
 }
-

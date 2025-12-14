@@ -42,4 +42,3 @@ export class UpdatePageDto {
   @IsOptional()
   customFields?: any;
 }
-

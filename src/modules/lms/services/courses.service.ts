@@ -18,7 +18,7 @@ export class CoursesService {
 
   async create(dto: CreateCourseDto, instructorId: string) {
     const slug = this.generateSlug(dto.title);
-    
+
     // Check for slug collision
     let finalSlug = slug;
     let counter = 1;
@@ -43,7 +43,16 @@ export class CoursesService {
   }
 
   async findAll(query: CourseQueryDto) {
-    const { search, category, level, priceType, status, instructorId, page = 1, limit = 12 } = query;
+    const {
+      search,
+      category,
+      level,
+      priceType,
+      status,
+      instructorId,
+      page = 1,
+      limit = 12,
+    } = query;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -95,7 +104,7 @@ export class CoursesService {
         instructor: { select: { id: true, name: true, avatar: true, bio: true } },
         lessons: {
           orderBy: { orderIndex: 'asc' },
-          include: { videoAsset: true, quiz: true }
+          include: { videoAsset: true, quiz: true },
         },
         quizzes: { include: { _count: { select: { questions: true } } } },
         _count: { select: { lessons: true, enrollments: true, quizzes: true } },
@@ -110,9 +119,17 @@ export class CoursesService {
       where: { slug },
       include: {
         instructor: { select: { id: true, name: true, avatar: true, bio: true } },
-        lessons: { orderBy: { orderIndex: 'asc' }, select: {
-          id: true, title: true, type: true, estimatedMinutes: true, isPreview: true, orderIndex: true
-        }},
+        lessons: {
+          orderBy: { orderIndex: 'asc' },
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            estimatedMinutes: true,
+            isPreview: true,
+            orderIndex: true,
+          },
+        },
         _count: { select: { lessons: true, enrollments: true } },
       },
     });
@@ -155,7 +172,7 @@ export class CoursesService {
       select: { category: true },
       distinct: ['category'],
     });
-    return courses.map(c => c.category).filter(Boolean);
+    return courses.map((c) => c.category).filter(Boolean);
   }
 
   async getAdminDashboardStats(instructorId?: string) {
@@ -204,11 +221,14 @@ export class CoursesService {
 
     return {
       courses: { total: totalCourses, published: publishedCourses, draft: draftCourses },
-      enrollments: { total: totalEnrollments, active: activeEnrollments, completed: completedEnrollments },
+      enrollments: {
+        total: totalEnrollments,
+        active: activeEnrollments,
+        completed: completedEnrollments,
+      },
       revenue: totalRevenue._sum.pricePaid || 0,
       recentEnrollments,
       topCourses,
     };
   }
 }
-

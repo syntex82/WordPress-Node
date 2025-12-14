@@ -154,7 +154,7 @@ export class MessagesService {
       where: { OR: [{ participant1Id: userId }, { participant2Id: userId }] },
       select: { id: true },
     });
-    
+
     return this.prisma.directMessage.count({
       where: {
         conversationId: { in: conversations.map((c) => c.id) },
@@ -164,4 +164,3 @@ export class MessagesService {
     });
   }
 }
-

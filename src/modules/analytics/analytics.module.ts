@@ -13,4 +13,3 @@ import { PrismaModule } from '../../database/prisma.module';
   exports: [AnalyticsService],
 })
 export class AnalyticsModule {}
-

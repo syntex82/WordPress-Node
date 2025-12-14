@@ -3,16 +3,7 @@
  * Handles HTTP requests for custom content type management
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ContentTypesService } from '../services/content-types.service';
 import { CreateContentTypeDto } from '../dto/create-content-type.dto';
 import { UpdateContentTypeDto } from '../dto/update-content-type.dto';
@@ -76,4 +67,3 @@ export class ContentTypesController {
     return this.contentTypesService.remove(id);
   }
 }
-

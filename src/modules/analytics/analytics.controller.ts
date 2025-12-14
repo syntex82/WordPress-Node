@@ -90,14 +90,18 @@ export class AnalyticsController {
   }
 
   @Post('track/event')
-  async trackEvent(@Req() req: Request, @Body() body: {
-    category: string;
-    action: string;
-    label?: string;
-    value?: number;
-    path?: string;
-    sessionId?: string;
-  }) {
+  async trackEvent(
+    @Req() req: Request,
+    @Body()
+    body: {
+      category: string;
+      action: string;
+      label?: string;
+      value?: number;
+      path?: string;
+      sessionId?: string;
+    },
+  ) {
     const ip = req.ip || req.socket.remoteAddress || '';
     return this.prisma.analyticsEvent.create({
       data: {
@@ -149,4 +153,3 @@ export class AnalyticsController {
     return { device, browser, os };
   }
 }
-

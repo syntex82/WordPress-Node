@@ -32,4 +32,3 @@ export class UpdateUserDto {
   @IsOptional()
   bio?: string;
 }
-

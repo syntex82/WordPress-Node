@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
@@ -11,7 +16,10 @@ export class GroupsService {
   /**
    * Get all groups (public + user's groups)
    */
-  async findAll(userId: string, params?: { visibility?: GroupVisibility; search?: string; page?: number; limit?: number }) {
+  async findAll(
+    userId: string,
+    params?: { visibility?: GroupVisibility; search?: string; page?: number; limit?: number },
+  ) {
     const page = params?.page || 1;
     const limit = params?.limit || 20;
     const skip = (page - 1) * limit;
@@ -295,7 +303,9 @@ export class GroupsService {
 
     // Cannot leave if you're the owner
     if (group.ownerId === userId) {
-      throw new BadRequestException('Group owner cannot leave the group. Transfer ownership or delete the group instead.');
+      throw new BadRequestException(
+        'Group owner cannot leave the group. Transfer ownership or delete the group instead.',
+      );
     }
 
     const membership = await this.prisma.groupMember.findUnique({
@@ -379,7 +389,12 @@ export class GroupsService {
   /**
    * Remove a member from the group
    */
-  async removeMember(groupId: string, userId: string, requesterId: string, requesterRole: UserRole) {
+  async removeMember(
+    groupId: string,
+    userId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ) {
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
     });

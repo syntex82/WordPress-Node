@@ -1,7 +1,18 @@
 /**
  * Quiz DTOs for LMS Module
  */
-import { IsString, IsOptional, IsNumber, IsBoolean, IsUUID, IsArray, IsEnum, ValidateNested, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsUUID,
+  IsArray,
+  IsEnum,
+  ValidateNested,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum QuestionType {
@@ -109,4 +120,3 @@ export class SubmitQuizDto {
 export class StartQuizDto {
   // Can be extended for additional options
 }
-

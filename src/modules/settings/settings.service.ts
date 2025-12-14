@@ -15,7 +15,7 @@ export class SettingsService {
    */
   async findAll(group?: string) {
     const where: any = {};
-    
+
     if (group) {
       where.group = group;
     }
@@ -65,10 +65,12 @@ export class SettingsService {
       },
     });
 
-    return settings.reduce((acc, setting) => {
-      acc[setting.key] = setting.value;
-      return acc;
-    }, {} as Record<string, any>);
+    return settings.reduce(
+      (acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
   }
 }
-

@@ -98,7 +98,7 @@ export class SecurityEventsService {
     if (!user) return 0;
 
     const since = new Date(Date.now() - minutes * 60 * 1000);
-    
+
     return this.prisma.securityEvent.count({
       where: {
         userId: user.id,
@@ -113,7 +113,7 @@ export class SecurityEventsService {
    */
   async getRecentFailedLoginsByIp(ip: string, minutes: number = 15): Promise<number> {
     const since = new Date(Date.now() - minutes * 60 * 1000);
-    
+
     return this.prisma.securityEvent.count({
       where: {
         ip,
@@ -156,4 +156,3 @@ export class SecurityEventsService {
     };
   }
 }
-

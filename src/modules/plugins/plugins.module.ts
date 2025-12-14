@@ -14,4 +14,3 @@ import { PluginLoaderService } from './plugin-loader.service';
   exports: [PluginsService, PluginLoaderService],
 })
 export class PluginsModule {}
-

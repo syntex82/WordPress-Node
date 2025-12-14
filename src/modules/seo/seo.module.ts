@@ -13,4 +13,3 @@ import { PrismaModule } from '../../database/prisma.module';
   exports: [SeoService],
 })
 export class SeoModule {}
-

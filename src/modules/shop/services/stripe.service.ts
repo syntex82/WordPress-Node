@@ -16,7 +16,10 @@ export class StripeService {
     private configService: ConfigService,
   ) {
     const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
-    console.log('Stripe secret key configured:', secretKey ? `${secretKey.substring(0, 10)}...` : 'NOT SET');
+    console.log(
+      'Stripe secret key configured:',
+      secretKey ? `${secretKey.substring(0, 10)}...` : 'NOT SET',
+    );
     if (secretKey) {
       this.stripe = new Stripe(secretKey);
     }
@@ -259,4 +262,3 @@ export class StripeService {
     return this.configService.get<string>('STRIPE_PUBLISHABLE_KEY');
   }
 }
-

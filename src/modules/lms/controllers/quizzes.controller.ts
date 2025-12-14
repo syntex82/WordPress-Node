@@ -2,19 +2,15 @@
  * Quizzes Controller for LMS Module
  * Handles admin quiz management
  */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { QuizzesService } from '../services/quizzes.service';
-import { CreateQuizDto, UpdateQuizDto, CreateQuestionDto, UpdateQuestionDto } from '../dto/quiz.dto';
+import {
+  CreateQuizDto,
+  UpdateQuizDto,
+  CreateQuestionDto,
+  UpdateQuestionDto,
+} from '../dto/quiz.dto';
 
 @Controller('api/lms/admin/courses/:courseId/quizzes')
 @UseGuards(JwtAuthGuard)
@@ -22,10 +18,7 @@ export class QuizzesController {
   constructor(private readonly quizzesService: QuizzesService) {}
 
   @Post()
-  async create(
-    @Param('courseId') courseId: string,
-    @Body() dto: CreateQuizDto,
-  ) {
+  async create(@Param('courseId') courseId: string, @Body() dto: CreateQuizDto) {
     return this.quizzesService.create(courseId, dto);
   }
 
@@ -51,18 +44,12 @@ export class QuizzesController {
 
   // Question management
   @Post(':quizId/questions')
-  async addQuestion(
-    @Param('quizId') quizId: string,
-    @Body() dto: CreateQuestionDto,
-  ) {
+  async addQuestion(@Param('quizId') quizId: string, @Body() dto: CreateQuestionDto) {
     return this.quizzesService.addQuestion(quizId, dto);
   }
 
   @Put('questions/:questionId')
-  async updateQuestion(
-    @Param('questionId') questionId: string,
-    @Body() dto: UpdateQuestionDto,
-  ) {
+  async updateQuestion(@Param('questionId') questionId: string, @Body() dto: UpdateQuestionDto) {
     return this.quizzesService.updateQuestion(questionId, dto);
   }
 
@@ -72,11 +59,7 @@ export class QuizzesController {
   }
 
   @Put(':quizId/questions/reorder')
-  async reorderQuestions(
-    @Param('quizId') quizId: string,
-    @Body() body: { questionIds: string[] },
-  ) {
+  async reorderQuestions(@Param('quizId') quizId: string, @Body() body: { questionIds: string[] }) {
     return this.quizzesService.reorderQuestions(quizId, body.questionIds);
   }
 }
-

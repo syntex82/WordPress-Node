@@ -29,13 +29,13 @@ export class AuthService {
    */
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    
+
     if (!user) {
       return null;
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
       return null;
     }
@@ -58,7 +58,7 @@ export class AuthService {
       await this.logSecurityEvent(user.id, SecurityEventType.LOCKOUT_TRIGGERED, ip, userAgent);
       const minutesLeft = Math.ceil((user.accountLockedUntil.getTime() - Date.now()) / 60000);
       throw new UnauthorizedException(
-        `Account is locked due to too many failed login attempts. Try again in ${minutesLeft} minutes.`
+        `Account is locked due to too many failed login attempts. Try again in ${minutesLeft} minutes.`,
       );
     }
 
@@ -85,7 +85,7 @@ export class AuthService {
         requires2FA: true,
         tempToken: this.jwtService.sign(
           { email: validatedUser.email, sub: validatedUser.id, temp: true },
-          { expiresIn: '5m' }
+          { expiresIn: '5m' },
         ),
         user: {
           id: validatedUser.id,
@@ -141,7 +141,12 @@ export class AuthService {
   /**
    * Complete 2FA login
    */
-  async verify2FAAndLogin(tempToken: string, twoFactorCode: string, ip?: string, userAgent?: string) {
+  async verify2FAAndLogin(
+    tempToken: string,
+    twoFactorCode: string,
+    ip?: string,
+    userAgent?: string,
+  ) {
     // Verify temp token
     let payload: any;
     try {
@@ -177,7 +182,7 @@ export class AuthService {
             recoveryCodeValid = true;
             // Remove used recovery code
             const updatedCodes = (user.recoveryCodes as string[]).filter(
-              code => code !== hashedCode
+              (code) => code !== hashedCode,
             );
             await this.prisma.user.update({
               where: { id: user.id },
@@ -268,7 +273,7 @@ export class AuthService {
     type: SecurityEventType,
     ip?: string,
     userAgent?: string,
-    metadata?: any
+    metadata?: any,
   ) {
     try {
       await this.prisma.securityEvent.create({
@@ -285,4 +290,3 @@ export class AuthService {
     }
   }
 }
-

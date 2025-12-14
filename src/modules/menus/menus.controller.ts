@@ -3,16 +3,7 @@
  * Handles API endpoints for menu management
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { MenusService } from './menus.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
@@ -94,4 +85,3 @@ export class MenusController {
     return this.menusService.remove(id);
   }
 }
-

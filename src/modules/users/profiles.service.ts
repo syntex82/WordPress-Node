@@ -3,7 +3,12 @@
  * Handles user profile management, follows, badges, and activity
  */
 
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 export interface UpdateProfileDto {
@@ -374,9 +379,7 @@ export class ProfilesService {
       })),
       ...enrollments.map((e) => ({
         type: e.completedAt ? 'course_completed' : 'course_enrolled',
-        title: e.completedAt
-          ? `Completed "${e.course.title}"`
-          : `Enrolled in "${e.course.title}"`,
+        title: e.completedAt ? `Completed "${e.course.title}"` : `Enrolled in "${e.course.title}"`,
         link: `/courses/${e.course.slug}`,
         date: e.completedAt || e.enrolledAt,
       })),
@@ -463,4 +466,3 @@ export class ProfilesService {
     };
   }
 }
-

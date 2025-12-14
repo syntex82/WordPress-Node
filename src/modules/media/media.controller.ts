@@ -74,10 +74,7 @@ export class MediaController {
    */
   @Patch(':id')
   @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
-  update(
-    @Param('id') id: string,
-    @Body() updateData: { alt?: string; caption?: string },
-  ) {
+  update(@Param('id') id: string, @Body() updateData: { alt?: string; caption?: string }) {
     return this.mediaService.update(id, updateData.alt, updateData.caption);
   }
 
@@ -91,4 +88,3 @@ export class MediaController {
     return this.mediaService.remove(id);
   }
 }
-

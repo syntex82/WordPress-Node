@@ -2,12 +2,7 @@
  * Storefront Controller
  * Public endpoints for the shop frontend
  */
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ProductsService } from '../services/products.service';
 import { CategoriesService } from '../services/categories.service';
 import { ProductQueryDto } from '../dto/product.dto';
@@ -64,4 +59,3 @@ export class StorefrontController {
     return result.products.filter((p: any) => p.salePrice);
   }
 }
-

@@ -44,20 +44,24 @@ export class ProductsService {
         salePrice: dto.salePrice,
         costPrice: dto.costPrice,
         weight: dto.weight,
-        variants: variants ? {
-          create: variants.map((v, i) => ({
-            ...v,
-            price: v.price,
-            salePrice: v.salePrice,
-            options: v.options || {},
-          })),
-        } : undefined,
-        tags: tags ? {
-          connectOrCreate: tags.map(tag => ({
-            where: { slug: this.generateSlug(tag) },
-            create: { name: tag, slug: this.generateSlug(tag) },
-          })),
-        } : undefined,
+        variants: variants
+          ? {
+              create: variants.map((v, i) => ({
+                ...v,
+                price: v.price,
+                salePrice: v.salePrice,
+                options: v.options || {},
+              })),
+            }
+          : undefined,
+        tags: tags
+          ? {
+              connectOrCreate: tags.map((tag) => ({
+                where: { slug: this.generateSlug(tag) },
+                create: { name: tag, slug: this.generateSlug(tag) },
+              })),
+            }
+          : undefined,
       },
       include: {
         category: true,
@@ -161,16 +165,20 @@ export class ProductsService {
       data: {
         ...productData,
         slug,
-        variants: variants ? {
-          create: variants.map(v => ({ ...v, options: v.options || {} })),
-        } : undefined,
-        tags: tags ? {
-          set: [],
-          connectOrCreate: tags.map(tag => ({
-            where: { slug: this.generateSlug(tag) },
-            create: { name: tag, slug: this.generateSlug(tag) },
-          })),
-        } : undefined,
+        variants: variants
+          ? {
+              create: variants.map((v) => ({ ...v, options: v.options || {} })),
+            }
+          : undefined,
+        tags: tags
+          ? {
+              set: [],
+              connectOrCreate: tags.map((tag) => ({
+                where: { slug: this.generateSlug(tag) },
+                create: { name: tag, slug: this.generateSlug(tag) },
+              })),
+            }
+          : undefined,
       },
       include: { category: true, variants: true, tags: true },
     });
@@ -206,4 +214,3 @@ export class ProductsService {
     }
   }
 }
-

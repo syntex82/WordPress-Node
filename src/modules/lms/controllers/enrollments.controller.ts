@@ -25,11 +25,7 @@ export class EnrollmentsController {
 
   // Student endpoints
   @Post('courses/:courseId/enroll')
-  async enroll(
-    @Param('courseId') courseId: string,
-    @Body() dto: EnrollCourseDto,
-    @Request() req,
-  ) {
+  async enroll(@Param('courseId') courseId: string, @Body() dto: EnrollCourseDto, @Request() req) {
     return this.enrollmentsService.enroll(courseId, req.user.id, dto);
   }
 
@@ -68,4 +64,3 @@ export class EnrollmentsController {
     return this.enrollmentsService.update(courseId, userId, dto);
   }
 }
-

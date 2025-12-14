@@ -2,17 +2,7 @@
  * Learning Controller for LMS Module
  * Handles student learning experience
  */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../../auth/guards/optional-jwt-auth.guard';
 import { CoursesService } from '../services/courses.service';
@@ -82,10 +72,10 @@ export class LearningController {
     @Request() req,
   ) {
     const progress = await this.progressService.updateProgress(lessonId, req.user.id, dto);
-    
+
     // Check for certificate issuance
     await this.certificatesService.checkAndIssueCertificate(courseId, req.user.id);
-    
+
     return progress;
   }
 
@@ -97,20 +87,17 @@ export class LearningController {
     @Request() req,
   ) {
     const progress = await this.progressService.markComplete(lessonId, req.user.id);
-    
+
     // Check for certificate issuance
     await this.certificatesService.checkAndIssueCertificate(courseId, req.user.id);
-    
+
     return progress;
   }
 
   // Quiz endpoints
   @Get('learn/:courseId/quizzes/:quizId')
   @UseGuards(JwtAuthGuard)
-  async getQuiz(
-    @Param('quizId') quizId: string,
-    @Request() req,
-  ) {
+  async getQuiz(@Param('quizId') quizId: string, @Request() req) {
     return this.quizzesService.getQuizForStudent(quizId, req.user.id);
   }
 
@@ -133,10 +120,10 @@ export class LearningController {
     @Request() req,
   ) {
     const result = await this.quizzesService.submitAttempt(attemptId, dto, req.user.id);
-    
+
     // Check for certificate issuance
     await this.certificatesService.checkAndIssueCertificate(courseId, req.user.id);
-    
+
     return result;
   }
 
@@ -147,4 +134,3 @@ export class LearningController {
     return this.progressService.getUserDashboard(req.user.id);
   }
 }
-

@@ -38,4 +38,3 @@ export class UpdatePostDto {
   @IsOptional()
   customFields?: any;
 }
-

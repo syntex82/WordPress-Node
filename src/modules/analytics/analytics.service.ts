@@ -44,10 +44,12 @@ export class AnalyticsService {
         _avg: { duration: true },
       }),
     ]);
-    const bounceRate = totalSessions > 0
-      ? await this.prisma.analyticsSession.count({ where: { startedAt: dateFilter, pageCount: 1 } })
-          .then(bounces => Math.round((bounces / totalSessions) * 100))
-      : 0;
+    const bounceRate =
+      totalSessions > 0
+        ? await this.prisma.analyticsSession
+            .count({ where: { startedAt: dateFilter, pageCount: 1 } })
+            .then((bounces) => Math.round((bounces / totalSessions) * 100))
+        : 0;
     return {
       pageViews: totalPageViews,
       uniqueVisitors: uniqueVisitors.length,
@@ -65,7 +67,7 @@ export class AnalyticsService {
       orderBy: { createdAt: 'asc' },
     });
     const grouped: Record<string, number> = {};
-    pageViews.forEach(pv => {
+    pageViews.forEach((pv) => {
       const date = pv.createdAt.toISOString().split('T')[0];
       grouped[date] = (grouped[date] || 0) + 1;
     });
@@ -82,7 +84,7 @@ export class AnalyticsService {
       orderBy: { _count: { path: 'desc' } },
       take: limit,
     });
-    return pages.map(p => ({
+    return pages.map((p) => ({
       path: p.path,
       views: p._count.path,
       avgDuration: Math.round(p._avg?.duration || 0),
@@ -98,7 +100,7 @@ export class AnalyticsService {
       orderBy: { _count: { referer: 'desc' } },
       take: limit,
     });
-    return sources.map(s => ({ source: s.referer || 'Direct', visits: s._count.referer }));
+    return sources.map((s) => ({ source: s.referer || 'Direct', visits: s._count.referer }));
   }
 
   async getDeviceBreakdown(period = 'week') {
@@ -109,7 +111,7 @@ export class AnalyticsService {
       _count: { device: true },
     });
     const total = devices.reduce((sum, d) => sum + d._count.device, 0);
-    return devices.map(d => ({
+    return devices.map((d) => ({
       device: d.device || 'Unknown',
       count: d._count.device,
       percentage: total > 0 ? Math.round((d._count.device / total) * 100) : 0,
@@ -126,7 +128,7 @@ export class AnalyticsService {
       take: 5,
     });
     const total = browsers.reduce((sum, b) => sum + b._count.browser, 0);
-    return browsers.map(b => ({
+    return browsers.map((b) => ({
       browser: b.browser || 'Unknown',
       count: b._count.browser,
       percentage: total > 0 ? Math.round((b._count.browser / total) * 100) : 0,
@@ -136,7 +138,9 @@ export class AnalyticsService {
   async getRealTimeStats() {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     const [activeVisitors, recentPages] = await Promise.all([
-      this.prisma.analyticsSession.count({ where: { isActive: true, startedAt: { gte: fiveMinutesAgo } } }),
+      this.prisma.analyticsSession.count({
+        where: { isActive: true, startedAt: { gte: fiveMinutesAgo } },
+      }),
       this.prisma.pageView.findMany({
         where: { createdAt: { gte: fiveMinutesAgo } },
         select: { path: true, createdAt: true },
@@ -147,4 +151,3 @@ export class AnalyticsService {
     return { activeVisitors, recentPages };
   }
 }
-

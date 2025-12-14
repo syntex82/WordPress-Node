@@ -1,7 +1,12 @@
 /**
  * Certificates Service for LMS Module
  */
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { ProgressService } from './progress.service';
 import { CertificateGeneratorService } from './certificate-generator.service';
@@ -189,4 +194,3 @@ export class CertificatesService {
     return this.issueCertificate(courseId, userId);
   }
 }
-

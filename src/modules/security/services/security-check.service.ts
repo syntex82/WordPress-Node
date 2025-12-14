@@ -44,8 +44,8 @@ export class SecurityCheckService {
       name: 'HTTPS',
       status: isHttps ? 'pass' : 'fail',
       message: isHttps ? 'HTTPS is enabled' : 'HTTPS is not enabled',
-      details: isHttps 
-        ? 'Your site is using secure HTTPS connections' 
+      details: isHttps
+        ? 'Your site is using secure HTTPS connections'
         : 'Enable HTTPS to encrypt data in transit',
     });
 
@@ -55,14 +55,14 @@ export class SecurityCheckService {
       select: { id: true, twoFactorEnabled: true },
     });
 
-    const adminsWithout2FA = admins.filter(a => !a.twoFactorEnabled).length;
+    const adminsWithout2FA = admins.filter((a) => !a.twoFactorEnabled).length;
     const all2FAEnabled = adminsWithout2FA === 0 && admins.length > 0;
 
     checks.push({
       name: '2FA for Admins',
       status: all2FAEnabled ? 'pass' : adminsWithout2FA === admins.length ? 'fail' : 'warning',
-      message: all2FAEnabled 
-        ? 'All admin accounts have 2FA enabled' 
+      message: all2FAEnabled
+        ? 'All admin accounts have 2FA enabled'
         : `${adminsWithout2FA} of ${admins.length} admin accounts don't have 2FA`,
       details: 'Two-factor authentication adds an extra layer of security',
     });
@@ -78,24 +78,25 @@ export class SecurityCheckService {
     checks.push({
       name: 'Default Admin Account',
       status: defaultAdmin ? 'fail' : 'pass',
-      message: defaultAdmin 
-        ? 'Default admin account still exists' 
+      message: defaultAdmin
+        ? 'Default admin account still exists'
         : 'No default admin account found',
-      details: defaultAdmin 
-        ? 'Change the default admin email to something unique' 
+      details: defaultAdmin
+        ? 'Change the default admin email to something unique'
         : 'Good! Default credentials have been changed',
     });
 
     // Check 4: Recent failed logins
     const recentFailedLogins = await this.securityEvents.getStatistics(24);
-    
+
     checks.push({
       name: 'Failed Login Attempts',
       status: recentFailedLogins.failedLogins > 50 ? 'warning' : 'pass',
       message: `${recentFailedLogins.failedLogins} failed login attempts in the last 24 hours`,
-      details: recentFailedLogins.failedLogins > 50 
-        ? 'High number of failed logins detected. Monitor for brute force attacks.' 
-        : 'Normal level of failed login attempts',
+      details:
+        recentFailedLogins.failedLogins > 50
+          ? 'High number of failed logins detected. Monitor for brute force attacks.'
+          : 'Normal level of failed login attempts',
     });
 
     // Check 5: Locked accounts
@@ -103,9 +104,10 @@ export class SecurityCheckService {
       name: 'Locked Accounts',
       status: recentFailedLogins.lockedAccounts > 0 ? 'warning' : 'pass',
       message: `${recentFailedLogins.lockedAccounts} accounts currently locked`,
-      details: recentFailedLogins.lockedAccounts > 0 
-        ? 'Some accounts are locked due to failed login attempts' 
-        : 'No accounts are currently locked',
+      details:
+        recentFailedLogins.lockedAccounts > 0
+          ? 'Some accounts are locked due to failed login attempts'
+          : 'No accounts are currently locked',
     });
 
     // Check 6: Security headers (basic check)
@@ -117,9 +119,9 @@ export class SecurityCheckService {
     });
 
     // Calculate risk level
-    const failCount = checks.filter(c => c.status === 'fail').length;
-    const warningCount = checks.filter(c => c.status === 'warning').length;
-    
+    const failCount = checks.filter((c) => c.status === 'fail').length;
+    const warningCount = checks.filter((c) => c.status === 'warning').length;
+
     let riskLevel: 'low' | 'medium' | 'high';
     if (failCount >= 2) {
       riskLevel = 'high';
@@ -193,4 +195,3 @@ export class SecurityCheckService {
     return lastLogin;
   }
 }
-

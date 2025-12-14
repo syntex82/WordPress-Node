@@ -88,7 +88,7 @@ export class PublicController {
     try {
       const currentPage = page ? parseInt(page) : 1;
       const result = await this.postsService.findAll(currentPage, 10, PostStatus.PUBLISHED);
-      
+
       const pagination = {
         page: result.meta.page,
         totalPages: result.meta.totalPages,
@@ -110,7 +110,11 @@ export class PublicController {
    * GET /shop
    */
   @Get('shop')
-  async shop(@Query('page') page: string, @Query('category') category: string, @Res() res: Response) {
+  async shop(
+    @Query('page') page: string,
+    @Query('category') category: string,
+    @Res() res: Response,
+  ) {
     try {
       const currentPage = page ? parseInt(page) : 1;
       const limit = 12;
@@ -179,7 +183,13 @@ export class PublicController {
    * GET /courses
    */
   @Get('courses')
-  async courses(@Query('page') page: string, @Query('category') category: string, @Query('level') level: string, @Query('priceType') priceType: string, @Res() res: Response) {
+  async courses(
+    @Query('page') page: string,
+    @Query('category') category: string,
+    @Query('level') level: string,
+    @Query('priceType') priceType: string,
+    @Res() res: Response,
+  ) {
     try {
       const currentPage = page ? parseInt(page) : 1;
       const limit = 12;
@@ -282,7 +292,7 @@ export class PublicController {
   async post(@Param('slug') slug: string, @Res() res: Response) {
     try {
       const post = await this.postsService.findBySlug(slug);
-      
+
       if (post.status !== PostStatus.PUBLISHED) {
         res.status(404).send('Post not found');
         return;
@@ -339,4 +349,3 @@ export class PublicController {
     }
   }
 }
-

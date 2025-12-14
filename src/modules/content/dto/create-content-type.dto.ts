@@ -25,4 +25,3 @@ export class CreateContentTypeDto {
   @IsOptional()
   isActive?: boolean = true;
 }
-

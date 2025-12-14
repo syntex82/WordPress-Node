@@ -94,4 +94,3 @@ export class CartController {
     return this.cartService.clearCart(userId, sessionId);
   }
 }
-

@@ -83,4 +83,3 @@ export class MessagesController {
     return { users: this.messagesGateway.getOnlineUsers() };
   }
 }
-

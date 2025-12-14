@@ -3,17 +3,7 @@
  * Handles all security-related endpoints
  */
 
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Delete, 
-  Body, 
-  Query, 
-  UseGuards, 
-  Req,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query, UseGuards, Req, Param } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -137,11 +127,7 @@ export class SecurityController {
    * Enable 2FA
    */
   @Post('2fa/enable')
-  async enable2FA(
-    @Body() dto: Enable2FADto,
-    @CurrentUser() user: any,
-    @Req() req: Request,
-  ) {
+  async enable2FA(@Body() dto: Enable2FADto, @CurrentUser() user: any, @Req() req: Request) {
     const ip = req.ip;
     return this.twoFactor.enable2FA(user.id, dto.secret, dto.token, ip);
   }
@@ -150,11 +136,7 @@ export class SecurityController {
    * Disable 2FA
    */
   @Post('2fa/disable')
-  async disable2FA(
-    @Body() dto: Disable2FADto,
-    @CurrentUser() user: any,
-    @Req() req: Request,
-  ) {
+  async disable2FA(@Body() dto: Disable2FADto, @CurrentUser() user: any, @Req() req: Request) {
     const ip = req.ip;
     return this.twoFactor.disable2FA(user.id, dto.password, ip);
   }
@@ -175,8 +157,8 @@ export class SecurityController {
   @Roles(UserRole.ADMIN)
   async generateBaseline(@CurrentUser() user: any) {
     const hashes = await this.fileIntegrity.generateBaseline(user.id);
-    return { 
-      success: true, 
+    return {
+      success: true,
       fileCount: hashes.length,
       message: 'Baseline generated successfully',
     };
@@ -207,13 +189,16 @@ export class SecurityController {
    */
   @Post('rate-limits')
   @Roles(UserRole.ADMIN)
-  async upsertRateLimit(@Body() data: {
-    endpoint: string;
-    windowMs: number;
-    maxRequests: number;
-    enabled: boolean;
-    blockDuration?: number;
-  }) {
+  async upsertRateLimit(
+    @Body()
+    data: {
+      endpoint: string;
+      windowMs: number;
+      maxRequests: number;
+      enabled: boolean;
+      blockDuration?: number;
+    },
+  ) {
     return this.rateLimit.upsertConfig(data);
   }
 
@@ -259,10 +244,7 @@ export class SecurityController {
    */
   @Delete('sessions/:sessionId')
   @Roles(UserRole.ADMIN)
-  async forceLogout(
-    @Param('sessionId') sessionId: string,
-    @CurrentUser() user: any,
-  ) {
+  async forceLogout(@Param('sessionId') sessionId: string, @CurrentUser() user: any) {
     return this.session.forceLogout(sessionId, user.id);
   }
 
@@ -271,10 +253,7 @@ export class SecurityController {
    */
   @Delete('sessions/user/:userId')
   @Roles(UserRole.ADMIN)
-  async forceLogoutAll(
-    @Param('userId') userId: string,
-    @CurrentUser() user: any,
-  ) {
+  async forceLogoutAll(@Param('userId') userId: string, @CurrentUser() user: any) {
     return this.session.forceLogoutAll(userId, user.id);
   }
 
@@ -325,4 +304,3 @@ export class SecurityController {
     return { expired };
   }
 }
-

@@ -1,9 +1,20 @@
 /**
  * Quizzes Service for LMS Module
  */
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { CreateQuizDto, UpdateQuizDto, CreateQuestionDto, UpdateQuestionDto, SubmitQuizDto } from '../dto/quiz.dto';
+import {
+  CreateQuizDto,
+  UpdateQuizDto,
+  CreateQuestionDto,
+  UpdateQuestionDto,
+  SubmitQuizDto,
+} from '../dto/quiz.dto';
 
 @Injectable()
 export class QuizzesService {
@@ -79,9 +90,8 @@ export class QuizzesService {
   // Question management
   async addQuestion(quizId: string, dto: CreateQuestionDto) {
     const quiz = await this.findOne(quizId);
-    const maxOrder = quiz.questions.length > 0 
-      ? Math.max(...quiz.questions.map(q => q.orderIndex)) + 1 
-      : 0;
+    const maxOrder =
+      quiz.questions.length > 0 ? Math.max(...quiz.questions.map((q) => q.orderIndex)) + 1 : 0;
 
     return this.prisma.question.create({
       data: {
@@ -105,7 +115,7 @@ export class QuizzesService {
   async deleteQuestion(questionId: string) {
     const question = await this.prisma.question.findUnique({ where: { id: questionId } });
     if (!question) throw new NotFoundException('Question not found');
-    
+
     await this.prisma.question.delete({ where: { id: questionId } });
     return { message: 'Question deleted successfully' };
   }
@@ -115,7 +125,7 @@ export class QuizzesService {
       this.prisma.question.update({
         where: { id },
         data: { orderIndex: index },
-      })
+      }),
     );
     await this.prisma.$transaction(updates);
     return this.findOne(quizId);
@@ -148,8 +158,12 @@ export class QuizzesService {
     });
 
     // Prepare questions (shuffle if enabled)
-    let questions = quiz.questions.map(q => ({
-      id: q.id, type: q.type, prompt: q.prompt, optionsJson: q.optionsJson, points: q.points,
+    let questions = quiz.questions.map((q) => ({
+      id: q.id,
+      type: q.type,
+      prompt: q.prompt,
+      optionsJson: q.optionsJson,
+      points: q.points,
     }));
     if (quiz.shuffleQuestions) {
       questions = questions.sort(() => Math.random() - 0.5);
@@ -163,7 +177,9 @@ export class QuizzesService {
       attempt,
       questions,
       timeLimitSeconds: quiz.timeLimitSeconds,
-      attemptsRemaining: quiz.attemptsAllowed ? quiz.attemptsAllowed - (lastAttempt?.attemptNumber ?? 0) - 1 : null,
+      attemptsRemaining: quiz.attemptsAllowed
+        ? quiz.attemptsAllowed - (lastAttempt?.attemptNumber ?? 0) - 1
+        : null,
     };
   }
 
@@ -187,7 +203,8 @@ export class QuizzesService {
     // Check time limit
     if (attempt.quiz.timeLimitSeconds) {
       const elapsed = (Date.now() - attempt.startedAt.getTime()) / 1000;
-      if (elapsed > attempt.quiz.timeLimitSeconds + 30) { // 30s grace period
+      if (elapsed > attempt.quiz.timeLimitSeconds + 30) {
+        // 30s grace period
         throw new BadRequestException('Time limit exceeded');
       }
     }
@@ -195,10 +212,11 @@ export class QuizzesService {
     // Score the quiz
     const { scorePercent, scorePoints, maxPoints, results } = this.scoreQuiz(
       attempt.quiz.questions,
-      dto.answers
+      dto.answers,
     );
 
-    const passingScore = attempt.quiz.passingScorePercent ?? attempt.quiz.course.passingScorePercent;
+    const passingScore =
+      attempt.quiz.passingScorePercent ?? attempt.quiz.course.passingScorePercent;
     const passed = scorePercent >= passingScore;
     const timeSpent = Math.floor((Date.now() - attempt.startedAt.getTime()) / 1000);
 
@@ -233,7 +251,7 @@ export class QuizzesService {
 
     for (const question of questions) {
       maxPoints += question.points;
-      const userAnswer = answers.find(a => a.questionId === question.id);
+      const userAnswer = answers.find((a) => a.questionId === question.id);
       const isCorrect = this.checkAnswer(question, userAnswer?.answer);
 
       if (isCorrect) scorePoints += question.points;
@@ -285,7 +303,7 @@ export class QuizzesService {
     const quiz = await this.findOne(quizId);
 
     // Strip correct answers for students
-    const questions = quiz.questions.map(q => ({
+    const questions = quiz.questions.map((q) => ({
       id: q.id,
       type: q.type,
       prompt: q.prompt,
@@ -304,4 +322,3 @@ export class QuizzesService {
     };
   }
 }
-

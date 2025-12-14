@@ -35,4 +35,3 @@ export class EnrollmentQueryDto {
   @IsEnum(EnrollmentStatus)
   status?: EnrollmentStatus;
 }
-

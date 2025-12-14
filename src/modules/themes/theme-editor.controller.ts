@@ -3,16 +3,7 @@
  * Handles HTTP requests for theme file editing
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ThemeEditorService } from './theme-editor.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -39,10 +30,7 @@ export class ThemeEditorController {
    * GET /api/theme-editor/:themeSlug/file
    */
   @Get(':themeSlug/file')
-  readFile(
-    @Param('themeSlug') themeSlug: string,
-    @Query('path') filePath: string,
-  ) {
+  readFile(@Param('themeSlug') themeSlug: string, @Query('path') filePath: string) {
     return this.themeEditorService.readFile(themeSlug, filePath);
   }
 
@@ -51,10 +39,7 @@ export class ThemeEditorController {
    * POST /api/theme-editor/:themeSlug/file
    */
   @Post(':themeSlug/file')
-  saveFile(
-    @Param('themeSlug') themeSlug: string,
-    @Body() body: { path: string; content: string },
-  ) {
+  saveFile(@Param('themeSlug') themeSlug: string, @Body() body: { path: string; content: string }) {
     return this.themeEditorService.saveFile(themeSlug, body.path, body.content);
   }
 
@@ -63,10 +48,7 @@ export class ThemeEditorController {
    * POST /api/theme-editor/:themeSlug/backup
    */
   @Post(':themeSlug/backup')
-  createBackup(
-    @Param('themeSlug') themeSlug: string,
-    @Body() body?: { name?: string },
-  ) {
+  createBackup(@Param('themeSlug') themeSlug: string, @Body() body?: { name?: string }) {
     return this.themeEditorService.createBackup(themeSlug, body?.name);
   }
 
@@ -84,10 +66,7 @@ export class ThemeEditorController {
    * POST /api/theme-editor/:themeSlug/restore
    */
   @Post(':themeSlug/restore')
-  restoreBackup(
-    @Param('themeSlug') themeSlug: string,
-    @Body() body: { backupId: string },
-  ) {
+  restoreBackup(@Param('themeSlug') themeSlug: string, @Body() body: { backupId: string }) {
     return this.themeEditorService.restoreBackup(themeSlug, body.backupId);
   }
 
@@ -96,10 +75,7 @@ export class ThemeEditorController {
    * DELETE /api/theme-editor/:themeSlug/backup/:backupId
    */
   @Delete(':themeSlug/backup/:backupId')
-  deleteBackup(
-    @Param('themeSlug') themeSlug: string,
-    @Param('backupId') backupId: string,
-  ) {
+  deleteBackup(@Param('themeSlug') themeSlug: string, @Param('backupId') backupId: string) {
     return this.themeEditorService.deleteBackup(themeSlug, backupId);
   }
 
@@ -112,4 +88,3 @@ export class ThemeEditorController {
     return this.themeEditorService.validateFile(body.path, body.content);
   }
 }
-

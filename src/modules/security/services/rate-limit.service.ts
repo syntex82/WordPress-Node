@@ -26,7 +26,10 @@ export class RateLimitService {
   /**
    * Check if request should be rate limited
    */
-  async checkRateLimit(ip: string, endpoint: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+  async checkRateLimit(
+    ip: string,
+    endpoint: string,
+  ): Promise<{ allowed: boolean; retryAfter?: number }> {
     // Get rate limit config for this endpoint
     const config = await this.getConfig(endpoint);
     if (!config || !config.enabled) {
@@ -38,7 +41,7 @@ export class RateLimitService {
       this.requestStore.set(ip, new Map());
     }
     const ipStore = this.requestStore.get(ip)!;
-    
+
     if (!ipStore.has(endpoint)) {
       ipStore.set(endpoint, []);
     }
@@ -50,7 +53,7 @@ export class RateLimitService {
 
     // Remove requests outside the time window
     const windowStart = now - config.windowMs;
-    const recentRequests = requests.filter(time => time > windowStart);
+    const recentRequests = requests.filter((time) => time > windowStart);
     ipStore.set(endpoint, recentRequests);
 
     // Check if limit exceeded
@@ -162,7 +165,7 @@ export class RateLimitService {
 
     for (const [ip, ipStore] of this.requestStore.entries()) {
       for (const [endpoint, requests] of ipStore.entries()) {
-        const recentRequests = requests.filter(time => now - time < maxAge);
+        const recentRequests = requests.filter((time) => now - time < maxAge);
         if (recentRequests.length === 0) {
           ipStore.delete(endpoint);
         } else {
@@ -175,4 +178,3 @@ export class RateLimitService {
     }
   }
 }
-

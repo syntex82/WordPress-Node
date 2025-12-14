@@ -1,7 +1,16 @@
 /**
  * Course DTOs for LMS Module
  */
-import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean, IsArray, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsBoolean,
+  IsArray,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum CourseLevel {
@@ -122,4 +131,3 @@ export class CourseQueryDto {
   @Type(() => Number)
   limit?: number = 12;
 }
-

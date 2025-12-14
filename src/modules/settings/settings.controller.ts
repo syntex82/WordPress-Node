@@ -3,16 +3,7 @@
  * Handles HTTP requests for settings management
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Param,
-  Body,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -50,9 +41,7 @@ export class SettingsController {
    */
   @Post()
   @Roles(UserRole.ADMIN)
-  set(
-    @Body() data: { key: string; value: any; type: string; group?: string },
-  ) {
+  set(@Body() data: { key: string; value: any; type: string; group?: string }) {
     return this.settingsService.set(data.key, data.value, data.type, data.group);
   }
 
@@ -66,4 +55,3 @@ export class SettingsController {
     return this.settingsService.remove(key);
   }
 }
-

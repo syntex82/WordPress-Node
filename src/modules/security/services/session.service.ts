@@ -20,7 +20,7 @@ export class SessionService {
    */
   async getAllSessions(userId?: string) {
     const where = userId ? { userId } : {};
-    
+
     const sessions = await this.prisma.session.findMany({
       where: {
         ...where,
@@ -43,7 +43,7 @@ export class SessionService {
       },
     });
 
-    return sessions.map(session => ({
+    return sessions.map((session) => ({
       id: session.id,
       userId: session.userId,
       user: session.user,
@@ -119,8 +119,8 @@ export class SessionService {
       },
     });
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: `${sessions.length} session(s) terminated`,
       count: sessions.length,
     };
@@ -155,4 +155,3 @@ export class SessionService {
     return { deleted: result.count };
   }
 }
-

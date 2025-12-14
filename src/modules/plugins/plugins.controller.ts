@@ -145,4 +145,3 @@ export class PluginsController {
     return this.pluginsService.updateSettings(id, settings);
   }
 }
-

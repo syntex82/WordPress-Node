@@ -82,20 +82,20 @@ export class ProgressService {
       }),
     ]);
 
-    const progressMap = new Map(progressRecords.map(p => [p.lessonId, p]));
-    const passedQuizIds = new Set(quizAttempts.map(a => a.quizId));
+    const progressMap = new Map(progressRecords.map((p) => [p.lessonId, p]));
+    const passedQuizIds = new Set(quizAttempts.map((a) => a.quizId));
 
-    const lessonProgress = lessons.map(lesson => ({
+    const lessonProgress = lessons.map((lesson) => ({
       ...lesson,
       progress: progressMap.get(lesson.id) || null,
       completed: progressMap.get(lesson.id)?.lessonCompleted || false,
     }));
 
-    const completedCount = lessonProgress.filter(l => l.completed).length;
+    const completedCount = lessonProgress.filter((l) => l.completed).length;
     const totalCount = lessons.length;
 
     // Find next incomplete lesson
-    const nextLesson = lessonProgress.find(l => !l.completed);
+    const nextLesson = lessonProgress.find((l) => !l.completed);
 
     // Get required quizzes
     const requiredQuizzes = await this.prisma.quiz.findMany({
@@ -103,7 +103,7 @@ export class ProgressService {
       select: { id: true, title: true },
     });
 
-    const allRequiredQuizzesPassed = requiredQuizzes.every(q => passedQuizIds.has(q.id));
+    const allRequiredQuizzesPassed = requiredQuizzes.every((q) => passedQuizIds.has(q.id));
 
     return {
       lessons: lessonProgress,
@@ -111,7 +111,7 @@ export class ProgressService {
       totalLessons: totalCount,
       percentComplete: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
       nextLesson,
-      requiredQuizzes: requiredQuizzes.map(q => ({
+      requiredQuizzes: requiredQuizzes.map((q) => ({
         ...q,
         passed: passedQuizIds.has(q.id),
       })),
@@ -143,7 +143,7 @@ export class ProgressService {
           ...enrollment,
           progress,
         };
-      })
+      }),
     );
 
     const certificates = await this.prisma.certificate.findMany({
@@ -157,10 +157,9 @@ export class ProgressService {
       certificates,
       stats: {
         totalCourses: enrollments.length,
-        completedCourses: enrollments.filter(e => e.status === 'COMPLETED').length,
+        completedCourses: enrollments.filter((e) => e.status === 'COMPLETED').length,
         totalCertificates: certificates.length,
       },
     };
   }
 }
-

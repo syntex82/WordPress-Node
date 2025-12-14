@@ -18,7 +18,7 @@ export class PagesService {
    * Generate unique slug from title
    */
   private async generateSlug(title: string, excludeId?: string): Promise<string> {
-    let slug = slugify(title, { lower: true, strict: true });
+    const slug = slugify(title, { lower: true, strict: true });
     let counter = 1;
     let uniqueSlug = slug;
 
@@ -208,4 +208,3 @@ export class PagesService {
     });
   }
 }
-

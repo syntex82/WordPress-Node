@@ -2637,30 +2637,6 @@ function BlockSettingsForm({
     </div>
   );
 
-  const NumberInput = ({ label, propKey }: { label: string; propKey: string }) => (
-    <div className="mb-3">
-      <label className="block text-xs text-gray-400 mb-1">{label}</label>
-      <input
-        type="number"
-        value={props[propKey] || 0}
-        onChange={(e) => updateProp(propKey, Number(e.target.value))}
-        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
-      />
-    </div>
-  );
-
-  const CheckboxInput = ({ label, propKey }: { label: string; propKey: string }) => (
-    <div className="mb-3 flex items-center gap-2">
-      <input
-        type="checkbox"
-        checked={props[propKey] || false}
-        onChange={(e) => updateProp(propKey, e.target.checked)}
-        className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
-      />
-      <label className="text-xs text-gray-400">{label}</label>
-    </div>
-  );
-
   switch (type) {
     case 'audio':
       return <AudioBlockSettings props={props} onUpdate={onUpdate} />;

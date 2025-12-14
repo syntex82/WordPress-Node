@@ -96,7 +96,7 @@ export class IpBlockService {
 
     // Filter out expired blocks
     const now = new Date();
-    return blocks.filter(block => !block.expiresAt || block.expiresAt > now);
+    return blocks.filter((block) => !block.expiresAt || block.expiresAt > now);
   }
 
   /**
@@ -114,4 +114,3 @@ export class IpBlockService {
     return deleted.count;
   }
 }
-

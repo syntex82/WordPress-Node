@@ -99,11 +99,7 @@ export class RefundsController {
 
   @Post(':orderId')
   @Roles(UserRole.ADMIN)
-  async createRefund(
-    @Param('orderId') orderId: string,
-    @Body() dto: RefundOrderDto,
-  ) {
+  async createRefund(@Param('orderId') orderId: string, @Body() dto: RefundOrderDto) {
     return this.stripeService.createRefund(orderId, dto.amount, dto.reason);
   }
 }
-

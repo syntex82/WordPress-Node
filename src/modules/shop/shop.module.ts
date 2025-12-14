@@ -17,15 +17,16 @@ import { StripeService } from './services/stripe.service';
 import { ProductsController } from './controllers/products.controller';
 import { CategoriesController } from './controllers/categories.controller';
 import { CartController } from './controllers/cart.controller';
-import { AdminOrdersController, OrdersController, UserOrdersController } from './controllers/orders.controller';
+import {
+  AdminOrdersController,
+  OrdersController,
+  UserOrdersController,
+} from './controllers/orders.controller';
 import { CheckoutController, RefundsController } from './controllers/checkout.controller';
 import { StorefrontController } from './controllers/storefront.controller';
 
 @Module({
-  imports: [
-    PrismaModule,
-    ConfigModule,
-  ],
+  imports: [PrismaModule, ConfigModule],
   controllers: [
     // Admin controllers
     ProductsController,
@@ -39,20 +40,7 @@ import { StorefrontController } from './controllers/storefront.controller';
     CheckoutController,
     StorefrontController,
   ],
-  providers: [
-    ProductsService,
-    CategoriesService,
-    CartService,
-    OrdersService,
-    StripeService,
-  ],
-  exports: [
-    ProductsService,
-    CategoriesService,
-    CartService,
-    OrdersService,
-    StripeService,
-  ],
+  providers: [ProductsService, CategoriesService, CartService, OrdersService, StripeService],
+  exports: [ProductsService, CategoriesService, CartService, OrdersService, StripeService],
 })
 export class ShopModule {}
-

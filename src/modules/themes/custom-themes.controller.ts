@@ -14,7 +14,11 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { CustomThemesService, CreateCustomThemeDto, UpdateCustomThemeDto } from './custom-themes.service';
+import {
+  CustomThemesService,
+  CreateCustomThemeDto,
+  UpdateCustomThemeDto,
+} from './custom-themes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -135,4 +139,3 @@ export class CustomThemesController {
     return { css: this.customThemesService.generateCSS(body.settings, body.customCSS) };
   }
 }
-

@@ -17,4 +17,3 @@ import { PrismaService } from '../../database/prisma.service';
   exports: [MessagesService, MessagesGateway],
 })
 export class MessagesModule {}
-

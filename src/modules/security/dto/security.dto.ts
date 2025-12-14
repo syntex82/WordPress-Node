@@ -75,4 +75,3 @@ export class SecurityEventFiltersDto {
   @IsOptional()
   offset?: number;
 }
-

@@ -71,7 +71,7 @@ export class MenusService {
    * Process menu items to add computed URLs
    */
   private processMenuItems(items: any[]): any[] {
-    return items.map(item => ({
+    return items.map((item) => ({
       ...item,
       url: this.computeMenuItemUrl(item),
       children: item.children ? this.processMenuItems(item.children) : [],
@@ -96,10 +96,7 @@ export class MenusService {
     // Check if menu with same name or location exists
     const existing = await this.prisma.menu.findFirst({
       where: {
-        OR: [
-          { name: createMenuDto.name },
-          { location: createMenuDto.location },
-        ],
+        OR: [{ name: createMenuDto.name }, { location: createMenuDto.location }],
       },
     });
 
@@ -171,7 +168,7 @@ export class MenusService {
     });
 
     // Process all menus to add computed URLs
-    return menus.map(menu => this.processMenu(menu));
+    return menus.map((menu) => this.processMenu(menu));
   }
 
   /**

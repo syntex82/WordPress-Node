@@ -46,14 +46,9 @@ import { RateLimitMiddleware } from './middleware/rate-limit.middleware';
 export class SecurityModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // Apply IP blocking middleware to all API routes
-    consumer
-      .apply(IpBlockMiddleware)
-      .forRoutes('api/*');
+    consumer.apply(IpBlockMiddleware).forRoutes('api/*');
 
     // Apply rate limiting middleware to all API routes
-    consumer
-      .apply(RateLimitMiddleware)
-      .forRoutes('api/*');
+    consumer.apply(RateLimitMiddleware).forRoutes('api/*');
   }
 }
-

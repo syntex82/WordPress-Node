@@ -51,4 +51,3 @@ import { CertificatesController } from './controllers/certificates.controller';
   ],
 })
 export class LmsModule {}
-

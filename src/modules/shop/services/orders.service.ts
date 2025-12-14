@@ -41,12 +41,12 @@ export class OrdersService {
     }
 
     // Separate product and course items
-    const productItems = cart.items.filter(item => item.itemType === 'PRODUCT' && item.product);
-    const courseItems = cart.items.filter(item => item.itemType === 'COURSE' && item.course);
+    const productItems = cart.items.filter((item) => item.itemType === 'PRODUCT' && item.product);
+    const courseItems = cart.items.filter((item) => item.itemType === 'COURSE' && item.course);
 
     // Calculate totals
     let subtotal = new Decimal(0);
-    const orderItems = productItems.map(item => {
+    const orderItems = productItems.map((item) => {
       const price = item.variant?.price || item.product!.salePrice || item.product!.price;
       const total = new Decimal(price).times(item.quantity);
       subtotal = subtotal.plus(total);
@@ -77,9 +77,10 @@ export class OrdersService {
         where: { id: dto.shippingMethod },
       });
       if (shippingMethod) {
-        shipping = shippingMethod.freeAbove && subtotal.gte(shippingMethod.freeAbove)
-          ? new Decimal(0)
-          : shippingMethod.cost;
+        shipping =
+          shippingMethod.freeAbove && subtotal.gte(shippingMethod.freeAbove)
+            ? new Decimal(0)
+            : shippingMethod.cost;
       }
     }
 
@@ -110,7 +111,7 @@ export class OrdersService {
     }
 
     // Calculate tax (simple example - 10%)
-    const taxRate = new Decimal(0.10);
+    const taxRate = new Decimal(0.1);
     const tax = subtotal.minus(discount).times(taxRate);
     const total = subtotal.plus(shipping).plus(tax).minus(discount);
 
@@ -192,7 +193,7 @@ export class OrdersService {
 
     return {
       ...order,
-      coursesEnrolled: courseItems.map(item => item.course?.title).filter(Boolean),
+      coursesEnrolled: courseItems.map((item) => item.course?.title).filter(Boolean),
     };
   }
 
@@ -323,4 +324,3 @@ export class OrdersService {
     };
   }
 }
-

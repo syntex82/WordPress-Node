@@ -18,7 +18,12 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { LessonsService } from '../services/lessons.service';
-import { CreateLessonDto, UpdateLessonDto, ReorderLessonsDto, CreateVideoAssetDto } from '../dto/lesson.dto';
+import {
+  CreateLessonDto,
+  UpdateLessonDto,
+  ReorderLessonsDto,
+  CreateVideoAssetDto,
+} from '../dto/lesson.dto';
 
 @Controller('api/lms/admin/courses/:courseId/lessons')
 @UseGuards(JwtAuthGuard)
@@ -26,10 +31,7 @@ export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
   @Post()
-  async create(
-    @Param('courseId') courseId: string,
-    @Body() dto: CreateLessonDto,
-  ) {
+  async create(@Param('courseId') courseId: string, @Body() dto: CreateLessonDto) {
     return this.lessonsService.create(courseId, dto);
   }
 
@@ -54,10 +56,7 @@ export class LessonsController {
   }
 
   @Put('reorder')
-  async reorder(
-    @Param('courseId') courseId: string,
-    @Body() dto: ReorderLessonsDto,
-  ) {
+  async reorder(@Param('courseId') courseId: string, @Body() dto: ReorderLessonsDto) {
     return this.lessonsService.reorder(courseId, dto.lessonIds);
   }
 
@@ -79,16 +78,18 @@ export class LessonsController {
 
   // Video upload endpoint
   @Post(':id/upload-video')
-  @UseInterceptors(FileInterceptor('video', {
-    limits: { fileSize: 500 * 1024 * 1024 }, // 500MB max
-    fileFilter: (req, file, cb) => {
-      if (file.mimetype.startsWith('video/')) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only video files are allowed'), false);
-      }
-    },
-  }))
+  @UseInterceptors(
+    FileInterceptor('video', {
+      limits: { fileSize: 500 * 1024 * 1024 }, // 500MB max
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('video/')) {
+          cb(null, true);
+        } else {
+          cb(new Error('Only video files are allowed'), false);
+        }
+      },
+    }),
+  )
   async uploadVideo(
     @Param('courseId') courseId: string,
     @Param('id') lessonId: string,
@@ -107,4 +108,3 @@ export class LessonsController {
     return this.lessonsService.attachExternalVideo(lessonId, dto);
   }
 }
-

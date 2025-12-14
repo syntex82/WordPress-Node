@@ -1,7 +1,19 @@
 /**
  * SEO Controller - API endpoints for SEO management
  */
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Res, Header } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Res,
+  Header,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { SeoService } from './seo.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -31,7 +43,10 @@ export class SeoController {
   @Put('redirects/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  updateRedirect(@Param('id') id: string, @Body() body: { fromPath?: string; toPath?: string; type?: number; isActive?: boolean }) {
+  updateRedirect(
+    @Param('id') id: string,
+    @Body() body: { fromPath?: string; toPath?: string; type?: number; isActive?: boolean },
+  ) {
     return this.seoService.updateRedirect(id, body);
   }
 
@@ -91,7 +106,9 @@ export class SeoController {
   @Post('schema')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  createSchemaMarkup(@Body() body: { name: string; type: string; content: any; scope?: string; scopeId?: string }) {
+  createSchemaMarkup(
+    @Body() body: { name: string; type: string; content: any; scope?: string; scopeId?: string },
+  ) {
     return this.seoService.createSchemaMarkup(body);
   }
 
@@ -113,7 +130,9 @@ export class SeoController {
   @Get('schema/render')
   async getSchemaForPage(@Query('scope') scope?: string, @Query('scopeId') scopeId?: string) {
     const schemas = await this.seoService.getSchemaMarkups(scope);
-    const filtered = scopeId ? schemas.filter((s: any) => !s.scopeId || s.scopeId === scopeId) : schemas;
+    const filtered = scopeId
+      ? schemas.filter((s: any) => !s.scopeId || s.scopeId === scopeId)
+      : schemas;
     return filtered.map((s: any) => s.content);
   }
 
@@ -125,4 +144,3 @@ export class SeoController {
     return this.seoService.analyzeContent(contentType, contentId);
   }
 }
-

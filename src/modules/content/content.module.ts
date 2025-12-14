@@ -17,4 +17,3 @@ import { ContentTypesController } from './controllers/content-types.controller';
   exports: [PostsService, PagesService, ContentTypesService],
 })
 export class ContentModule {}
-

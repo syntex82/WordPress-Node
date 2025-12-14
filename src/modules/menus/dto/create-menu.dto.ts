@@ -61,4 +61,3 @@ export class CreateMenuDto {
   @IsOptional()
   items?: CreateMenuItemDto[];
 }
-

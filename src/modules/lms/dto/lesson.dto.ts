@@ -92,4 +92,3 @@ export class UpdateProgressDto {
   @IsBoolean()
   lessonCompleted?: boolean;
 }
-

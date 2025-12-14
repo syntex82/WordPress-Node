@@ -174,11 +174,13 @@ export class ThemesService {
     if (activeThemes.length > 1) {
       // Keep only the most recently updated active theme
       const [keepActive, ...deactivate] = activeThemes;
-      console.log(`Fixing data: ${deactivate.length} extra active themes found. Keeping "${keepActive.name}" as active.`);
+      console.log(
+        `Fixing data: ${deactivate.length} extra active themes found. Keeping "${keepActive.name}" as active.`,
+      );
 
       await this.prisma.theme.updateMany({
         where: {
-          id: { in: deactivate.map(t => t.id) },
+          id: { in: deactivate.map((t) => t.id) },
         },
         data: { isActive: false },
       });
@@ -285,8 +287,8 @@ export class ThemesService {
       const zip = new AdmZip(file.buffer);
       const zipEntries = zip.getEntries();
       const entryNames = zipEntries
-        .filter(e => !e.entryName.includes('__MACOSX'))
-        .map(e => e.entryName);
+        .filter((e) => !e.entryName.includes('__MACOSX'))
+        .map((e) => e.entryName);
 
       // Find theme.json
       let themeConfig: any = null;
@@ -324,8 +326,8 @@ export class ThemesService {
       // Check for required template files
       for (const template of REQUIRED_TEMPLATES) {
         const templatePath = rootFolder ? `${rootFolder}/${template}` : template;
-        const found = entryNames.some(name =>
-          name === templatePath || name === template || name.endsWith(`/${template}`)
+        const found = entryNames.some(
+          (name) => name === templatePath || name === template || name.endsWith(`/${template}`),
         );
         if (!found) {
           errors.push(`Missing required template: ${template}`);
@@ -333,15 +335,15 @@ export class ThemesService {
       }
 
       // Check for optional files
-      const hasScreenshot = entryNames.some(name =>
-        name.endsWith('screenshot.png') || name.endsWith('screenshot.jpg')
+      const hasScreenshot = entryNames.some(
+        (name) => name.endsWith('screenshot.png') || name.endsWith('screenshot.jpg'),
       );
       if (!hasScreenshot) {
         warnings.push('No screenshot.png found. A preview image is recommended.');
       }
 
-      const hasArchive = entryNames.some(name =>
-        name.endsWith('templates/archive.hbs') || name === 'archive.hbs'
+      const hasArchive = entryNames.some(
+        (name) => name.endsWith('templates/archive.hbs') || name === 'archive.hbs',
       );
       if (!hasArchive) {
         warnings.push('No archive.hbs template found. This template is optional but recommended.');
@@ -365,7 +367,9 @@ export class ThemesService {
   /**
    * Validate theme ZIP and return validation result (without installing)
    */
-  async validateTheme(file: Express.Multer.File): Promise<ThemeValidationResult & { exists?: boolean }> {
+  async validateTheme(
+    file: Express.Multer.File,
+  ): Promise<ThemeValidationResult & { exists?: boolean }> {
     const validation = this.validateThemeZip(file);
 
     if (validation.valid && validation.themeSlug) {
@@ -373,7 +377,9 @@ export class ThemesService {
         where: { slug: validation.themeSlug },
       });
       if (existingTheme) {
-        validation.errors.push(`Theme "${validation.themeSlug}" already exists. Please delete it first or use a different folder name.`);
+        validation.errors.push(
+          `Theme "${validation.themeSlug}" already exists. Please delete it first or use a different folder name.`,
+        );
         validation.valid = false;
         return { ...validation, exists: true };
       }
@@ -476,7 +482,9 @@ export class ThemesService {
 
     // Prevent deleting active theme
     if (theme.isActive) {
-      throw new BadRequestException('Cannot delete the active theme. Please activate another theme first.');
+      throw new BadRequestException(
+        'Cannot delete the active theme. Please activate another theme first.',
+      );
     }
 
     // Delete theme directory
@@ -508,7 +516,9 @@ export class ThemesService {
       where: { slug },
     });
     if (existingTheme) {
-      throw new BadRequestException(`Theme "${slug}" already exists. Please choose a different name.`);
+      throw new BadRequestException(
+        `Theme "${slug}" already exists. Please choose a different name.`,
+      );
     }
 
     const themePath = path.join(this.themesDir, slug);
@@ -536,10 +546,7 @@ export class ThemesService {
         designConfig: JSON.parse(JSON.stringify(config)),
         mediaBlocks: config.mediaBlocks || [],
       };
-      await fs.writeFile(
-        path.join(themePath, 'theme.json'),
-        JSON.stringify(themeJson, null, 2)
-      );
+      await fs.writeFile(path.join(themePath, 'theme.json'), JSON.stringify(themeJson, null, 2));
 
       // Generate CSS variables
       const cssContent = this.generateThemeCSS(config);
@@ -1051,38 +1058,43 @@ p { margin-bottom: var(--element-spacing); }
   /**
    * Generate HTML content from WYSIWYG media blocks
    */
-  private generateMediaBlocksHtml(mediaBlocks: ThemeMediaBlock[] | undefined, slug: string): string {
+  private generateMediaBlocksHtml(
+    mediaBlocks: ThemeMediaBlock[] | undefined,
+    slug: string,
+  ): string {
     if (!mediaBlocks || mediaBlocks.length === 0) return '';
 
-    return mediaBlocks.map(block => {
-      const alignStyle = block.align ? `text-align: ${block.align};` : '';
-      const widthStyle = block.width ? `max-width: ${block.width}%;` : '';
+    return mediaBlocks
+      .map((block) => {
+        const alignStyle = block.align ? `text-align: ${block.align};` : '';
+        const widthStyle = block.width ? `max-width: ${block.width}%;` : '';
 
-      switch (block.type) {
-        case 'text':
-          return `<div class="wysiwyg-block wysiwyg-text" style="${alignStyle}">${block.content || ''}</div>`;
-        case 'image':
-          if (!block.src) return '';
-          const imgSrc = block.src.startsWith('/uploads/')
-            ? `/themes/${slug}/assets/media/${block.src.replace(/^\/uploads\//, '')}`
-            : block.src;
-          return `<div class="wysiwyg-block wysiwyg-image" style="${alignStyle}"><img src="${imgSrc}" alt="" style="${widthStyle} display: inline-block;"></div>`;
-        case 'video':
-          if (!block.src) return '';
-          const videoSrc = block.src.startsWith('/uploads/')
-            ? `/themes/${slug}/assets/media/${block.src.replace(/^\/uploads\//, '')}`
-            : block.src;
-          return `<div class="wysiwyg-block wysiwyg-video" style="${alignStyle}"><video src="${videoSrc}" controls style="${widthStyle} display: inline-block;"></video></div>`;
-        case 'audio':
-          if (!block.src) return '';
-          const audioSrc = block.src.startsWith('/uploads/')
-            ? `/themes/${slug}/assets/media/${block.src.replace(/^\/uploads\//, '')}`
-            : block.src;
-          return `<div class="wysiwyg-block wysiwyg-audio" style="${alignStyle}"><audio src="${audioSrc}" controls></audio><p>${block.title || 'Audio Track'}</p></div>`;
-        default:
-          return '';
-      }
-    }).join('\n          ');
+        switch (block.type) {
+          case 'text':
+            return `<div class="wysiwyg-block wysiwyg-text" style="${alignStyle}">${block.content || ''}</div>`;
+          case 'image':
+            if (!block.src) return '';
+            const imgSrc = block.src.startsWith('/uploads/')
+              ? `/themes/${slug}/assets/media/${block.src.replace(/^\/uploads\//, '')}`
+              : block.src;
+            return `<div class="wysiwyg-block wysiwyg-image" style="${alignStyle}"><img src="${imgSrc}" alt="" style="${widthStyle} display: inline-block;"></div>`;
+          case 'video':
+            if (!block.src) return '';
+            const videoSrc = block.src.startsWith('/uploads/')
+              ? `/themes/${slug}/assets/media/${block.src.replace(/^\/uploads\//, '')}`
+              : block.src;
+            return `<div class="wysiwyg-block wysiwyg-video" style="${alignStyle}"><video src="${videoSrc}" controls style="${widthStyle} display: inline-block;"></video></div>`;
+          case 'audio':
+            if (!block.src) return '';
+            const audioSrc = block.src.startsWith('/uploads/')
+              ? `/themes/${slug}/assets/media/${block.src.replace(/^\/uploads\//, '')}`
+              : block.src;
+            return `<div class="wysiwyg-block wysiwyg-audio" style="${alignStyle}"><audio src="${audioSrc}" controls></audio><p>${block.title || 'Audio Track'}</p></div>`;
+          default:
+            return '';
+        }
+      })
+      .join('\n          ');
   }
 
   /**
@@ -1090,7 +1102,12 @@ p { margin-bottom: var(--element-spacing); }
    */
   private generateThemeTemplates(config: ThemeDesignConfig, slug: string): Record<string, string> {
     const { layout } = config;
-    const headerClass = layout.headerStyle === 'centered' ? 'header-centered' : layout.headerStyle === 'minimal' ? 'header-minimal' : '';
+    const headerClass =
+      layout.headerStyle === 'centered'
+        ? 'header-centered'
+        : layout.headerStyle === 'minimal'
+          ? 'header-minimal'
+          : '';
     const navClass = layout.headerStyle === 'centered' ? 'nav-centered' : '';
 
     // Generate HTML from WYSIWYG media blocks
@@ -1168,7 +1185,8 @@ p { margin-bottom: var(--element-spacing); }
       <div class="content-wrapper">
         <div class="main-content">`;
 
-    const sidebarContent = hasSidebar ? `
+    const sidebarContent = hasSidebar
+      ? `
         <aside class="sidebar">
           <div class="widget">
             <h3 class="widget-title">About</h3>
@@ -1190,7 +1208,8 @@ p { margin-bottom: var(--element-spacing); }
               {{/each}}
             </ul>
           </div>
-        </aside>` : '';
+        </aside>`
+      : '';
 
     // Admin bar script
     const adminBarScript = `
@@ -1243,11 +1262,15 @@ p { margin-bottom: var(--element-spacing); }
 
     return {
       home: `${layoutStart}
-          ${wysiwygContent ? `<!-- Custom WYSIWYG Content -->
+          ${
+            wysiwygContent
+              ? `<!-- Custom WYSIWYG Content -->
           <section class="wysiwyg-content">
           ${wysiwygContent}
           </section>
-          <hr style="margin: 2rem 0; border-color: var(--color-border);">` : ''}
+          <hr style="margin: 2rem 0; border-color: var(--color-border);">`
+              : ''
+          }
           <h2>Latest Posts</h2>
           {{#each posts}}
           <article class="post">
@@ -1458,7 +1481,10 @@ ${layoutEnd}`,
   /**
    * Generate a simple SVG screenshot placeholder
    */
-  private async generateScreenshotPlaceholder(themePath: string, config: ThemeDesignConfig): Promise<void> {
+  private async generateScreenshotPlaceholder(
+    themePath: string,
+    config: ThemeDesignConfig,
+  ): Promise<void> {
     const { colors } = config;
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
   <rect fill="${colors.background}" width="1200" height="900"/>
@@ -1491,7 +1517,10 @@ ${layoutEnd}`,
     const mediaDir = path.join(themePath, 'assets', 'media');
 
     for (const block of mediaBlocks) {
-      if (block.src && (block.type === 'image' || block.type === 'video' || block.type === 'audio')) {
+      if (
+        block.src &&
+        (block.type === 'image' || block.type === 'video' || block.type === 'audio')
+      ) {
         try {
           // Extract filename from src path (e.g., /uploads/filename.jpg -> filename.jpg)
           const srcPath = block.src.replace(/^\/uploads\//, '');
