@@ -421,7 +421,8 @@ wordpress-node/
 ### Admin Dashboard
 > *Modern dashboard with analytics widgets and quick actions*
 
-![Dashboard](https://via.placeholder.com/800x450/1a1a2e/eaeaea?text=Admin+Dashboard)
+
+<img width="1901" height="946" alt="Screenshot 2025-12-14 045602" src="https://github.com/user-attachments/assets/2aa08167-e39c-4c30-a916-ac8575fd3631" />
 
 <br />
 
