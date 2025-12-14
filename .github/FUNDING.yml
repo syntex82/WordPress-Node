@@ -1,18 +1,17 @@
 # These are supported funding model platforms
 # These are supported funding model platforms
 
-github: [DarkSpaceSoftwareAndSecurity]
-patreon: darkspacesoftware
-open_collective: darkspacesoftware
-ko_fi: darkspace
-tidelift: npm/wordpress-node
-community_bridge: wordpress-node
-liberapay: darkspace
-issuehunt: wordpress-node
-lfx_crowdfunding: wordpress-node
-polar: darkspace
-buy_me_a_coffee: darkspace
-thanks_dev: darkspace
+github: 
+patreon: 
+open_collective: 
+ko_fi: 
+tidelift: 
+community_bridge: 
+liberapay:
+issuehunt: 
+lfx_crowdfunding: 
+polar: 
+buy_me_a_coffee: https://buymeacoffee.com/mickyblenkd
+thanks_dev: 
 custom:
-  - https://darkspacesoftwareandsecurity.com/donate
-  - https://wordpress-node.org/support
+  -
