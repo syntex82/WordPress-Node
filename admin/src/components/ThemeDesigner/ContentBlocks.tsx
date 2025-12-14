@@ -2966,14 +2966,14 @@ function CourseCardSettings({ props, onUpdate }: { props: Record<string, any>; o
           <div>
             <label className="block text-xs text-gray-400 mb-1">Level</label>
             <select
-              value={course.level || 'beginner'}
+              value={course.level || 'BEGINNER'}
               onChange={(e) => updateCourse('level', e.target.value)}
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
             >
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-              <option value="all-levels">All Levels</option>
+              <option value="BEGINNER">Beginner</option>
+              <option value="INTERMEDIATE">Intermediate</option>
+              <option value="ADVANCED">Advanced</option>
+              <option value="ALL_LEVELS">All Levels</option>
             </select>
           </div>
           <div>
