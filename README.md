@@ -2,6 +2,7 @@
 
 <!-- Hero Banner -->
 <img src="https://via.placeholder.com/1200x300/1a1a2e/eaeaea?text=WordPress+Node+CMS" alt="WordPress Node CMS Banner" width="100%" />
+<img width="1281" height="745" alt="Screenshot 2025-12-14 043442" src="https://github.com/user-attachments/assets/4e5f2cac-30e2-4461-b519-ce90d1cce293" />
 
 <br />
 <br />
