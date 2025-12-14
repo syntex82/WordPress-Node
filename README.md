@@ -1,261 +1,473 @@
-# WordPress Node CMS
+<div align="center">
 
-A self-hosted, WordPress-style CMS platform built with Node.js, TypeScript, and NestJS. Think of it as "WordPress for Node" with a powerful plugin system, theme system, and modern admin dashboard.
+<!-- Hero Banner -->
+<img src="https://via.placeholder.com/1200x300/1a1a2e/eaeaea?text=WordPress+Node+CMS" alt="WordPress Node CMS Banner" width="100%" />
 
-## 🚀 Features
+<br />
+<br />
 
-- **Modern Tech Stack**: Built with Node.js, TypeScript, NestJS, PostgreSQL, and React
-- **Content Management**: Posts, Pages, and Custom Content Types with rich text editing
-- **User Management**: Role-based access control (Admin, Editor, Author, Viewer)
-- **Media Library**: Upload and manage images and files with metadata
-- **Theme System**: Server-side rendering with Handlebars templates
-- **Plugin Architecture**: Extensible plugin system with lifecycle hooks
-- **RESTful API**: Full API access for headless CMS usage
-- **Admin Dashboard**: Modern React-based admin panel with Tailwind CSS
+# 🚀 WordPress Node CMS
 
-## 📋 Prerequisites
+### **A Modern, Full-Featured Content Management System Built with Node.js**
 
-- Node.js 18+ and pnpm
-- PostgreSQL 12+
-- Git
+<br />
 
-## 🛠️ Installation
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-10+-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5+-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3+-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-### 1. Clone the repository
+<br />
+
+<p align="center">
+  <strong>A powerful, extensible CMS platform combining the flexibility of WordPress<br />with the performance and type-safety of modern JavaScript technologies.</strong>
+</p>
+
+<br />
+
+[Features](#-features) •
+[Tech Stack](#-tech-stack) •
+[Installation](#-installation) •
+[Project Structure](#-project-structure) •
+[API Documentation](#-api-documentation) •
+[Screenshots](#-screenshots) •
+[Contributing](#-contributing)
+
+<br />
+
+---
+
+</div>
+
+<br />
+
+## ✨ Features
+
+WordPress Node CMS provides a comprehensive set of features for building modern web applications, from simple blogs to complex e-commerce and e-learning platforms.
+
+<br />
+
+### 📝 Content Management
+
+| Feature | Description |
+|---------|-------------|
+| **Pages & Posts** | Create and manage pages and blog posts with a rich text editor |
+| **Media Library** | Upload, organize, and optimize images with automatic resizing and metadata |
+| **SEO Management** | Built-in SEO tools with meta tags, Open Graph, Twitter Cards, and sitemap generation |
+| **Categories & Tags** | Organize content with hierarchical categories and flexible tagging |
+| **Content Revisions** | Track content changes with full version history and rollback support |
+| **Custom Content Types** | Define custom content structures for specialized needs |
+
+<br />
+
+### 👥 User Management & Authentication
+
+| Feature | Description |
+|---------|-------------|
+| **Role-Based Access Control** | Four granular user roles: **Admin**, **Editor**, **Author**, **Viewer** |
+| **JWT Authentication** | Secure stateless API authentication with JSON Web Tokens |
+| **User Profiles** | Rich user profiles with avatars, bios, social links, and activity tracking |
+| **Direct Messaging** | Real-time private messaging system between users |
+| **Session Management** | Secure session handling with automatic expiration |
+
+<details>
+<summary><strong>🔐 Click to view Role Permissions Matrix</strong></summary>
+
+<br />
+
+| Permission | 👑 Admin | ✏️ Editor | 📝 Author | 👁️ Viewer |
+|------------|:--------:|:---------:|:---------:|:---------:|
+| Manage Users & Roles | ✅ | ❌ | ❌ | ❌ |
+| Manage System Settings | ✅ | ❌ | ❌ | ❌ |
+| Install Themes & Plugins | ✅ | ❌ | ❌ | ❌ |
+| Manage Shop & Orders | ✅ | ✅ | ❌ | ❌ |
+| Manage LMS & Courses | ✅ | ✅ | ❌ | ❌ |
+| Publish Any Content | ✅ | ✅ | ❌ | ❌ |
+| Edit All Content | ✅ | ✅ | ❌ | ❌ |
+| Create & Edit Own Content | ✅ | ✅ | ✅ | ❌ |
+| Upload Media | ✅ | ✅ | ✅ | ❌ |
+| View Dashboard | ✅ | ✅ | ✅ | ✅ |
+| Send Messages | ✅ | ✅ | ✅ | ✅ |
+
+</details>
+
+<br />
+
+### 🎨 Theme System
+
+| Feature | Description |
+|---------|-------------|
+| **Visual Theme Designer** | Drag-and-drop page builder with 30+ content blocks |
+| **Live Preview** | Real-time preview of theme changes in an iframe |
+| **Multi-Page Themes** | Create themes with multiple page templates (home, about, contact, etc.) |
+| **Block-Based Editor** | Headers, heroes, galleries, testimonials, CTAs, forms, and more |
+| **Responsive Controls** | Mobile-first design with breakpoint-specific styling |
+| **Theme Customizer** | Colors, typography, spacing, and layout customization |
+| **Handlebars Templates** | Server-side rendering with powerful template inheritance |
+
+<br />
+
+### 🔌 Plugin Architecture
+
+| Feature | Description |
+|---------|-------------|
+| **Lifecycle Hooks** | `onInstall`, `onActivate`, `onDeactivate`, `onUninstall` events |
+| **Content Hooks** | `beforeSave`, `afterSave`, `beforeDelete`, `afterDelete` |
+| **Custom Routes** | Plugins can register their own API endpoints |
+| **Admin Pages** | Plugins can add custom pages to the admin panel |
+| **Custom Fields** | Register additional fields for content types |
+| **ZIP Upload** | Install plugins via ZIP file upload from the admin panel |
+| **Dependency Management** | Plugin requirements and dependency tracking |
+
+<br />
+
+### 🛒 E-Commerce / Shop Module
+
+| Feature | Description |
+|---------|-------------|
+| **Product Management** | Create products with variants (size, color), SKUs, and inventory tracking |
+| **Product Categories** | Hierarchical product categorization with images |
+| **Shopping Cart** | Persistent cart with session-based and user-based tracking |
+| **Checkout Flow** | Complete checkout with shipping address and payment |
+| **Order Management** | Order processing, status updates, and order history |
+| **Storefront** | Beautiful public-facing shop with product listings and filtering |
+| **Product Search** | Full-text search across products |
+
+<br />
+
+### 📚 Learning Management System (LMS)
+
+| Feature | Description |
+|---------|-------------|
+| **Course Builder** | Create courses with structured modules and lessons |
+| **Video Lessons** | Video content hosting with progress tracking |
+| **Rich Content** | Support for text, video, audio, and downloadable resources |
+| **Quiz System** | Multiple question types (MCQ, true/false, short answer) with auto-grading |
+| **Student Enrollment** | Free and paid course enrollment management |
+| **Progress Tracking** | Track student progress through lessons and courses |
+| **Certificates** | Automatic PDF certificate generation upon course completion |
+| **Course Catalog** | Public course browsing with categories and filtering |
+| **Instructor Dashboard** | Analytics, student management, and revenue tracking |
+| **Course Categories** | Organize courses by topic or subject area |
+
+<br />
+
+### 📊 Analytics & Reporting
+
+| Feature | Description |
+|---------|-------------|
+| **Analytics Plugin** | Track page views, unique visitors, and user behavior |
+| **Dashboard Widgets** | Visual analytics charts on the admin dashboard |
+| **Traffic Reports** | View traffic trends, popular pages, and referrers |
+| **Export Reports** | Export analytics data in various formats |
+
+<br />
+
+---
+
+## 🛠 Tech Stack
+
+<table>
+<tr>
+<td valign="top" width="50%">
+
+### 🔧 Backend
+
+| Technology | Purpose |
+|------------|---------|
+| **Node.js 18+** | JavaScript runtime |
+| **NestJS 10+** | Enterprise-grade framework |
+| **TypeScript 5+** | Type-safe development |
+| **Prisma 5+** | Next-generation ORM |
+| **PostgreSQL 15+** | Relational database |
+| **Passport.js** | Authentication middleware |
+| **JWT** | Stateless authentication |
+| **Multer** | File upload handling |
+| **Sharp** | Image processing & optimization |
+| **Handlebars** | Server-side templating |
+
+</td>
+<td valign="top" width="50%">
+
+### 💻 Frontend (Admin Panel)
+
+| Technology | Purpose |
+|------------|---------|
+| **React 18+** | UI library |
+| **TypeScript 5+** | Type-safe development |
+| **Vite 5+** | Build tool & dev server |
+| **Tailwind CSS 3+** | Utility-first styling |
+| **Zustand** | State management |
+| **React Router 6+** | Client-side routing |
+| **Axios** | HTTP client |
+| **React Icons** | Icon library (Feather) |
+| **React Hot Toast** | Toast notifications |
+| **TipTap** | Rich text editor |
+
+</td>
+</tr>
+</table>
+
+<br />
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+| Requirement | Version | Check Command |
+|-------------|---------|---------------|
+| **Node.js** | 18.0+ | `node --version` |
+| **npm** or **pnpm** | 9.0+ / 8.0+ | `npm --version` |
+| **PostgreSQL** | 14.0+ | `psql --version` |
+| **Git** | 2.0+ | `git --version` |
+
+<br />
+
+### 🚀 Quick Start
 
 ```bash
-git clone <repository-url>
+# 1️⃣ Clone the repository
+git clone https://github.com/yourusername/wordpress-node.git
 cd wordpress-node
-```
 
-### 2. Install dependencies
+# 2️⃣ Install backend dependencies
+npm install
 
-```bash
-pnpm install
-```
+# 3️⃣ Install admin panel dependencies
+cd admin && npm install && cd ..
 
-### 3. Set up environment variables
-
-```bash
+# 4️⃣ Set up environment variables
 cp .env.example .env
+# ⚠️ Edit .env with your database credentials (see below)
+
+# 5️⃣ Generate Prisma client
+npx prisma generate
+
+# 6️⃣ Run database migrations
+npx prisma migrate dev
+
+# 7️⃣ Seed the database with initial data
+npx prisma db seed
+
+# 8️⃣ Start development servers
+# Terminal 1 - Backend API (port 3000)
+npm run start:dev
+
+# Terminal 2 - Admin Panel (port 5173)
+cd admin && npm run dev
 ```
 
-Edit `.env` and configure your database connection and other settings:
+<br />
+
+### ⚙️ Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/wordpress_node?schema=public"
-JWT_SECRET=your-super-secret-jwt-key
-SESSION_SECRET=your-super-secret-session-key
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=admin123
+# ═══════════════════════════════════════════════════════════
+# DATABASE CONFIGURATION
+# ═══════════════════════════════════════════════════════════
+DATABASE_URL="postgresql://username:password@localhost:5432/wordpress_node?schema=public"
+
+# ═══════════════════════════════════════════════════════════
+# AUTHENTICATION
+# ═══════════════════════════════════════════════════════════
+JWT_SECRET="your-super-secret-jwt-key-min-32-characters"
+JWT_EXPIRES_IN="7d"
+SESSION_SECRET="your-session-secret-key"
+
+# ═══════════════════════════════════════════════════════════
+# ADMIN ACCOUNT (for seeding)
+# ═══════════════════════════════════════════════════════════
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="admin123"
+
+# ═══════════════════════════════════════════════════════════
+# SERVER CONFIGURATION
+# ═══════════════════════════════════════════════════════════
+PORT=3000
+NODE_ENV="development"
+
+# ═══════════════════════════════════════════════════════════
+# FILE UPLOADS
+# ═══════════════════════════════════════════════════════════
+UPLOAD_DIR="./uploads"
+MAX_FILE_SIZE=10485760  # 10MB in bytes
+
+# ═══════════════════════════════════════════════════════════
+# FRONTEND URL (for CORS)
+# ═══════════════════════════════════════════════════════════
+FRONTEND_URL="http://localhost:5173"
 ```
 
-### 4. Set up the database
+<br />
 
-```bash
-# Generate Prisma client
-pnpm db:generate
+### 🌐 Access Points
 
-# Run migrations
-pnpm db:migrate
+Once running, access the application at:
 
-# Seed the database with initial data
-pnpm db:seed
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Public Site** | http://localhost:3000 | Public-facing website |
+| **Admin Panel** | http://localhost:5173/admin | Administration dashboard |
+| **API** | http://localhost:3000/api | RESTful API endpoints |
+| **Storefront** | http://localhost:5173/admin/storefront | E-commerce storefront |
+| **Course Catalog** | http://localhost:5173/admin/lms/catalog | LMS course browsing |
+
+<br />
+
+### 🔑 Default Login
+
+After seeding the database, use these credentials:
+
+```
+Email:    admin@example.com
+Password: admin123
 ```
 
-### 5. Start the development server
+<br />
 
-```bash
-pnpm dev
-```
-
-The application will be available at:
-- **Frontend**: http://localhost:3000
-- **Admin Panel**: http://localhost:3000/admin
-- **API**: http://localhost:3000/api
-
-### 6. Login to admin panel
-
-Use the credentials from your `.env` file:
-- Email: admin@example.com
-- Password: admin123
+---
 
 ## 📁 Project Structure
 
 ```
 wordpress-node/
-├── src/                          # Backend source code
-│   ├── modules/                  # Feature modules
-│   │   ├── auth/                # Authentication & JWT
-│   │   ├── users/               # User management
-│   │   ├── content/             # Posts, Pages, Content Types
-│   │   ├── media/               # Media library
-│   │   ├── themes/              # Theme system
-│   │   ├── plugins/             # Plugin system
-│   │   ├── settings/            # Site settings
-│   │   └── public/              # Public routes
-│   ├── common/                   # Shared utilities
-│   ├── database/                 # Prisma service
-│   ├── main.ts                   # Application entry
-│   └── app.module.ts             # Root module
-├── admin/                        # React admin panel (to be built)
-├── themes/                       # Theme directory
-│   └── default/                 # Default theme
-│       ├── theme.json
-│       └── templates/
-├── plugins/                      # Plugin directory
-│   ├── seo/                     # SEO plugin
-│   └── analytics/               # Analytics plugin
-├── prisma/                       # Database schema & migrations
-│   ├── schema.prisma
-│   └── seed.ts
-└── uploads/                      # Media uploads
+│
+├── 📂 src/                           # Backend source code (NestJS)
+│   ├── 📂 modules/                   # Feature modules
+│   │   ├── 📂 auth/                  # Authentication & JWT
+│   │   ├── 📂 users/                 # User management
+│   │   ├── 📂 content/               # Posts, Pages, Content Types
+│   │   ├── 📂 media/                 # Media library & uploads
+│   │   ├── 📂 themes/                # Theme system
+│   │   ├── 📂 plugins/               # Plugin system
+│   │   ├── 📂 settings/              # Site settings
+│   │   ├── 📂 shop/                  # E-commerce module
+│   │   │   ├── 📂 products/          # Product management
+│   │   │   ├── 📂 categories/        # Product categories
+│   │   │   ├── 📂 cart/              # Shopping cart
+│   │   │   ├── 📂 orders/            # Order management
+│   │   │   └── 📂 storefront/        # Public shop pages
+│   │   ├── 📂 lms/                   # Learning Management System
+│   │   │   ├── 📂 courses/           # Course management
+│   │   │   ├── 📂 lessons/           # Lesson management
+│   │   │   ├── 📂 quizzes/           # Quiz & questions
+│   │   │   ├── 📂 enrollments/       # Student enrollments
+│   │   │   ├── 📂 progress/          # Progress tracking
+│   │   │   └── 📂 certificates/      # Certificate generation
+│   │   ├── 📂 messages/              # Direct messaging
+│   │   └── 📂 public/                # Public routes
+│   ├── 📂 common/                    # Shared utilities & decorators
+│   ├── 📂 database/                  # Prisma service
+│   ├── 📄 main.ts                    # Application entry point
+│   └── 📄 app.module.ts              # Root module
+│
+├── 📂 admin/                         # Frontend admin panel (React)
+│   ├── 📂 src/
+│   │   ├── 📂 components/            # Reusable UI components
+│   │   │   ├── 📂 ThemeDesigner/     # Visual theme builder
+│   │   │   └── 📂 layout/            # Layout components
+│   │   ├── 📂 pages/                 # Page components
+│   │   │   ├── 📂 shop/              # Shop admin pages
+│   │   │   ├── 📂 lms/               # LMS admin pages
+│   │   │   └── 📂 storefront/        # Public storefront pages
+│   │   ├── 📂 services/              # API service layer
+│   │   ├── 📂 stores/                # Zustand state stores
+│   │   ├── 📂 config/                # Configuration files
+│   │   └── 📄 App.tsx                # Root component
+│   └── 📄 vite.config.ts             # Vite configuration
+│
+├── 📂 themes/                        # Theme directory
+│   └── 📂 developer/                 # Default developer theme
+│       ├── 📄 theme.json             # Theme metadata
+│       └── 📂 templates/             # Handlebars templates
+│
+├── 📂 plugins/                       # Plugin directory
+│   ├── 📂 seo/                       # SEO plugin
+│   └── 📂 analytics/                 # Analytics plugin
+│
+├── 📂 prisma/                        # Database schema & migrations
+│   ├── 📄 schema.prisma              # Prisma schema
+│   ├── 📄 seed.ts                    # Database seeder
+│   └── 📂 migrations/                # Migration history
+│
+├── 📂 uploads/                       # Media upload directory
+│
+├── 📄 .env.example                   # Environment template
+├── 📄 package.json                   # Dependencies
+└── 📄 README.md                      # This file
 ```
 
-## 🎨 Creating a Theme
+<br />
 
-Themes are located in the `themes/` directory. Each theme must have:
+---
 
-### 1. Create theme directory
+## 📸 Screenshots
 
-```bash
-mkdir themes/my-theme
-```
+<details>
+<summary><strong>🖼️ Click to view screenshots</strong></summary>
 
-### 2. Create theme.json
+<br />
 
-```json
-{
-  "name": "My Theme",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "description": "A custom theme",
-  "templates": ["home", "single-post", "single-page", "archive"]
-}
-```
+### Admin Dashboard
+> *Modern dashboard with analytics widgets and quick actions*
 
-### 3. Create templates
+![Dashboard](https://via.placeholder.com/800x450/1a1a2e/eaeaea?text=Admin+Dashboard)
 
-Create a `templates/` directory with Handlebars (.hbs) files:
+<br />
 
-- `home.hbs` - Home page template
-- `single-post.hbs` - Single post template
-- `single-page.hbs` - Single page template
-- `archive.hbs` - Blog archive template
+### Theme Designer
+> *Visual drag-and-drop page builder with live preview*
 
-### 4. Available template variables
+![Theme Designer](https://via.placeholder.com/800x450/1a1a2e/eaeaea?text=Theme+Designer)
 
-**Home template:**
-- `posts` - Array of published posts
-- `site.site_name` - Site name
-- `site.site_description` - Site description
+<br />
 
-**Single post template:**
-- `post` - Post object with title, content, author, etc.
-- `site` - Site settings
+### Shop Management
+> *Complete e-commerce product and order management*
 
-**Single page template:**
-- `page` - Page object
-- `site` - Site settings
+![Shop](https://via.placeholder.com/800x450/1a1a2e/eaeaea?text=Shop+Management)
 
-### 5. Handlebars helpers
+<br />
 
-- `{{formatDate date}}` - Format date
-- `{{excerpt text length}}` - Create excerpt
-- `{{eq a b}}` - Equality check
-- `{{ne a b}}` - Inequality check
+### LMS Course Builder
+> *Create courses with lessons, quizzes, and curriculum*
 
-### 6. Activate your theme
+![LMS](https://via.placeholder.com/800x450/1a1a2e/eaeaea?text=LMS+Course+Builder)
 
-1. Scan themes: `POST /api/themes/scan`
-2. Activate: `POST /api/themes/:id/activate`
+<br />
 
-Or use the admin panel: Settings → Themes
+### Media Library
+> *Upload and organize media with preview and metadata*
 
-## 🔌 Creating a Plugin
+![Media](https://via.placeholder.com/800x450/1a1a2e/eaeaea?text=Media+Library)
 
-Plugins are located in the `plugins/` directory.
+</details>
 
-### 1. Create plugin directory
+<br />
 
-```bash
-mkdir plugins/my-plugin
-```
-
-### 2. Create plugin.json
-
-```json
-{
-  "name": "My Plugin",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "description": "Plugin description",
-  "entry": "index.js",
-  "hooks": ["onActivate", "beforeSave"]
-}
-```
-
-### 3. Create index.js
-
-```javascript
-module.exports = {
-  // Called when plugin is activated
-  onActivate: async () => {
-    console.log('Plugin activated');
-  },
-
-  // Called when plugin is deactivated
-  onDeactivate: async () => {
-    console.log('Plugin deactivated');
-  },
-
-  // Hook: Before saving content
-  beforeSave: async (data) => {
-    // Modify data before saving
-    return data;
-  },
-
-  // Hook: After saving content
-  afterSave: async (data) => {
-    // Perform actions after save
-  },
-
-  // Register custom fields
-  registerFields: () => {
-    return [
-      {
-        name: 'customField',
-        label: 'Custom Field',
-        type: 'text',
-      },
-    ];
-  },
-};
-```
-
-### 4. Available hooks
-
-- `onActivate()` - Called when plugin is activated
-- `onDeactivate()` - Called when plugin is deactivated
-- `beforeSave(data)` - Called before saving content
-- `afterSave(data)` - Called after saving content
-- `beforeDelete(id)` - Called before deleting content
-- `afterDelete(id)` - Called after deleting content
-- `registerFields()` - Register custom fields
-- `registerRoutes(app)` - Register custom routes
-
-### 5. Activate your plugin
-
-1. Scan plugins: `POST /api/plugins/scan`
-2. Activate: `POST /api/plugins/:id/activate`
-
-Or use the admin panel: Settings → Plugins
+---
 
 ## 📡 API Documentation
 
-### Authentication
+The WordPress Node CMS provides a comprehensive RESTful API for all functionality.
 
-**Login**
+<br />
+
+### 🔐 Authentication
+
+<details>
+<summary><strong>POST /api/auth/login</strong> - User login</summary>
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -266,219 +478,239 @@ Content-Type: application/json
 }
 ```
 
-**Get current user**
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "uuid",
+    "email": "admin@example.com",
+    "name": "Admin User",
+    "role": "ADMIN"
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>GET /api/auth/me</strong> - Get current user</summary>
+
 ```http
 GET /api/auth/me
 Authorization: Bearer <token>
 ```
 
-### Posts
-
-**Get all posts**
-```http
-GET /api/posts?page=1&limit=10&status=PUBLISHED
-```
-
-**Get post by ID**
-```http
-GET /api/posts/:id
-```
-
-**Create post**
-```http
-POST /api/posts
-Authorization: Bearer <token>
-Content-Type: application/json
-
+**Response:**
+```json
 {
-  "title": "My Post",
-  "content": "<p>Post content</p>",
-  "excerpt": "Short description",
-  "status": "DRAFT"
+  "id": "uuid",
+  "email": "admin@example.com",
+  "name": "Admin User",
+  "role": "ADMIN",
+  "avatar": "/uploads/avatar.jpg"
 }
 ```
 
-**Update post**
-```http
-PATCH /api/posts/:id
-Authorization: Bearer <token>
-Content-Type: application/json
+</details>
 
-{
-  "title": "Updated Title",
-  "status": "PUBLISHED"
-}
-```
+<br />
 
-**Delete post**
-```http
-DELETE /api/posts/:id
-Authorization: Bearer <token>
-```
+### 📝 Content API
 
-### Pages
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/posts` | List all posts |
+| `GET` | `/api/posts/:id` | Get post by ID |
+| `POST` | `/api/posts` | Create new post |
+| `PATCH` | `/api/posts/:id` | Update post |
+| `DELETE` | `/api/posts/:id` | Delete post |
+| `GET` | `/api/pages` | List all pages |
+| `GET` | `/api/pages/:id` | Get page by ID |
+| `POST` | `/api/pages` | Create new page |
+| `PATCH` | `/api/pages/:id` | Update page |
+| `DELETE` | `/api/pages/:id` | Delete page |
 
-Similar endpoints to Posts:
-- `GET /api/pages`
-- `GET /api/pages/:id`
-- `POST /api/pages`
-- `PATCH /api/pages/:id`
-- `DELETE /api/pages/:id`
+<br />
 
-### Media
+### 📦 Media API
 
-**Upload file**
-```http
-POST /api/media/upload
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/media` | List all media |
+| `GET` | `/api/media/:id` | Get media by ID |
+| `POST` | `/api/media/upload` | Upload file |
+| `DELETE` | `/api/media/:id` | Delete media |
 
-file: <binary>
-```
+<br />
 
-**Get all media**
-```http
-GET /api/media?page=1&limit=20
-Authorization: Bearer <token>
-```
+### 🛒 Shop API
 
-### Users
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/shop/products` | List products |
+| `GET` | `/api/shop/products/:id` | Get product |
+| `POST` | `/api/shop/products` | Create product |
+| `GET` | `/api/shop/categories` | List categories |
+| `GET` | `/api/shop/cart` | Get cart |
+| `POST` | `/api/shop/cart/add` | Add to cart |
+| `GET` | `/api/shop/orders` | List orders |
 
-**Get all users** (Admin/Editor only)
-```http
-GET /api/users
-Authorization: Bearer <token>
-```
+<br />
 
-**Create user** (Admin only)
-```http
-POST /api/users
-Authorization: Bearer <token>
-Content-Type: application/json
+### 📚 LMS API
 
-{
-  "email": "user@example.com",
-  "name": "User Name",
-  "password": "password123",
-  "role": "AUTHOR"
-}
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/lms/courses` | List courses |
+| `GET` | `/api/lms/courses/:id` | Get course |
+| `POST` | `/api/lms/courses` | Create course |
+| `GET` | `/api/lms/courses/:id/lessons` | List lessons |
+| `POST` | `/api/lms/enroll/:courseId` | Enroll in course |
+| `GET` | `/api/lms/my-courses` | Get enrolled courses |
+| `POST` | `/api/lms/progress` | Update progress |
 
-## 🧪 Testing
-
-```bash
-# Run tests
-pnpm test
-
-# Run tests with coverage
-pnpm test:cov
-
-# Run tests in watch mode
-pnpm test:watch
-```
-
-## 🏗️ Building for Production
-
-```bash
-# Build the backend
-pnpm build
-
-# Build the admin panel
-pnpm admin:build
-
-# Run migrations in production
-pnpm db:migrate:prod
-
-# Start production server
-pnpm start:prod
-```
-
-## 🔧 Development Scripts
-
-```bash
-# Start development server
-pnpm dev
-
-# Generate Prisma client
-pnpm db:generate
-
-# Create a new migration
-pnpm db:migrate
-
-# Seed database
-pnpm db:seed
-
-# Open Prisma Studio (database GUI)
-pnpm db:studio
-
-# Lint code
-pnpm lint
-
-# Format code
-pnpm format
-```
-
-## 🏛️ Architecture
-
-### Backend Architecture
-
-The backend follows NestJS modular architecture with:
-
-- **Modules**: Feature-based modules (Auth, Users, Content, etc.)
-- **Services**: Business logic layer
-- **Controllers**: HTTP request handlers
-- **Guards**: Authentication and authorization
-- **Decorators**: Custom decorators for common patterns
-- **Filters**: Exception handling
-
-### Database Schema
-
-- **User**: User accounts with role-based access
-- **Post**: Blog posts with SEO fields
-- **Page**: Static pages with hierarchy support
-- **Media**: Uploaded files with metadata
-- **ContentType**: Custom content type definitions
-- **Theme**: Installed themes
-- **Plugin**: Installed plugins
-- **Setting**: Site-wide settings
-- **Session**: User sessions
-- **PageView**: Analytics data
-
-### Plugin System
-
-Plugins can:
-- Hook into lifecycle events (beforeSave, afterSave, etc.)
-- Register custom fields
-- Register custom routes
-- Extend functionality without modifying core code
-
-### Theme System
-
-Themes use Handlebars templates for server-side rendering:
-- Separation of presentation and logic
-- Template inheritance and partials
-- Custom helpers for common tasks
-- Easy theme switching
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Inspired by WordPress
-- Built with NestJS, Prisma, and React
-- Uses Handlebars for templating
-
-## 📞 Support
-
-For issues and questions, please open an issue on GitHub.
+<br />
 
 ---
 
-**Happy coding! 🚀**
+## 🧪 Development Commands
+
+```bash
+# ═══════════════════════════════════════════════════════════
+# 🚀 DEVELOPMENT
+# ═══════════════════════════════════════════════════════════
+npm run start:dev          # Start backend in development mode
+cd admin && npm run dev    # Start admin panel dev server
+
+# ═══════════════════════════════════════════════════════════
+# 🗄️ DATABASE
+# ═══════════════════════════════════════════════════════════
+npx prisma generate        # Generate Prisma client
+npx prisma migrate dev     # Run migrations (development)
+npx prisma migrate deploy  # Run migrations (production)
+npx prisma db seed         # Seed database
+npx prisma studio          # Open Prisma Studio (database GUI)
+
+# ═══════════════════════════════════════════════════════════
+# 🏗️ BUILD
+# ═══════════════════════════════════════════════════════════
+npm run build              # Build backend
+cd admin && npm run build  # Build admin panel
+
+# ═══════════════════════════════════════════════════════════
+# 🧪 TESTING
+# ═══════════════════════════════════════════════════════════
+npm run test               # Run tests
+npm run test:cov           # Run tests with coverage
+npm run test:e2e           # Run end-to-end tests
+
+# ═══════════════════════════════════════════════════════════
+# 🔍 CODE QUALITY
+# ═══════════════════════════════════════════════════════════
+npm run lint               # Run ESLint
+npm run format             # Format code with Prettier
+cd admin && npx tsc --noEmit  # Type check admin panel
+```
+
+<br />
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+### Getting Started
+
+1. **Fork** the repository
+2. **Clone** your fork: `git clone https://github.com/yourusername/wordpress-node.git`
+3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+4. **Make** your changes
+5. **Commit** your changes: `git commit -m 'Add amazing feature'`
+6. **Push** to your fork: `git push origin feature/amazing-feature`
+7. **Open** a Pull Request
+
+### Guidelines
+
+- Follow the existing code style and conventions
+- Write meaningful commit messages
+- Add tests for new features
+- Update documentation as needed
+- Keep PRs focused and atomic
+
+### Areas for Contribution
+
+- 🐛 Bug fixes
+- ✨ New features
+- 📚 Documentation improvements
+- 🧪 Test coverage
+- 🌐 Translations
+- 🎨 UI/UX improvements
+
+<br />
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2024 WordPress Node CMS
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+```
+
+<br />
+
+---
+
+## 🙏 Acknowledgments
+
+- Inspired by [WordPress](https://wordpress.org/) - The world's most popular CMS
+- Built with [NestJS](https://nestjs.com/) - A progressive Node.js framework
+- Database powered by [Prisma](https://prisma.io/) - Next-generation ORM
+- UI crafted with [React](https://reactjs.org/) + [Tailwind CSS](https://tailwindcss.com/)
+- Icons from [Feather Icons](https://feathericons.com/)
+
+<br />
+
+---
+
+<div align="center">
+
+### ⭐ Star this repo if you find it helpful!
+
+<br />
+
+**Made with ❤️ by the WordPress Node CMS Team**
+
+<br />
+
+[Report Bug](https://github.com/yourusername/wordpress-node/issues) •
+[Request Feature](https://github.com/yourusername/wordpress-node/issues) •
+[Documentation](https://github.com/yourusername/wordpress-node/wiki)
+
+<br />
+
+---
+
+<sub>🚀 Happy coding!</sub>
+
+</div>
 

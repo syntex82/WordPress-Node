@@ -56,7 +56,10 @@ export default function Layout() {
   ];
 
   const lmsNavigation: Array<{ name: string; path: string; icon: any }> = [
+    { name: 'Dashboard', path: '/lms', icon: FiBarChart2 },
     { name: 'Courses', path: '/lms/courses', icon: FiBook },
+    { name: 'Categories', path: '/lms/categories', icon: FiTag },
+    { name: 'Course Catalog', path: '/lms/catalog', icon: FiBook },
   ];
 
   // Filter navigation based on permissions

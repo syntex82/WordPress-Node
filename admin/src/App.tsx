@@ -40,6 +40,7 @@ import StorefrontOrderSuccess from './pages/storefront/OrderSuccess';
 import LmsAdminDashboard from './pages/lms/AdminDashboard';
 import LmsCourses from './pages/lms/Courses';
 import LmsCourseEditor from './pages/lms/CourseEditor';
+import LmsCourseCategories from './pages/lms/CourseCategories';
 import LmsLessons from './pages/lms/Lessons';
 import LmsQuizzes from './pages/lms/Quizzes';
 import LmsQuizQuestions from './pages/lms/QuizQuestions';
@@ -140,6 +141,7 @@ function App() {
               <Route path="lms/courses/:courseId/lessons" element={<ProtectedRoute feature="lms" action="canEdit"><LmsLessons /></ProtectedRoute>} />
               <Route path="lms/courses/:courseId/quizzes" element={<ProtectedRoute feature="lms" action="canEdit"><LmsQuizzes /></ProtectedRoute>} />
               <Route path="lms/courses/:courseId/quizzes/:quizId/questions" element={<ProtectedRoute feature="lms" action="canEdit"><LmsQuizQuestions /></ProtectedRoute>} />
+              <Route path="lms/categories" element={<ProtectedRoute feature="lms"><LmsCourseCategories /></ProtectedRoute>} />
 
               {/* LMS student routes (authenticated) - accessible to all */}
               <Route path="lms/dashboard" element={<LmsStudentDashboard />} />
