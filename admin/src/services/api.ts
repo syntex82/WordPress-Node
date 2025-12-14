@@ -27,7 +27,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Don't redirect for public endpoints like cart, shop, lms catalog
+    const publicPaths = ['/shop/cart', '/shop/storefront', '/lms/public'];
+    const isPublicEndpoint = publicPaths.some(path => error.config?.url?.includes(path));
+
+    if (error.response?.status === 401 && !isPublicEndpoint) {
       useAuthStore.getState().logout();
       window.location.href = '/admin/login';
     }
@@ -654,8 +658,11 @@ export const storefrontApi = {
 
 export const cartApi = {
   get: () => api.get<Cart>('/shop/cart'),
-  add: (productId: string, quantity: number, variantId?: string) =>
-    api.post<Cart>('/shop/cart/add', { productId, quantity, variantId }),
+  add: (productId: string, quantity: number, variantId?: string) => {
+    const payload: { productId: string; quantity: number; variantId?: string } = { productId, quantity };
+    if (variantId) payload.variantId = variantId;
+    return api.post<Cart>('/shop/cart/add', payload);
+  },
   addCourse: (courseId: string) =>
     api.post<Cart>('/shop/cart/add-course', { courseId }),
   update: (itemId: string, quantity: number) =>

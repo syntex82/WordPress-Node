@@ -9,9 +9,10 @@ import {
   FiMaximize, FiX, FiChevronLeft, FiChevronRight, FiTrash2,
   FiMove, FiPlus, FiArrowUp, FiArrowDown, FiCopy, FiEye, FiEyeOff,
   FiBook, FiList, FiTrendingUp, FiUser, FiFolder, FiShoppingCart,
-  FiFilter, FiCreditCard, FiPercent
+  FiFilter, FiCreditCard, FiPercent, FiUpload
 } from 'react-icons/fi';
 import { CustomThemeSettings } from '../../services/api';
+import MediaPickerModal from '../MediaPickerModal';
 
 import {
   LinkSettings, BlockVisibility, AnimationSettings, RowSettings, HeaderSettings, ProductData,
@@ -19,7 +20,8 @@ import {
   RowBlock, ProductCardBlock, ProductGridBlock, FeaturedProductBlock, ProductCarouselBlock,
   HeaderBuilderBlock, HeaderSettingsPanel, PRESET_LAYOUTS, ANIMATION_PRESETS,
   // Course/LMS types and components
-  CourseData, CourseCategoryData, CourseProgressData, InstructorData, ModuleData,
+  CourseData as AdvancedCourseData, CourseCategoryData as AdvancedCourseCategoryData,
+  CourseProgressData, InstructorData, ModuleData as AdvancedModuleData,
   CourseCardBlock, CourseGridBlock, CourseCurriculumBlock, CourseProgressBlock,
   CourseInstructorBlock, CourseCategoriesBlock,
   // Shop/E-commerce types and components
@@ -724,7 +726,75 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
 
 // ============ Block Components ============
 
-// Audio Player Block
+// Animated Waveform Component for Audio Player
+function AudioPlayerWaveform({ isPlaying, color = '#A78BFA' }: { isPlaying: boolean; color?: string }) {
+  const bars = 32;
+  return (
+    <div className="flex items-end justify-center gap-[2px] h-16">
+      {Array.from({ length: bars }).map((_, i) => {
+        const baseHeight = 20 + Math.sin(i * 0.5) * 15 + Math.random() * 20;
+        return (
+          <div
+            key={i}
+            className="w-1 rounded-full transition-all duration-150"
+            style={{
+              height: `${baseHeight}%`,
+              background: `linear-gradient(to top, ${color}, ${color}88)`,
+              animation: isPlaying ? `audioWave ${0.5 + Math.random() * 0.5}s ease-in-out infinite alternate` : 'none',
+              animationDelay: `${i * 0.02}s`,
+              opacity: isPlaying ? 1 : 0.5,
+            }}
+          />
+        );
+      })}
+      <style>{`
+        @keyframes audioWave {
+          0% { transform: scaleY(0.5); }
+          100% { transform: scaleY(1); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Circular Progress Ring for Audio Player
+function AudioProgressRing({ progress, size = 128, strokeWidth = 3, color = '#A78BFA' }: {
+  progress: number;
+  size?: number;
+  strokeWidth?: number;
+  color?: string;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <svg width={size} height={size} className="transform -rotate-90">
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="rgba(255,255,255,0.2)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        className="transition-all duration-100"
+      />
+    </svg>
+  );
+}
+
+// Audio Player Block - Modern design with vinyl disc and waveform
 export function AudioPlayerBlock({
   props,
   settings
@@ -732,105 +802,180 @@ export function AudioPlayerBlock({
   props: Record<string, any>;
   settings: CustomThemeSettings;
 }) {
+  const audioRef = React.useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress] = useState(35);
-  const [volume] = useState(80);
-  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(80);
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleTimeUpdate = () => {
+    if (!audioRef.current) return;
+    setCurrentTime(audioRef.current.currentTime);
+    setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+  };
+
+  const handleLoadedMetadata = () => {
+    if (!audioRef.current) return;
+    setDuration(audioRef.current.duration);
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !hasAudio) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    audioRef.current.currentTime = percent * audioRef.current.duration;
+  };
+
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume / 100;
+    }
+  };
+
+  const hasAudio = props.audioUrl && props.audioUrl.length > 0;
 
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{
-        background: settings.colors.surface,
-        border: `${settings.borders.width}px solid ${settings.colors.border}`,
-        borderRadius: settings.borders.radius,
-      }}
-    >
-      <div className="flex items-center gap-4 p-4">
-        {/* Album Art */}
-        <div
-          className="w-20 h-20 rounded-lg bg-cover bg-center flex-shrink-0"
-          style={{
-            backgroundImage: `url(${props.albumArt})`,
-            borderRadius: settings.borders.radius * 0.75,
-          }}
+    <div className="relative overflow-hidden rounded-2xl" style={{ borderRadius: settings.borders.radius }}>
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.15),transparent)]" />
+
+      {/* Floating Orbs */}
+      <div className="absolute top-4 left-4 w-20 h-20 bg-white/10 rounded-full blur-xl animate-pulse" />
+      <div className="absolute bottom-8 right-8 w-32 h-32 bg-pink-500/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+
+      {/* Hidden Audio Element */}
+      {hasAudio && (
+        <audio
+          ref={audioRef}
+          src={props.audioUrl}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+          loop={props.loop}
         />
+      )}
 
-        {/* Track Info & Controls */}
-        <div className="flex-1 min-w-0">
-          <h4
-            className="font-semibold truncate"
-            style={{
-              color: settings.colors.heading,
-              fontFamily: settings.typography.headingFont,
-            }}
-          >
-            {props.title}
+      <div className="relative p-6">
+        {/* Track Info */}
+        <div className="text-center mb-4">
+          <h4 className="text-lg font-semibold text-white truncate">
+            {props.title || 'No Track Selected'}
           </h4>
-          <p
-            className="text-sm truncate"
-            style={{ color: settings.colors.textMuted }}
-          >
-            {props.artist}
+          <p className="text-sm text-white/60 truncate">
+            {props.artist || 'Unknown Artist'}
           </p>
+          {props.album && (
+            <p className="text-xs text-white/40 truncate mt-1">{props.album}</p>
+          )}
+        </div>
 
-          {/* Waveform Visualization */}
-          <div className="mt-3 flex items-center gap-0.5 h-8">
-            {Array.from({ length: 40 }).map((_, i) => {
-              const height = Math.random() * 100;
-              const isActive = (i / 40) * 100 <= progress;
-              return (
-                <div
-                  key={i}
-                  className="flex-1 rounded-full transition-all duration-150"
-                  style={{
-                    height: `${Math.max(15, height)}%`,
-                    background: isActive ? settings.colors.primary : settings.colors.border,
-                    opacity: isActive ? 1 : 0.5,
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {/* Time */}
-          <div className="flex justify-between text-xs mt-1" style={{ color: settings.colors.textMuted }}>
-            <span>1:24</span>
-            <span>3:45</span>
+        {/* Vinyl Disc / Album Art */}
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <div
+              className={`w-32 h-32 rounded-full shadow-2xl flex items-center justify-center ${isPlaying ? 'animate-spin' : ''}`}
+              style={{
+                animationDuration: '3s',
+                background: props.albumArt
+                  ? `url(${props.albumArt}) center/cover`
+                  : 'linear-gradient(135deg, #1f2937, #111827)'
+              }}
+            >
+              {!props.albumArt && (
+                <>
+                  <div className="absolute inset-2 rounded-full bg-gradient-to-br from-gray-700 to-gray-800" />
+                  {/* Vinyl grooves */}
+                  <div className="absolute inset-6 rounded-full border border-gray-600/30" />
+                  <div className="absolute inset-10 rounded-full border border-gray-600/20" />
+                  <div className="absolute inset-14 rounded-full border border-gray-600/10" />
+                  <div className="w-8 h-8 rounded-full bg-gray-900 z-10" />
+                </>
+              )}
+              {/* Progress Ring */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <AudioProgressRing progress={progress} size={128} strokeWidth={3} color="#A78BFA" />
+              </div>
+            </div>
+            {/* Shine effect */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
           </div>
         </div>
-      </div>
 
-      {/* Controls Bar */}
-      <div
-        className="flex items-center justify-between px-4 py-3"
-        style={{
-          background: settings.colors.background,
-          borderTop: `${settings.borders.width}px solid ${settings.colors.border}`,
-        }}
-      >
-        <div className="flex items-center gap-3">
+        {/* Waveform Visualization */}
+        <AudioPlayerWaveform isPlaying={isPlaying} color="#A78BFA" />
+
+        {/* Progress Bar */}
+        <div
+          className="mt-4 h-1.5 bg-white/20 rounded-full overflow-hidden cursor-pointer"
+          onClick={handleSeek}
+        >
+          <div
+            className="h-full bg-gradient-to-r from-purple-400 to-pink-400 rounded-full transition-all duration-100"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Time Display */}
+        <div className="flex justify-between text-xs text-white/60 mt-2">
+          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(duration)}</span>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-center gap-4 mt-4">
           <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-105"
-            style={{ background: settings.colors.primary }}
+            onClick={togglePlay}
+            disabled={!hasAudio}
+            className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 flex items-center justify-center transition-all hover:scale-110 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPlaying ? <FiPause className="text-white" size={18} /> : <FiPlay className="text-white ml-0.5" size={18} />}
+            {isPlaying ? (
+              <FiPause size={24} className="text-white" />
+            ) : (
+              <FiPlay size={24} className="text-white ml-1" />
+            )}
           </button>
         </div>
 
         {/* Volume */}
-        <div className="flex items-center gap-2">
-          <button onClick={() => setIsMuted(!isMuted)} style={{ color: settings.colors.textMuted }}>
-            {isMuted ? <FiVolumeX size={18} /> : <FiVolume2 size={18} />}
-          </button>
-          <div className="w-20 h-1 rounded-full overflow-hidden" style={{ background: settings.colors.border }}>
-            <div
-              className="h-full rounded-full transition-all"
-              style={{ width: isMuted ? '0%' : `${volume}%`, background: settings.colors.primary }}
-            />
-          </div>
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <FiVolume2 size={16} className="text-white/60" />
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={(e) => handleVolumeChange(Number(e.target.value))}
+            className="w-24 h-1 rounded-full appearance-none cursor-pointer"
+            style={{ background: 'rgba(255,255,255,0.3)' }}
+          />
         </div>
+
+        {/* No audio message */}
+        {!hasAudio && (
+          <div className="mt-4 text-center">
+            <p className="text-white/50 text-sm">No audio file selected</p>
+            <p className="text-white/30 text-xs mt-1">Click to edit and select an audio file</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -844,78 +989,212 @@ export function VideoPlayerBlock({
   props: Record<string, any>;
   settings: CustomThemeSettings;
 }) {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(100);
+  const [isMuted, setIsMuted] = useState(props.muted || false);
   const [showControls, setShowControls] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const hasVideo = props.videoUrl && props.videoUrl.length > 0;
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const togglePlay = () => {
+    if (!videoRef.current || !hasVideo) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    setCurrentTime(videoRef.current.currentTime);
+    setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+  };
+
+  const handleLoadedMetadata = () => {
+    if (!videoRef.current) return;
+    setDuration(videoRef.current.duration);
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!videoRef.current || !hasVideo) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    videoRef.current.currentTime = percent * videoRef.current.duration;
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+    }
+    setIsMuted(!isMuted);
+  };
+
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume / 100;
+    }
+    if (newVolume === 0) {
+      setIsMuted(true);
+    } else if (isMuted) {
+      setIsMuted(false);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    const container = videoRef.current?.parentElement?.parentElement;
+    if (!container) return;
+
+    if (!isFullscreen) {
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+    setIsFullscreen(!isFullscreen);
+  };
 
   return (
     <div
-      className="relative rounded-xl overflow-hidden group"
+      className="relative rounded-xl overflow-hidden group bg-black"
       style={{ borderRadius: settings.borders.radius }}
       onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => !isPlaying && setShowControls(true)}
+      onMouseLeave={() => isPlaying && setShowControls(false)}
     >
-      {/* Video/Poster */}
-      <div
-        className="aspect-video bg-cover bg-center"
-        style={{ backgroundImage: `url(${props.posterUrl})` }}
-      >
-        {/* Play Button Overlay */}
-        {!isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-            <button
-              onClick={() => setIsPlaying(true)}
-              className="w-20 h-20 rounded-full flex items-center justify-center transition-transform hover:scale-110"
-              style={{ background: settings.colors.primary }}
-            >
-              <FiPlay className="text-white ml-1" size={32} />
-            </button>
+      {/* Actual Video Element */}
+      {hasVideo ? (
+        <video
+          ref={videoRef}
+          src={props.videoUrl}
+          poster={props.posterUrl}
+          className="w-full aspect-video object-contain bg-black"
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          loop={props.loop}
+          muted={isMuted}
+          playsInline={props.playsInline}
+          onClick={togglePlay}
+        />
+      ) : (
+        /* Placeholder when no video */
+        <div
+          className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex flex-col items-center justify-center"
+          style={{ backgroundImage: props.posterUrl ? `url(${props.posterUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        >
+          <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur flex items-center justify-center mb-4">
+            <FiPlay className="text-white ml-1" size={32} />
           </div>
-        )}
-      </div>
-
-      {/* Controls Overlay */}
-      <div
-        className={`absolute bottom-0 left-0 right-0 p-4 transition-opacity ${showControls ? 'opacity-100' : 'opacity-0'}`}
-        style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.8))' }}
-      >
-        {/* Progress Bar */}
-        <div className="mb-3">
-          <div className="h-1 rounded-full overflow-hidden bg-white/30">
-            <div
-              className="h-full rounded-full"
-              style={{ width: `${progress}%`, background: settings.colors.primary }}
-            />
-          </div>
+          <p className="text-white/60 text-sm">No video selected</p>
         </div>
+      )}
 
-        {/* Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="text-white hover:text-gray-200"
-            >
-              {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
-            </button>
-            <button className="text-white hover:text-gray-200">
-              <FiVolume2 size={20} />
-            </button>
-            <span className="text-white text-sm">0:00 / 3:45</span>
-          </div>
-          <button className="text-white hover:text-gray-200">
-            <FiMaximize size={20} />
+      {/* Play Button Overlay (when paused) */}
+      {hasVideo && !isPlaying && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer transition-opacity"
+          onClick={togglePlay}
+        >
+          <button
+            className="w-20 h-20 rounded-full flex items-center justify-center transition-transform hover:scale-110 shadow-2xl"
+            style={{ background: settings.colors.primary }}
+          >
+            <FiPlay className="text-white ml-1" size={32} />
           </button>
         </div>
-      </div>
+      )}
+
+      {/* Controls Overlay */}
+      {hasVideo && (
+        <div
+          className={`absolute bottom-0 left-0 right-0 p-4 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}
+          style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.8))' }}
+        >
+          {/* Progress Bar */}
+          <div className="mb-3">
+            <div
+              className="h-1.5 rounded-full overflow-hidden bg-white/30 cursor-pointer hover:h-2 transition-all"
+              onClick={handleSeek}
+            >
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${progress}%`, background: settings.colors.primary }}
+              />
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={togglePlay}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
+              </button>
+
+              {/* Volume Control */}
+              <div className="flex items-center gap-2 group/volume">
+                <button
+                  onClick={toggleMute}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  {isMuted || volume === 0 ? <FiVolumeX size={20} /> : <FiVolume2 size={20} />}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                  className="w-0 group-hover/volume:w-20 transition-all duration-200 h-1 rounded-full appearance-none cursor-pointer opacity-0 group-hover/volume:opacity-100"
+                  style={{ background: `linear-gradient(to right, white ${volume}%, rgba(255,255,255,0.3) ${volume}%)` }}
+                />
+              </div>
+
+              <span className="text-white text-sm">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+            </div>
+
+            <button
+              onClick={toggleFullscreen}
+              className="text-white hover:text-gray-200 transition-colors"
+            >
+              <FiMaximize size={20} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Title */}
-      {props.title && (
+      {props.title && props.showTitle !== false && (
         <div
-          className="absolute top-0 left-0 right-0 p-4"
+          className={`absolute top-0 left-0 right-0 p-4 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}
           style={{ background: 'linear-gradient(rgba(0,0,0,0.6), transparent)' }}
         >
           <h4 className="text-white font-semibold">{props.title}</h4>
+          {props.description && (
+            <p className="text-white/70 text-sm mt-1">{props.description}</p>
+          )}
         </div>
       )}
     </div>
@@ -2384,20 +2663,9 @@ function BlockSettingsForm({
 
   switch (type) {
     case 'audio':
-      return (
-        <>
-          <TextInput label="Track Title" propKey="title" />
-          <TextInput label="Artist" propKey="artist" />
-          <TextInput label="Album Art URL" propKey="albumArt" />
-        </>
-      );
+      return <AudioBlockSettings props={props} onUpdate={onUpdate} />;
     case 'video':
-      return (
-        <>
-          <TextInput label="Video Title" propKey="title" />
-          <TextInput label="Poster URL" propKey="posterUrl" />
-        </>
-      );
+      return <VideoBlockSettings props={props} onUpdate={onUpdate} />;
     case 'gallery':
       return (
         <>
@@ -2531,14 +2799,1926 @@ function BlockSettingsForm({
       );
 
     case 'productCard':
-    case 'featuredProduct': {
-      const product = props.product || {};
-      const updateProduct = (key: string, value: any) => {
-        onUpdate({ ...props, product: { ...product, [key]: value } });
-      };
-      return (
-        <>
-          <div className="mb-3">
+      return <ProductCardSettings props={props} onUpdate={onUpdate} />;
+
+    case 'featuredProduct':
+      return <FeaturedProductSettings props={props} onUpdate={onUpdate} />;
+
+    case 'productGrid':
+      return <ProductGridSettings props={props} onUpdate={onUpdate} />;
+
+    case 'productCarousel':
+      return <ProductCarouselSettings props={props} onUpdate={onUpdate} />;
+
+    // ============ Course/LMS Block Settings ============
+    case 'courseCard': {
+      return <CourseCardSettings props={props} onUpdate={onUpdate} />;
+    }
+
+    case 'courseGrid': {
+      return <CourseGridSettings props={props} onUpdate={onUpdate} />;
+    }
+
+    case 'courseCurriculum': {
+      return <CourseCurriculumSettings props={props} onUpdate={onUpdate} />;
+    }
+
+    case 'courseProgress': {
+      return <CourseProgressSettings props={props} onUpdate={onUpdate} />;
+    }
+
+    case 'courseInstructor': {
+      return <CourseInstructorSettings props={props} onUpdate={onUpdate} />;
+    }
+
+    case 'courseCategories': {
+      return <CourseCategoriesSettings props={props} onUpdate={onUpdate} />;
+    }
+
+    // ============ Shop/E-commerce Block Settings ============
+    case 'shoppingCart':
+      return <ShoppingCartSettings props={props} onUpdate={onUpdate} />;
+
+    case 'productCategories':
+      return <ProductCategoriesSettings props={props} onUpdate={onUpdate} />;
+
+    case 'productFilter':
+      return <ProductFilterSettings props={props} onUpdate={onUpdate} />;
+
+    case 'checkoutSummary':
+      return <CheckoutSummarySettings props={props} onUpdate={onUpdate} />;
+
+    case 'saleBanner':
+      return <SaleBannerSettings props={props} onUpdate={onUpdate} />;
+
+    default:
+      return <p className="text-gray-400 text-sm">No settings available</p>;
+  }
+}
+
+// ============ Comprehensive Course/LMS Settings Components ============
+
+// Course Card Settings - Full editing for individual course card
+function CourseCardSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [imagePickerTarget, setImagePickerTarget] = useState<'course' | 'instructor'>('course');
+
+  const course = props.course || {
+    id: `course-${Date.now()}`,
+    title: 'Course Title',
+    description: 'Course description goes here',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400',
+    instructor: 'Instructor Name',
+    instructorImage: 'https://i.pravatar.cc/100',
+    duration: '8 hours',
+    lessonCount: 24,
+    price: 99,
+    salePrice: 0,
+    rating: 4.5,
+    reviewCount: 128,
+    enrollmentCount: 1500,
+    badge: '',
+    level: 'beginner',
+    category: 'Development',
+    courseUrl: '/courses/sample'
+  };
+
+  const updateCourse = (key: string, value: any) => {
+    onUpdate({ ...props, course: { ...course, [key]: value } });
+  };
+
+  const handleMediaSelect = (media: any) => {
+    if (imagePickerTarget === 'course') {
+      updateCourse('image', media.path);
+    } else {
+      updateCourse('instructorImage', media.path);
+    }
+    setShowImagePicker(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Section: Course Image */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🖼️ Course Image</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          {course.image && (
+            <div className="relative rounded-lg overflow-hidden">
+              <img src={course.image} alt="Course thumbnail" className="w-full h-32 object-cover" />
+              <button
+                onClick={() => { setImagePickerTarget('course'); setShowImagePicker(true); }}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity"
+              >
+                <span className="bg-blue-600 px-3 py-1 rounded text-white text-sm">Change Image</span>
+              </button>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setImagePickerTarget('course'); setShowImagePicker(true); }}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+            >
+              <FiUpload size={14} /> Select from Media
+            </button>
+          </div>
+          <input
+            type="text"
+            value={course.image || ''}
+            onChange={(e) => updateCourse('image', e.target.value)}
+            placeholder="Or paste image URL"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+          />
+        </div>
+      </details>
+
+      {/* Section: Course Content */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-green-400 hover:text-green-300 py-2 border-b border-gray-700">
+          <span>📝 Course Content</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Course Title</label>
+            <input
+              type="text"
+              value={course.title || ''}
+              onChange={(e) => updateCourse('title', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Description</label>
+            <textarea
+              value={course.description || ''}
+              onChange={(e) => updateCourse('description', e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Category</label>
+            <input
+              type="text"
+              value={course.category || ''}
+              onChange={(e) => updateCourse('category', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Duration</label>
+              <input
+                type="text"
+                value={course.duration || ''}
+                onChange={(e) => updateCourse('duration', e.target.value)}
+                placeholder="e.g., 8 hours"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Lessons</label>
+              <input
+                type="number"
+                value={course.lessonCount || 0}
+                onChange={(e) => updateCourse('lessonCount', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Level</label>
+            <select
+              value={course.level || 'beginner'}
+              onChange={(e) => updateCourse('level', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="all-levels">All Levels</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Badge Text (optional)</label>
+            <input
+              type="text"
+              value={course.badge || ''}
+              onChange={(e) => updateCourse('badge', e.target.value)}
+              placeholder="e.g., Bestseller, New, Featured"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Section: Instructor */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>👤 Instructor</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-3">
+            {course.instructorImage && (
+              <img src={course.instructorImage} alt="Instructor" className="w-12 h-12 rounded-full object-cover" />
+            )}
+            <button
+              onClick={() => { setImagePickerTarget('instructor'); setShowImagePicker(true); }}
+              className="flex items-center gap-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-500 rounded text-xs text-white"
+            >
+              <FiUpload size={12} /> Change Photo
+            </button>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Instructor Name</label>
+            <input
+              type="text"
+              value={course.instructor || ''}
+              onChange={(e) => updateCourse('instructor', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Section: Pricing */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>💰 Pricing</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Currency Symbol</label>
+            <select
+              value={props.currency || '$'}
+              onChange={(e) => onUpdate({ ...props, currency: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="$">$ (USD)</option>
+              <option value="€">€ (EUR)</option>
+              <option value="£">£ (GBP)</option>
+              <option value="¥">¥ (JPY/CNY)</option>
+              <option value="₹">₹ (INR)</option>
+              <option value="A$">A$ (AUD)</option>
+              <option value="C$">C$ (CAD)</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Regular Price</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{props.currency || '$'}</span>
+                <input
+                  type="number"
+                  value={course.price || 0}
+                  onChange={(e) => updateCourse('price', parseFloat(e.target.value) || 0)}
+                  className="w-full pl-8 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Sale Price</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{props.currency || '$'}</span>
+                <input
+                  type="number"
+                  value={course.salePrice || ''}
+                  onChange={(e) => updateCourse('salePrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  placeholder="Leave empty for no sale"
+                  className="w-full pl-8 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+                />
+              </div>
+            </div>
+          </div>
+          {course.salePrice && course.salePrice < course.price && (
+            <p className="text-xs text-green-400">
+              💵 Discount: {Math.round(((course.price - course.salePrice) / course.price) * 100)}% off
+            </p>
+          )}
+        </div>
+      </details>
+
+      {/* Section: Ratings & Stats */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-orange-400 hover:text-orange-300 py-2 border-b border-gray-700">
+          <span>⭐ Ratings & Stats</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Rating (0-5)</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="5"
+                step="0.1"
+                value={course.rating || 0}
+                onChange={(e) => updateCourse('rating', parseFloat(e.target.value))}
+                className="flex-1 accent-yellow-500"
+              />
+              <span className="text-yellow-400 font-medium w-10">{(course.rating || 0).toFixed(1)}</span>
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              {[1, 2, 3, 4, 5].map(star => (
+                <FiStar
+                  key={star}
+                  size={16}
+                  className={star <= Math.round(course.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-500'}
+                  onClick={() => updateCourse('rating', star)}
+                  style={{ cursor: 'pointer' }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Review Count</label>
+              <input
+                type="number"
+                value={course.reviewCount || 0}
+                onChange={(e) => updateCourse('reviewCount', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Enrollments</label>
+              <input
+                type="number"
+                value={course.enrollmentCount || 0}
+                onChange={(e) => updateCourse('enrollmentCount', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* Section: Button & Link */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-cyan-400 hover:text-cyan-300 py-2 border-b border-gray-700">
+          <span>🔗 Button & Link</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Course URL</label>
+            <input
+              type="text"
+              value={course.courseUrl || ''}
+              onChange={(e) => updateCourse('courseUrl', e.target.value)}
+              placeholder="/courses/my-course"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Text</label>
+            <input
+              type="text"
+              value={props.buttonText || 'Enroll Now'}
+              onChange={(e) => onUpdate({ ...props, buttonText: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Style</label>
+            <select
+              value={props.buttonStyle || 'solid'}
+              onChange={(e) => onUpdate({ ...props, buttonStyle: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="solid">Solid</option>
+              <option value="outline">Outline</option>
+              <option value="gradient">Gradient</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.openInNewTab || false}
+              onChange={(e) => onUpdate({ ...props, openInNewTab: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Open in new tab</label>
+          </div>
+        </div>
+      </details>
+
+      {/* Section: Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-pink-400 hover:text-pink-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showInstructor !== false}
+              onChange={(e) => onUpdate({ ...props, showInstructor: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Instructor</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showRating !== false}
+              onChange={(e) => onUpdate({ ...props, showRating: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Rating</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showPrice !== false}
+              onChange={(e) => onUpdate({ ...props, showPrice: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Price</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showBadge !== false}
+              onChange={(e) => onUpdate({ ...props, showBadge: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Badge</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showLevel !== false}
+              onChange={(e) => onUpdate({ ...props, showLevel: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Level</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showDuration !== false}
+              onChange={(e) => onUpdate({ ...props, showDuration: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Duration & Lessons</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showEnrollments || false}
+              onChange={(e) => onUpdate({ ...props, showEnrollments: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Enrollment Count</label>
+          </div>
+        </div>
+      </details>
+
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onSelect={handleMediaSelect}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+
+// Course Grid Settings - Manage multiple courses in a grid
+function CourseGridSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(null);
+  const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
+
+  const courses: CourseData[] = props.courses || [];
+  const columns = props.columns || 3;
+
+  const addCourse = () => {
+    const newCourse: CourseData = {
+      id: `course-${Date.now()}`,
+      title: `Course ${courses.length + 1}`,
+      description: 'Course description',
+      image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400',
+      instructor: 'Instructor Name',
+      instructorImage: 'https://i.pravatar.cc/100',
+      duration: '8 hours',
+      lessonCount: 24,
+      price: 99,
+      rating: 4.5,
+      reviewCount: 100,
+      enrollmentCount: 500,
+      level: 'beginner',
+      category: 'General'
+    };
+    onUpdate({ ...props, courses: [...courses, newCourse] });
+    setExpandedCourse(courses.length);
+  };
+
+  const updateCourseAtIndex = (index: number, key: string, value: any) => {
+    const updated = [...courses];
+    updated[index] = { ...updated[index], [key]: value };
+    onUpdate({ ...props, courses: updated });
+  };
+
+  const removeCourse = (index: number) => {
+    const updated = courses.filter((_, i) => i !== index);
+    onUpdate({ ...props, courses: updated });
+    if (expandedCourse === index) setExpandedCourse(null);
+  };
+
+  const moveCourse = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= courses.length) return;
+    const updated = [...courses];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    onUpdate({ ...props, courses: updated });
+  };
+
+  const handleMediaSelect = (media: any) => {
+    if (editingCourseIndex !== null) {
+      updateCourseAtIndex(editingCourseIndex, 'image', media.path);
+    }
+    setShowImagePicker(false);
+    setEditingCourseIndex(null);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Layout Options */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📐 Layout Options</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Columns</label>
+            <select
+              value={columns}
+              onChange={(e) => onUpdate({ ...props, columns: parseInt(e.target.value) })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value={2}>2 Columns</option>
+              <option value={3}>3 Columns</option>
+              <option value={4}>4 Columns</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Gap Size</label>
+            <select
+              value={props.gap || 'medium'}
+              onChange={(e) => onUpdate({ ...props, gap: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="small">Small (16px)</option>
+              <option value="medium">Medium (24px)</option>
+              <option value="large">Large (32px)</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-green-400 hover:text-green-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showInstructor !== false}
+              onChange={(e) => onUpdate({ ...props, showInstructor: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Instructor</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showRating !== false}
+              onChange={(e) => onUpdate({ ...props, showRating: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Rating</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showPrice !== false}
+              onChange={(e) => onUpdate({ ...props, showPrice: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Price</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showFilters || false}
+              onChange={(e) => onUpdate({ ...props, showFilters: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Category Filters</label>
+          </div>
+        </div>
+      </details>
+
+      {/* Courses List */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📚 Courses ({courses.length})</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {courses.map((course, index) => (
+            <div key={course.id || index} className="bg-gray-700/50 rounded-lg overflow-hidden">
+              <div
+                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-600/50"
+                onClick={() => setExpandedCourse(expandedCourse === index ? null : index)}
+              >
+                <img src={course.image} alt="" className="w-10 h-10 rounded object-cover" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{course.title}</p>
+                  <p className="text-xs text-gray-400">${course.price}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={(e) => { e.stopPropagation(); moveCourse(index, 'up'); }} className="p-1 hover:bg-gray-600 rounded" disabled={index === 0}>
+                    <FiArrowUp size={12} className={index === 0 ? 'text-gray-600' : 'text-gray-400'} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); moveCourse(index, 'down'); }} className="p-1 hover:bg-gray-600 rounded" disabled={index === courses.length - 1}>
+                    <FiArrowDown size={12} className={index === courses.length - 1 ? 'text-gray-600' : 'text-gray-400'} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); removeCourse(index); }} className="p-1 hover:bg-red-600 rounded">
+                    <FiTrash2 size={12} className="text-red-400" />
+                  </button>
+                </div>
+              </div>
+
+              {expandedCourse === index && (
+                <div className="p-3 border-t border-gray-600 space-y-2">
+                  <input
+                    type="text"
+                    value={course.title}
+                    onChange={(e) => updateCourseAtIndex(index, 'title', e.target.value)}
+                    placeholder="Course Title"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setEditingCourseIndex(index); setShowImagePicker(true); }}
+                      className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs text-white"
+                    >
+                      <FiImage size={10} /> Image
+                    </button>
+                    <input
+                      type="text"
+                      value={course.image}
+                      onChange={(e) => updateCourseAtIndex(index, 'image', e.target.value)}
+                      placeholder="Image URL"
+                      className="flex-1 px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      value={course.price}
+                      onChange={(e) => updateCourseAtIndex(index, 'price', parseFloat(e.target.value))}
+                      placeholder="Price"
+                      className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                    <input
+                      type="number"
+                      value={course.salePrice || ''}
+                      onChange={(e) => updateCourseAtIndex(index, 'salePrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                      placeholder="Sale Price"
+                      className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={course.instructor}
+                    onChange={(e) => updateCourseAtIndex(index, 'instructor', e.target.value)}
+                    placeholder="Instructor"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={course.duration}
+                      onChange={(e) => updateCourseAtIndex(index, 'duration', e.target.value)}
+                      placeholder="Duration"
+                      className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                    <input
+                      type="number"
+                      value={course.lessonCount}
+                      onChange={(e) => updateCourseAtIndex(index, 'lessonCount', parseInt(e.target.value))}
+                      placeholder="Lessons"
+                      className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-gray-400">Rating:</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="5"
+                      step="0.1"
+                      value={course.rating}
+                      onChange={(e) => updateCourseAtIndex(index, 'rating', parseFloat(e.target.value))}
+                      className="flex-1 accent-yellow-500"
+                    />
+                    <span className="text-xs text-yellow-400">{course.rating}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            onClick={addCourse}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Course
+          </button>
+        </div>
+      </details>
+
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onSelect={handleMediaSelect}
+          onClose={() => { setShowImagePicker(false); setEditingCourseIndex(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+
+// Course Curriculum Settings - Edit modules and lessons
+function CourseCurriculumSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [expandedModule, setExpandedModule] = useState<number | null>(0);
+
+  const modules: ModuleData[] = props.modules || [];
+
+  const addModule = () => {
+    const newModule: ModuleData = {
+      id: `module-${Date.now()}`,
+      title: `Module ${modules.length + 1}`,
+      duration: '1 hour',
+      lessons: []
+    };
+    onUpdate({ ...props, modules: [...modules, newModule] });
+    setExpandedModule(modules.length);
+  };
+
+  const updateModuleAtIndex = (index: number, key: string, value: any) => {
+    const updated = [...modules];
+    updated[index] = { ...updated[index], [key]: value };
+    onUpdate({ ...props, modules: updated });
+  };
+
+  const removeModule = (index: number) => {
+    const updated = modules.filter((_, i) => i !== index);
+    onUpdate({ ...props, modules: updated });
+    if (expandedModule === index) setExpandedModule(null);
+  };
+
+  const addLesson = (moduleIndex: number) => {
+    const newLesson = {
+      id: `lesson-${Date.now()}`,
+      title: `Lesson ${modules[moduleIndex].lessons.length + 1}`,
+      duration: '10 min',
+      type: 'video' as const,
+      isPreview: false,
+      isCompleted: false
+    };
+    const updated = [...modules];
+    updated[moduleIndex] = {
+      ...updated[moduleIndex],
+      lessons: [...updated[moduleIndex].lessons, newLesson]
+    };
+    onUpdate({ ...props, modules: updated });
+  };
+
+  const updateLessonAtIndex = (moduleIndex: number, lessonIndex: number, key: string, value: any) => {
+    const updated = [...modules];
+    updated[moduleIndex] = {
+      ...updated[moduleIndex],
+      lessons: updated[moduleIndex].lessons.map((lesson, i) =>
+        i === lessonIndex ? { ...lesson, [key]: value } : lesson
+      )
+    };
+    onUpdate({ ...props, modules: updated });
+  };
+
+  const removeLesson = (moduleIndex: number, lessonIndex: number) => {
+    const updated = [...modules];
+    updated[moduleIndex] = {
+      ...updated[moduleIndex],
+      lessons: updated[moduleIndex].lessons.filter((_, i) => i !== lessonIndex)
+    };
+    onUpdate({ ...props, modules: updated });
+  };
+
+  const lessonIcons = { video: '🎥', text: '📖', quiz: '❓', assignment: '📝' };
+
+  return (
+    <div className="space-y-4">
+      {/* Course Title */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📋 Curriculum Header</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Section Title</label>
+            <input
+              type="text"
+              value={props.courseTitle || 'Course Curriculum'}
+              onChange={(e) => onUpdate({ ...props, courseTitle: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-green-400 hover:text-green-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showDuration !== false}
+              onChange={(e) => onUpdate({ ...props, showDuration: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Duration</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showLessonCount !== false}
+              onChange={(e) => onUpdate({ ...props, showLessonCount: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Lesson Count</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.expandedByDefault || false}
+              onChange={(e) => onUpdate({ ...props, expandedByDefault: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Expand All by Default</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showPreviewBadge !== false}
+              onChange={(e) => onUpdate({ ...props, showPreviewBadge: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show "Preview" Badge</label>
+          </div>
+        </div>
+      </details>
+
+      {/* Modules */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📚 Modules ({modules.length})</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {modules.map((module, moduleIndex) => (
+            <div key={module.id || moduleIndex} className="bg-gray-700/50 rounded-lg overflow-hidden">
+              <div
+                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-600/50"
+                onClick={() => setExpandedModule(expandedModule === moduleIndex ? null : moduleIndex)}
+              >
+                <FiFolder className="text-yellow-400" size={16} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{module.title}</p>
+                  <p className="text-xs text-gray-400">{module.lessons.length} lessons • {module.duration}</p>
+                </div>
+                <button onClick={(e) => { e.stopPropagation(); removeModule(moduleIndex); }} className="p-1 hover:bg-red-600 rounded">
+                  <FiTrash2 size={12} className="text-red-400" />
+                </button>
+              </div>
+
+              {expandedModule === moduleIndex && (
+                <div className="p-3 border-t border-gray-600 space-y-3">
+                  <input
+                    type="text"
+                    value={module.title}
+                    onChange={(e) => updateModuleAtIndex(moduleIndex, 'title', e.target.value)}
+                    placeholder="Module Title"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                  />
+                  <input
+                    type="text"
+                    value={module.duration}
+                    onChange={(e) => updateModuleAtIndex(moduleIndex, 'duration', e.target.value)}
+                    placeholder="Duration (e.g., 2 hours)"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                  />
+
+                  {/* Lessons */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-400">Lessons:</p>
+                    {module.lessons.map((lesson, lessonIndex) => (
+                      <div key={lesson.id || lessonIndex} className="bg-gray-600/50 rounded p-2">
+                        <div className="flex items-center gap-2">
+                          <span>{lessonIcons[lesson.type]}</span>
+                          <input
+                            type="text"
+                            value={lesson.title}
+                            onChange={(e) => updateLessonAtIndex(moduleIndex, lessonIndex, 'title', e.target.value)}
+                            className="flex-1 px-2 py-1 bg-gray-700 border border-gray-500 rounded text-xs text-white"
+                          />
+                          <button onClick={() => removeLesson(moduleIndex, lessonIndex)} className="p-1 hover:bg-red-600 rounded">
+                            <FiTrash2 size={10} className="text-red-400" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <select
+                            value={lesson.type}
+                            onChange={(e) => updateLessonAtIndex(moduleIndex, lessonIndex, 'type', e.target.value)}
+                            className="px-2 py-1 bg-gray-700 border border-gray-500 rounded text-xs text-white"
+                          >
+                            <option value="video">🎥 Video</option>
+                            <option value="text">📖 Text</option>
+                            <option value="quiz">❓ Quiz</option>
+                            <option value="assignment">📝 Assignment</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={lesson.duration}
+                            onChange={(e) => updateLessonAtIndex(moduleIndex, lessonIndex, 'duration', e.target.value)}
+                            placeholder="Duration"
+                            className="w-20 px-2 py-1 bg-gray-700 border border-gray-500 rounded text-xs text-white"
+                          />
+                          <label className="flex items-center gap-1 text-xs text-gray-400">
+                            <input
+                              type="checkbox"
+                              checked={lesson.isPreview || false}
+                              onChange={(e) => updateLessonAtIndex(moduleIndex, lessonIndex, 'isPreview', e.target.checked)}
+                              className="w-3 h-3"
+                            />
+                            Preview
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addLesson(moduleIndex)}
+                      className="w-full flex items-center justify-center gap-1 px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-xs text-white"
+                    >
+                      <FiPlus size={10} /> Add Lesson
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            onClick={addModule}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Module
+          </button>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+
+// Course Progress Settings - Edit progress display
+function CourseProgressSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+
+  const progress = props.progress || {
+    courseId: 'course-1',
+    courseTitle: 'Course Title',
+    courseImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400',
+    progress: 65,
+    completedLessons: 16,
+    totalLessons: 24,
+    lastAccessedLesson: 'Introduction to React Hooks',
+    continueUrl: '/courses/sample/lesson-17'
+  };
+
+  const updateProgress = (key: string, value: any) => {
+    onUpdate({ ...props, progress: { ...progress, [key]: value } });
+  };
+
+  const handleMediaSelect = (media: any) => {
+    updateProgress('courseImage', media.path);
+    setShowImagePicker(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Course Image */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🖼️ Course Image</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          {progress.courseImage && (
+            <div className="relative rounded-lg overflow-hidden">
+              <img src={progress.courseImage} alt="Course" className="w-full h-24 object-cover" />
+              <button
+                onClick={() => setShowImagePicker(true)}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity"
+              >
+                <span className="bg-blue-600 px-3 py-1 rounded text-white text-sm">Change</span>
+              </button>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowImagePicker(true)}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+            >
+              <FiUpload size={14} /> Select Image
+            </button>
+          </div>
+          <input
+            type="text"
+            value={progress.courseImage || ''}
+            onChange={(e) => updateProgress('courseImage', e.target.value)}
+            placeholder="Or paste image URL"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+          />
+        </div>
+      </details>
+
+      {/* Course Info */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-green-400 hover:text-green-300 py-2 border-b border-gray-700">
+          <span>📝 Course Info</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Course Title</label>
+            <input
+              type="text"
+              value={progress.courseTitle || ''}
+              onChange={(e) => updateProgress('courseTitle', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Last Accessed Lesson</label>
+            <input
+              type="text"
+              value={progress.lastAccessedLesson || ''}
+              onChange={(e) => updateProgress('lastAccessedLesson', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Continue URL</label>
+            <input
+              type="text"
+              value={progress.continueUrl || ''}
+              onChange={(e) => updateProgress('continueUrl', e.target.value)}
+              placeholder="/courses/my-course/lesson-5"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Progress Stats */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📊 Progress Stats</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Progress Percentage</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={progress.progress || 0}
+                onChange={(e) => updateProgress('progress', parseInt(e.target.value))}
+                className="flex-1 accent-green-500"
+              />
+              <span className="text-green-400 font-medium w-12">{progress.progress || 0}%</span>
+            </div>
+            <div className="w-full bg-gray-600 rounded-full h-2 mt-2">
+              <div
+                className="bg-green-500 h-2 rounded-full transition-all"
+                style={{ width: `${progress.progress || 0}%` }}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Completed Lessons</label>
+              <input
+                type="number"
+                min="0"
+                value={progress.completedLessons || 0}
+                onChange={(e) => updateProgress('completedLessons', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Total Lessons</label>
+              <input
+                type="number"
+                min="1"
+                value={progress.totalLessons || 1}
+                onChange={(e) => updateProgress('totalLessons', parseInt(e.target.value) || 1)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              const pct = Math.round((progress.completedLessons / progress.totalLessons) * 100);
+              updateProgress('progress', pct);
+            }}
+            className="w-full px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded text-xs text-white"
+          >
+            Auto-calculate from lessons
+          </button>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showContinueButton !== false}
+              onChange={(e) => onUpdate({ ...props, showContinueButton: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Continue Button</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showPercentage !== false}
+              onChange={(e) => onUpdate({ ...props, showPercentage: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Percentage</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showLessonCount !== false}
+              onChange={(e) => onUpdate({ ...props, showLessonCount: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Lesson Count</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showLastAccessed !== false}
+              onChange={(e) => onUpdate({ ...props, showLastAccessed: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Last Accessed Lesson</label>
+          </div>
+        </div>
+      </details>
+
+      {/* Button Customization */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-cyan-400 hover:text-cyan-300 py-2 border-b border-gray-700">
+          <span>🔘 Button Customization</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Text</label>
+            <input
+              type="text"
+              value={props.buttonText || 'Continue Learning'}
+              onChange={(e) => onUpdate({ ...props, buttonText: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Style</label>
+            <select
+              value={props.buttonStyle || 'solid'}
+              onChange={(e) => onUpdate({ ...props, buttonStyle: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="solid">Solid</option>
+              <option value="outline">Outline</option>
+              <option value="gradient">Gradient</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onSelect={handleMediaSelect}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+
+// Course Instructor Settings - Full instructor profile editing
+function CourseInstructorSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+
+  const instructor = props.instructor || {
+    id: 'instructor-1',
+    name: 'John Doe',
+    photo: 'https://i.pravatar.cc/200',
+    title: 'Senior Developer',
+    bio: 'Experienced developer with 10+ years in the industry.',
+    credentials: 'MSc Computer Science, AWS Certified',
+    rating: 4.8,
+    reviewCount: 256,
+    courseCount: 12,
+    studentCount: 15000,
+    socialLinks: {
+      twitter: '',
+      linkedin: '',
+      website: ''
+    }
+  };
+
+  const updateInstructor = (key: string, value: any) => {
+    onUpdate({ ...props, instructor: { ...instructor, [key]: value } });
+  };
+
+  const updateSocialLink = (platform: string, value: string) => {
+    updateInstructor('socialLinks', { ...instructor.socialLinks, [platform]: value });
+  };
+
+  const handleMediaSelect = (media: any) => {
+    updateInstructor('photo', media.path);
+    setShowImagePicker(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Instructor Photo */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📷 Instructor Photo</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-4">
+            {instructor.photo && (
+              <div className="relative">
+                <img src={instructor.photo} alt="Instructor" className="w-20 h-20 rounded-full object-cover" />
+                <button
+                  onClick={() => setShowImagePicker(true)}
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity"
+                >
+                  <FiUpload className="text-white" size={20} />
+                </button>
+              </div>
+            )}
+            <button
+              onClick={() => setShowImagePicker(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+            >
+              <FiUpload size={14} /> Change Photo
+            </button>
+          </div>
+          <input
+            type="text"
+            value={instructor.photo || ''}
+            onChange={(e) => updateInstructor('photo', e.target.value)}
+            placeholder="Or paste image URL"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+          />
+        </div>
+      </details>
+
+      {/* Basic Info */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-green-400 hover:text-green-300 py-2 border-b border-gray-700">
+          <span>👤 Basic Info</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Name</label>
+            <input
+              type="text"
+              value={instructor.name || ''}
+              onChange={(e) => updateInstructor('name', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Title / Role</label>
+            <input
+              type="text"
+              value={instructor.title || ''}
+              onChange={(e) => updateInstructor('title', e.target.value)}
+              placeholder="e.g., Senior Developer, Course Creator"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Bio</label>
+            <textarea
+              value={instructor.bio || ''}
+              onChange={(e) => updateInstructor('bio', e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Credentials</label>
+            <input
+              type="text"
+              value={instructor.credentials || ''}
+              onChange={(e) => updateInstructor('credentials', e.target.value)}
+              placeholder="e.g., PhD, AWS Certified, 10+ years experience"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Stats */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📊 Stats & Ratings</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Rating (0-5)</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="5"
+                step="0.1"
+                value={instructor.rating || 0}
+                onChange={(e) => updateInstructor('rating', parseFloat(e.target.value))}
+                className="flex-1 accent-yellow-500"
+              />
+              <span className="text-yellow-400 font-medium w-10">{(instructor.rating || 0).toFixed(1)}</span>
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              {[1, 2, 3, 4, 5].map(star => (
+                <FiStar
+                  key={star}
+                  size={16}
+                  className={star <= Math.round(instructor.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-500'}
+                  onClick={() => updateInstructor('rating', star)}
+                  style={{ cursor: 'pointer' }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Review Count</label>
+              <input
+                type="number"
+                value={instructor.reviewCount || 0}
+                onChange={(e) => updateInstructor('reviewCount', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Course Count</label>
+              <input
+                type="number"
+                value={instructor.courseCount || 0}
+                onChange={(e) => updateInstructor('courseCount', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Total Students</label>
+            <input
+              type="number"
+              value={instructor.studentCount || 0}
+              onChange={(e) => updateInstructor('studentCount', parseInt(e.target.value) || 0)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Social Links */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-cyan-400 hover:text-cyan-300 py-2 border-b border-gray-700">
+          <span>🔗 Social Links</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Twitter / X</label>
+            <input
+              type="text"
+              value={instructor.socialLinks?.twitter || ''}
+              onChange={(e) => updateSocialLink('twitter', e.target.value)}
+              placeholder="https://twitter.com/username"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">LinkedIn</label>
+            <input
+              type="text"
+              value={instructor.socialLinks?.linkedin || ''}
+              onChange={(e) => updateSocialLink('linkedin', e.target.value)}
+              placeholder="https://linkedin.com/in/username"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Website</label>
+            <input
+              type="text"
+              value={instructor.socialLinks?.website || ''}
+              onChange={(e) => updateSocialLink('website', e.target.value)}
+              placeholder="https://example.com"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showStats !== false}
+              onChange={(e) => onUpdate({ ...props, showStats: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Stats (Courses, Students)</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showRating !== false}
+              onChange={(e) => onUpdate({ ...props, showRating: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Rating</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showSocial !== false}
+              onChange={(e) => onUpdate({ ...props, showSocial: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Social Links</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showCredentials !== false}
+              onChange={(e) => onUpdate({ ...props, showCredentials: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Credentials</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showBio !== false}
+              onChange={(e) => onUpdate({ ...props, showBio: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Bio</label>
+          </div>
+        </div>
+      </details>
+
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onSelect={handleMediaSelect}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+
+// Course Categories Settings - Manage category display
+function CourseCategoriesSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
+
+  const categories: CourseCategoryData[] = props.categories || [];
+
+  const addCategory = () => {
+    const newCategory: CourseCategoryData = {
+      id: `category-${Date.now()}`,
+      name: `Category ${categories.length + 1}`,
+      slug: `category-${categories.length + 1}`,
+      icon: '📚',
+      courseCount: 0,
+      color: '#3B82F6'
+    };
+    onUpdate({ ...props, categories: [...categories, newCategory] });
+    setExpandedCategory(categories.length);
+  };
+
+  const updateCategoryAtIndex = (index: number, key: string, value: any) => {
+    const updated = [...categories];
+    updated[index] = { ...updated[index], [key]: value };
+    onUpdate({ ...props, categories: updated });
+  };
+
+  const removeCategory = (index: number) => {
+    const updated = categories.filter((_, i) => i !== index);
+    onUpdate({ ...props, categories: updated });
+    if (expandedCategory === index) setExpandedCategory(null);
+  };
+
+  const moveCategory = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= categories.length) return;
+    const updated = [...categories];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    onUpdate({ ...props, categories: updated });
+  };
+
+  const iconOptions = ['📚', '💻', '🎨', '📊', '🎵', '📷', '✏️', '🔬', '💼', '🏋️', '🍳', '🌍', '🎮', '📱', '🔧'];
+
+  return (
+    <div className="space-y-4">
+      {/* Layout Options */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📐 Layout Options</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Columns</label>
+            <select
+              value={props.columns || 3}
+              onChange={(e) => onUpdate({ ...props, columns: parseInt(e.target.value) })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value={2}>2 Columns</option>
+              <option value={3}>3 Columns</option>
+              <option value={4}>4 Columns</option>
+              <option value={6}>6 Columns</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Style</label>
+            <select
+              value={props.style || 'cards'}
+              onChange={(e) => onUpdate({ ...props, style: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="cards">Cards with Background</option>
+              <option value="minimal">Minimal Text</option>
+              <option value="icons">Icon Focused</option>
+              <option value="pills">Pill Buttons</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Gap Size</label>
+            <select
+              value={props.gap || 'medium'}
+              onChange={(e) => onUpdate({ ...props, gap: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="small">Small (12px)</option>
+              <option value="medium">Medium (20px)</option>
+              <option value="large">Large (32px)</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-green-400 hover:text-green-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showIcon !== false}
+              onChange={(e) => onUpdate({ ...props, showIcon: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Icon</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showCourseCount !== false}
+              onChange={(e) => onUpdate({ ...props, showCourseCount: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Show Course Count</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showColor !== false}
+              onChange={(e) => onUpdate({ ...props, showColor: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Use Category Colors</label>
+          </div>
+        </div>
+      </details>
+
+      {/* Categories List */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📂 Categories ({categories.length})</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {categories.map((category, index) => (
+            <div key={category.id || index} className="bg-gray-700/50 rounded-lg overflow-hidden">
+              <div
+                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-600/50"
+                onClick={() => setExpandedCategory(expandedCategory === index ? null : index)}
+              >
+                <span className="text-xl">{category.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{category.name}</p>
+                  <p className="text-xs text-gray-400">{category.courseCount} courses</p>
+                </div>
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: category.color || '#3B82F6' }}
+                />
+                <div className="flex items-center gap-1">
+                  <button onClick={(e) => { e.stopPropagation(); moveCategory(index, 'up'); }} className="p-1 hover:bg-gray-600 rounded" disabled={index === 0}>
+                    <FiArrowUp size={12} className={index === 0 ? 'text-gray-600' : 'text-gray-400'} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); moveCategory(index, 'down'); }} className="p-1 hover:bg-gray-600 rounded" disabled={index === categories.length - 1}>
+                    <FiArrowDown size={12} className={index === categories.length - 1 ? 'text-gray-600' : 'text-gray-400'} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); removeCategory(index); }} className="p-1 hover:bg-red-600 rounded">
+                    <FiTrash2 size={12} className="text-red-400" />
+                  </button>
+                </div>
+              </div>
+
+              {expandedCategory === index && (
+                <div className="p-3 border-t border-gray-600 space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Category Name</label>
+                    <input
+                      type="text"
+                      value={category.name}
+                      onChange={(e) => updateCategoryAtIndex(index, 'name', e.target.value)}
+                      className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Slug (URL)</label>
+                    <input
+                      type="text"
+                      value={category.slug}
+                      onChange={(e) => updateCategoryAtIndex(index, 'slug', e.target.value)}
+                      className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Icon</label>
+                    <div className="flex flex-wrap gap-1">
+                      {iconOptions.map(icon => (
+                        <button
+                          key={icon}
+                          onClick={() => updateCategoryAtIndex(index, 'icon', icon)}
+                          className={`w-8 h-8 flex items-center justify-center rounded ${category.icon === icon ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-500'}`}
+                        >
+                          {icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Course Count</label>
+                      <input
+                        type="number"
+                        value={category.courseCount}
+                        onChange={(e) => updateCategoryAtIndex(index, 'courseCount', parseInt(e.target.value) || 0)}
+                        className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Color</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="color"
+                          value={category.color || '#3B82F6'}
+                          onChange={(e) => updateCategoryAtIndex(index, 'color', e.target.value)}
+                          className="w-8 h-8 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={category.color || '#3B82F6'}
+                          onChange={(e) => updateCategoryAtIndex(index, 'color', e.target.value)}
+                          className="flex-1 px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            onClick={addCategory}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Category
+          </button>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// ============ Comprehensive Shop/E-commerce Settings Components ============
+
+// Product Card Settings - Full editing for individual product card
+function ProductCardSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [showGalleryPicker, setShowGalleryPicker] = useState(false);
+
+  const product = props.product || {
+    id: `product-${Date.now()}`,
+    title: 'Product Title',
+    description: 'Product description goes here',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+    gallery: [],
+    price: 99.99,
+    salePrice: 0,
+    currency: 'USD',
+    rating: 4.5,
+    reviewCount: 128,
+    badge: '',
+    category: 'Electronics',
+    sku: 'SKU-001',
+    inStock: true,
+    stockQuantity: 100,
+    productUrl: '/products/product-1',
+    quickViewEnabled: true,
+  };
+
+  const updateProduct = (key: string, value: any) => {
+    onUpdate({ ...props, product: { ...product, [key]: value } });
+  };
+
+  const currencies = [
+    { value: 'USD', label: '$ USD', symbol: '$' },
+    { value: 'EUR', label: '€ EUR', symbol: '€' },
+    { value: 'GBP', label: '£ GBP', symbol: '£' },
+    { value: 'JPY', label: '¥ JPY', symbol: '¥' },
+    { value: 'AUD', label: 'A$ AUD', symbol: 'A$' },
+    { value: 'CAD', label: 'C$ CAD', symbol: 'C$' },
+  ];
+
+  const discountPercent = product.salePrice && product.price > 0
+    ? Math.round((1 - product.salePrice / product.price) * 100)
+    : 0;
+
+  return (
+    <div className="space-y-4">
+      {/* Media Picker Modal */}
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onSelect={(media) => {
+            updateProduct('image', media.path || media.url);
+            setShowImagePicker(false);
+          }}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+      {showGalleryPicker && (
+        <MediaPickerModal
+          type="gallery"
+          onSelect={(media) => {
+            const currentGallery = product.gallery || [];
+            updateProduct('gallery', [...currentGallery, media.path || media.url]);
+            setShowGalleryPicker(false);
+          }}
+          onClose={() => setShowGalleryPicker(false)}
+        />
+      )}
+
+      {/* Product Image */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>🖼️ Product Image</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          {product.image ? (
+            <div className="relative rounded-lg overflow-hidden">
+              <img src={product.image} alt="" className="w-full h-32 object-cover" />
+              <button
+                onClick={() => updateProduct('image', '')}
+                className="absolute top-2 right-2 p-1 bg-red-500 rounded-full text-white hover:bg-red-600"
+              >
+                <FiX size={14} />
+              </button>
+            </div>
+          ) : (
+            <div className="h-32 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center">
+              <span className="text-gray-500 text-sm">No image selected</span>
+            </div>
+          )}
+          <button
+            onClick={() => setShowImagePicker(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm text-white"
+          >
+            <FiImage size={14} /> Select Product Image
+          </button>
+          <input
+            type="text"
+            value={product.image || ''}
+            onChange={(e) => updateProduct('image', e.target.value)}
+            placeholder="Or paste image URL"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+          />
+        </div>
+      </details>
+
+      {/* Product Gallery */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>🖼️ Product Gallery ({(product.gallery || []).length})</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          {(product.gallery || []).length > 0 && (
+            <div className="grid grid-cols-4 gap-2">
+              {product.gallery.map((img: string, idx: number) => (
+                <div key={idx} className="relative rounded overflow-hidden">
+                  <img src={img} alt="" className="w-full h-16 object-cover" />
+                  <button
+                    onClick={() => {
+                      const newGallery = product.gallery.filter((_: string, i: number) => i !== idx);
+                      updateProduct('gallery', newGallery);
+                    }}
+                    className="absolute top-1 right-1 p-0.5 bg-red-500 rounded-full text-white"
+                  >
+                    <FiX size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={() => setShowGalleryPicker(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Gallery Image
+          </button>
+        </div>
+      </details>
+
+      {/* Product Content */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📝 Product Content</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
             <label className="block text-xs text-gray-400 mb-1">Product Title</label>
             <input
               type="text"
@@ -2547,7 +4727,187 @@ function BlockSettingsForm({
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
             />
           </div>
-          <div className="mb-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Description</label>
+            <textarea
+              value={product.description || ''}
+              onChange={(e) => updateProduct('description', e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Category</label>
+              <input
+                type="text"
+                value={product.category || ''}
+                onChange={(e) => updateProduct('category', e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">SKU</label>
+              <input
+                type="text"
+                value={product.sku || ''}
+                onChange={(e) => updateProduct('sku', e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Badge</label>
+            <div className="flex gap-2 flex-wrap mb-2">
+              {['Sale', 'New', 'Hot', 'Bestseller', 'Limited'].map((badge) => (
+                <button
+                  key={badge}
+                  onClick={() => updateProduct('badge', badge)}
+                  className={`px-2 py-1 rounded text-xs ${product.badge === badge ? 'bg-emerald-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {badge}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={product.badge || ''}
+              onChange={(e) => updateProduct('badge', e.target.value)}
+              placeholder="Custom badge text"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Pricing */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>💰 Pricing</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Currency</label>
+            <select
+              value={product.currency || 'USD'}
+              onChange={(e) => updateProduct('currency', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              {currencies.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Regular Price</label>
+              <input
+                type="number"
+                value={product.price || 0}
+                onChange={(e) => updateProduct('price', parseFloat(e.target.value) || 0)}
+                min="0"
+                step="0.01"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Sale Price</label>
+              <input
+                type="number"
+                value={product.salePrice || ''}
+                onChange={(e) => updateProduct('salePrice', e.target.value ? parseFloat(e.target.value) : 0)}
+                min="0"
+                step="0.01"
+                placeholder="Optional"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+          {discountPercent > 0 && (
+            <div className="px-3 py-2 bg-green-900/30 border border-green-600/30 rounded-lg">
+              <span className="text-green-400 text-sm font-medium">🎉 {discountPercent}% OFF</span>
+            </div>
+          )}
+        </div>
+      </details>
+
+      {/* Ratings & Reviews */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-orange-400 hover:text-orange-300 py-2 border-b border-gray-700">
+          <span>⭐ Ratings & Reviews</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Rating: {product.rating || 0} / 5</label>
+            <input
+              type="range"
+              min="0"
+              max="5"
+              step="0.1"
+              value={product.rating || 0}
+              onChange={(e) => updateProduct('rating', parseFloat(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-center gap-1 mt-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => updateProduct('rating', star)}
+                  className="text-xl transition-transform hover:scale-125"
+                >
+                  {star <= Math.floor(product.rating || 0) ? '⭐' : '☆'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Review Count</label>
+            <input
+              type="number"
+              value={product.reviewCount || 0}
+              onChange={(e) => updateProduct('reviewCount', parseInt(e.target.value) || 0)}
+              min="0"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Stock & Inventory */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-cyan-400 hover:text-cyan-300 py-2 border-b border-gray-700">
+          <span>📦 Stock & Inventory</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={product.inStock !== false}
+              onChange={(e) => updateProduct('inStock', e.target.checked)}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-emerald-500"
+            />
+            <label className="text-xs text-gray-400">In Stock</label>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Stock Quantity</label>
+            <input
+              type="number"
+              value={product.stockQuantity || 0}
+              onChange={(e) => updateProduct('stockQuantity', parseInt(e.target.value) || 0)}
+              min="0"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Button & Link */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-pink-400 hover:text-pink-300 py-2 border-b border-gray-700">
+          <span>🔗 Button & Link</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
             <label className="block text-xs text-gray-400 mb-1">Product URL</label>
             <input
               type="text"
@@ -2557,473 +4917,1816 @@ function BlockSettingsForm({
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
             />
           </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Image URL</label>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Text</label>
             <input
               type="text"
-              value={product.image || ''}
-              onChange={(e) => updateProduct('image', e.target.value)}
+              value={props.buttonText || 'Add to Cart'}
+              onChange={(e) => onUpdate({ ...props, buttonText: e.target.value })}
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
             />
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Price ($)</label>
-              <input
-                type="number"
-                value={product.price || 0}
-                onChange={(e) => updateProduct('price', parseFloat(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Sale Price ($)</label>
-              <input
-                type="number"
-                value={product.salePrice || ''}
-                onChange={(e) => updateProduct('salePrice', e.target.value ? parseFloat(e.target.value) : undefined)}
-                placeholder="Optional"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
-              />
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Style</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['solid', 'outline', 'icon'] as const).map((style) => (
+                <button
+                  key={style}
+                  onClick={() => onUpdate({ ...props, buttonStyle: style })}
+                  className={`px-3 py-2 rounded-lg text-xs capitalize ${props.buttonStyle === style ? 'bg-emerald-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {style}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="mb-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={product.quickViewEnabled !== false}
+              onChange={(e) => updateProduct('quickViewEnabled', e.target.checked)}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-emerald-500"
+            />
+            <label className="text-xs text-gray-400">Enable Quick View</label>
+          </div>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-gray-400 hover:text-gray-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {[
+            { key: 'showRating', label: 'Show Rating' },
+            { key: 'showBadge', label: 'Show Badge' },
+            { key: 'showPrice', label: 'Show Price' },
+            { key: 'showCategory', label: 'Show Category' },
+            { key: 'showStock', label: 'Show Stock Status' },
+            { key: 'showWishlist', label: 'Show Wishlist Button' },
+            { key: 'showCompare', label: 'Show Compare Button' },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={props[key] !== false}
+                onChange={(e) => onUpdate({ ...props, [key]: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+              />
+              <label className="text-xs text-gray-400">{label}</label>
+            </div>
+          ))}
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Featured Product Settings - Extended product card with layout options
+function FeaturedProductSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+
+  const product = props.product || {
+    id: `product-${Date.now()}`,
+    title: 'Featured Product',
+    description: 'This amazing product is our top seller with exceptional quality.',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600',
+    price: 199.99,
+    salePrice: 149.99,
+    currency: 'USD',
+    rating: 4.8,
+    reviewCount: 256,
+    badge: 'Featured',
+    features: ['Premium Quality', 'Free Shipping', '30-Day Returns', '2-Year Warranty'],
+  };
+
+  const updateProduct = (key: string, value: any) => {
+    onUpdate({ ...props, product: { ...product, [key]: value } });
+  };
+
+  return (
+    <div className="space-y-4">
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onSelect={(media) => {
+            updateProduct('image', media.path || media.url);
+            setShowImagePicker(false);
+          }}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+
+      {/* Layout */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📐 Layout</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Image Position</label>
+            <div className="grid grid-cols-2 gap-2">
+              {(['left', 'right'] as const).map((layout) => (
+                <button
+                  key={layout}
+                  onClick={() => onUpdate({ ...props, layout })}
+                  className={`px-4 py-3 rounded-lg text-sm capitalize flex items-center justify-center gap-2 ${props.layout === layout ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {layout === 'left' ? '🖼️ ←' : '→ 🖼️'} {layout}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* Product Image */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>🖼️ Product Image</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          {product.image && (
+            <div className="relative rounded-lg overflow-hidden">
+              <img src={product.image} alt="" className="w-full h-40 object-cover" />
+              <button
+                onClick={() => updateProduct('image', '')}
+                className="absolute top-2 right-2 p-1 bg-red-500 rounded-full text-white"
+              >
+                <FiX size={14} />
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => setShowImagePicker(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm text-white"
+          >
+            <FiImage size={14} /> Select Image
+          </button>
+        </div>
+      </details>
+
+      {/* Product Content */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📝 Product Content</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Title</label>
+            <input
+              type="text"
+              value={product.title || ''}
+              onChange={(e) => updateProduct('title', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Description</label>
+            <textarea
+              value={product.description || ''}
+              onChange={(e) => updateProduct('description', e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
             <label className="block text-xs text-gray-400 mb-1">Badge</label>
             <input
               type="text"
               value={product.badge || ''}
               onChange={(e) => updateProduct('badge', e.target.value)}
-              placeholder="Sale, New, Featured..."
+              placeholder="Featured, Best Seller, etc."
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
             />
           </div>
-          {type === 'featuredProduct' && (
-            <div className="mb-3">
-              <label className="block text-xs text-gray-400 mb-1">Description</label>
-              <textarea
-                value={product.description || ''}
-                onChange={(e) => updateProduct('description', e.target.value)}
-                rows={2}
+        </div>
+      </details>
+
+      {/* Features List */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-cyan-400 hover:text-cyan-300 py-2 border-b border-gray-700">
+          <span>✨ Features ({(product.features || []).length})</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {(product.features || []).map((feature: string, idx: number) => (
+            <div key={idx} className="flex items-center gap-2">
+              <span className="text-green-400">✓</span>
+              <input
+                type="text"
+                value={feature}
+                onChange={(e) => {
+                  const newFeatures = [...(product.features || [])];
+                  newFeatures[idx] = e.target.value;
+                  updateProduct('features', newFeatures);
+                }}
+                className="flex-1 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm text-white"
+              />
+              <button
+                onClick={() => {
+                  const newFeatures = (product.features || []).filter((_: string, i: number) => i !== idx);
+                  updateProduct('features', newFeatures);
+                }}
+                className="p-1 text-red-400 hover:text-red-300"
+              >
+                <FiX size={14} />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => updateProduct('features', [...(product.features || []), 'New Feature'])}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Feature
+          </button>
+        </div>
+      </details>
+
+      {/* Pricing */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>💰 Pricing</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Regular Price</label>
+              <input
+                type="number"
+                value={product.price || 0}
+                onChange={(e) => updateProduct('price', parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Sale Price</label>
+              <input
+                type="number"
+                value={product.salePrice || ''}
+                onChange={(e) => updateProduct('salePrice', e.target.value ? parseFloat(e.target.value) : 0)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* Rating */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-orange-400 hover:text-orange-300 py-2 border-b border-gray-700">
+          <span>⭐ Rating</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Rating: {product.rating || 0} / 5</label>
+            <input
+              type="range"
+              min="0"
+              max="5"
+              step="0.1"
+              value={product.rating || 0}
+              onChange={(e) => updateProduct('rating', parseFloat(e.target.value))}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Review Count</label>
+            <input
+              type="number"
+              value={product.reviewCount || 0}
+              onChange={(e) => updateProduct('reviewCount', parseInt(e.target.value) || 0)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* CTA Button */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-pink-400 hover:text-pink-300 py-2 border-b border-gray-700">
+          <span>🔘 Call to Action</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Text</label>
+            <input
+              type="text"
+              value={props.ctaText || 'Buy Now'}
+              onChange={(e) => onUpdate({ ...props, ctaText: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Secondary Button</label>
+            <input
+              type="text"
+              value={props.secondaryCtaText || 'Learn More'}
+              onChange={(e) => onUpdate({ ...props, secondaryCtaText: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Product Grid Settings - Full editing for product grid
+function ProductGridSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [expandedProduct, setExpandedProduct] = useState<number | null>(null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null);
+
+  const products: ProductData[] = props.products || [];
+
+  const addProduct = () => {
+    const newProduct: ProductData = {
+      id: `product-${Date.now()}`,
+      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+      title: `Product ${products.length + 1}`,
+      description: 'Product description',
+      price: 49.99,
+      salePrice: 0,
+      rating: 4.5,
+      reviewCount: 50,
+      inStock: true,
+      badge: '',
+      productUrl: `/products/product-${products.length + 1}`,
+      quickViewEnabled: true,
+    };
+    onUpdate({ ...props, products: [...products, newProduct] });
+  };
+
+  const updateProduct = (index: number, key: string, value: any) => {
+    const newProducts = [...products];
+    newProducts[index] = { ...newProducts[index], [key]: value };
+    onUpdate({ ...props, products: newProducts });
+  };
+
+  const removeProduct = (index: number) => {
+    const newProducts = products.filter((_, i) => i !== index);
+    onUpdate({ ...props, products: newProducts });
+    setExpandedProduct(null);
+  };
+
+  const moveProduct = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= products.length) return;
+    const newProducts = [...products];
+    [newProducts[index], newProducts[newIndex]] = [newProducts[newIndex], newProducts[index]];
+    onUpdate({ ...props, products: newProducts });
+  };
+
+  return (
+    <div className="space-y-4">
+      {showImagePicker && editingProductIndex !== null && (
+        <MediaPickerModal
+          type="image"
+          onSelect={(media) => {
+            updateProduct(editingProductIndex, 'image', media.path || media.url);
+            setShowImagePicker(false);
+            setEditingProductIndex(null);
+          }}
+          onClose={() => { setShowImagePicker(false); setEditingProductIndex(null); }}
+        />
+      )}
+
+      {/* Layout Options */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📐 Layout</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Columns</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[2, 3, 4, 5].map((cols) => (
+                <button
+                  key={cols}
+                  onClick={() => onUpdate({ ...props, columns: cols.toString() })}
+                  className={`px-3 py-2 rounded-lg text-sm ${props.columns === cols.toString() ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {cols}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Gap</label>
+            <select
+              value={props.gap || 'medium'}
+              onChange={(e) => onUpdate({ ...props, gap: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {[
+            { key: 'showRating', label: 'Show Rating' },
+            { key: 'showPrice', label: 'Show Price' },
+            { key: 'showBadge', label: 'Show Badges' },
+            { key: 'showQuickView', label: 'Enable Quick View' },
+            { key: 'showWishlist', label: 'Show Wishlist Button' },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={props[key] !== false}
+                onChange={(e) => onUpdate({ ...props, [key]: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+              />
+              <label className="text-xs text-gray-400">{label}</label>
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {/* Products List */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>🛍️ Products ({products.length})</span>
+        </summary>
+        <div className="mt-3 space-y-2 max-h-80 overflow-y-auto">
+          {products.map((product, index) => (
+            <div key={product.id || index} className="bg-gray-700/50 rounded-lg overflow-hidden">
+              <div
+                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-600/50"
+                onClick={() => setExpandedProduct(expandedProduct === index ? null : index)}
+              >
+                <img src={product.image} alt="" className="w-10 h-10 object-cover rounded" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{product.title}</p>
+                  <p className="text-xs text-gray-400">${product.price?.toFixed(2)}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={(e) => { e.stopPropagation(); moveProduct(index, 'up'); }} className="p-1 hover:bg-gray-600 rounded" disabled={index === 0}>
+                    <FiArrowUp size={12} className={index === 0 ? 'text-gray-600' : 'text-gray-400'} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); moveProduct(index, 'down'); }} className="p-1 hover:bg-gray-600 rounded" disabled={index === products.length - 1}>
+                    <FiArrowDown size={12} className={index === products.length - 1 ? 'text-gray-600' : 'text-gray-400'} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); removeProduct(index); }} className="p-1 hover:bg-red-600 rounded">
+                    <FiTrash2 size={12} className="text-red-400" />
+                  </button>
+                </div>
+              </div>
+
+              {expandedProduct === index && (
+                <div className="p-3 border-t border-gray-600 space-y-3">
+                  <button
+                    onClick={() => { setEditingProductIndex(index); setShowImagePicker(true); }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm text-white"
+                  >
+                    <FiImage size={14} /> Change Image
+                  </button>
+                  <input
+                    type="text"
+                    value={product.title}
+                    onChange={(e) => updateProduct(index, 'title', e.target.value)}
+                    placeholder="Product Title"
+                    className="w-full px-2 py-1.5 bg-gray-600 border border-gray-500 rounded text-sm text-white"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      value={product.price}
+                      onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value) || 0)}
+                      placeholder="Price"
+                      className="px-2 py-1.5 bg-gray-600 border border-gray-500 rounded text-sm text-white"
+                    />
+                    <input
+                      type="number"
+                      value={product.salePrice || ''}
+                      onChange={(e) => updateProduct(index, 'salePrice', e.target.value ? parseFloat(e.target.value) : 0)}
+                      placeholder="Sale Price"
+                      className="px-2 py-1.5 bg-gray-600 border border-gray-500 rounded text-sm text-white"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={product.badge || ''}
+                    onChange={(e) => updateProduct(index, 'badge', e.target.value)}
+                    placeholder="Badge (Sale, New...)"
+                    className="w-full px-2 py-1.5 bg-gray-600 border border-gray-500 rounded text-sm text-white"
+                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={product.inStock !== false}
+                      onChange={(e) => updateProduct(index, 'inStock', e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-600 bg-gray-700"
+                    />
+                    <label className="text-xs text-gray-400">In Stock</label>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            onClick={addProduct}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Product
+          </button>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Product Carousel Settings - Same as grid but with carousel options
+function ProductCarouselSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [expandedProduct, setExpandedProduct] = useState<number | null>(null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null);
+
+  const products: ProductData[] = props.products || [];
+
+  const addProduct = () => {
+    const newProduct: ProductData = {
+      id: `product-${Date.now()}`,
+      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+      title: `Product ${products.length + 1}`,
+      price: 49.99,
+      rating: 4.5,
+      reviewCount: 50,
+      inStock: true,
+      productUrl: `/products/product-${products.length + 1}`,
+    };
+    onUpdate({ ...props, products: [...products, newProduct] });
+  };
+
+  const updateProduct = (index: number, key: string, value: any) => {
+    const newProducts = [...products];
+    newProducts[index] = { ...newProducts[index], [key]: value };
+    onUpdate({ ...props, products: newProducts });
+  };
+
+  const removeProduct = (index: number) => {
+    const newProducts = products.filter((_, i) => i !== index);
+    onUpdate({ ...props, products: newProducts });
+  };
+
+  return (
+    <div className="space-y-4">
+      {showImagePicker && editingProductIndex !== null && (
+        <MediaPickerModal
+          type="image"
+          onSelect={(media) => {
+            updateProduct(editingProductIndex, 'image', media.path || media.url);
+            setShowImagePicker(false);
+          }}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+
+      {/* Carousel Options */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>🎠 Carousel Options</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Items per View</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[2, 3, 4, 5].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => onUpdate({ ...props, itemsPerView: num })}
+                  className={`px-3 py-2 rounded-lg text-sm ${props.itemsPerView === num ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            {[
+              { key: 'autoplay', label: 'Autoplay' },
+              { key: 'showArrows', label: 'Show Navigation Arrows' },
+              { key: 'showDots', label: 'Show Pagination Dots' },
+              { key: 'loop', label: 'Infinite Loop' },
+            ].map(({ key, label }) => (
+              <div key={key} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={props[key] !== false}
+                  onChange={(e) => onUpdate({ ...props, [key]: e.target.checked })}
+                  className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-500"
+                />
+                <label className="text-xs text-gray-400">{label}</label>
+              </div>
+            ))}
+          </div>
+          {props.autoplay !== false && (
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Autoplay Speed (seconds)</label>
+              <input
+                type="number"
+                value={props.autoplaySpeed || 3}
+                onChange={(e) => onUpdate({ ...props, autoplaySpeed: parseInt(e.target.value) || 3 })}
+                min="1"
+                max="10"
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
               />
             </div>
           )}
-          <div className="flex items-center gap-2 mb-3">
-            <input
-              type="checkbox"
-              checked={product.quickViewEnabled !== false}
-              onChange={(e) => updateProduct('quickViewEnabled', e.target.checked)}
-              className="rounded bg-gray-700 border-gray-600"
-            />
-            <label className="text-xs text-gray-400">Enable Quick View</label>
-          </div>
-        </>
-      );
-    }
+        </div>
+      </details>
 
-    case 'productGrid':
-    case 'productCarousel': {
-      const products = props.products || [];
-      const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
-
-      const updateProductAtIndex = (index: number, key: string, value: any) => {
-        const newProducts = [...products];
-        newProducts[index] = { ...newProducts[index], [key]: value };
-        onUpdate({ ...props, products: newProducts });
-      };
-
-      const addProduct = () => {
-        const newProduct: ProductData = {
-          id: `product-${Date.now()}`,
-          image: 'https://picsum.photos/400/400',
-          title: `New Product ${products.length + 1}`,
-          price: 49.99,
-          rating: 4.5,
-          reviewCount: 0,
-          inStock: true,
-          productUrl: `/products/new-product-${products.length + 1}`,
-          quickViewEnabled: true,
-        };
-        onUpdate({ ...props, products: [...products, newProduct] });
-      };
-
-      const removeProduct = (index: number) => {
-        const newProducts = products.filter((_: ProductData, i: number) => i !== index);
-        onUpdate({ ...props, products: newProducts });
-        setEditingIndex(null);
-      };
-
-      return (
-        <>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-2">Products ({products.length})</label>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {products.map((product: ProductData, index: number) => (
-                <div key={product.id} className="bg-gray-700 rounded-lg p-2">
-                  <div
-                    className="flex items-center gap-2 cursor-pointer"
-                    onClick={() => setEditingIndex(editingIndex === index ? null : index)}
-                  >
-                    <img src={product.image} alt="" className="w-8 h-8 object-cover rounded" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white truncate">{product.title}</p>
-                      <p className="text-xs text-gray-400">${product.price.toFixed(2)}</p>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); removeProduct(index); }}
-                      className="p-1 text-red-400 hover:text-red-300"
-                    >
-                      <FiX size={14} />
-                    </button>
-                  </div>
-
-                  {/* Expanded edit form */}
-                  {editingIndex === index && (
-                    <div className="mt-3 pt-3 border-t border-gray-600 space-y-2">
-                      <input
-                        type="text"
-                        value={product.title}
-                        onChange={(e) => updateProductAtIndex(index, 'title', e.target.value)}
-                        placeholder="Product Title"
-                        className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
-                      />
-                      <input
-                        type="text"
-                        value={product.productUrl || ''}
-                        onChange={(e) => updateProductAtIndex(index, 'productUrl', e.target.value)}
-                        placeholder="Product URL"
-                        className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
-                      />
-                      <input
-                        type="text"
-                        value={product.image}
-                        onChange={(e) => updateProductAtIndex(index, 'image', e.target.value)}
-                        placeholder="Image URL"
-                        className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="number"
-                          value={product.price}
-                          onChange={(e) => updateProductAtIndex(index, 'price', parseFloat(e.target.value))}
-                          placeholder="Price"
-                          className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
-                        />
-                        <input
-                          type="number"
-                          value={product.salePrice || ''}
-                          onChange={(e) => updateProductAtIndex(index, 'salePrice', e.target.value ? parseFloat(e.target.value) : undefined)}
-                          placeholder="Sale Price"
-                          className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        value={product.badge || ''}
-                        onChange={(e) => updateProductAtIndex(index, 'badge', e.target.value)}
-                        placeholder="Badge (Sale, New...)"
-                        className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
-                      />
-                    </div>
-                  )}
+      {/* Products List */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>🛍️ Products ({products.length})</span>
+        </summary>
+        <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
+          {products.map((product, index) => (
+            <div key={product.id || index} className="bg-gray-700/50 rounded-lg overflow-hidden">
+              <div
+                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-600/50"
+                onClick={() => setExpandedProduct(expandedProduct === index ? null : index)}
+              >
+                <img src={product.image} alt="" className="w-8 h-8 object-cover rounded" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{product.title}</p>
+                  <p className="text-xs text-gray-400">${product.price?.toFixed(2)}</p>
                 </div>
+                <button onClick={(e) => { e.stopPropagation(); removeProduct(index); }} className="p-1 hover:bg-red-600 rounded">
+                  <FiTrash2 size={12} className="text-red-400" />
+                </button>
+              </div>
+
+              {expandedProduct === index && (
+                <div className="p-3 border-t border-gray-600 space-y-2">
+                  <button
+                    onClick={() => { setEditingProductIndex(index); setShowImagePicker(true); }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-sm text-white"
+                  >
+                    <FiImage size={12} /> Change Image
+                  </button>
+                  <input
+                    type="text"
+                    value={product.title}
+                    onChange={(e) => updateProduct(index, 'title', e.target.value)}
+                    placeholder="Title"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      value={product.price}
+                      onChange={(e) => updateProduct(index, 'price', parseFloat(e.target.value) || 0)}
+                      placeholder="Price"
+                      className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                    <input
+                      type="number"
+                      value={product.salePrice || ''}
+                      onChange={(e) => updateProduct(index, 'salePrice', e.target.value ? parseFloat(e.target.value) : 0)}
+                      placeholder="Sale"
+                      className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={addProduct}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Product
+          </button>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Shopping Cart Settings
+function ShoppingCartSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  return (
+    <div className="space-y-4">
+      {/* Cart Style */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>🛒 Cart Style</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Display Style</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'mini', label: 'Mini', icon: '🔽' },
+                { value: 'full', label: 'Full', icon: '📋' },
+                { value: 'sidebar', label: 'Sidebar', icon: '📑' },
+              ].map(({ value, label, icon }) => (
+                <button
+                  key={value}
+                  onClick={() => onUpdate({ ...props, style: value })}
+                  className={`px-3 py-2 rounded-lg text-sm flex flex-col items-center gap-1 ${props.style === value ? 'bg-emerald-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  <span>{icon}</span>
+                  <span>{label}</span>
+                </button>
               ))}
             </div>
+          </div>
+        </div>
+      </details>
+
+      {/* Cart Options */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>⚙️ Cart Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {[
+            { key: 'showCheckoutButton', label: 'Show Checkout Button' },
+            { key: 'showQuantityControls', label: 'Show Quantity Controls' },
+            { key: 'showRemoveButton', label: 'Show Remove Button' },
+            { key: 'showSubtotal', label: 'Show Subtotal' },
+            { key: 'showTax', label: 'Show Tax' },
+            { key: 'showShipping', label: 'Show Shipping' },
+            { key: 'showPromoCode', label: 'Show Promo Code Field' },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={props[key] !== false}
+                onChange={(e) => onUpdate({ ...props, [key]: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+              />
+              <label className="text-xs text-gray-400">{label}</label>
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {/* Button Text */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-pink-400 hover:text-pink-300 py-2 border-b border-gray-700">
+          <span>🔘 Button Text</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Checkout Button Text</label>
+            <input
+              type="text"
+              value={props.checkoutText || 'Proceed to Checkout'}
+              onChange={(e) => onUpdate({ ...props, checkoutText: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Continue Shopping Text</label>
+            <input
+              type="text"
+              value={props.continueText || 'Continue Shopping'}
+              onChange={(e) => onUpdate({ ...props, continueText: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      <p className="text-xs text-gray-500 italic">Cart items are populated dynamically from the shop.</p>
+    </div>
+  );
+}
+
+// Product Categories Settings
+function ProductCategoriesSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [editingCategoryIndex, setEditingCategoryIndex] = useState<number | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
+
+  const categories = props.categories || [];
+
+  const addCategory = () => {
+    const newCategory = {
+      id: `cat-${Date.now()}`,
+      name: `Category ${categories.length + 1}`,
+      slug: `category-${categories.length + 1}`,
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+      productCount: 0,
+      description: '',
+    };
+    onUpdate({ ...props, categories: [...categories, newCategory] });
+  };
+
+  const updateCategory = (index: number, key: string, value: any) => {
+    const newCategories = [...categories];
+    newCategories[index] = { ...newCategories[index], [key]: value };
+    onUpdate({ ...props, categories: newCategories });
+  };
+
+  const removeCategory = (index: number) => {
+    const newCategories = categories.filter((_: any, i: number) => i !== index);
+    onUpdate({ ...props, categories: newCategories });
+  };
+
+  return (
+    <div className="space-y-4">
+      {showImagePicker && editingCategoryIndex !== null && (
+        <MediaPickerModal
+          type="image"
+          onSelect={(media) => {
+            updateCategory(editingCategoryIndex, 'image', media.path || media.url);
+            setShowImagePicker(false);
+          }}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+
+      {/* Layout */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>📐 Layout</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Columns</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[2, 3, 4, 5].map((cols) => (
+                <button
+                  key={cols}
+                  onClick={() => onUpdate({ ...props, columns: cols.toString() })}
+                  className={`px-3 py-2 rounded-lg text-sm ${props.columns === cols.toString() ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {cols}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Style</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'cards', label: 'Cards' },
+                { value: 'overlay', label: 'Overlay' },
+                { value: 'minimal', label: 'Minimal' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => onUpdate({ ...props, style: value })}
+                  className={`px-3 py-2 rounded-lg text-sm ${props.style === value ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* Display Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>👁️ Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {[
+            { key: 'showImage', label: 'Show Category Image' },
+            { key: 'showCount', label: 'Show Product Count' },
+            { key: 'showDescription', label: 'Show Description' },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={props[key] !== false}
+                onChange={(e) => onUpdate({ ...props, [key]: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+              />
+              <label className="text-xs text-gray-400">{label}</label>
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {/* Categories List */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>📂 Categories ({categories.length})</span>
+        </summary>
+        <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
+          {categories.map((category: any, index: number) => (
+            <div key={category.id || index} className="bg-gray-700/50 rounded-lg overflow-hidden">
+              <div
+                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-600/50"
+                onClick={() => setExpandedCategory(expandedCategory === index ? null : index)}
+              >
+                {category.image && <img src={category.image} alt="" className="w-8 h-8 object-cover rounded" />}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{category.name}</p>
+                  <p className="text-xs text-gray-400">{category.productCount || 0} products</p>
+                </div>
+                <button onClick={(e) => { e.stopPropagation(); removeCategory(index); }} className="p-1 hover:bg-red-600 rounded">
+                  <FiTrash2 size={12} className="text-red-400" />
+                </button>
+              </div>
+
+              {expandedCategory === index && (
+                <div className="p-3 border-t border-gray-600 space-y-2">
+                  <button
+                    onClick={() => { setEditingCategoryIndex(index); setShowImagePicker(true); }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-sm text-white"
+                  >
+                    <FiImage size={12} /> Change Image
+                  </button>
+                  <input
+                    type="text"
+                    value={category.name}
+                    onChange={(e) => updateCategory(index, 'name', e.target.value)}
+                    placeholder="Category Name"
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                  />
+                  <textarea
+                    value={category.description || ''}
+                    onChange={(e) => updateCategory(index, 'description', e.target.value)}
+                    placeholder="Description"
+                    rows={2}
+                    className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-xs text-white"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={addCategory}
+            className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiPlus size={14} /> Add Category
+          </button>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Product Filter Settings
+function ProductFilterSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  return (
+    <div className="space-y-4">
+      {/* Filter Options */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>🔍 Filter Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {[
+            { key: 'showPriceRange', label: 'Show Price Range' },
+            { key: 'showCategories', label: 'Show Categories' },
+            { key: 'showRating', label: 'Show Rating Filter' },
+            { key: 'showSort', label: 'Show Sort Options' },
+            { key: 'showAvailability', label: 'Show Availability Filter' },
+            { key: 'showBrands', label: 'Show Brands Filter' },
+            { key: 'showColors', label: 'Show Color Filter' },
+            { key: 'showSizes', label: 'Show Size Filter' },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={props[key] !== false}
+                onChange={(e) => onUpdate({ ...props, [key]: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-500"
+              />
+              <label className="text-xs text-gray-400">{label}</label>
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {/* Price Range */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>💰 Price Range</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Min Price</label>
+              <input
+                type="number"
+                value={props.priceMin || 0}
+                onChange={(e) => onUpdate({ ...props, priceMin: parseInt(e.target.value) || 0 })}
+                min="0"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Max Price</label>
+              <input
+                type="number"
+                value={props.priceMax || 1000}
+                onChange={(e) => onUpdate({ ...props, priceMax: parseInt(e.target.value) || 1000 })}
+                min="0"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* Layout */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📐 Layout</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Filter Style</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'sidebar', label: 'Sidebar' },
+                { value: 'horizontal', label: 'Horizontal' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => onUpdate({ ...props, filterStyle: value })}
+                  className={`px-3 py-2 rounded-lg text-sm ${props.filterStyle === value ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.collapsible !== false}
+              onChange={(e) => onUpdate({ ...props, collapsible: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <label className="text-xs text-gray-400">Collapsible Sections</label>
+          </div>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Checkout Summary Settings
+function CheckoutSummarySettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  return (
+    <div className="space-y-4">
+      {/* Display Options */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-emerald-400 hover:text-emerald-300 py-2 border-b border-gray-700">
+          <span>📋 Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-2">
+          {[
+            { key: 'showItems', label: 'Show Order Items' },
+            { key: 'showImages', label: 'Show Product Images' },
+            { key: 'showQuantity', label: 'Show Quantity' },
+            { key: 'showSubtotal', label: 'Show Subtotal' },
+            { key: 'showTax', label: 'Show Tax' },
+            { key: 'showShipping', label: 'Show Shipping' },
+            { key: 'showDiscount', label: 'Show Discount' },
+            { key: 'showTotal', label: 'Show Total' },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={props[key] !== false}
+                onChange={(e) => onUpdate({ ...props, [key]: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-emerald-500"
+              />
+              <label className="text-xs text-gray-400">{label}</label>
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {/* Coupon Field */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>🎟️ Coupon/Promo</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showCoupon !== false}
+              onChange={(e) => onUpdate({ ...props, showCoupon: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-yellow-500"
+            />
+            <label className="text-xs text-gray-400">Show Coupon Field</label>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Coupon Placeholder</label>
+            <input
+              type="text"
+              value={props.couponPlaceholder || 'Enter promo code'}
+              onChange={(e) => onUpdate({ ...props, couponPlaceholder: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Labels */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🏷️ Labels</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          {[
+            { key: 'subtotalLabel', label: 'Subtotal Label', default: 'Subtotal' },
+            { key: 'taxLabel', label: 'Tax Label', default: 'Tax' },
+            { key: 'shippingLabel', label: 'Shipping Label', default: 'Shipping' },
+            { key: 'totalLabel', label: 'Total Label', default: 'Total' },
+          ].map(({ key, label, default: defaultValue }) => (
+            <div key={key}>
+              <label className="block text-xs text-gray-400 mb-1">{label}</label>
+              <input
+                type="text"
+                value={props[key] || defaultValue}
+                onChange={(e) => onUpdate({ ...props, [key]: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          ))}
+        </div>
+      </details>
+
+      <p className="text-xs text-gray-500 italic">Order details are populated from the cart.</p>
+    </div>
+  );
+}
+
+// Sale Banner Settings
+function SaleBannerSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onSelect={(media) => {
+            onUpdate({ ...props, backgroundImage: media.path || media.url });
+            setShowImagePicker(false);
+          }}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
+
+      {/* Content */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-pink-400 hover:text-pink-300 py-2 border-b border-gray-700">
+          <span>📝 Banner Content</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Title</label>
+            <input
+              type="text"
+              value={props.title || ''}
+              onChange={(e) => onUpdate({ ...props, title: e.target.value })}
+              placeholder="Big Sale!"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Subtitle</label>
+            <input
+              type="text"
+              value={props.subtitle || ''}
+              onChange={(e) => onUpdate({ ...props, subtitle: e.target.value })}
+              placeholder="Limited time offer"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Discount Text</label>
+              <input
+                type="text"
+                value={props.discountText || ''}
+                onChange={(e) => onUpdate({ ...props, discountText: e.target.value })}
+                placeholder="50% OFF"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Discount Code</label>
+              <input
+                type="text"
+                value={props.discountCode || ''}
+                onChange={(e) => onUpdate({ ...props, discountCode: e.target.value })}
+                placeholder="SAVE50"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* CTA Button */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🔘 Call to Action</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button Text</label>
+            <input
+              type="text"
+              value={props.ctaText || ''}
+              onChange={(e) => onUpdate({ ...props, ctaText: e.target.value })}
+              placeholder="Shop Now"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Button URL</label>
+            <input
+              type="text"
+              value={props.ctaUrl || ''}
+              onChange={(e) => onUpdate({ ...props, ctaUrl: e.target.value })}
+              placeholder="/shop/sale"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Countdown Timer */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-yellow-400 hover:text-yellow-300 py-2 border-b border-gray-700">
+          <span>⏰ Countdown Timer</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showCountdown !== false}
+              onChange={(e) => onUpdate({ ...props, showCountdown: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-yellow-500"
+            />
+            <label className="text-xs text-gray-400">Show Countdown Timer</label>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">End Date</label>
+            <input
+              type="datetime-local"
+              value={props.endDate || ''}
+              onChange={(e) => onUpdate({ ...props, endDate: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Styling */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-purple-400 hover:text-purple-300 py-2 border-b border-gray-700">
+          <span>🎨 Styling</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Banner Style</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'full', label: 'Full Width' },
+                { value: 'compact', label: 'Compact' },
+                { value: 'floating', label: 'Floating' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => onUpdate({ ...props, style: value })}
+                  className={`px-3 py-2 rounded-lg text-xs ${props.style === value ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Background Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={props.backgroundColor || '#EF4444'}
+                onChange={(e) => onUpdate({ ...props, backgroundColor: e.target.value })}
+                className="w-10 h-10 rounded border-0 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={props.backgroundColor || '#EF4444'}
+                onChange={(e) => onUpdate({ ...props, backgroundColor: e.target.value })}
+                className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+          <button
+            onClick={() => setShowImagePicker(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-sm text-white"
+          >
+            <FiImage size={14} /> Set Background Image
+          </button>
+          {props.backgroundImage && (
+            <div className="relative">
+              <img src={props.backgroundImage} alt="" className="w-full h-20 object-cover rounded" />
+              <button
+                onClick={() => onUpdate({ ...props, backgroundImage: '' })}
+                className="absolute top-1 right-1 p-1 bg-red-500 rounded-full text-white"
+              >
+                <FiX size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Audio Block Settings - Full media picker for audio files
+function AudioBlockSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showAudioPicker, setShowAudioPicker] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      {/* Audio File */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🎵 Audio File</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-2">
+            {props.audioUrl ? (
+              <div className="flex-1 p-2 bg-gray-700 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <FiMusic className="text-blue-400" size={20} />
+                  <span className="text-sm text-gray-300 truncate flex-1">
+                    {props.audioUrl.split('/').pop() || 'Audio file'}
+                  </span>
+                  <button
+                    onClick={() => onUpdate({ ...props, audioUrl: '' })}
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    <FiX size={16} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 p-4 border-2 border-dashed border-gray-600 rounded-lg text-center">
+                <FiMusic className="mx-auto text-gray-500 mb-2" size={24} />
+                <p className="text-xs text-gray-500">No audio selected</p>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setShowAudioPicker(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiUpload size={14} /> Select from Media Library
+          </button>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Or paste audio URL</label>
+            <input
+              type="text"
+              value={props.audioUrl || ''}
+              onChange={(e) => onUpdate({ ...props, audioUrl: e.target.value })}
+              placeholder="https://example.com/audio.mp3"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Track Info */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📝 Track Info</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Track Title</label>
+            <input
+              type="text"
+              value={props.title || ''}
+              onChange={(e) => onUpdate({ ...props, title: e.target.value })}
+              placeholder="Enter track title"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Artist</label>
+            <input
+              type="text"
+              value={props.artist || ''}
+              onChange={(e) => onUpdate({ ...props, artist: e.target.value })}
+              placeholder="Enter artist name"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Album</label>
+            <input
+              type="text"
+              value={props.album || ''}
+              onChange={(e) => onUpdate({ ...props, album: e.target.value })}
+              placeholder="Enter album name"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Album Art */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🖼️ Album Art</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-2">
+            {props.albumArt ? (
+              <div className="relative">
+                <img
+                  src={props.albumArt}
+                  alt="Album art"
+                  className="w-20 h-20 object-cover rounded-lg border border-gray-600"
+                />
+                <button
+                  onClick={() => onUpdate({ ...props, albumArt: '' })}
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 rounded-full p-1"
+                >
+                  <FiX size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="w-20 h-20 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center">
+                <FiImage className="text-gray-500" size={24} />
+              </div>
+            )}
             <button
-              onClick={addProduct}
-              className="w-full mt-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white flex items-center justify-center gap-1"
+              onClick={() => setShowImagePicker(true)}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-300"
             >
-              <FiPlus size={14} /> Add Product
+              <FiUpload size={14} /> Choose Image
             </button>
           </div>
-
-          {type === 'productGrid' && (
-            <SelectInput
-              label="Columns"
-              propKey="columns"
-              options={[
-                { value: '2', label: '2 Columns' },
-                { value: '3', label: '3 Columns' },
-                { value: '4', label: '4 Columns' },
-              ]}
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Or paste image URL</label>
+            <input
+              type="text"
+              value={props.albumArt || ''}
+              onChange={(e) => onUpdate({ ...props, albumArt: e.target.value })}
+              placeholder="https://example.com/album-art.jpg"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
             />
-          )}
-        </>
-      );
-    }
+          </div>
+        </div>
+      </details>
 
-    // ============ Course/LMS Block Settings ============
-    case 'courseCard': {
-      const course = props.course || {};
-      const updateCourse = (key: string, value: any) => {
-        updateProp('course', { ...course, [key]: value });
-      };
-      return (
-        <>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Course Title</label>
-            <input type="text" value={course.title || ''} onChange={(e) => updateCourse('title', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Description</label>
-            <textarea value={course.description || ''} onChange={(e) => updateCourse('description', e.target.value)} rows={3} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white resize-none" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Image URL</label>
-            <input type="text" value={course.image || ''} onChange={(e) => updateCourse('image', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Course URL</label>
-            <input type="text" value={course.courseUrl || ''} onChange={(e) => updateCourse('courseUrl', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="mb-3">
-              <label className="block text-xs text-gray-400 mb-1">Price</label>
-              <input type="number" value={course.price || 0} onChange={(e) => updateCourse('price', Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-            </div>
-            <div className="mb-3">
-              <label className="block text-xs text-gray-400 mb-1">Sale Price</label>
-              <input type="number" value={course.salePrice || 0} onChange={(e) => updateCourse('salePrice', Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-            </div>
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Instructor Name</label>
-            <input type="text" value={course.instructor || ''} onChange={(e) => updateCourse('instructor', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Duration</label>
-            <input type="text" value={course.duration || ''} onChange={(e) => updateCourse('duration', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <CheckboxInput label="Show Instructor" propKey="showInstructor" />
-          <CheckboxInput label="Show Price" propKey="showPrice" />
-          <CheckboxInput label="Show Rating" propKey="showRating" />
-        </>
-      );
-    }
+      {/* Player Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>⚙️ Player Options</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.autoplay || false}
+              onChange={(e) => onUpdate({ ...props, autoplay: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Autoplay</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.loop || false}
+              onChange={(e) => onUpdate({ ...props, loop: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Loop</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showWaveform !== false}
+              onChange={(e) => onUpdate({ ...props, showWaveform: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Show Waveform</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showDownload || false}
+              onChange={(e) => onUpdate({ ...props, showDownload: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Show Download Button</span>
+          </label>
+        </div>
+      </details>
 
-    case 'courseGrid': {
-      return (
-        <>
-          <SelectInput
-            label="Columns"
-            propKey="columns"
-            options={[
-              { value: '2', label: '2 Columns' },
-              { value: '3', label: '3 Columns' },
-              { value: '4', label: '4 Columns' },
-            ]}
-          />
-          <CheckboxInput label="Show Filters" propKey="showFilters" />
-          <p className="text-xs text-gray-400 mt-2">Courses can be edited in the course management section.</p>
-        </>
-      );
-    }
-
-    case 'courseCurriculum': {
-      return (
-        <>
-          <CheckboxInput label="Show Duration" propKey="showDuration" />
-          <CheckboxInput label="Show Lesson Count" propKey="showLessonCount" />
-          <CheckboxInput label="Expanded by Default" propKey="expandedByDefault" />
-          <p className="text-xs text-gray-400 mt-2">Curriculum modules can be edited in the course management section.</p>
-        </>
-      );
-    }
-
-    case 'courseProgress': {
-      const progress = props.progress || {};
-      const updateProgress = (key: string, value: any) => {
-        updateProp('progress', { ...progress, [key]: value });
-      };
-      return (
-        <>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Course Title</label>
-            <input type="text" value={progress.courseTitle || ''} onChange={(e) => updateProgress('courseTitle', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Course Image URL</label>
-            <input type="text" value={progress.courseImage || ''} onChange={(e) => updateProgress('courseImage', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Progress %</label>
-            <input type="number" min={0} max={100} value={progress.progress || 0} onChange={(e) => updateProgress('progress', Math.min(100, Math.max(0, Number(e.target.value))))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="mb-3">
-              <label className="block text-xs text-gray-400 mb-1">Completed</label>
-              <input type="number" value={progress.completedLessons || 0} onChange={(e) => updateProgress('completedLessons', Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-            </div>
-            <div className="mb-3">
-              <label className="block text-xs text-gray-400 mb-1">Total</label>
-              <input type="number" value={progress.totalLessons || 0} onChange={(e) => updateProgress('totalLessons', Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-            </div>
-          </div>
-          <CheckboxInput label="Show Continue Button" propKey="showContinueButton" />
-        </>
-      );
-    }
-
-    case 'courseInstructor': {
-      const instructor = props.instructor || {};
-      const updateInstructor = (key: string, value: any) => {
-        updateProp('instructor', { ...instructor, [key]: value });
-      };
-      return (
-        <>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Name</label>
-            <input type="text" value={instructor.name || ''} onChange={(e) => updateInstructor('name', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Title</label>
-            <input type="text" value={instructor.title || ''} onChange={(e) => updateInstructor('title', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Photo URL</label>
-            <input type="text" value={instructor.photo || ''} onChange={(e) => updateInstructor('photo', e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-400 mb-1">Bio</label>
-            <textarea value={instructor.bio || ''} onChange={(e) => updateInstructor('bio', e.target.value)} rows={3} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white resize-none" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="mb-3">
-              <label className="block text-xs text-gray-400 mb-1">Courses</label>
-              <input type="number" value={instructor.courseCount || 0} onChange={(e) => updateInstructor('courseCount', Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-            </div>
-            <div className="mb-3">
-              <label className="block text-xs text-gray-400 mb-1">Students</label>
-              <input type="number" value={instructor.studentCount || 0} onChange={(e) => updateInstructor('studentCount', Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white" />
-            </div>
-          </div>
-          <CheckboxInput label="Show Stats" propKey="showStats" />
-          <CheckboxInput label="Show Social Links" propKey="showSocial" />
-        </>
-      );
-    }
-
-    case 'courseCategories': {
-      return (
-        <>
-          <SelectInput
-            label="Columns"
-            propKey="columns"
-            options={[
-              { value: '2', label: '2 Columns' },
-              { value: '3', label: '3 Columns' },
-              { value: '4', label: '4 Columns' },
-              { value: '6', label: '6 Columns' },
-            ]}
-          />
-          <SelectInput
-            label="Style"
-            propKey="style"
-            options={[
-              { value: 'cards', label: 'Cards' },
-              { value: 'minimal', label: 'Minimal' },
-              { value: 'icons', label: 'Icons' },
-            ]}
-          />
-          <p className="text-xs text-gray-400 mt-2">Categories can be managed in the course settings.</p>
-        </>
-      );
-    }
-
-    // ============ Shop/E-commerce Block Settings ============
-    case 'shoppingCart': {
-      return (
-        <>
-          <SelectInput
-            label="Cart Style"
-            propKey="style"
-            options={[
-              { value: 'mini', label: 'Mini Cart' },
-              { value: 'full', label: 'Full Cart' },
-              { value: 'sidebar', label: 'Sidebar Cart' },
-            ]}
-          />
-          <CheckboxInput label="Show Checkout Button" propKey="showCheckoutButton" />
-          <p className="text-xs text-gray-400 mt-2">Cart items are populated dynamically from the shop.</p>
-        </>
-      );
-    }
-
-    case 'productCategories': {
-      return (
-        <>
-          <SelectInput
-            label="Columns"
-            propKey="columns"
-            options={[
-              { value: '2', label: '2 Columns' },
-              { value: '3', label: '3 Columns' },
-              { value: '4', label: '4 Columns' },
-              { value: '5', label: '5 Columns' },
-            ]}
-          />
-          <SelectInput
-            label="Style"
-            propKey="style"
-            options={[
-              { value: 'cards', label: 'Cards' },
-              { value: 'overlay', label: 'Image Overlay' },
-              { value: 'minimal', label: 'Minimal' },
-            ]}
-          />
-          <p className="text-xs text-gray-400 mt-2">Categories are managed in the shop settings.</p>
-        </>
-      );
-    }
-
-    case 'productFilter': {
-      return (
-        <>
-          <CheckboxInput label="Show Price Range" propKey="showPriceRange" />
-          <CheckboxInput label="Show Categories" propKey="showCategories" />
-          <CheckboxInput label="Show Rating Filter" propKey="showRating" />
-          <CheckboxInput label="Show Sort Options" propKey="showSort" />
-          <NumberInput label="Min Price" propKey="priceMin" />
-          <NumberInput label="Max Price" propKey="priceMax" />
-        </>
-      );
-    }
-
-    case 'checkoutSummary': {
-      return (
-        <>
-          <CheckboxInput label="Show Items" propKey="showItems" />
-          <CheckboxInput label="Show Coupon Field" propKey="showCoupon" />
-          <p className="text-xs text-gray-400 mt-2">Order details are populated from the cart.</p>
-        </>
-      );
-    }
-
-    case 'saleBanner': {
-      return (
-        <>
-          <TextInput label="Title" propKey="title" />
-          <TextInput label="Subtitle" propKey="subtitle" />
-          <TextInput label="Discount Text" propKey="discountText" />
-          <TextInput label="Discount Code" propKey="discountCode" />
-          <TextInput label="CTA Text" propKey="ctaText" />
-          <TextInput label="CTA URL" propKey="ctaUrl" />
-          <TextInput label="End Date (ISO)" propKey="endDate" />
-          <SelectInput
-            label="Style"
-            propKey="style"
-            options={[
-              { value: 'full', label: 'Full Width' },
-              { value: 'compact', label: 'Compact Bar' },
-              { value: 'floating', label: 'Floating Card' },
-            ]}
-          />
-          <TextInput label="Background Color" propKey="backgroundColor" />
-        </>
-      );
-    }
-
-    default:
-      return <p className="text-gray-400 text-sm">No settings available</p>;
-  }
+      {/* Media Picker Modals */}
+      {showAudioPicker && (
+        <MediaPickerModal
+          type="audio"
+          onClose={() => setShowAudioPicker(false)}
+          onSelect={(media) => {
+            onUpdate({ ...props, audioUrl: media.path || media.url });
+            setShowAudioPicker(false);
+          }}
+        />
+      )}
+      {showImagePicker && (
+        <MediaPickerModal
+          type="image"
+          onClose={() => setShowImagePicker(false)}
+          onSelect={(media) => {
+            onUpdate({ ...props, albumArt: media.path || media.url });
+            setShowImagePicker(false);
+          }}
+        />
+      )}
+    </div>
+  );
 }
+
+// Video Block Settings - Full media picker for video files
+function VideoBlockSettings({ props, onUpdate }: { props: Record<string, any>; onUpdate: (props: Record<string, any>) => void }) {
+  const [showVideoPicker, setShowVideoPicker] = useState(false);
+  const [showPosterPicker, setShowPosterPicker] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      {/* Video File */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🎬 Video File</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-2">
+            {props.videoUrl ? (
+              <div className="flex-1 p-2 bg-gray-700 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <FiVideo className="text-blue-400" size={20} />
+                  <span className="text-sm text-gray-300 truncate flex-1">
+                    {props.videoUrl.split('/').pop() || 'Video file'}
+                  </span>
+                  <button
+                    onClick={() => onUpdate({ ...props, videoUrl: '' })}
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    <FiX size={16} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 p-4 border-2 border-dashed border-gray-600 rounded-lg text-center">
+                <FiVideo className="mx-auto text-gray-500 mb-2" size={24} />
+                <p className="text-xs text-gray-500">No video selected</p>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setShowVideoPicker(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+          >
+            <FiUpload size={14} /> Select from Media Library
+          </button>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Or paste video URL</label>
+            <input
+              type="text"
+              value={props.videoUrl || ''}
+              onChange={(e) => onUpdate({ ...props, videoUrl: e.target.value })}
+              placeholder="https://example.com/video.mp4"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div className="text-xs text-gray-500">
+            <p className="font-medium mb-1">Supported formats:</p>
+            <p>MP4, WebM, OGG, YouTube, Vimeo links</p>
+          </div>
+        </div>
+      </details>
+
+      {/* Video Info */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📝 Video Info</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Video Title</label>
+            <input
+              type="text"
+              value={props.title || ''}
+              onChange={(e) => onUpdate({ ...props, title: e.target.value })}
+              placeholder="Enter video title"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Description</label>
+            <textarea
+              value={props.description || ''}
+              onChange={(e) => onUpdate({ ...props, description: e.target.value })}
+              placeholder="Enter video description"
+              rows={2}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white resize-none"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Poster Image */}
+      <details className="group" open>
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>🖼️ Poster/Thumbnail</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-2">
+            {props.posterUrl ? (
+              <div className="relative">
+                <img
+                  src={props.posterUrl}
+                  alt="Video poster"
+                  className="w-32 h-20 object-cover rounded-lg border border-gray-600"
+                />
+                <button
+                  onClick={() => onUpdate({ ...props, posterUrl: '' })}
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 rounded-full p-1"
+                >
+                  <FiX size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="w-32 h-20 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center">
+                <FiImage className="text-gray-500" size={24} />
+              </div>
+            )}
+            <button
+              onClick={() => setShowPosterPicker(true)}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-300"
+            >
+              <FiUpload size={14} /> Choose Poster
+            </button>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Or paste image URL</label>
+            <input
+              type="text"
+              value={props.posterUrl || ''}
+              onChange={(e) => onUpdate({ ...props, posterUrl: e.target.value })}
+              placeholder="https://example.com/poster.jpg"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Player Options */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>⚙️ Player Options</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.autoplay || false}
+              onChange={(e) => onUpdate({ ...props, autoplay: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Autoplay</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.loop || false}
+              onChange={(e) => onUpdate({ ...props, loop: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Loop</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.muted || false}
+              onChange={(e) => onUpdate({ ...props, muted: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Start Muted</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.controls !== false}
+              onChange={(e) => onUpdate({ ...props, controls: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Show Controls</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.playsInline !== false}
+              onChange={(e) => onUpdate({ ...props, playsInline: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Play Inline (mobile)</span>
+          </label>
+        </div>
+      </details>
+
+      {/* Aspect Ratio */}
+      <details className="group">
+        <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-blue-400 hover:text-blue-300 py-2 border-b border-gray-700">
+          <span>📐 Display Options</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Aspect Ratio</label>
+            <select
+              value={props.aspectRatio || '16:9'}
+              onChange={(e) => onUpdate({ ...props, aspectRatio: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="16:9">16:9 (Widescreen)</option>
+              <option value="4:3">4:3 (Standard)</option>
+              <option value="1:1">1:1 (Square)</option>
+              <option value="9:16">9:16 (Vertical/Mobile)</option>
+              <option value="21:9">21:9 (Cinematic)</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Border Radius</label>
+            <select
+              value={props.borderRadius || 'rounded-lg'}
+              onChange={(e) => onUpdate({ ...props, borderRadius: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white"
+            >
+              <option value="rounded-none">None</option>
+              <option value="rounded-md">Small</option>
+              <option value="rounded-lg">Medium</option>
+              <option value="rounded-xl">Large</option>
+              <option value="rounded-2xl">Extra Large</option>
+            </select>
+          </div>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={props.showTitle !== false}
+              onChange={(e) => onUpdate({ ...props, showTitle: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500"
+            />
+            <span className="text-xs text-gray-400">Show Title Below Video</span>
+          </label>
+        </div>
+      </details>
+
+      {/* Media Picker Modals */}
+      {showVideoPicker && (
+        <MediaPickerModal
+          type="video"
+          onClose={() => setShowVideoPicker(false)}
+          onSelect={(media) => {
+            onUpdate({ ...props, videoUrl: media.path || media.url });
+            setShowVideoPicker(false);
+          }}
+        />
+      )}
+      {showPosterPicker && (
+        <MediaPickerModal
+          type="image"
+          onClose={() => setShowPosterPicker(false)}
+          onSelect={(media) => {
+            onUpdate({ ...props, posterUrl: media.path || media.url });
+            setShowPosterPicker(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Type aliases for Course/LMS data (using types from AdvancedBlocks)
+type CourseData = AdvancedCourseData;
+type ModuleData = AdvancedModuleData;
+type CourseCategoryData = AdvancedCourseCategoryData;

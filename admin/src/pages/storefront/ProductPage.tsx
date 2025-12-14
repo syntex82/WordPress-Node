@@ -37,14 +37,20 @@ export default function ProductPage() {
 
   const handleAddToCart = async () => {
     if (!product) return;
+    console.log('Adding to cart:', { productId: product.id, quantity, variantId: selectedVariant });
     try {
       setAdding(true);
-      await cartApi.add(product.id, quantity, selectedVariant || undefined);
+      const response = await cartApi.add(product.id, quantity, selectedVariant || undefined);
+      console.log('Cart response:', response.data);
       toast.success('Added to cart!');
       navigate('/shop/cart');
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-      toast.error('Failed to add to cart');
+    } catch (error: any) {
+      console.error('Failed to add to cart - Full error:', error);
+      console.error('Error response:', error?.response);
+      console.error('Error status:', error?.response?.status);
+      console.error('Error data:', error?.response?.data);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to add to cart';
+      toast.error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
     } finally {
       setAdding(false);
     }

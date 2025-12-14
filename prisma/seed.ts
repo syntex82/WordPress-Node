@@ -386,6 +386,195 @@ async function main() {
   });
   console.log('✅ Sample quiz and questions created');
 
+  // Create sample product category
+  const productCategory = await prisma.productCategory.upsert({
+    where: { slug: 'electronics' },
+    update: {},
+    create: {
+      name: 'Electronics',
+      slug: 'electronics',
+      description: 'Electronic devices and accessories',
+      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400',
+    },
+  });
+  console.log('✅ Sample product category created:', productCategory.name);
+
+  // Create sample products
+  const product1 = await prisma.product.upsert({
+    where: { slug: 'wireless-headphones' },
+    update: {},
+    create: {
+      name: 'Wireless Headphones Pro',
+      slug: 'wireless-headphones',
+      description: 'Premium wireless headphones with active noise cancellation, 30-hour battery life, and crystal-clear audio quality. Perfect for music lovers and professionals.',
+      shortDescription: 'Premium wireless headphones with ANC',
+      price: 199.99,
+      salePrice: 149.99,
+      sku: 'WHP-001',
+      stock: 50,
+      images: [
+        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+        'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800',
+      ],
+      status: 'ACTIVE',
+      type: 'PHYSICAL',
+      categoryId: productCategory.id,
+    },
+  });
+  console.log('✅ Sample product created:', product1.name);
+
+  const product2 = await prisma.product.upsert({
+    where: { slug: 'smart-watch' },
+    update: {},
+    create: {
+      name: 'Smart Watch Ultra',
+      slug: 'smart-watch',
+      description: 'Advanced smartwatch with health monitoring, GPS, and 7-day battery life. Track your fitness goals and stay connected on the go.',
+      shortDescription: 'Advanced smartwatch with health monitoring',
+      price: 349.99,
+      sku: 'SWU-002',
+      stock: 30,
+      images: [
+        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
+        'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800',
+      ],
+      status: 'ACTIVE',
+      type: 'PHYSICAL',
+      categoryId: productCategory.id,
+    },
+  });
+  console.log('✅ Sample product created:', product2.name);
+
+  const product3 = await prisma.product.upsert({
+    where: { slug: 'portable-speaker' },
+    update: {},
+    create: {
+      name: 'Portable Bluetooth Speaker',
+      slug: 'portable-speaker',
+      description: 'Compact and powerful Bluetooth speaker with 360° sound, waterproof design, and 20-hour playtime. Take your music anywhere.',
+      shortDescription: 'Compact Bluetooth speaker with 360° sound',
+      price: 79.99,
+      salePrice: 59.99,
+      sku: 'PBS-003',
+      stock: 100,
+      images: [
+        'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800',
+      ],
+      status: 'ACTIVE',
+      type: 'PHYSICAL',
+      categoryId: productCategory.id,
+    },
+  });
+  console.log('✅ Sample product created:', product3.name);
+
+  const product4 = await prisma.product.upsert({
+    where: { slug: 'laptop-stand' },
+    update: {},
+    create: {
+      name: 'Ergonomic Laptop Stand',
+      slug: 'laptop-stand',
+      description: 'Adjustable aluminum laptop stand for better posture and improved airflow. Compatible with all laptops up to 17 inches.',
+      shortDescription: 'Adjustable aluminum laptop stand',
+      price: 49.99,
+      sku: 'ELS-004',
+      stock: 75,
+      images: [
+        'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800',
+      ],
+      status: 'ACTIVE',
+      type: 'PHYSICAL',
+      categoryId: productCategory.id,
+    },
+  });
+  console.log('✅ Sample product created:', product4.name);
+
+  // Create a second category with products
+  const clothingCategory = await prisma.productCategory.upsert({
+    where: { slug: 'clothing' },
+    update: {},
+    create: {
+      name: 'Clothing',
+      slug: 'clothing',
+      description: 'Fashion and apparel',
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+    },
+  });
+
+  const product5 = await prisma.product.upsert({
+    where: { slug: 'premium-t-shirt' },
+    update: {},
+    create: {
+      name: 'Premium Cotton T-Shirt',
+      slug: 'premium-t-shirt',
+      description: 'Soft, breathable 100% organic cotton t-shirt. Available in multiple colors and sizes.',
+      shortDescription: '100% organic cotton t-shirt',
+      price: 29.99,
+      sku: 'PCT-005',
+      stock: 200,
+      images: [
+        'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800',
+      ],
+      status: 'ACTIVE',
+      type: 'PHYSICAL',
+      categoryId: clothingCategory.id,
+    },
+  });
+  console.log('✅ Sample product created:', product5.name);
+
+  // Create product variants for t-shirt
+  await prisma.productVariant.upsert({
+    where: { sku: 'PCT-005-S-BLK' },
+    update: {},
+    create: {
+      name: 'Small / Black',
+      sku: 'PCT-005-S-BLK',
+      price: 29.99,
+      stock: 50,
+      productId: product5.id,
+      options: { size: 'Small', color: 'Black' },
+    },
+  });
+
+  await prisma.productVariant.upsert({
+    where: { sku: 'PCT-005-M-BLK' },
+    update: {},
+    create: {
+      name: 'Medium / Black',
+      sku: 'PCT-005-M-BLK',
+      price: 29.99,
+      stock: 50,
+      productId: product5.id,
+      options: { size: 'Medium', color: 'Black' },
+    },
+  });
+
+  await prisma.productVariant.upsert({
+    where: { sku: 'PCT-005-L-BLK' },
+    update: {},
+    create: {
+      name: 'Large / Black',
+      sku: 'PCT-005-L-BLK',
+      price: 29.99,
+      stock: 50,
+      productId: product5.id,
+      options: { size: 'Large', color: 'Black' },
+    },
+  });
+
+  await prisma.productVariant.upsert({
+    where: { sku: 'PCT-005-M-WHT' },
+    update: {},
+    create: {
+      name: 'Medium / White',
+      sku: 'PCT-005-M-WHT',
+      price: 29.99,
+      stock: 50,
+      productId: product5.id,
+      options: { size: 'Medium', color: 'White' },
+    },
+  });
+  console.log('✅ Sample product variants created for t-shirt');
+
   console.log('🎉 Database seed completed successfully!');
 }
 

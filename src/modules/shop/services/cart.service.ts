@@ -17,51 +17,37 @@ export class CartService {
       throw new BadRequestException('User ID or Session ID is required');
     }
 
-    let cart = await this.prisma.cart.findFirst({
-      where: userId ? { userId } : { sessionId },
-      include: {
-        items: {
-          include: {
-            product: { include: { category: true } },
-            variant: true,
-            course: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                featuredImage: true,
-                priceAmount: true,
-                priceType: true,
-                instructor: { select: { id: true, name: true } },
-              },
+    const cartInclude = {
+      items: {
+        include: {
+          product: { include: { category: true } },
+          variant: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              featuredImage: true,
+              priceAmount: true,
+              priceType: true,
+              instructor: { select: { id: true, name: true } },
             },
           },
         },
       },
+    };
+
+    // If user is logged in, prioritize finding by userId
+    let cart = await this.prisma.cart.findFirst({
+      where: userId ? { userId } : { sessionId },
+      include: cartInclude,
     });
 
     if (!cart) {
+      // Create cart with ONLY userId OR sessionId, not both (to avoid unique constraint issues)
       cart = await this.prisma.cart.create({
-        data: { userId, sessionId },
-        include: {
-          items: {
-            include: {
-              product: { include: { category: true } },
-              variant: true,
-              course: {
-                select: {
-                  id: true,
-                  title: true,
-                  slug: true,
-                  featuredImage: true,
-                  priceAmount: true,
-                  priceType: true,
-                  instructor: { select: { id: true, name: true } },
-                },
-              },
-            },
-          },
-        },
+        data: userId ? { userId } : { sessionId },
+        include: cartInclude,
       });
     }
 
