@@ -33,7 +33,7 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoReturn<T> {
   });
   
   const lastActionRef = useRef<string | null>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingStateRef = useRef<T | null>(null);
 
   const setState = useCallback((newState: T, actionName?: string) => {
