@@ -75,6 +75,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: admin/package-lock.json
 
+      - name: 🧹 Clean cache
+        working-directory: admin
+        run: rm -rf node_modules/.cache 2>/dev/null || true
+
       - name: 📦 Install dependencies
         working-directory: admin
         run: npm ci
