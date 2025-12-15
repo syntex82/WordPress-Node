@@ -1,0 +1,23 @@
+{{> header}}
+<section class="posts-section">
+  <div class="container">
+    <h1>Shop</h1>
+    <div class="posts-grid">
+      {{#each products}}
+      <article class="post-card">
+        {{#if images.[0]}}
+        <img src="{{images.[0]}}" alt="{{name}}" class="post-image">
+        {{/if}}
+        <div class="post-content">
+          <h3><a href="/shop/product/{{slug}}">{{name}}</a></h3>
+          <p style="color: var(--color-primary); font-weight: 600;">
+            {{#if salePrice}}<s style="color: var(--color-text-muted);">${{price}}</s> ${{salePrice}}{{else}}${{price}}{{/if}}
+          </p>
+          <a href="/shop/product/{{slug}}" class="btn btn-sm btn-primary">View Product</a>
+        </div>
+      </article>
+      {{/each}}
+    </div>
+  </div>
+</section>
+{{> footer}}

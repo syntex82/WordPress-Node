@@ -1,0 +1,21 @@
+{{> header}}
+<div class="page-content">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <div>
+        {{#if product.images.[0]}}
+        <img src="{{product.images.[0]}}" alt="{{product.name}}" style="width: 100%; border-radius: var(--border-radius);">
+        {{/if}}
+      </div>
+      <div>
+        <h1>{{product.name}}</h1>
+        <p style="font-size: 1.5rem; color: var(--color-primary); font-weight: 600; margin-bottom: 1rem;">
+          {{#if product.salePrice}}<s style="color: var(--color-text-muted);">${{product.price}}</s> ${{product.salePrice}}{{else}}${{product.price}}{{/if}}
+        </p>
+        <div class="post-body">{{{product.description}}}</div>
+        <button class="btn btn-primary" style="margin-top: 1rem;">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</div>
+{{> footer}}

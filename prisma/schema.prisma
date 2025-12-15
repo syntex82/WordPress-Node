@@ -276,6 +276,7 @@ model CustomTheme {
   description String?
   settings    Json     // Full theme configuration (colors, typography, layout, etc.)
   customCSS   String?  @db.Text // Custom CSS code
+  pages       Json?    // Array of theme pages with blocks for page builder
   isActive    Boolean  @default(false)
   isDefault   Boolean  @default(false)
   previewUrl  String?  // URL to preview image

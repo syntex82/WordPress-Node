@@ -1,0 +1,24 @@
+{{> header}}
+<section class="posts-section">
+  <div class="container">
+    <h1>Courses</h1>
+    <div class="posts-grid">
+      {{#each courses}}
+      <article class="post-card">
+        {{#if thumbnail}}
+        <img src="{{thumbnail}}" alt="{{title}}" class="post-image">
+        {{/if}}
+        <div class="post-content">
+          <h3><a href="/courses/{{slug}}">{{title}}</a></h3>
+          <p>{{shortDescription}}</p>
+          <p style="color: var(--color-primary); font-weight: 600;">
+            {{#if (eq priceType 'FREE')}}Free{{else}}${{price}}{{/if}}
+          </p>
+          <a href="/courses/{{slug}}" class="btn btn-sm btn-primary">Learn More</a>
+        </div>
+      </article>
+      {{/each}}
+    </div>
+  </div>
+</section>
+{{> footer}}

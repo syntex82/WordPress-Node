@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{#if post}}{{post.title}} - {{/if}}{{#if page}}{{page.title}} - {{/if}}{{site.name}}</title>
+  <meta name="description" content="{{#if post}}{{post.excerpt}}{{else}}{{site.description}}{{/if}}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/themes/my-theme/assets/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-wrapper">
+        <a href="/" class="logo">{{site.name}}</a>
+        <div class="nav-menu">
+          {{#if menus.header}}
+            {{#each menus.header.items}}
+              <a href="{{this.url}}" class="nav-link" target="{{this.target}}">{{this.label}}</a>
+            {{/each}}
+          {{else}}
+            <a href="/" class="nav-link">Home</a>
+            <a href="/shop" class="nav-link">Shop</a>
+            <a href="/courses" class="nav-link">Courses</a>
+            <a href="/blog" class="nav-link">Blog</a>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main class="main-content">

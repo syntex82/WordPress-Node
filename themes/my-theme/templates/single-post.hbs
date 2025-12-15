@@ -1,0 +1,18 @@
+{{> header}}
+<article class="single-post">
+  <div class="container">
+    {{#if post.featuredImage}}
+    <img src="{{post.featuredImage}}" alt="{{post.title}}" class="featured-image">
+    {{/if}}
+    <h1>{{post.title}}</h1>
+    <div class="post-meta">
+      {{#if post.author}}<span>By {{post.author.name}}</span> &bull; {{/if}}
+      <span>{{formatDate post.createdAt}}</span>
+      {{#if post.category}} &bull; <a href="/category/{{post.category.slug}}">{{post.category.name}}</a>{{/if}}
+    </div>
+    <div class="post-body">
+      {{{post.content}}}
+    </div>
+  </div>
+</article>
+{{> footer}}
