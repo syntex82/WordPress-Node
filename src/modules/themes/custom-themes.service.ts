@@ -10,6 +10,8 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { CreateCustomThemeDto } from './dto/create-custom-theme.dto';
+import { UpdateCustomThemeDto } from './dto/update-custom-theme.dto';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as AdmZip from 'adm-zip';
@@ -102,23 +104,7 @@ export interface ContentBlockData {
   animation?: { type?: string; duration?: number; delay?: number };
 }
 
-export interface CreateCustomThemeDto {
-  name: string;
-  description?: string;
-  settings: CustomThemeSettings;
-  customCSS?: string;
-  pages?: ThemePageData[];
-  isDefault?: boolean;
-}
-
-export interface UpdateCustomThemeDto {
-  name?: string;
-  description?: string;
-  settings?: CustomThemeSettings;
-  customCSS?: string;
-  pages?: ThemePageData[];
-  isDefault?: boolean;
-}
+// DTOs are now imported from separate files with proper validation decorators
 
 @Injectable()
 export class CustomThemesService {
@@ -288,6 +274,7 @@ export class CustomThemesService {
         description: theme.description,
         settings: theme.settings as any,
         customCSS: theme.customCSS,
+        pages: theme.pages as any, // Include pages with blocks
         isDefault: false,
         isActive: false,
         createdById: userId,
@@ -327,6 +314,7 @@ export class CustomThemesService {
       description: theme.description,
       settings: theme.settings,
       customCSS: theme.customCSS,
+      pages: theme.pages, // Include pages with blocks
       exportedAt: new Date().toISOString(),
       version: '1.0',
     };
@@ -354,6 +342,7 @@ export class CustomThemesService {
         description: data.description,
         settings: data.settings,
         customCSS: data.customCSS,
+        pages: data.pages, // Include pages with blocks if provided
         isDefault: false,
         isActive: false,
         createdById: userId,
@@ -668,7 +657,7 @@ img { max-width: 100%; height: auto; display: block; }
   }
 
   /**
-   * Export theme as ZIP file
+   * Export theme as ZIP file - creates a valid theme package that can be imported
    */
   async exportAsZip(id: string): Promise<Buffer> {
     const theme = await this.findById(id);
@@ -681,14 +670,42 @@ img { max-width: 100%; height: auto; display: block; }
 
     const zip = new AdmZip();
 
-    // Generate theme.json
+    // Generate templates from pages/blocks FIRST so we know what templates exist
+    const pages = (theme.pages as unknown as ThemePageData[]) || [];
+    const templates = this.generateTemplates(theme.name, settings, slug, pages);
+    const templateNames = Object.keys(templates).map(name => `${name}.hbs`);
+
+    // Generate theme.json with all required fields for import validation
     const themeJson = {
       name: theme.name,
       version: '1.0.0',
       author: 'Theme Designer',
       description: theme.description || `Custom theme created with Theme Designer`,
       thumbnail: `/themes/${slug}/screenshot.png`,
+      templates: templateNames,
+      supports: {
+        widgets: true,
+        menus: true,
+        customHeader: true,
+        customBackground: true,
+        postThumbnails: true,
+        responsiveEmbeds: true,
+      },
+      colors: {
+        primary: settings.colors.primary,
+        secondary: settings.colors.secondary,
+        accent: settings.colors.accent,
+        background: settings.colors.background,
+        text: settings.colors.text,
+      },
+      fonts: {
+        heading: settings.typography.headingFont,
+        body: settings.typography.bodyFont,
+      },
+      // Store full design config for future editing
       designConfig: settings,
+      // Store pages/blocks for re-import into Theme Designer
+      pages: pages,
     };
     zip.addFile(`${slug}/theme.json`, Buffer.from(JSON.stringify(themeJson, null, 2)));
 
@@ -696,14 +713,20 @@ img { max-width: 100%; height: auto; display: block; }
     const cssContent = this.generateCSS(settings, theme.customCSS || undefined);
     zip.addFile(`${slug}/assets/css/style.css`, Buffer.from(cssContent));
 
-    // Generate templates from pages/blocks
-    const pages = (theme.pages as unknown as ThemePageData[]) || [];
-    const templates = this.generateTemplates(theme.name, settings, slug, pages);
+    // Add templates to ZIP
     for (const [name, content] of Object.entries(templates)) {
       zip.addFile(`${slug}/templates/${name}.hbs`, Buffer.from(content));
     }
 
-    // Generate SVG screenshot
+    // Generate PNG screenshot placeholder (1x1 transparent pixel as placeholder)
+    // The import expects PNG format
+    const pngPlaceholder = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    zip.addFile(`${slug}/screenshot.png`, pngPlaceholder);
+
+    // Also add SVG screenshot for better quality preview
     const screenshotSvg = this.generateScreenshotSVG(settings);
     zip.addFile(`${slug}/screenshot.svg`, Buffer.from(screenshotSvg));
 
@@ -892,8 +915,199 @@ img { max-width: 100%; height: auto; display: block; }
   </div>
 </section>`;
 
+      case 'audio':
+        return `<div class="audio-block" style="padding: 2rem; background: var(--color-surface); border-radius: var(--border-radius);">
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    ${props.albumArt ? `<img src="${props.albumArt}" alt="${props.title || ''}" style="width: 80px; height: 80px; border-radius: 8px; object-fit: cover;">` : ''}
+    <div>
+      <h4 style="margin: 0 0 0.25rem;">${props.title || 'Audio Track'}</h4>
+      <p style="margin: 0; color: var(--color-text-muted); font-size: 0.9rem;">${props.artist || ''}</p>
+    </div>
+  </div>
+  ${props.audioUrl ? `<audio controls style="width: 100%; margin-top: 1rem;"><source src="${props.audioUrl}" type="audio/mpeg"></audio>` : ''}
+</div>`;
+
+      case 'video':
+        return `<div class="video-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h3 style="text-align: center; margin-bottom: 1rem;">${props.title}</h3>` : ''}
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--border-radius);">
+      ${props.videoUrl ? `<iframe src="${props.videoUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>` : `<img src="${props.posterUrl || ''}" alt="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">`}
+    </div>
+  </div>
+</div>`;
+
+      case 'timeline':
+        const timelineItems = (props.items || []).map((item: any, i: number) => `
+      <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--color-primary);"></div>
+          ${i < (props.items || []).length - 1 ? '<div style="flex: 1; width: 2px; background: var(--color-border);"></div>' : ''}
+        </div>
+        <div style="flex: 1; padding-bottom: 1rem;">
+          <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 0.25rem;">${item.date || ''}</div>
+          <h4 style="margin: 0 0 0.5rem;">${item.title || ''}</h4>
+          <p style="margin: 0; color: var(--color-text-muted);">${item.description || ''}</p>
+        </div>
+      </div>`).join('');
+        return `<section class="timeline-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 700px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 3rem;">${props.title}</h2>` : ''}
+    ${timelineItems}
+  </div>
+</section>`;
+
+      case 'accordion':
+        const accordionItems = (props.items || []).map((item: any, i: number) => `
+      <details style="border: 1px solid var(--color-border); border-radius: var(--border-radius); margin-bottom: 0.5rem;" ${i === 0 ? 'open' : ''}>
+        <summary style="padding: 1rem; cursor: pointer; font-weight: 600;">${item.title || 'Question'}</summary>
+        <div style="padding: 0 1rem 1rem; color: var(--color-text-muted);">${item.content || ''}</div>
+      </details>`).join('');
+        return `<section class="accordion-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 800px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    ${accordionItems}
+  </div>
+</section>`;
+
+      case 'tabs':
+        const tabButtons = (props.tabs || []).map((tab: any, i: number) => `<button style="padding: 0.75rem 1.5rem; border: none; background: ${i === 0 ? 'var(--color-primary)' : 'transparent'}; color: ${i === 0 ? '#fff' : 'var(--color-text)'}; cursor: pointer; border-radius: var(--border-radius) var(--border-radius) 0 0;">${tab.title || 'Tab'}</button>`).join('');
+        const tabContent = (props.tabs || [])[0]?.content || '';
+        return `<section class="tabs-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    <div style="display: flex; border-bottom: 1px solid var(--color-border);">${tabButtons}</div>
+    <div style="padding: 2rem; background: var(--color-surface); border-radius: 0 0 var(--border-radius) var(--border-radius);">${tabContent}</div>
+  </div>
+</section>`;
+
+      case 'logoCloud':
+        const logos = (props.logos || []).map((logo: any) => `
+      <div style="display: flex; align-items: center; justify-content: center; padding: 1rem;">
+        <img src="${logo.src || ''}" alt="${logo.name || ''}" style="max-height: 50px; max-width: 120px; filter: grayscale(100%); opacity: 0.7; transition: all 0.3s;">
+      </div>`).join('');
+        return `<section class="logo-cloud-block" style="padding: var(--section-padding) 0; background: var(--color-surface);">
+  <div class="container">
+    ${props.title ? `<h3 style="text-align: center; margin-bottom: 2rem; color: var(--color-text-muted);">${props.title}</h3>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(${props.columns || 5}, 1fr); gap: 2rem; align-items: center;">
+      ${logos}
+    </div>
+  </div>
+</section>`;
+
+      case 'socialProof':
+        return `<section class="social-proof-block" style="padding: 2rem 0; background: var(--color-surface);">
+  <div class="container" style="text-align: center;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+      ${props.rating ? `<div style="display: flex; align-items: center; gap: 0.5rem;"><span style="font-size: 1.5rem; font-weight: 700;">${props.rating}</span><span style="color: #fbbf24;">★★★★★</span></div>` : ''}
+      ${props.reviewCount ? `<div style="color: var(--color-text-muted);">${props.reviewCount} reviews</div>` : ''}
+      ${props.text ? `<div>${props.text}</div>` : ''}
+    </div>
+  </div>
+</section>`;
+
+      case 'countdown':
+        return `<section class="countdown-block" style="padding: var(--section-padding) 0; background: var(--color-primary); color: #fff; text-align: center;">
+  <div class="container">
+    ${props.title ? `<h2 style="color: #fff; margin-bottom: 1rem;">${props.title}</h2>` : ''}
+    <div style="display: flex; justify-content: center; gap: 2rem;">
+      <div><div style="font-size: 3rem; font-weight: 700;">00</div><div style="font-size: 0.9rem; opacity: 0.8;">Days</div></div>
+      <div><div style="font-size: 3rem; font-weight: 700;">00</div><div style="font-size: 0.9rem; opacity: 0.8;">Hours</div></div>
+      <div><div style="font-size: 3rem; font-weight: 700;">00</div><div style="font-size: 0.9rem; opacity: 0.8;">Minutes</div></div>
+      <div><div style="font-size: 3rem; font-weight: 700;">00</div><div style="font-size: 0.9rem; opacity: 0.8;">Seconds</div></div>
+    </div>
+    ${props.description ? `<p style="margin-top: 1rem; opacity: 0.9;">${props.description}</p>` : ''}
+  </div>
+</section>`;
+
+      case 'row':
+        // Row is a container block - render children if any
+        return `<div class="row-block" style="display: flex; gap: 2rem; padding: var(--section-padding) 0;">
+  <div class="container" style="display: flex; gap: 2rem; flex-wrap: wrap;">
+    <!-- Row content rendered by children -->
+  </div>
+</div>`;
+
+      case 'header':
+        return `<!-- Header block - uses theme header partial -->`;
+
+      case 'featuredProduct':
+        return `<section class="featured-product-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+      <img src="${props.product?.image || 'https://picsum.photos/600/400'}" alt="${props.product?.title || ''}" style="width: 100%; border-radius: var(--border-radius);">
+      <div>
+        ${props.product?.badge ? `<span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--color-primary); color: #fff; border-radius: 999px; font-size: 0.8rem; margin-bottom: 1rem;">${props.product.badge}</span>` : ''}
+        <h2 style="margin-bottom: 0.5rem;">${props.product?.title || 'Featured Product'}</h2>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+          ${props.product?.salePrice ? `<span style="font-size: 1.5rem; font-weight: 700; color: var(--color-primary);">$${props.product.salePrice}</span><s style="color: var(--color-text-muted);">$${props.product.price}</s>` : `<span style="font-size: 1.5rem; font-weight: 700; color: var(--color-primary);">$${props.product?.price || '0'}</span>`}
+        </div>
+        <p style="color: var(--color-text-muted); margin-bottom: 2rem;">${props.product?.description || ''}</p>
+        <a href="/shop/product/${props.product?.id || ''}" class="btn btn-primary">View Product</a>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+      case 'productCarousel':
+        return `<section class="product-carousel-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    <h2 style="text-align: center; margin-bottom: 2rem;">${props.title || 'Featured Products'}</h2>
+    <div class="posts-grid">
+      {{#each featuredProducts}}
+      <article class="post-card">
+        {{#if images.[0]}}<img src="{{images.[0]}}" alt="{{name}}" class="post-image">{{/if}}
+        <div class="post-content">
+          <h3><a href="/shop/product/{{slug}}">{{name}}</a></h3>
+          <p style="color: var(--color-primary); font-weight: 600;">\${{price}}</p>
+        </div>
+      </article>
+      {{/each}}
+    </div>
+  </div>
+</section>`;
+
+      case 'courseCard':
+        return `<div class="course-card" style="background: var(--color-surface); border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--color-border);">
+  <img src="${props.course?.thumbnail || 'https://picsum.photos/400/200'}" alt="${props.course?.title || ''}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;">
+  <div style="padding: 1.5rem;">
+    <h3 style="margin: 0 0 0.5rem;">${props.course?.title || 'Course Title'}</h3>
+    <p style="color: var(--color-text-muted); margin-bottom: 1rem;">${props.course?.shortDescription || ''}</p>
+    <a href="/courses/${props.course?.slug || ''}" class="btn btn-primary btn-sm">Learn More</a>
+  </div>
+</div>`;
+
+      case 'loginForm':
+        return `<section class="login-form-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 400px;">
+    <div style="background: var(--color-surface); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+      <h2 style="text-align: center; margin-bottom: 1.5rem;">${props.title || 'Sign In'}</h2>
+      <form>
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email</label>
+          <input type="email" placeholder="Enter your email" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        </div>
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password</label>
+          <input type="password" placeholder="Enter your password" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+    </div>
+  </div>
+</section>`;
+
+      case 'saleBanner':
+        return `<section class="sale-banner-block" style="padding: 1.5rem 0; background: linear-gradient(135deg, ${settings.colors.primary}, ${settings.colors.secondary}); color: #fff; text-align: center;">
+  <div class="container">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+      <span style="font-size: 1.25rem; font-weight: 700;">${props.text || '🔥 Limited Time Offer!'}</span>
+      ${props.buttonText ? `<a href="${props.buttonLink || '#'}" class="btn" style="background: #fff; color: ${settings.colors.primary};">${props.buttonText}</a>` : ''}
+    </div>
+  </div>
+</section>`;
+
       default:
-        // For unknown blocks, render as placeholder
+        // For unknown blocks, render as placeholder comment
         return `<!-- Block: ${type} -->`;
     }
   }
@@ -980,7 +1194,7 @@ ${renderedHomeBlocks}
         {{#if images.[0]}}<img src="{{images.[0]}}" alt="{{name}}" class="post-image">{{/if}}
         <div class="post-content">
           <h3><a href="/shop/product/{{slug}}">{{name}}</a></h3>
-          <p style="color: var(--color-primary); font-weight: 600;">\{{#if salePrice}}<s style="color: var(--color-text-muted);">$\{{price}}</s> $\{{salePrice}}\{{else}}$\{{price}}\{{/if}}</p>
+          <p style="color: var(--color-primary); font-weight: 600;">{{#if salePrice}}<s style="color: var(--color-text-muted);">${"$"}{{price}}</s> ${"$"}{{salePrice}}{{else}}${"$"}{{price}}{{/if}}</p>
         </div>
       </article>
       {{/each}}
@@ -1028,7 +1242,7 @@ ${renderedHomeBlocks}
         {{#if images.[0]}}<img src="{{images.[0]}}" alt="{{name}}" class="post-image">{{/if}}
         <div class="post-content">
           <h3><a href="/shop/product/{{slug}}">{{name}}</a></h3>
-          <p style="color: var(--color-primary); font-weight: 600;">\{{#if salePrice}}<s style="color: var(--color-text-muted);">$\{{price}}</s> $\{{salePrice}}\{{else}}$\{{price}}\{{/if}}</p>
+          <p style="color: var(--color-primary); font-weight: 600;">{{#if salePrice}}<s style="color: var(--color-text-muted);">${"$"}{{price}}</s> ${"$"}{{salePrice}}{{else}}${"$"}{{price}}{{/if}}</p>
         </div>
       </article>
       {{/each}}
@@ -1209,7 +1423,8 @@ ${renderedHomeBlocks}
 {{> footer}}
 `;
 
-    return {
+    // Base templates
+    const result: Record<string, string> = {
       header,
       footer,
       home,
@@ -1221,6 +1436,22 @@ ${renderedHomeBlocks}
       courses,
       'single-course': singleCourse
     };
+
+    // Generate custom page templates from pages array (non-home pages with blocks)
+    for (const page of pages) {
+      if (page.isHomePage || page.slug === '/' || !page.blocks || page.blocks.length === 0) {
+        continue;
+      }
+      // Create a template name from the page slug
+      const pageName = page.slug.replace(/^\//, '').replace(/\//g, '-') || page.name.toLowerCase().replace(/\s+/g, '-');
+      const pageBlocks = this.renderPageBlocks(page.blocks, settings);
+
+      result[`page-${pageName}`] = `{{> header}}
+${pageBlocks}
+{{> footer}}`;
+    }
+
+    return result;
   }
 
   /**

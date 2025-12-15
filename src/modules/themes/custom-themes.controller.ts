@@ -18,11 +18,9 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import {
-  CustomThemesService,
-  CreateCustomThemeDto,
-  UpdateCustomThemeDto,
-} from './custom-themes.service';
+import { CustomThemesService } from './custom-themes.service';
+import { CreateCustomThemeDto } from './dto/create-custom-theme.dto';
+import { UpdateCustomThemeDto } from './dto/update-custom-theme.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
