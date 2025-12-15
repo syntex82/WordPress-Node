@@ -46,7 +46,7 @@ export class ProductsService {
         weight: dto.weight,
         variants: variants
           ? {
-              create: variants.map((v, i) => ({
+              create: variants.map((v) => ({
                 ...v,
                 price: v.price,
                 salePrice: v.salePrice,

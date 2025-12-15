@@ -16,7 +16,7 @@ interface FileHash {
   hash: string;
 }
 
-interface ScanResult {
+export interface ScanResult {
   new: string[];
   modified: string[];
   deleted: string[];

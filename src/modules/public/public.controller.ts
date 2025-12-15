@@ -3,9 +3,8 @@
  * Handles public-facing routes and renders theme templates
  */
 
-import { Controller, Get, Param, Query, Res, Req } from '@nestjs/common';
-import { Response, Request } from 'express';
-import { join } from 'path';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { PostsService } from '../content/services/posts.service';
 import { PagesService } from '../content/services/pages.service';
 import { ThemeRendererService } from '../themes/theme-renderer.service';
@@ -16,11 +15,6 @@ import { CertificatesService } from '../lms/services/certificates.service';
 import { ProfilesService } from '../users/profiles.service';
 import { PostStatus } from '@prisma/client';
 import { CourseLevel, CoursePriceType } from '../lms/dto/course.dto';
-
-// Extend Express Request to include user from JWT
-interface AuthenticatedRequest extends Request {
-  user?: { id: string; role: string };
-}
 
 @Controller()
 export class PublicController {

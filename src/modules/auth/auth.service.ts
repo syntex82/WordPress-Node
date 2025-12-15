@@ -7,6 +7,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as speakeasy from 'speakeasy';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -41,7 +42,8 @@ export class AuthService {
     }
 
     // Remove password from returned user object
-    const { password: _, ...result } = user;
+    const { password: _password, ...result } = user;
+    void _password; // Intentionally unused
     return result;
   }
 
@@ -164,7 +166,6 @@ export class AuthService {
     }
 
     // Verify 2FA code using speakeasy
-    const speakeasy = require('speakeasy');
     const isValid = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',

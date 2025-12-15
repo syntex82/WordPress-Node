@@ -94,7 +94,7 @@ export class PluginLoaderService implements OnModuleInit {
 
       if (typeof hook === 'function') {
         try {
-          const result = await hook.apply(null, args);
+          const result = await hook(...args);
           results.push({ slug, result });
         } catch (error) {
           console.error(`Error executing ${hookName} hook in plugin ${slug}:`, error);

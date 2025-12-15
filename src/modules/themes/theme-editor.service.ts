@@ -9,7 +9,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as AdmZip from 'adm-zip';
 
-interface FileNode {
+export interface FileNode {
   name: string;
   path: string;
   type: 'file' | 'directory';

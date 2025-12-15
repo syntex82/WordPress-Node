@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CartService } from '../services/cart.service';
-import { AddToCartDto, UpdateCartItemDto, ApplyCouponDto } from '../dto/cart.dto';
+import { AddToCartDto, UpdateCartItemDto } from '../dto/cart.dto';
 import { OptionalJwtAuthGuard } from '../../auth/guards/optional-jwt-auth.guard';
 import { v4 as uuidv4 } from 'uuid';
 

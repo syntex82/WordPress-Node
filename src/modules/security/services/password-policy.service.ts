@@ -6,8 +6,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import * as https from 'https';
 
-interface PasswordPolicyConfig {
+export interface PasswordPolicyConfig {
   minLength: number;
   requireUppercase: boolean;
   requireLowercase: boolean;
@@ -19,7 +21,7 @@ interface PasswordPolicyConfig {
   enabled: boolean;
 }
 
-interface PasswordValidationResult {
+export interface PasswordValidationResult {
   valid: boolean;
   errors: string[];
 }
@@ -174,9 +176,6 @@ export class PasswordPolicyService {
    */
   private async checkBreachedPassword(password: string): Promise<boolean> {
     try {
-      const crypto = require('crypto');
-      const https = require('https');
-
       const sha1 = crypto.createHash('sha1').update(password).digest('hex').toUpperCase();
       const prefix = sha1.substring(0, 5);
       const suffix = sha1.substring(5);

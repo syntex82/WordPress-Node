@@ -4,7 +4,6 @@
 
 import { IsString, IsOptional, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateMenuItemDto } from './create-menu.dto';
 
 export class UpdateMenuItemDto {
   @IsString()

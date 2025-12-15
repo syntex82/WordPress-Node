@@ -45,7 +45,7 @@ export class CheckoutController {
   async createOrderAndPayment(
     @Body() dto: CreateOrderDto,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) _res: Response,
   ) {
     const userId = (req as any).user?.id;
     const sessionId = req.cookies?.cart_session;

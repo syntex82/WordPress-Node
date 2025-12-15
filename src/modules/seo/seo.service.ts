@@ -197,7 +197,7 @@ ${urlEntries}
     return this.performSeoAnalysis(content, contentType);
   }
 
-  private performSeoAnalysis(content: any, contentType: string) {
+  private performSeoAnalysis(content: any, _contentType: string) {
     const issues: string[] = [];
     const suggestions: string[] = [];
     let score = 100;

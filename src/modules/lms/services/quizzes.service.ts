@@ -69,7 +69,8 @@ export class QuizzesService {
   }
 
   async update(id: string, dto: UpdateQuizDto) {
-    const { questions, ...quizData } = dto;
+    const { questions: _questions, ...quizData } = dto;
+    void _questions; // Questions are updated separately via addQuestion/updateQuestion
     await this.findOne(id);
 
     return this.prisma.quiz.update({

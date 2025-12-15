@@ -103,7 +103,7 @@ export class CustomThemesService {
   /**
    * Get all custom themes
    */
-  async findAll(userId?: string) {
+  async findAll(_userId?: string) {
     return this.prisma.customTheme.findMany({
       orderBy: { updatedAt: 'desc' },
       include: {

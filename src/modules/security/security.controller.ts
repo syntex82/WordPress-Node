@@ -22,7 +22,6 @@ import { PasswordPolicyService } from './services/password-policy.service';
 
 import {
   BlockIpDto,
-  UnblockIpDto,
   Enable2FADto,
   Verify2FADto,
   Disable2FADto,

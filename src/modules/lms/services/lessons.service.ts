@@ -2,12 +2,7 @@
  * Lessons Service for LMS Module
  * Enhanced with video upload and external video support
  */
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateLessonDto, UpdateLessonDto, CreateVideoAssetDto } from '../dto/lesson.dto';
 import * as fs from 'fs/promises';
@@ -166,7 +161,8 @@ export class LessonsService {
 
   // Upload video file for a lesson
   async uploadVideo(courseId: string, lessonId: string, file: Express.Multer.File, userId: string) {
-    const lesson = await this.findOne(lessonId);
+    // Verify lesson exists
+    await this.findOne(lessonId);
 
     // Verify course ownership
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });

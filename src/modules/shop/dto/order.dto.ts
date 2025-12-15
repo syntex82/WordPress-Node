@@ -1,15 +1,7 @@
 /**
  * Order DTOs
  */
-import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsEnum,
-  IsEmail,
-  ValidateNested,
-  IsUUID,
-} from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsEnum, IsEmail, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum OrderStatus {

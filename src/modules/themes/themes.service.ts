@@ -22,7 +22,7 @@ const REQUIRED_THEME_JSON_FIELDS = ['name', 'version', 'author'];
 // Maximum theme file size (10MB)
 const MAX_THEME_SIZE = 10 * 1024 * 1024;
 
-interface ThemeValidationResult {
+export interface ThemeValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
