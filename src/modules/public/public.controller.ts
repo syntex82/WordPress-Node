@@ -79,6 +79,15 @@ export class PublicController {
   }
 
   /**
+   * Learn course page - redirects to React LMS player
+   * GET /learn/:courseId
+   */
+  @Get('learn/:courseId')
+  async learnCourse(@Param('courseId') courseId: string, @Res() res: Response) {
+    res.redirect(`http://localhost:5173/admin/lms/learn/${courseId}`);
+  }
+
+  /**
    * Login page
    * GET /login
    */
