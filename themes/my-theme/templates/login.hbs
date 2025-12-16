@@ -14,7 +14,7 @@
       </div>
       {{/if}}
 
-      <form id="loginForm" class="auth-form" method="POST" action="/login">
+      <form id="loginForm" class="auth-form" method="POST" action="/login{{#if redirect}}?redirect={{redirect}}{{/if}}">
         <div class="form-group">
           <label for="email">Email Address</label>
           <input type="email" id="email" name="email" required placeholder="you@example.com" autocomplete="email">

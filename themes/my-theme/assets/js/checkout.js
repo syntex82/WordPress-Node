@@ -101,7 +101,7 @@
         billingAddress: {
           firstName: formData.get('firstName'),
           lastName: formData.get('lastName'),
-          address: formData.get('address'),
+          address1: formData.get('address'),
           city: formData.get('city'),
           state: formData.get('state'),
           postalCode: formData.get('postalCode'),

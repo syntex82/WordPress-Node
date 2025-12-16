@@ -157,9 +157,17 @@ export class ThemeRendererService {
           header: headerMenu,
           footer: footerMenu,
         },
-        // User info for templates (login/register/cart)
-        user: data.user || null,
-        // User info for admin bar
+        // User info for templates (header user menu, etc.)
+        // Use provided user parameter, or fall back to data.user if passed in data
+        user: user
+          ? {
+              id: user.id,
+              role: user.role,
+              name: (user as any).name || (user as any).email || 'User',
+              email: (user as any).email,
+            }
+          : data.user || null,
+        // User info for admin bar / customization (canCustomize flag)
         currentUser: user
           ? {
               id: user.id,

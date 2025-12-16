@@ -37,8 +37,10 @@ export class PublicController {
    * GET /
    */
   @Get()
-  async home(@Res() res: Response) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async home(@Req() req: Request, @Res() res: Response) {
     try {
+      const user = (req as any).user;
       // Fetch posts, featured products, and featured courses in parallel
       const [postsResult, productsResult, categories, coursesResult] = await Promise.all([
         this.postsService.findAll(1, 6, PostStatus.PUBLISHED),
@@ -51,7 +53,7 @@ export class PublicController {
         featuredProducts: productsResult.products || [],
         categories: categories || [],
         featuredCourses: coursesResult.courses || [],
-      });
+      }, user);
       res.send(html);
     } catch (error) {
       console.error('Error rendering home page:', error);
@@ -219,8 +221,10 @@ export class PublicController {
    * GET /blog
    */
   @Get('blog')
-  async blog(@Query('page') page: string, @Res() res: Response) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async blog(@Req() req: Request, @Query('page') page: string, @Res() res: Response) {
     try {
+      const user = (req as any).user;
       const currentPage = page ? parseInt(page) : 1;
       const result = await this.postsService.findAll(currentPage, 10, PostStatus.PUBLISHED);
 
@@ -233,7 +237,7 @@ export class PublicController {
         nextPage: result.meta.page + 1,
       };
 
-      const html = await this.themeRenderer.renderArchive(result.data, pagination);
+      const html = await this.themeRenderer.renderArchive(result.data, pagination, user);
       res.send(html);
     } catch (error) {
       res.status(500).send('Error rendering blog archive');
@@ -245,12 +249,15 @@ export class PublicController {
    * GET /shop
    */
   @Get('shop')
+  @UseGuards(OptionalJwtAuthGuard)
   async shop(
+    @Req() req: Request,
     @Query('page') page: string,
     @Query('category') category: string,
     @Res() res: Response,
   ) {
     try {
+      const user = (req as any).user;
       const currentPage = page ? parseInt(page) : 1;
       const limit = 12;
 
@@ -284,6 +291,7 @@ export class PublicController {
         categories || [],
         pagination,
         category || null,
+        user,
       );
       res.send(html);
     } catch (error) {
@@ -297,8 +305,10 @@ export class PublicController {
    * GET /shop/product/:slug
    */
   @Get('shop/product/:slug')
-  async product(@Param('slug') slug: string, @Res() res: Response) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async product(@Req() req: Request, @Param('slug') slug: string, @Res() res: Response) {
     try {
+      const user = (req as any).user;
       const product = await this.productsService.findBySlug(slug);
 
       if (!product || product.status !== 'ACTIVE') {
@@ -306,7 +316,7 @@ export class PublicController {
         return;
       }
 
-      const html = await this.themeRenderer.renderProduct(product);
+      const html = await this.themeRenderer.renderProduct(product, user);
       res.send(html);
     } catch (error) {
       res.status(404).send('Product not found');
@@ -318,7 +328,9 @@ export class PublicController {
    * GET /courses
    */
   @Get('courses')
+  @UseGuards(OptionalJwtAuthGuard)
   async courses(
+    @Req() req: Request,
     @Query('page') page: string,
     @Query('category') category: string,
     @Query('level') level: string,
@@ -326,6 +338,7 @@ export class PublicController {
     @Res() res: Response,
   ) {
     try {
+      const user = (req as any).user;
       const currentPage = page ? parseInt(page) : 1;
       const limit = 12;
 
@@ -351,6 +364,7 @@ export class PublicController {
         categoriesList.filter((c): c is string => c !== null),
         pagination,
         { category, level, priceType },
+        user,
       );
       res.send(html);
     } catch (error) {
@@ -364,8 +378,10 @@ export class PublicController {
    * GET /courses/:slug
    */
   @Get('courses/:slug')
-  async course(@Param('slug') slug: string, @Res() res: Response) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async course(@Req() req: Request, @Param('slug') slug: string, @Res() res: Response) {
     try {
+      const user = (req as any).user;
       const course = await this.coursesService.findBySlug(slug);
 
       if (!course || course.status !== 'PUBLISHED') {
@@ -373,7 +389,7 @@ export class PublicController {
         return;
       }
 
-      const html = await this.themeRenderer.renderCourse(course);
+      const html = await this.themeRenderer.renderCourse(course, false, user);
       res.send(html);
     } catch (error) {
       res.status(404).send('Course not found');
@@ -424,8 +440,10 @@ export class PublicController {
    * GET /post/:slug
    */
   @Get('post/:slug')
-  async post(@Param('slug') slug: string, @Res() res: Response) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async post(@Req() req: Request, @Param('slug') slug: string, @Res() res: Response) {
     try {
+      const user = (req as any).user;
       const post = await this.postsService.findBySlug(slug);
 
       if (post.status !== PostStatus.PUBLISHED) {
@@ -433,7 +451,7 @@ export class PublicController {
         return;
       }
 
-      const html = await this.themeRenderer.renderPost(post);
+      const html = await this.themeRenderer.renderPost(post, user);
       res.send(html);
     } catch (error) {
       res.status(404).send('Post not found');
@@ -445,8 +463,10 @@ export class PublicController {
    * GET /u/:identifier (username or ID)
    */
   @Get('u/:identifier')
-  async userProfile(@Param('identifier') identifier: string, @Res() res: Response) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async userProfile(@Req() req: Request, @Param('identifier') identifier: string, @Res() res: Response) {
     try {
+      const user = (req as any).user;
       const profile = await this.profilesService.getPublicProfile(identifier);
 
       if (!profile || !profile.isPublic) {
@@ -455,7 +475,7 @@ export class PublicController {
       }
 
       const stats = await this.profilesService.getStats(profile.id);
-      const html = await this.themeRenderer.renderProfile(profile, stats);
+      const html = await this.themeRenderer.renderProfile(profile, stats, user);
       res.send(html);
     } catch (error) {
       console.error('Error rendering profile:', error);
@@ -468,8 +488,10 @@ export class PublicController {
    * GET /:slug
    */
   @Get(':slug')
-  async page(@Param('slug') slug: string, @Res() res: Response) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async page(@Req() req: Request, @Param('slug') slug: string, @Res() res: Response) {
     try {
+      const user = (req as any).user;
       const page = await this.pagesService.findBySlug(slug);
 
       if (page.status !== PostStatus.PUBLISHED) {
@@ -477,7 +499,7 @@ export class PublicController {
         return;
       }
 
-      const html = await this.themeRenderer.renderPage(page);
+      const html = await this.themeRenderer.renderPage(page, user);
       res.send(html);
     } catch (error) {
       res.status(404).send('Page not found');
