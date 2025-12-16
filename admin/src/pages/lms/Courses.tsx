@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { lmsAdminApi, Course } from '../../services/api';
 import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiList, FiHelpCircle, FiUsers, FiBook } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 
 export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -82,10 +83,12 @@ export default function Courses() {
     if (!confirm('Are you sure you want to delete this course? This will also delete all lessons, quizzes, and enrollments.')) return;
     try {
       await lmsAdminApi.deleteCourse(id);
+      toast.success('Course deleted successfully');
       loadCourses();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete course:', error);
-      alert('Failed to delete course');
+      const message = error.response?.data?.message || 'Failed to delete course';
+      toast.error(message);
     }
   };
 
