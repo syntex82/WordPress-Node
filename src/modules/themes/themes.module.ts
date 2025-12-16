@@ -13,6 +13,7 @@ import { ThemeEditorService } from './theme-editor.service';
 import { ThemeEditorController } from './theme-editor.controller';
 import { CustomThemesService } from './custom-themes.service';
 import { CustomThemesController } from './custom-themes.controller';
+import { AiThemeGeneratorService } from './ai-theme-generator.service';
 import { ContentModule } from '../content/content.module';
 import { SettingsModule } from '../settings/settings.module';
 import { MenusModule } from '../menus/menus.module';
@@ -32,8 +33,20 @@ import { MenusModule } from '../menus/menus.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [ThemesService, ThemeRendererService, ThemeEditorService, CustomThemesService],
+  providers: [
+    ThemesService,
+    ThemeRendererService,
+    ThemeEditorService,
+    CustomThemesService,
+    AiThemeGeneratorService,
+  ],
   controllers: [ThemesController, ThemeEditorController, CustomThemesController],
-  exports: [ThemesService, ThemeRendererService, ThemeEditorService, CustomThemesService],
+  exports: [
+    ThemesService,
+    ThemeRendererService,
+    ThemeEditorService,
+    CustomThemesService,
+    AiThemeGeneratorService,
+  ],
 })
 export class ThemesModule {}

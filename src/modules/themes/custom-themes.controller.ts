@@ -20,6 +20,8 @@ import { JwtService } from '@nestjs/jwt';
 import { CustomThemesService } from './custom-themes.service';
 import { CreateCustomThemeDto } from './dto/create-custom-theme.dto';
 import { UpdateCustomThemeDto } from './dto/update-custom-theme.dto';
+import { GenerateAiThemeDto } from './dto/generate-ai-theme.dto';
+import { AiThemeGeneratorService } from './ai-theme-generator.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -30,6 +32,7 @@ import { UserRole } from '@prisma/client';
 export class CustomThemesController {
   constructor(
     private readonly customThemesService: CustomThemesService,
+    private readonly aiThemeGeneratorService: AiThemeGeneratorService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -175,6 +178,16 @@ export class CustomThemesController {
   @Roles(UserRole.ADMIN)
   generateCSS(@Body() body: { settings: any; customCSS?: string }) {
     return { css: this.customThemesService.generateCSS(body.settings, body.customCSS) };
+  }
+
+  /**
+   * Generate theme using AI
+   * POST /api/custom-themes/generate-ai
+   */
+  @Post('generate-ai')
+  @Roles(UserRole.ADMIN)
+  async generateAiTheme(@Body() dto: GenerateAiThemeDto, @Request() req: any) {
+    return this.aiThemeGeneratorService.generateTheme(dto, req.user.id);
   }
 
   /**

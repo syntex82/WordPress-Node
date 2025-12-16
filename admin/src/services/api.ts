@@ -256,6 +256,9 @@ export const customThemesApi = {
   import: (data: any) => api.post<CustomTheme>('/custom-themes/import', data),
   generateCSS: (settings: CustomThemeSettings, customCSS?: string) =>
     api.post<{ css: string }>('/custom-themes/generate-css', { settings, customCSS }),
+  // Generate theme using AI
+  generateAiTheme: (data: { prompt: string; themeName?: string; description?: string; numberOfPages?: number; style?: string; colorScheme?: string }) =>
+    api.post<{ settings: CustomThemeSettings; pages: ThemePageData[]; name: string; description: string }>('/custom-themes/generate-ai', data),
   // Generate a short-lived preview token for secure iframe embedding
   getPreviewToken: () => api.post<{ token: string; expiresIn: number }>('/custom-themes/preview-token'),
 };

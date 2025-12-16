@@ -10,12 +10,13 @@ import {
   FiArrowLeft, FiDroplet, FiType, FiLayout, FiSave,
   FiCode, FiSmartphone, FiTablet, FiMonitor, FiSun, FiMoon, FiCopy, FiTrash2,
   FiUpload, FiRotateCcw, FiRotateCw, FiChevronDown, FiChevronRight,
-  FiPlus, FiGrid, FiSliders, FiBox, FiPackage, FiFile, FiArchive
+  FiPlus, FiGrid, FiSliders, FiBox, FiPackage, FiFile, FiArchive, FiZap
 } from 'react-icons/fi';
 import {
   ContentBlock, BlockType, BLOCK_CONFIGS,
   ContentBlocksPanel, BlockRenderer, PageTemplate, ThemePage
 } from '../components/ThemeDesigner/ContentBlocks';
+import { AiThemeGeneratorModal } from '../components/ThemeDesigner/AiThemeGeneratorModal';
 
 // Theme presets
 const THEME_PRESETS: { id: string; name: string; description: string; settings: CustomThemeSettings }[] = [
@@ -181,6 +182,7 @@ export default function ThemeDesigner() {
   const [historyIndex, setHistoryIndex] = useState(0);
   const [showThemeList, setShowThemeList] = useState(!editId);
   const [showPresets, setShowPresets] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
 
   // Multi-page state
   const [pages, setPages] = useState<ThemePage[]>([
@@ -630,6 +632,19 @@ export default function ThemeDesigner() {
     toast.success(`Applied "${preset.name}" preset`);
   };
 
+  // Handle AI-generated theme
+  const handleAiThemeGenerated = (aiTheme: any) => {
+    setThemeName(aiTheme.name);
+    setThemeDescription(aiTheme.description);
+    setSettings(aiTheme.settings);
+    setPages(aiTheme.pages || [{ id: 'home', name: 'Home', slug: '/', blocks: [], isHomePage: true }]);
+    setCurrentPageId(aiTheme.pages?.[0]?.id || 'home');
+    setHistory([aiTheme.settings]);
+    setHistoryIndex(0);
+    setSelectedBlockId(null);
+    toast.success('Theme generated! Customize it further or save it.');
+  };
+
   // Create new theme
   const handleNewTheme = () => {
     setSelectedThemeId(null);
@@ -809,6 +824,11 @@ export default function ThemeDesigner() {
             {/* Light/Dark Toggle */}
             <button onClick={() => setPreviewMode(previewMode === 'light' ? 'dark' : 'light')} className="p-2 hover:bg-gray-700 rounded-lg" title="Toggle Preview Mode">
               {previewMode === 'light' ? <FiMoon size={18} /> : <FiSun size={18} />}
+            </button>
+
+            {/* AI Theme Generator */}
+            <button onClick={() => setShowAiModal(true)} className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg" title="Generate theme with AI">
+              <FiZap size={16} /> AI Designer
             </button>
 
             {/* Presets */}
@@ -1071,6 +1091,13 @@ export default function ThemeDesigner() {
           </div>
         </main>
       </div>
+
+      {/* AI Theme Generator Modal */}
+      <AiThemeGeneratorModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        onThemeGenerated={handleAiThemeGenerated}
+      />
     </div>
   );
 
