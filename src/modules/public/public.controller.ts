@@ -71,7 +71,7 @@ export class PublicController {
     res.redirect('http://localhost:5173/admin/lms');
   }
 
-  @Get('lms/*')
+  @Get('lms/*path')
   async lmsFallback(@Res() res: Response) {
     // In development, redirect to Vite dev server (React app is at /admin/*)
     const originalUrl = res.req?.originalUrl || '/lms';
