@@ -34,7 +34,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.0",
     "@nestjs/platform-socket.io": "^10.4.20",
-    "@nestjs/serve-static": "^4.0.0",
+    "@nestjs/serve-static": "^5.0.4",
     "@nestjs/websockets": "^10.4.20",
     "@prisma/client": "^5.8.0",
     "@types/adm-zip": "^0.5.7",
@@ -66,7 +66,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.3.0",
+    "@nestjs/cli": "^11.0.14",
     "@nestjs/schematics": "^10.1.0",
     "@nestjs/testing": "^10.3.0",
     "@types/bcrypt": "^5.0.2",
