@@ -14,9 +14,13 @@
     </div>
     <div style="margin-top: 2rem;">
       <p style="font-size: 1.5rem; color: var(--color-primary); font-weight: 600;">
-        {{#if (eq course.priceType 'FREE')}}Free{{else}}${{course.price}}{{/if}}
+        {{#if (eq course.priceType 'FREE')}}Free{{else}}${{course.priceAmount}}{{/if}}
       </p>
-      <button class="btn btn-primary btn-lg" style="margin-top: 1rem;">Enroll Now</button>
+      {{#if (eq course.priceType 'FREE')}}
+      <button class="btn btn-primary btn-lg" style="margin-top: 1rem;" data-enroll-course="{{course.id}}">Enroll Now - Free</button>
+      {{else}}
+      <button class="btn btn-primary btn-lg" style="margin-top: 1rem;" data-add-course="{{course.id}}">Add to Cart</button>
+      {{/if}}
     </div>
   </div>
 </div>

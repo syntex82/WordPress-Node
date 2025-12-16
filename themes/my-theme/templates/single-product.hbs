@@ -13,7 +13,7 @@
           {{#if product.salePrice}}<s style="color: var(--color-text-muted);">${{product.price}}</s> ${{product.salePrice}}{{else}}${{product.price}}{{/if}}
         </p>
         <div class="post-body">{{{product.description}}}</div>
-        <button class="btn btn-primary" style="margin-top: 1rem;">Add to Cart</button>
+        <button class="btn btn-primary" style="margin-top: 1rem;" data-add-product="{{product.id}}">Add to Cart</button>
       </div>
     </div>
   </div>

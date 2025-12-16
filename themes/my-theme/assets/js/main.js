@@ -78,13 +78,53 @@
       });
     });
 
-    // Course add to cart
+    // Course add to cart (paid courses)
     document.querySelectorAll('[data-add-course]').forEach(btn => {
       btn.addEventListener('click', async function() {
         const courseId = this.dataset.addCourse;
         await addToCart('course', courseId);
       });
     });
+
+    // Free course enrollment
+    document.querySelectorAll('[data-enroll-course]').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const courseId = this.dataset.enrollCourse;
+        await enrollFreeCourse(courseId);
+      });
+    });
+  }
+
+  // Enroll in a free course
+  async function enrollFreeCourse(courseId) {
+    try {
+      const response = await fetch(`/api/lms/courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        showNotification('Successfully enrolled! Redirecting...', 'success');
+        // Redirect to learning page after short delay
+        setTimeout(() => {
+          window.location.href = `/learn/${courseId}`;
+        }, 1500);
+      } else if (response.status === 401) {
+        // Not logged in - redirect to login
+        showNotification('Please log in to enroll', 'error');
+        setTimeout(() => {
+          window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+        }, 1500);
+      } else {
+        const error = await response.json();
+        showNotification(error.message || 'Failed to enroll', 'error');
+      }
+    } catch (error) {
+      console.error('Error enrolling:', error);
+      showNotification('Failed to enroll', 'error');
+    }
   }
 
   // Add item to cart

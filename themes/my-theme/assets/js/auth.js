@@ -1,118 +1,64 @@
 /**
  * Authentication JavaScript
  * Handles login and registration form submissions
+ * For SSR pages, we let the native form submission work (sets HTTP-only cookies)
+ * We just add loading state and client-side validation
  */
 
 (function() {
   'use strict';
 
-  // Login form handler
+  // Login form handler - let native form submission work for SSR cookie auth
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
-    loginForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
+    loginForm.addEventListener('submit', function(e) {
       const submitBtn = document.getElementById('submitBtn');
       const btnText = submitBtn.querySelector('.btn-text');
       const btnLoading = submitBtn.querySelector('.btn-loading');
-      
-      // Show loading state
+
+      // Basic validation
+      const email = loginForm.querySelector('[name="email"]').value;
+      const password = loginForm.querySelector('[name="password"]').value;
+
+      if (!email || !password) {
+        e.preventDefault();
+        showError(loginForm, 'Please fill in all fields');
+        return;
+      }
+
+      // Show loading state - form will submit natively
       btnText.style.display = 'none';
       btnLoading.style.display = 'inline';
       submitBtn.disabled = true;
 
-      const formData = new FormData(loginForm);
-      const email = formData.get('email');
-      const password = formData.get('password');
-
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include'
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          // Store token in localStorage for API calls
-          localStorage.setItem('access_token', data.access_token);
-          // Redirect
-          const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
-          window.location.href = redirect;
-        } else {
-          showError(loginForm, data.message || 'Invalid email or password');
-          resetButton(submitBtn, btnText, btnLoading);
-        }
-      } catch (error) {
-        showError(loginForm, 'An error occurred. Please try again.');
-        resetButton(submitBtn, btnText, btnLoading);
-      }
+      // Let form submit naturally to /login which sets the cookie
     });
   }
 
-  // Register form handler
+  // Register form handler - let native form submission work for SSR cookie auth
   const registerForm = document.getElementById('registerForm');
   if (registerForm) {
-    registerForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
+    registerForm.addEventListener('submit', function(e) {
       const submitBtn = document.getElementById('submitBtn');
       const btnText = submitBtn.querySelector('.btn-text');
       const btnLoading = submitBtn.querySelector('.btn-loading');
-      
-      const formData = new FormData(registerForm);
-      const name = formData.get('name');
-      const email = formData.get('email');
-      const password = formData.get('password');
-      const confirmPassword = formData.get('confirmPassword');
+
+      const password = registerForm.querySelector('[name="password"]').value;
+      const confirmPassword = registerForm.querySelector('[name="confirmPassword"]').value;
 
       // Validate passwords match
       if (password !== confirmPassword) {
+        e.preventDefault();
         showError(registerForm, 'Passwords do not match');
         return;
       }
 
-      // Show loading state
+      // Show loading state - form will submit natively
       btnText.style.display = 'none';
       btnLoading.style.display = 'inline';
       submitBtn.disabled = true;
 
-      try {
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
-          credentials: 'include'
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          // Auto-login after registration
-          const loginResponse = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-            credentials: 'include'
-          });
-
-          if (loginResponse.ok) {
-            const loginData = await loginResponse.json();
-            localStorage.setItem('access_token', loginData.access_token);
-            window.location.href = '/';
-          } else {
-            window.location.href = '/login';
-          }
-        } else {
-          showError(registerForm, data.message || 'Registration failed');
-          resetButton(submitBtn, btnText, btnLoading);
-        }
-      } catch (error) {
-        showError(registerForm, 'An error occurred. Please try again.');
-        resetButton(submitBtn, btnText, btnLoading);
-      }
+      // Let form submit naturally to /register which sets the cookie
     });
   }
 

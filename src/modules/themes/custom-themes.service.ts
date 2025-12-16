@@ -1457,7 +1457,7 @@ ${renderedHomeBlocks}
           {{#if product.salePrice}}<s style="color: var(--color-text-muted);">\${{product.price}}</s> \${{product.salePrice}}{{else}}\${{product.price}}{{/if}}
         </p>
         <div class="post-body">{{{product.description}}}</div>
-        <button class="btn btn-primary" style="margin-top: 1rem;">Add to Cart</button>
+        <button class="btn btn-primary" data-add-product="{{product.id}}" style="margin-top: 1rem;">Add to Cart</button>
       </div>
     </div>
   </div>
@@ -1507,9 +1507,13 @@ ${renderedHomeBlocks}
     </div>
     <div style="margin-top: 2rem;">
       <p style="font-size: 1.5rem; color: var(--color-primary); font-weight: 600;">
-        {{#if (eq course.priceType 'FREE')}}Free{{else}}\${{course.price}}{{/if}}
+        {{#if (eq course.priceType 'FREE')}}Free{{else}}\${{course.priceAmount}}{{/if}}
       </p>
-      <button class="btn btn-primary btn-lg" data-add-course="{{course.id}}" style="margin-top: 1rem;">Enroll Now</button>
+      {{#if (eq course.priceType 'FREE')}}
+      <button class="btn btn-primary btn-lg" data-enroll-course="{{course.id}}" style="margin-top: 1rem;">Enroll Now - Free</button>
+      {{else}}
+      <button class="btn btn-primary btn-lg" data-add-course="{{course.id}}" style="margin-top: 1rem;">Add to Cart</button>
+      {{/if}}
     </div>
   </div>
 </div>
@@ -1710,21 +1714,21 @@ ${pageBlocks}
   document.addEventListener('DOMContentLoaded',function(){initUserMenu();updateCartCount();initAddToCart();});
   function initUserMenu(){var b=document.getElementById('userMenuBtn'),d=document.getElementById('userDropdown');if(b&&d){b.addEventListener('click',function(e){e.stopPropagation();d.classList.toggle('active');});document.addEventListener('click',function(){d.classList.remove('active');});}var l=document.getElementById('logoutBtn');if(l){l.addEventListener('click',function(){localStorage.removeItem('access_token');window.location.href='/logout';});}}
   async function updateCartCount(){var c=document.getElementById('cartCount');if(!c)return;try{var r=await fetch('/api/shop/cart',{credentials:'include',headers:getAuthHeaders()});if(!r.ok){c.style.display='none';return;}var cart=await r.json();var count=cart.items?.reduce((s,i)=>s+i.quantity,0)||0;if(count>0){c.textContent=count;c.style.display='flex';}else{c.style.display='none';}}catch(e){c.style.display='none';}}
-  function initAddToCart(){document.querySelectorAll('[data-add-product]').forEach(b=>{b.addEventListener('click',async function(){await addToCart('product',this.dataset.addProduct);});});document.querySelectorAll('[data-add-course]').forEach(b=>{b.addEventListener('click',async function(){await addToCart('course',this.dataset.addCourse);});});}
+  function initAddToCart(){document.querySelectorAll('[data-add-product]').forEach(b=>{b.addEventListener('click',async function(){await addToCart('product',this.dataset.addProduct);});});document.querySelectorAll('[data-add-course]').forEach(b=>{b.addEventListener('click',async function(){await addToCart('course',this.dataset.addCourse);});});document.querySelectorAll('[data-enroll-course]').forEach(b=>{b.addEventListener('click',async function(){await enrollFreeCourse(this.dataset.enrollCourse);});});}
   async function addToCart(type,id){try{var endpoint=type==='course'?'/api/shop/cart/add-course':'/api/shop/cart/add';var body=type==='course'?{courseId:id}:{productId:id,quantity:1};var r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json',...getAuthHeaders()},body:JSON.stringify(body),credentials:'include'});if(r.ok){updateCartCount();showNotification('Added to cart!','success');}else{var e=await r.json();showNotification(e.message||'Failed to add to cart','error');}}catch(e){showNotification('Failed to add to cart','error');}}
+  async function enrollFreeCourse(courseId){try{var r=await fetch('/api/lms/courses/'+courseId+'/enroll',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({}),credentials:'include'});if(r.ok){showNotification('Successfully enrolled!','success');setTimeout(function(){window.location.href='/learn/'+courseId;},1500);}else if(r.status===401){showNotification('Please log in to enroll','error');setTimeout(function(){window.location.href='/login?redirect='+encodeURIComponent(window.location.pathname);},1500);}else{var e=await r.json();showNotification(e.message||'Failed to enroll','error');}}catch(e){showNotification('Failed to enroll','error');}}
   function showNotification(msg,type){var n=document.createElement('div');n.className='notification notification-'+type;n.textContent=msg;n.style.cssText='position:fixed;top:80px;right:20px;padding:1rem 1.5rem;background:'+(type==='success'?'var(--color-success)':type==='error'?'var(--color-error)':'var(--color-primary)')+';color:white;border-radius:8px;z-index:9999;';document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
   function getAuthHeaders(){var t=localStorage.getItem('access_token');return t?{'Authorization':'Bearer '+t}:{};}
-  window.addToCart=addToCart;window.updateCartCount=updateCartCount;
+  window.addToCart=addToCart;window.updateCartCount=updateCartCount;window.enrollFreeCourse=enrollFreeCourse;
 })();`;
 
     const authJs = `(function(){
   'use strict';
   var loginForm=document.getElementById('loginForm');
-  if(loginForm){loginForm.addEventListener('submit',async function(e){e.preventDefault();var btn=document.getElementById('submitBtn'),txt=btn.querySelector('.btn-text'),load=btn.querySelector('.btn-loading');txt.style.display='none';load.style.display='inline';btn.disabled=true;var fd=new FormData(loginForm);try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:fd.get('email'),password:fd.get('password')}),credentials:'include'});var d=await r.json();if(r.ok){localStorage.setItem('access_token',d.access_token);window.location.href=new URLSearchParams(window.location.search).get('redirect')||'/';}else{showError(loginForm,d.message||'Invalid email or password');resetBtn(btn,txt,load);}}catch(e){showError(loginForm,'An error occurred');resetBtn(btn,txt,load);}});}
+  if(loginForm){loginForm.addEventListener('submit',function(e){var btn=document.getElementById('submitBtn'),txt=btn.querySelector('.btn-text'),load=btn.querySelector('.btn-loading');var email=loginForm.querySelector('[name="email"]').value,pass=loginForm.querySelector('[name="password"]').value;if(!email||!pass){e.preventDefault();showError(loginForm,'Please fill in all fields');return;}txt.style.display='none';load.style.display='inline';btn.disabled=true;});}
   var regForm=document.getElementById('registerForm');
-  if(regForm){regForm.addEventListener('submit',async function(e){e.preventDefault();var btn=document.getElementById('submitBtn'),txt=btn.querySelector('.btn-text'),load=btn.querySelector('.btn-loading');var fd=new FormData(regForm);if(fd.get('password')!==fd.get('confirmPassword')){showError(regForm,'Passwords do not match');return;}txt.style.display='none';load.style.display='inline';btn.disabled=true;try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:fd.get('name'),email:fd.get('email'),password:fd.get('password')}),credentials:'include'});var d=await r.json();if(r.ok){var lr=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:fd.get('email'),password:fd.get('password')}),credentials:'include'});if(lr.ok){var ld=await lr.json();localStorage.setItem('access_token',ld.access_token);window.location.href='/';}else{window.location.href='/login';}}else{showError(regForm,d.message||'Registration failed');resetBtn(btn,txt,load);}}catch(e){showError(regForm,'An error occurred');resetBtn(btn,txt,load);}});}
+  if(regForm){regForm.addEventListener('submit',function(e){var btn=document.getElementById('submitBtn'),txt=btn.querySelector('.btn-text'),load=btn.querySelector('.btn-loading');var pass=regForm.querySelector('[name="password"]').value,conf=regForm.querySelector('[name="confirmPassword"]').value;if(pass!==conf){e.preventDefault();showError(regForm,'Passwords do not match');return;}txt.style.display='none';load.style.display='inline';btn.disabled=true;});}
   function showError(f,m){var a=f.querySelector('.alert-error');if(!a){a=document.createElement('div');a.className='alert alert-error';f.insertBefore(a,f.firstChild);}a.textContent=m;}
-  function resetBtn(b,t,l){t.style.display='inline';l.style.display='none';b.disabled=false;}
 })();`;
 
     const cartJs = `(function(){
