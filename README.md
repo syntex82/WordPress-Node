@@ -2,23 +2,29 @@
 
 <!-- Hero Banner -->
 <img width="1281" height="745" alt="Screenshot 2025-12-14 043442" src="https://github.com/user-attachments/assets/4e5f2cac-30e2-4461-b519-ce90d1cce293" />
-https://buymeacoffee.com/mickyblenkd
+
 <br />
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mickyblenkd)
+
 <br />
 
 # 🚀 WordPress Node CMS
 
 ### **A Modern, Full-Featured Content Management System Built with Node.js**
 
+*Enterprise-grade CMS • E-Commerce • LMS • Email Marketing • AI-Powered*
+
 <br />
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-10+-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![NestJS](https://img.shields.io/badge/NestJS-11+-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-5+-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Prisma](https://img.shields.io/badge/Prisma-6+-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3+-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-7+-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br />
@@ -29,13 +35,14 @@ https://buymeacoffee.com/mickyblenkd
 
 <br />
 
-[Features](#-features) •
-[Tech Stack](#-tech-stack) •
-[Installation](#-installation) •
-[Project Structure](#-project-structure) •
-[API Documentation](#-api-documentation) •
-[Screenshots](#-screenshots) •
-[Contributing](#-contributing)
+[✨ Features](#-features) •
+[🛠 Tech Stack](#-tech-stack) •
+[📦 Installation](#-installation) •
+[⚙️ Configuration](#️-complete-configuration-guide) •
+[📁 Project Structure](#-project-structure) •
+[📡 API Docs](#-api-documentation) •
+[📸 Screenshots](#-screenshots) •
+[🤝 Contributing](#-contributing)
 
 <br />
 
@@ -167,6 +174,60 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 
 <br />
 
+### 📧 Email & Marketing System
+
+| Feature | Description |
+|---------|-------------|
+| **Visual Email Designer** | Drag-and-drop email template builder with 12+ block types |
+| **Media Library Integration** | Select images directly from your media library |
+| **Email Templates** | Pre-built templates for welcome, password reset, order confirmation, etc. |
+| **SMTP Configuration** | Support for Gmail, SendGrid, Mailgun, AWS SES, and custom SMTP |
+| **Email Logs** | Track sent emails with delivery status and timestamps |
+| **Template Variables** | Dynamic placeholders for personalization (`{{userName}}`, `{{orderNumber}}`, etc.) |
+| **Mobile Preview** | Preview how emails look on desktop and mobile devices |
+| **HTML Export** | Generate email-client compatible HTML with table-based layouts |
+
+<br />
+
+### 🛡️ Security Features
+
+| Feature | Description |
+|---------|-------------|
+| **Two-Factor Authentication** | TOTP-based 2FA with authenticator app support |
+| **Session Management** | View and revoke active sessions across devices |
+| **Password Policies** | Configurable password strength requirements |
+| **Rate Limiting** | Protect against brute force and DDoS attacks |
+| **Audit Logging** | Track all admin actions with user, IP, and timestamp |
+| **Login Activity** | Monitor successful/failed login attempts with location |
+| **IP Blocking** | Block malicious IPs and IP ranges |
+| **File Integrity Monitoring** | Detect unauthorized file changes |
+| **Security Dashboard** | Centralized view of all security metrics and threats |
+
+<br />
+
+### 🤖 AI-Powered Features
+
+| Feature | Description |
+|---------|-------------|
+| **AI Theme Designer** | Generate complete themes from text descriptions |
+| **Color Palette Generation** | AI-suggested color schemes based on your brand |
+| **Content Suggestions** | AI-assisted content block recommendations |
+| **Multiple AI Providers** | Support for OpenAI (GPT-4) and Anthropic (Claude) |
+| **Rate Limiting** | Configurable API usage limits to control costs |
+
+<br />
+
+### 💳 Payment Integration
+
+| Feature | Description |
+|---------|-------------|
+| **Stripe Integration** | Full Stripe payment gateway support |
+| **Webhook Handling** | Automatic order updates via Stripe webhooks |
+| **Multiple Payment Methods** | Cards, Apple Pay, Google Pay (via Stripe) |
+| **Secure Checkout** | PCI-compliant payment processing |
+
+<br />
+
 ---
 
 ## 🛠 Tech Stack
@@ -179,16 +240,18 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 
 | Technology | Purpose |
 |------------|---------|
-| **Node.js 18+** | JavaScript runtime |
-| **NestJS 10+** | Enterprise-grade framework |
+| **Node.js 20+** | JavaScript runtime |
+| **NestJS 11** | Enterprise-grade framework |
 | **TypeScript 5+** | Type-safe development |
-| **Prisma 5+** | Next-generation ORM |
+| **Prisma 6** | Next-generation ORM |
 | **PostgreSQL 15+** | Relational database |
 | **Passport.js** | Authentication middleware |
 | **JWT** | Stateless authentication |
+| **Nodemailer** | Email sending |
 | **Multer** | File upload handling |
 | **Sharp** | Image processing & optimization |
 | **Handlebars** | Server-side templating |
+| **Stripe** | Payment processing |
 
 </td>
 <td valign="top" width="50%">
@@ -199,7 +262,7 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 |------------|---------|
 | **React 18+** | UI library |
 | **TypeScript 5+** | Type-safe development |
-| **Vite 5+** | Build tool & dev server |
+| **Vite 7** | Build tool & dev server |
 | **Tailwind CSS 3+** | Utility-first styling |
 | **Zustand** | State management |
 | **React Router 6+** | Client-side routing |
@@ -267,46 +330,24 @@ cd admin && npm run dev
 
 <br />
 
-### ⚙️ Environment Variables
+### ⚙️ Quick Environment Setup
 
-Create a `.env` file in the root directory with the following variables:
+Create a `.env` file in the root directory. Here's the minimum required:
 
 ```env
-# ═══════════════════════════════════════════════════════════
-# DATABASE CONFIGURATION
-# ═══════════════════════════════════════════════════════════
-DATABASE_URL="postgresql://username:password@localhost:5432/wordpress_node?schema=public"
+# Database (required)
+DATABASE_URL="postgresql://user:password@localhost:5432/wordpress_node?schema=public"
 
-# ═══════════════════════════════════════════════════════════
-# AUTHENTICATION
-# ═══════════════════════════════════════════════════════════
+# Authentication (required)
 JWT_SECRET="your-super-secret-jwt-key-min-32-characters"
-JWT_EXPIRES_IN="7d"
 SESSION_SECRET="your-session-secret-key"
 
-# ═══════════════════════════════════════════════════════════
-# ADMIN ACCOUNT (for seeding)
-# ═══════════════════════════════════════════════════════════
+# Admin Account for seeding (required)
 ADMIN_EMAIL="admin@example.com"
 ADMIN_PASSWORD="admin123"
-
-# ═══════════════════════════════════════════════════════════
-# SERVER CONFIGURATION
-# ═══════════════════════════════════════════════════════════
-PORT=3000
-NODE_ENV="development"
-
-# ═══════════════════════════════════════════════════════════
-# FILE UPLOADS
-# ═══════════════════════════════════════════════════════════
-UPLOAD_DIR="./uploads"
-MAX_FILE_SIZE=10485760  # 10MB in bytes
-
-# ═══════════════════════════════════════════════════════════
-# FRONTEND URL (for CORS)
-# ═══════════════════════════════════════════════════════════
-FRONTEND_URL="http://localhost:5173"
 ```
+
+> 💡 **See the [Complete Configuration Guide](#️-complete-configuration-guide) below for all available options including SMTP, Stripe, AI, and more.**
 
 <br />
 
@@ -405,6 +446,329 @@ wordpress-node/
 ├── 📄 .env.example                   # Environment template
 ├── 📄 package.json                   # Dependencies
 └── 📄 README.md                      # This file
+```
+
+<br />
+
+---
+
+## ⚙️ Complete Configuration Guide
+
+This section covers ALL environment variables available in the system. Copy `.env.example` to `.env` and configure as needed.
+
+<br />
+
+### 🗄️ Database Configuration
+
+```env
+# PostgreSQL connection string (required)
+DATABASE_URL="postgresql://username:password@localhost:5432/wordpress_node?schema=public"
+```
+
+| Variable | Required | Description |
+|----------|:--------:|-------------|
+| `DATABASE_URL` | ✅ | Full PostgreSQL connection string with schema |
+
+<details>
+<summary><strong>📖 Database Setup Examples</strong></summary>
+
+<br />
+
+**Local PostgreSQL:**
+```env
+DATABASE_URL="postgresql://postgres:mypassword@localhost:5432/wordpress_node?schema=public"
+```
+
+**Docker PostgreSQL:**
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/wordpress_node?schema=public"
+```
+
+**Supabase:**
+```env
+DATABASE_URL="postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?schema=public"
+```
+
+**Railway:**
+```env
+DATABASE_URL="postgresql://postgres:[password]@[host].railway.app:5432/railway?schema=public"
+```
+
+</details>
+
+<br />
+
+### 🔐 Authentication & Security
+
+```env
+# JWT Configuration (required)
+JWT_SECRET="your-super-secret-jwt-key-min-32-characters-long"
+JWT_EXPIRES_IN=7d
+
+# Session Configuration (required)
+SESSION_SECRET="your-super-secret-session-key-change-in-production"
+
+# Admin Account for Database Seeding (required for first run)
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="admin123"
+```
+
+| Variable | Required | Default | Description |
+|----------|:--------:|---------|-------------|
+| `JWT_SECRET` | ✅ | - | Secret key for signing JWTs (min 32 chars) |
+| `JWT_EXPIRES_IN` | ❌ | `7d` | Token expiration (e.g., `1h`, `7d`, `30d`) |
+| `SESSION_SECRET` | ✅ | - | Secret for session encryption |
+| `ADMIN_EMAIL` | ✅ | - | Default admin email (used in seed) |
+| `ADMIN_PASSWORD` | ✅ | - | Default admin password (used in seed) |
+
+> ⚠️ **Security Warning:** Always use strong, unique secrets in production. Never commit real secrets to version control!
+
+<br />
+
+### 🌐 Server Configuration
+
+```env
+# Application Settings
+NODE_ENV=development
+PORT=3000
+APP_URL=http://localhost:3000
+
+# File Upload Settings
+MAX_FILE_SIZE=10485760
+UPLOAD_DIR=./uploads
+
+# Site Configuration
+SITE_NAME="WordPress Node"
+SITE_DESCRIPTION="A modern CMS built with Node.js"
+ACTIVE_THEME=default
+```
+
+| Variable | Required | Default | Description |
+|----------|:--------:|---------|-------------|
+| `NODE_ENV` | ❌ | `development` | Environment: `development`, `production`, `test` |
+| `PORT` | ❌ | `3000` | Server port |
+| `APP_URL` | ❌ | `http://localhost:3000` | Public URL of your application |
+| `MAX_FILE_SIZE` | ❌ | `10485760` | Max upload size in bytes (10MB) |
+| `UPLOAD_DIR` | ❌ | `./uploads` | Directory for uploaded files |
+| `SITE_NAME` | ❌ | `WordPress Node` | Site name displayed in UI |
+| `SITE_DESCRIPTION` | ❌ | - | Site description for SEO |
+| `ACTIVE_THEME` | ❌ | `default` | Currently active theme slug |
+
+<br />
+
+### 📧 Email / SMTP Configuration
+
+Configure email sending for password resets, notifications, and marketing emails.
+
+```env
+# SMTP Server Settings
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@gmail.com
+SMTP_FROM_NAME="WordPress Node CMS"
+```
+
+| Variable | Required | Default | Description |
+|----------|:--------:|---------|-------------|
+| `SMTP_HOST` | ❌ | - | SMTP server hostname |
+| `SMTP_PORT` | ❌ | `587` | SMTP port (587 for TLS, 465 for SSL) |
+| `SMTP_SECURE` | ❌ | `false` | Use SSL (`true` for port 465) |
+| `SMTP_USER` | ❌ | - | SMTP username/email |
+| `SMTP_PASS` | ❌ | - | SMTP password or app password |
+| `SMTP_FROM` | ❌ | - | Default sender email address |
+| `SMTP_FROM_NAME` | ❌ | - | Default sender display name |
+
+<details>
+<summary><strong>📖 SMTP Provider Examples</strong></summary>
+
+<br />
+
+**Gmail (with App Password):**
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=xxxx-xxxx-xxxx-xxxx  # App Password from Google Account
+SMTP_FROM=your-email@gmail.com
+SMTP_FROM_NAME="My Website"
+```
+> 📝 To use Gmail, enable 2FA and create an [App Password](https://myaccount.google.com/apppasswords)
+
+**SendGrid:**
+```env
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=apikey
+SMTP_PASS=SG.xxxxxxxxxxxxxxxxxxxxxx  # Your SendGrid API Key
+SMTP_FROM=noreply@yourdomain.com
+SMTP_FROM_NAME="My Website"
+```
+
+**Mailgun:**
+```env
+SMTP_HOST=smtp.mailgun.org
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=postmaster@mg.yourdomain.com
+SMTP_PASS=your-mailgun-password
+SMTP_FROM=noreply@yourdomain.com
+SMTP_FROM_NAME="My Website"
+```
+
+**AWS SES:**
+```env
+SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-ses-smtp-user
+SMTP_PASS=your-ses-smtp-password
+SMTP_FROM=noreply@yourdomain.com
+SMTP_FROM_NAME="My Website"
+```
+
+**Mailtrap (Testing):**
+```env
+SMTP_HOST=sandbox.smtp.mailtrap.io
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-mailtrap-user
+SMTP_PASS=your-mailtrap-password
+SMTP_FROM=test@example.com
+SMTP_FROM_NAME="Test App"
+```
+
+</details>
+
+<br />
+
+### 💳 Stripe Payment Configuration
+
+Configure Stripe for e-commerce payments.
+
+```env
+# Stripe API Keys
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+```
+
+| Variable | Required | Description |
+|----------|:--------:|-------------|
+| `STRIPE_PUBLISHABLE_KEY` | ❌ | Stripe publishable key (starts with `pk_`) |
+| `STRIPE_SECRET_KEY` | ❌ | Stripe secret key (starts with `sk_`) |
+| `STRIPE_WEBHOOK_SECRET` | ❌ | Webhook signing secret (starts with `whsec_`) |
+
+> 📝 Get your API keys from the [Stripe Dashboard](https://dashboard.stripe.com/apikeys)
+
+> ⚠️ Use `pk_test_` and `sk_test_` keys for development. Switch to `pk_live_` and `sk_live_` for production.
+
+<br />
+
+### 🤖 AI Theme Designer Configuration
+
+Configure AI-powered theme generation.
+
+```env
+# AI Provider: 'openai' or 'anthropic'
+AI_PROVIDER=openai
+
+# OpenAI Configuration
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxx
+
+# Anthropic Configuration (alternative)
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx
+
+# Rate Limiting
+AI_RATE_LIMIT=10
+AI_RATE_LIMIT_WINDOW=3600
+```
+
+| Variable | Required | Default | Description |
+|----------|:--------:|---------|-------------|
+| `AI_PROVIDER` | ❌ | `openai` | AI provider: `openai` or `anthropic` |
+| `OPENAI_API_KEY` | ❌ | - | OpenAI API key (for GPT-4) |
+| `ANTHROPIC_API_KEY` | ❌ | - | Anthropic API key (for Claude) |
+| `AI_RATE_LIMIT` | ❌ | `10` | Max AI requests per window |
+| `AI_RATE_LIMIT_WINDOW` | ❌ | `3600` | Rate limit window in seconds (1 hour) |
+
+> 📝 Get your OpenAI API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+
+> 📝 Get your Anthropic API key from [Anthropic Console](https://console.anthropic.com/)
+
+<br />
+
+### 📋 Complete `.env.example`
+
+```env
+# ═══════════════════════════════════════════════════════════════════════════
+# 🗄️ DATABASE
+# ═══════════════════════════════════════════════════════════════════════════
+DATABASE_URL="postgresql://user:password@localhost:5432/wordpress_node?schema=public"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 🌐 APPLICATION
+# ═══════════════════════════════════════════════════════════════════════════
+NODE_ENV=development
+PORT=3000
+APP_URL=http://localhost:3000
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 🔐 AUTHENTICATION
+# ═══════════════════════════════════════════════════════════════════════════
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=7d
+SESSION_SECRET=your-super-secret-session-key-change-this-in-production
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 👤 ADMIN ACCOUNT (for seeding)
+# ═══════════════════════════════════════════════════════════════════════════
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 📁 FILE UPLOAD
+# ═══════════════════════════════════════════════════════════════════════════
+MAX_FILE_SIZE=10485760
+UPLOAD_DIR=./uploads
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 🌍 SITE CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════
+SITE_NAME=WordPress Node
+SITE_DESCRIPTION=A modern CMS built with Node.js
+ACTIVE_THEME=default
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 📧 EMAIL / SMTP
+# ═══════════════════════════════════════════════════════════════════════════
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@gmail.com
+SMTP_FROM_NAME=WordPress Node CMS
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 💳 STRIPE PAYMENTS
+# ═══════════════════════════════════════════════════════════════════════════
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 🤖 AI THEME DESIGNER
+# ═══════════════════════════════════════════════════════════════════════════
+AI_PROVIDER=openai
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx
+AI_RATE_LIMIT=10
+AI_RATE_LIMIT_WINDOW=3600
 ```
 
 <br />
