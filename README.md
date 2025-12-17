@@ -432,7 +432,7 @@ npm run dev
 
 **Then open:** `http://your-server-ip:3000/admin`
 
-**Login:** `admin@example.com` / `Admin123!`
+**Login:** `admin@example.com` / `SecureAdmin@2024!`
 
 <br />
 

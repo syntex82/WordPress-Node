@@ -114,7 +114,7 @@ JWT_SECRET=${JWT_SECRET}
 JWT_EXPIRES_IN=7d
 SESSION_SECRET=${SESSION_SECRET}
 ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=Admin123!
+ADMIN_PASSWORD=SecureAdmin@2024!
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
@@ -161,7 +161,7 @@ echo -e "  cd ${APP_DIR}"
 echo -e "  ${BLUE}npm run dev${NC}"
 echo ""
 echo -e "${YELLOW}Admin Panel:${NC} http://localhost:3000/admin"
-echo -e "${YELLOW}Login:${NC} admin@example.com / Admin123!"
+echo -e "${YELLOW}Login:${NC} admin@example.com / SecureAdmin@2024!"
 echo ""
 echo -e "${YELLOW}Installed:${NC}"
 echo -e "  • Node.js $(node -v)"
