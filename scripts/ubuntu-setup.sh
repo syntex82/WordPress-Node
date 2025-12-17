@@ -125,20 +125,27 @@ echo -e "${GREEN}✓ .env created${NC}"
 echo -e "${BLUE}[7/7] Installing npm dependencies...${NC}"
 
 cd ${APP_DIR}
+chown -R ${ACTUAL_USER}:${ACTUAL_USER} ${APP_DIR}
 
-# Backend
-su - ${ACTUAL_USER} -c "cd ${APP_DIR} && npm install"
-su - ${ACTUAL_USER} -c "cd ${APP_DIR} && npx prisma generate"
+# Backend npm install
+echo -e "${BLUE}Installing backend dependencies...${NC}"
+sudo -u ${ACTUAL_USER} bash -c "cd ${APP_DIR} && npm install"
 
-# Admin
-su - ${ACTUAL_USER} -c "cd ${APP_DIR}/admin && npm install"
+# Generate Prisma client
+echo -e "${BLUE}Generating Prisma client...${NC}"
+sudo -u ${ACTUAL_USER} bash -c "cd ${APP_DIR} && npx prisma generate"
 
-# Database
-echo -e "${BLUE}Running migrations...${NC}"
-su - ${ACTUAL_USER} -c "cd ${APP_DIR} && npx prisma migrate deploy"
+# Admin npm install
+echo -e "${BLUE}Installing admin dependencies...${NC}"
+sudo -u ${ACTUAL_USER} bash -c "cd ${APP_DIR}/admin && npm install"
 
+# Run migrations
+echo -e "${BLUE}Running database migrations...${NC}"
+sudo -u ${ACTUAL_USER} bash -c "cd ${APP_DIR} && npx prisma migrate deploy"
+
+# Seed database - pass env vars explicitly
 echo -e "${BLUE}Seeding database...${NC}"
-su - ${ACTUAL_USER} -c "cd ${APP_DIR} && npx prisma db seed"
+sudo -u ${ACTUAL_USER} bash -c "cd ${APP_DIR} && ADMIN_EMAIL='${ADMIN_EMAIL}' ADMIN_PASSWORD='${ADMIN_PASSWORD}' npx prisma db seed"
 
 # Uploads folder
 mkdir -p ${APP_DIR}/uploads
