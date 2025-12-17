@@ -39,7 +39,43 @@ APP_DIR="${USER_HOME}/wordpress-node"
 echo -e "${GREEN}Installing to: ${APP_DIR}${NC}"
 echo ""
 
-# Generate passwords
+# Prompt for admin credentials
+echo -e "${YELLOW}═══════════════════════════════════════════════════════════════${NC}"
+echo -e "${YELLOW}                    Admin Account Setup                         ${NC}"
+echo -e "${YELLOW}═══════════════════════════════════════════════════════════════${NC}"
+echo ""
+read -p "Admin Email [admin@example.com]: " ADMIN_EMAIL
+ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
+
+echo -e "${YELLOW}Password must be 12+ chars with uppercase, lowercase, number & special char${NC}"
+while true; do
+    read -s -p "Admin Password: " ADMIN_PASSWORD
+    echo ""
+    if [ ${#ADMIN_PASSWORD} -lt 12 ]; then
+        echo -e "${RED}Password must be at least 12 characters${NC}"
+        continue
+    fi
+    if ! echo "$ADMIN_PASSWORD" | grep -q '[A-Z]'; then
+        echo -e "${RED}Password must contain an uppercase letter${NC}"
+        continue
+    fi
+    if ! echo "$ADMIN_PASSWORD" | grep -q '[a-z]'; then
+        echo -e "${RED}Password must contain a lowercase letter${NC}"
+        continue
+    fi
+    if ! echo "$ADMIN_PASSWORD" | grep -q '[0-9]'; then
+        echo -e "${RED}Password must contain a number${NC}"
+        continue
+    fi
+    if ! echo "$ADMIN_PASSWORD" | grep -q '[!@#$%^&*()_+\-=\[\]{};:\",.<>?/\\|`~]'; then
+        echo -e "${RED}Password must contain a special character${NC}"
+        continue
+    fi
+    break
+done
+echo ""
+
+# Generate secure secrets (these are auto-generated, never stored in repo)
 DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 24)
 JWT_SECRET=$(openssl rand -base64 48 | tr -dc 'a-zA-Z0-9' | head -c 64)
 SESSION_SECRET=$(openssl rand -base64 48 | tr -dc 'a-zA-Z0-9' | head -c 64)
@@ -113,8 +149,8 @@ APP_URL=http://localhost:3000
 JWT_SECRET=${JWT_SECRET}
 JWT_EXPIRES_IN=7d
 SESSION_SECRET=${SESSION_SECRET}
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=SecureAdmin@2024!
+ADMIN_EMAIL=${ADMIN_EMAIL}
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
@@ -161,7 +197,7 @@ echo -e "  cd ${APP_DIR}"
 echo -e "  ${BLUE}npm run dev${NC}"
 echo ""
 echo -e "${YELLOW}Admin Panel:${NC} http://localhost:3000/admin"
-echo -e "${YELLOW}Login:${NC} admin@example.com / SecureAdmin@2024!"
+echo -e "${YELLOW}Login:${NC} ${ADMIN_EMAIL}"
 echo ""
 echo -e "${YELLOW}Installed:${NC}"
 echo -e "  • Node.js $(node -v)"

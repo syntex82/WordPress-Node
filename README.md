@@ -432,7 +432,7 @@ npm run dev
 
 **Then open:** `http://your-server-ip:3000/admin`
 
-**Login:** `admin@example.com` / `SecureAdmin@2024!`
+**Login:** Use the email and password you entered during setup
 
 <br />
 
