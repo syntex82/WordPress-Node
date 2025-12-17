@@ -72,16 +72,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: admin/package-lock.json
-
-      - name: 🧹 Clean cache
-        working-directory: admin
-        run: rm -rf node_modules/.cache 2>/dev/null || true
 
       - name: 📦 Install dependencies
         working-directory: admin
-        run: npm install
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: 🏗️ Build Frontend (Vite)
         working-directory: admin
