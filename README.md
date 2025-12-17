@@ -385,6 +385,7 @@ Before you begin, ensure you have the following installed:
 ---
 
 ### 🐧 Ubuntu Server - One-Command Install
+sudo bash ubuntu-setup.sh
 
 <div align="center">
 
