@@ -15,8 +15,8 @@ NC='\033[0m'
 DB_NAME="wordpress_node"
 DB_USER="wpnode"
 DB_PASSWORD="wpnode123"
-ADMIN_EMAIL="admin@example.com"
-ADMIN_PASSWORD="SecureAdmin@2024!"
+ADMIN_EMAIL="admin@starter.dev"
+ADMIN_PASSWORD="Admin123!"
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo -e "${BLUE}       WordPress Node CMS - Ubuntu Server Setup                ${NC}"
@@ -100,8 +100,8 @@ APP_URL=http://localhost:3000
 JWT_SECRET=supersecretjwtkey123456789012345678901234567890
 JWT_EXPIRES_IN=7d
 SESSION_SECRET=supersessionsecret12345678901234567890123456789
-ADMIN_EMAIL="admin@example.com"
-ADMIN_PASSWORD="SecureAdmin@2024!"
+ADMIN_EMAIL="admin@starter.dev"
+ADMIN_PASSWORD="Admin123!"
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=

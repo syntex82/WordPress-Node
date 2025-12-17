@@ -514,8 +514,8 @@ Once running, access the application at:
 After seeding the database, use these default credentials:
 
 ```
-📧 Email:    admin@example.com
-🔑 Password: SecureAdmin@2024!
+📧 Email:    admin@starter.dev
+🔑 Password: Admin123!
 ```
 
 > 💡 **Tip:** You can customize these in your `.env` file using `ADMIN_EMAIL` and `ADMIN_PASSWORD` before running the seed command.
@@ -1282,7 +1282,7 @@ Having issues? Check these common problems and solutions:
 - ✅ At least one number (0-9)
 - ✅ At least one special character (!@#$%^&*...)
 
-**Example valid password:** `SecureAdmin@2024!`
+**Example valid password:** `Admin123!`
 
 <br />
 
