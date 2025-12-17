@@ -142,7 +142,7 @@ echo -e "${GREEN}✓ Dependencies installed${NC}"
 # Run migrations
 echo -e "${BLUE}Running database migrations...${NC}"
 su - ${ACTUAL_USER} -c "cd '${APP_DIR}' && npx prisma migrate deploy"
-su - ${ACTUAL_USER} -c "cd '${APP_DIR}' && npm run db:seed"
+su - ${ACTUAL_USER} -c "cd '${APP_DIR}' && npx prisma db seed"
 echo -e "${GREEN}✓ Database ready${NC}"
 
 # Create uploads directory
