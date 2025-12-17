@@ -45,7 +45,7 @@ export default function CourseEditor() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
-  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialLoadRef = useRef(true);
 
   // Warn before closing browser/tab with unsaved changes
