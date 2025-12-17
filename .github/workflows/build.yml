@@ -81,7 +81,7 @@ jobs:
 
       - name: 📦 Install dependencies
         working-directory: admin
-        run: npm ci
+        run: npm install
 
       - name: 🏗️ Build Frontend (Vite)
         working-directory: admin
