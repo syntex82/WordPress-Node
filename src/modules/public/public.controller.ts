@@ -3,7 +3,7 @@
  * Handles public-facing routes and renders theme templates
  */
 
-import { Controller, Get, Post, Body, Param, Query, Req, Res, UseGuards, All } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { join } from 'path';
 import { PostsService } from '../content/services/posts.service';
@@ -34,12 +34,23 @@ export class PublicController {
   ) {}
 
   /**
+   * Admin SPA fallback - serves index.html for /admin route
+   * This enables the React app to handle its own routing
+   * Must be before the catch-all page route
+   */
+  @Get('admin')
+  async adminSpaRoot(@Res() res: Response) {
+    const adminIndexPath = join(process.cwd(), 'admin', 'dist', 'index.html');
+    res.sendFile(adminIndexPath);
+  }
+
+  /**
    * Admin SPA fallback - serves index.html for all /admin/* routes
    * This enables the React app to handle its own routing
    * Must be before the catch-all page route
    */
-  @All('admin*')
-  async adminSpa(@Res() res: Response) {
+  @Get('admin/*')
+  async adminSpaFallback(@Res() res: Response) {
     const adminIndexPath = join(process.cwd(), 'admin', 'dist', 'index.html');
     res.sendFile(adminIndexPath);
   }
