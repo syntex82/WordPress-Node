@@ -8,8 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { pagesApi } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { PageCustomizationPanel } from '../components/PageCustomizer';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEye, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
+import { FiPlus, FiEye, FiEdit2, FiTrash2, FiSearch, FiSliders } from 'react-icons/fi';
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -20,6 +21,11 @@ export default function Pages() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; pageId: string | null }>({
     isOpen: false,
     pageId: null,
+  });
+  const [customizePanel, setCustomizePanel] = useState<{ isOpen: boolean; pageId: string | null; pageName: string | null }>({
+    isOpen: false,
+    pageId: null,
+    pageName: null,
   });
 
   useEffect(() => {
@@ -141,6 +147,13 @@ export default function Pages() {
                       <FiEdit2 size={18} />
                     </button>
                     <button
+                      onClick={() => setCustomizePanel({ isOpen: true, pageId: page.id, pageName: page.title })}
+                      className="text-purple-600 hover:text-purple-900 mr-3"
+                      title="Customize"
+                    >
+                      <FiSliders size={18} />
+                    </button>
+                    <button
                       onClick={() => setDeleteConfirm({ isOpen: true, pageId: page.id })}
                       className="text-red-600 hover:text-red-900"
                       title="Delete"
@@ -166,6 +179,15 @@ export default function Pages() {
         onConfirm={() => deleteConfirm.pageId && handleDelete(deleteConfirm.pageId)}
         onCancel={() => setDeleteConfirm({ isOpen: false, pageId: null })}
       />
+
+      {/* Page Customization Panel */}
+      {customizePanel.isOpen && customizePanel.pageId && customizePanel.pageName && (
+        <PageCustomizationPanel
+          pageId={customizePanel.pageId}
+          pageName={customizePanel.pageName}
+          onClose={() => setCustomizePanel({ isOpen: false, pageId: null, pageName: null })}
+        />
+      )}
     </div>
   );
 }

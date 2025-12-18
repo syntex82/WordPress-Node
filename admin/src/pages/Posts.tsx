@@ -8,8 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { postsApi } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { PostCustomizationPanel } from '../components/PageCustomizer';
 import toast from 'react-hot-toast';
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiEye, FiSliders } from 'react-icons/fi';
 
 export default function Posts() {
   const navigate = useNavigate();
@@ -21,6 +22,11 @@ export default function Posts() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; postId: string | null }>({
     isOpen: false,
     postId: null,
+  });
+  const [customizePanel, setCustomizePanel] = useState<{ isOpen: boolean; postId: string | null; postTitle: string | null }>({
+    isOpen: false,
+    postId: null,
+    postTitle: null,
   });
 
   useEffect(() => {
@@ -205,6 +211,13 @@ export default function Posts() {
                       <FiEdit2 size={18} />
                     </button>
                     <button
+                      onClick={() => setCustomizePanel({ isOpen: true, postId: post.id, postTitle: post.title })}
+                      className="text-purple-600 hover:text-purple-900 mr-3"
+                      title="Customize"
+                    >
+                      <FiSliders size={18} />
+                    </button>
+                    <button
                       onClick={() => setDeleteConfirm({ isOpen: true, postId: post.id })}
                       className="text-red-600 hover:text-red-900"
                       title="Delete"
@@ -230,6 +243,15 @@ export default function Posts() {
         onConfirm={() => deleteConfirm.postId && handleDelete(deleteConfirm.postId)}
         onCancel={() => setDeleteConfirm({ isOpen: false, postId: null })}
       />
+
+      {/* Post Customization Panel */}
+      {customizePanel.isOpen && customizePanel.postId && customizePanel.postTitle && (
+        <PostCustomizationPanel
+          postId={customizePanel.postId}
+          postTitle={customizePanel.postTitle}
+          onClose={() => setCustomizePanel({ isOpen: false, postId: null, postTitle: null })}
+        />
+      )}
     </div>
   );
 }
