@@ -1058,3 +1058,23 @@ export const emailApi = {
   getRecentActivity: (limit?: number) => api.get('/email/logs/recent', { params: { limit } }),
   cleanupLogs: (daysOld?: number) => api.delete('/email/logs/cleanup', { params: { daysOld } }),
 };
+
+// Page Customization API
+export const pageCustomizationApi = {
+  getAll: () => api.get('/page-customizations'),
+  getById: (id: string) => api.get(`/page-customizations/${id}`),
+  getByPageId: (pageId: string) => api.get(`/page-customizations/page/${pageId}`),
+  create: (data: any) => api.post('/page-customizations', data),
+  update: (id: string, data: any) => api.put(`/page-customizations/${id}`, data),
+  delete: (id: string) => api.delete(`/page-customizations/${id}`),
+};
+
+// Post Customization API
+export const postCustomizationApi = {
+  getAll: () => api.get('/post-customizations'),
+  getById: (id: string) => api.get(`/post-customizations/${id}`),
+  getByPostId: (postId: string) => api.get(`/post-customizations/post/${postId}`),
+  create: (data: any) => api.post('/post-customizations', data),
+  update: (id: string, data: any) => api.put(`/post-customizations/${id}`, data),
+  delete: (id: string) => api.delete(`/post-customizations/${id}`),
+};

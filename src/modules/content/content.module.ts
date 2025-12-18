@@ -11,11 +11,33 @@ import { ContentTypesService } from './services/content-types.service';
 import { PostsController } from './controllers/posts.controller';
 import { PagesController } from './controllers/pages.controller';
 import { ContentTypesController } from './controllers/content-types.controller';
+import { PageCustomizationService } from '../pages/page-customization.service';
+import { PostCustomizationService } from '../posts/post-customization.service';
+import { PageCustomizationController } from './controllers/page-customization.controller';
+import { PostCustomizationController } from './controllers/post-customization.controller';
 
 @Module({
   imports: [PrismaModule],
-  providers: [PostsService, PagesService, ContentTypesService],
-  controllers: [PostsController, PagesController, ContentTypesController],
-  exports: [PostsService, PagesService, ContentTypesService],
+  providers: [
+    PostsService,
+    PagesService,
+    ContentTypesService,
+    PageCustomizationService,
+    PostCustomizationService,
+  ],
+  controllers: [
+    PostsController,
+    PagesController,
+    ContentTypesController,
+    PageCustomizationController,
+    PostCustomizationController,
+  ],
+  exports: [
+    PostsService,
+    PagesService,
+    ContentTypesService,
+    PageCustomizationService,
+    PostCustomizationService,
+  ],
 })
 export class ContentModule {}

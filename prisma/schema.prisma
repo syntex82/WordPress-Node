@@ -189,6 +189,9 @@ model Post {
   // Menu items linking to this post
   menuItems     MenuItem[]
 
+  // Post customization
+  customization PostCustomization?
+
   @@index([slug])
   @@index([status])
   @@index([authorId])
@@ -230,6 +233,9 @@ model Page {
 
   // Menu items linking to this page
   menuItems     MenuItem[]
+
+  // Page customization
+  customization PageCustomization?
 
   @@index([slug])
   @@index([status])
@@ -293,6 +299,78 @@ model CustomTheme {
 
   @@index([isActive])
   @@index([createdById])
+}
+
+// PageCustomization model - per-page theme customization
+model PageCustomization {
+  id              String   @id @default(uuid())
+  pageId          String   @unique
+  page            Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  // Layout settings
+  layout          String?  // 'default', 'full-width', 'sidebar-left', 'sidebar-right'
+  showHeader      Boolean  @default(true)
+  showFooter      Boolean  @default(true)
+  showSidebar     Boolean  @default(false)
+
+  // Styling
+  customCSS       String?  @db.Text
+  backgroundColor String?
+  textColor       String?
+
+  // Header/Footer customization
+  headerStyle     String?  // 'default', 'minimal', 'transparent'
+  footerStyle     String?  // 'default', 'minimal', 'full'
+
+  // Featured image
+  featuredImagePosition String? // 'top', 'background', 'hidden'
+
+  // Metadata
+  customFields    Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([pageId])
+}
+
+// PostCustomization model - per-post theme customization
+model PostCustomization {
+  id              String   @id @default(uuid())
+  postId          String   @unique
+  post            Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Layout settings
+  layout          String?  // 'default', 'full-width', 'sidebar-left', 'sidebar-right'
+  showHeader      Boolean  @default(true)
+  showFooter      Boolean  @default(true)
+  showSidebar     Boolean  @default(false)
+
+  // Author display
+  showAuthor      Boolean  @default(true)
+  showDate        Boolean  @default(true)
+  showCategory    Boolean  @default(true)
+  showTags        Boolean  @default(true)
+
+  // Related posts
+  showRelatedPosts Boolean @default(true)
+  relatedPostsCount Int    @default(3)
+
+  // Styling
+  customCSS       String?  @db.Text
+  backgroundColor String?
+  textColor       String?
+
+  // Featured image
+  featuredImagePosition String? // 'top', 'background', 'hidden'
+
+  // Metadata
+  customFields    Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([postId])
 }
 
 // Plugin model - manages installed plugins
