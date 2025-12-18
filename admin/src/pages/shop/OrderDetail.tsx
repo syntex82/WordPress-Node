@@ -68,17 +68,21 @@ export default function OrderDetail() {
     }
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (!order) return <div className="p-6">Order not found</div>;
+  if (loading) return (
+    <div className="p-6 flex items-center justify-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-700 border-t-blue-500"></div>
+    </div>
+  );
+  if (!order) return <div className="p-6 text-slate-400">Order not found</div>;
 
   return (
     <div className="p-6 max-w-4xl">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Order {order.orderNumber}</h1>
-          <p className="text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Order {order.orderNumber}</h1>
+          <p className="text-slate-400">{new Date(order.createdAt).toLocaleString()}</p>
         </div>
-        <button onClick={() => navigate('/shop/orders')} className="text-blue-600 hover:underline">
+        <button onClick={() => navigate('/shop/orders')} className="text-blue-400 hover:text-blue-300 transition-colors">
           ← Back to Orders
         </button>
       </div>
@@ -87,53 +91,53 @@ export default function OrderDetail() {
         {/* Order Info */}
         <div className="col-span-2 space-y-6">
           {/* Items */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Order Items</h2>
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Order Items</h2>
             <table className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Product</th>
-                  <th className="text-right py-2">Price</th>
-                  <th className="text-right py-2">Qty</th>
-                  <th className="text-right py-2">Total</th>
+                <tr className="border-b border-slate-700/50">
+                  <th className="text-left py-2 text-slate-400">Product</th>
+                  <th className="text-right py-2 text-slate-400">Price</th>
+                  <th className="text-right py-2 text-slate-400">Qty</th>
+                  <th className="text-right py-2 text-slate-400">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {order.items.map((item) => (
-                  <tr key={item.id} className="border-b">
+                  <tr key={item.id} className="border-b border-slate-700/50">
                     <td className="py-2">
-                      <div>{item.name}</div>
-                      {item.sku && <div className="text-sm text-gray-500">SKU: {item.sku}</div>}
+                      <div className="text-white">{item.name}</div>
+                      {item.sku && <div className="text-sm text-slate-500">SKU: {item.sku}</div>}
                     </td>
-                    <td className="text-right py-2">${Number(item.price).toFixed(2)}</td>
-                    <td className="text-right py-2">{item.quantity}</td>
-                    <td className="text-right py-2">${Number(item.total).toFixed(2)}</td>
+                    <td className="text-right py-2 text-slate-300">${Number(item.price).toFixed(2)}</td>
+                    <td className="text-right py-2 text-slate-300">{item.quantity}</td>
+                    <td className="text-right py-2 text-white">${Number(item.total).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot>
+              <tfoot className="text-slate-300">
                 <tr><td colSpan={3} className="text-right py-2">Subtotal</td><td className="text-right py-2">${Number(order.subtotal).toFixed(2)}</td></tr>
                 <tr><td colSpan={3} className="text-right py-2">Tax</td><td className="text-right py-2">${Number(order.tax).toFixed(2)}</td></tr>
                 <tr><td colSpan={3} className="text-right py-2">Shipping</td><td className="text-right py-2">${Number(order.shipping).toFixed(2)}</td></tr>
-                {Number(order.discount) > 0 && <tr><td colSpan={3} className="text-right py-2">Discount</td><td className="text-right py-2 text-green-600">-${Number(order.discount).toFixed(2)}</td></tr>}
-                <tr className="font-bold"><td colSpan={3} className="text-right py-2">Total</td><td className="text-right py-2">${Number(order.total).toFixed(2)}</td></tr>
+                {Number(order.discount) > 0 && <tr><td colSpan={3} className="text-right py-2">Discount</td><td className="text-right py-2 text-green-400">-${Number(order.discount).toFixed(2)}</td></tr>}
+                <tr className="font-bold text-white"><td colSpan={3} className="text-right py-2">Total</td><td className="text-right py-2">${Number(order.total).toFixed(2)}</td></tr>
               </tfoot>
             </table>
           </div>
 
           {/* Payments */}
           {order.payments && order.payments.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-4">Payments</h2>
+            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Payments</h2>
               {order.payments.map((payment) => (
-                <div key={payment.id} className="flex justify-between py-2 border-b">
+                <div key={payment.id} className="flex justify-between py-2 border-b border-slate-700/50">
                   <div>
-                    <div>{payment.method}</div>
-                    <div className="text-sm text-gray-500">{payment.stripePaymentIntentId}</div>
+                    <div className="text-white">{payment.method}</div>
+                    <div className="text-sm text-slate-500">{payment.stripePaymentIntentId}</div>
                   </div>
                   <div className="text-right">
-                    <div>${Number(payment.amount).toFixed(2)}</div>
-                    <div className="text-sm">{payment.status}</div>
+                    <div className="text-white">${Number(payment.amount).toFixed(2)}</div>
+                    <div className="text-sm text-slate-400">{payment.status}</div>
                   </div>
                 </div>
               ))}
@@ -144,13 +148,13 @@ export default function OrderDetail() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Status */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Status</h2>
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Status</h2>
             <select
               value={order.status}
               onChange={(e) => handleStatusUpdate(e.target.value)}
               disabled={updating}
-              className="w-full border rounded px-3 py-2 mb-4"
+              className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             >
               <option value="PENDING">Pending</option>
               <option value="CONFIRMED">Confirmed</option>
@@ -161,18 +165,18 @@ export default function OrderDetail() {
             </select>
             <div className="flex gap-2">
               {order.paymentStatus === 'PAID' && order.status !== 'REFUNDED' && (
-                <button onClick={handleRefund} disabled={updating} className="flex-1 bg-orange-600 text-white px-3 py-2 rounded text-sm hover:bg-orange-700 disabled:opacity-50">Refund</button>
+                <button onClick={handleRefund} disabled={updating} className="flex-1 bg-orange-600 text-white px-3 py-2 rounded-xl text-sm hover:bg-orange-700 disabled:opacity-50 transition-colors">Refund</button>
               )}
               {order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && (
-                <button onClick={handleCancel} disabled={updating} className="flex-1 bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 disabled:opacity-50">Cancel</button>
+                <button onClick={handleCancel} disabled={updating} className="flex-1 bg-red-600 text-white px-3 py-2 rounded-xl text-sm hover:bg-red-700 disabled:opacity-50 transition-colors">Cancel</button>
               )}
             </div>
           </div>
 
           {/* Customer */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Customer</h2>
-            <p>{order.email}</p>
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Customer</h2>
+            <p className="text-slate-300">{order.email}</p>
           </div>
         </div>
       </div>

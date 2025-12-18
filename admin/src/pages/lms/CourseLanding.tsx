@@ -95,11 +95,15 @@ export default function CourseLanding() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!course) return <div className="min-h-screen flex items-center justify-center">Course not found</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500"></div>
+    </div>
+  );
+  if (!course) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">Course not found</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       {/* Hero */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-4">
@@ -118,33 +122,33 @@ export default function CourseLanding() {
                 <span>👥 {course._count?.enrollments || 0} students</span>
               </div>
             </div>
-            <div className="bg-white rounded-lg p-6 text-gray-900 shadow-xl">
+            <div className="bg-slate-800 rounded-2xl p-6 text-white shadow-2xl border border-slate-700/50">
               {course.featuredImage && (
-                <img src={course.featuredImage} alt="" className="w-full h-40 object-cover rounded-lg mb-4" />
+                <img src={course.featuredImage} alt="" className="w-full h-40 object-cover rounded-xl mb-4" />
               )}
               <div className="text-3xl font-bold mb-4">
                 {course.priceType === 'FREE' ? 'Free' : `$${course.priceAmount?.toFixed(2)}`}
               </div>
               {isEnrolled ? (
                 <button onClick={() => navigate(`/lms/learn/${course.id}`)}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center gap-2">
+                  className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-600 flex items-center justify-center gap-2 transition-colors shadow-lg shadow-green-500/20">
                   <FiPlay /> Continue Learning
                 </button>
               ) : course.priceType === 'FREE' ? (
                 <button onClick={handleEnroll} disabled={enrolling}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-500/20">
                   {enrolling ? 'Enrolling...' : <><FiCheck /> Enroll for Free</>}
                 </button>
               ) : (
                 <button onClick={handleEnroll} disabled={enrolling}
-                  className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  className="w-full bg-gradient-to-r from-purple-600 to-purple-500 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-purple-600 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors shadow-lg shadow-purple-500/20">
                   {enrolling ? 'Adding to Cart...' : <><FiShoppingCart /> Add to Cart</>}
                 </button>
               )}
 
-              <div className="mt-4 space-y-2 text-sm text-gray-600">
+              <div className="mt-4 space-y-2 text-sm text-slate-300">
                 {course.certificateEnabled && (
-                  <p className="flex items-center gap-2"><FiAward className="text-yellow-500" /> Certificate on completion</p>
+                  <p className="flex items-center gap-2"><FiAward className="text-yellow-400" /> Certificate on completion</p>
                 )}
                 <p className="flex items-center gap-2"><FiBookOpen /> {course._count?.lessons || 0} lessons</p>
                 {course.estimatedHours && (
@@ -163,12 +167,12 @@ export default function CourseLanding() {
           <div className="md:col-span-2 space-y-8">
             {/* What you'll learn */}
             {course.whatYouLearn && course.whatYouLearn.length > 0 && (
-              <div className="bg-white rounded-lg p-6 shadow">
-                <h2 className="text-xl font-bold mb-4">What you'll learn</h2>
+              <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-bold text-white mb-4">What you'll learn</h2>
                 <ul className="grid md:grid-cols-2 gap-3">
                   {(course.whatYouLearn as string[]).map((item, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-green-500">✓</span>
+                    <li key={i} className="flex items-start gap-2 text-slate-300">
+                      <span className="text-green-400">✓</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -177,23 +181,23 @@ export default function CourseLanding() {
             )}
 
             {/* Description */}
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h2 className="text-xl font-bold mb-4">Description</h2>
-              <div className="prose max-w-none">{course.description}</div>
+            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Description</h2>
+              <div className="prose prose-invert max-w-none text-slate-300">{course.description}</div>
             </div>
 
             {/* Curriculum */}
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h2 className="text-xl font-bold mb-4">Curriculum</h2>
-              <ul className="divide-y">
+            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Curriculum</h2>
+              <ul className="divide-y divide-slate-700/50">
                 {course.lessons?.map((lesson, i) => (
                   <li key={lesson.id} className="py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-gray-400">{i + 1}</span>
-                      <span>{lesson.title}</span>
-                      {lesson.isPreview && <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Preview</span>}
+                      <span className="text-slate-500">{i + 1}</span>
+                      <span className="text-slate-300">{lesson.title}</span>
+                      {lesson.isPreview && <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-lg">Preview</span>}
                     </div>
-                    <span className="text-sm text-gray-500">{lesson.estimatedMinutes} min</span>
+                    <span className="text-sm text-slate-500">{lesson.estimatedMinutes} min</span>
                   </li>
                 ))}
               </ul>
@@ -203,9 +207,9 @@ export default function CourseLanding() {
           {/* Sidebar */}
           <div className="space-y-6">
             {course.requirements && course.requirements.length > 0 && (
-              <div className="bg-white rounded-lg p-6 shadow">
-                <h3 className="font-bold mb-3">Requirements</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
+              <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+                <h3 className="font-bold text-white mb-3">Requirements</h3>
+                <ul className="space-y-2 text-sm text-slate-400">
                   {(course.requirements as string[]).map((req, i) => (
                     <li key={i}>• {req}</li>
                   ))}

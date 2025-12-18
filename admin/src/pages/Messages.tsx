@@ -220,10 +220,10 @@ export default function Messages() {
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-900">
       {/* Conversations Sidebar */}
-      <div className="w-80 bg-white border-r flex flex-col">
-        <div className="p-4 border-b bg-gradient-to-r from-indigo-600 to-purple-600">
+      <div className="w-80 bg-slate-800 border-r border-slate-700/50 flex flex-col">
+        <div className="p-4 border-b border-slate-700/50 bg-gradient-to-r from-indigo-600 to-purple-600">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-white">Messages</h1>
             <button onClick={() => setShowNewChat(true)} className="p-2 bg-white/20 hover:bg-white/30 rounded-xl text-white transition-colors">
@@ -240,37 +240,37 @@ export default function Messages() {
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-200 border-t-indigo-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-700 border-t-indigo-500"></div>
             </div>
           ) : conversations.length === 0 ? (
             <div className="text-center py-10 px-4">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <FiMessageSquare className="text-2xl text-indigo-600" />
+              <div className="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <FiMessageSquare className="text-2xl text-indigo-400" />
               </div>
-              <p className="text-gray-500">No conversations yet</p>
-              <button onClick={() => setShowNewChat(true)} className="mt-3 text-indigo-600 font-medium hover:underline">Start a new chat</button>
+              <p className="text-slate-400">No conversations yet</p>
+              <button onClick={() => setShowNewChat(true)} className="mt-3 text-indigo-400 font-medium hover:underline">Start a new chat</button>
             </div>
           ) : (
             conversations.map((conv) => (
               <div key={conv.id} onClick={() => setActiveConversation(conv)}
-                className={`flex items-center gap-3 p-4 cursor-pointer border-b transition-colors ${activeConversation?.id === conv.id ? 'bg-indigo-50 border-l-4 border-l-indigo-600' : 'hover:bg-gray-50'}`}>
+                className={`flex items-center gap-3 p-4 cursor-pointer border-b border-slate-700/50 transition-colors ${activeConversation?.id === conv.id ? 'bg-indigo-500/20 border-l-4 border-l-indigo-500' : 'hover:bg-slate-700/50'}`}>
                 <div className="relative flex-shrink-0">
                   <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(conv.otherUser.name)} flex items-center justify-center text-white font-semibold shadow-sm`}>
                     {conv.otherUser.avatar ? <img src={conv.otherUser.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : conv.otherUser.name.charAt(0).toUpperCase()}
                   </div>
                   {onlineUsers.includes(conv.otherUser.id) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold text-gray-900 truncate">{conv.otherUser.name}</p>
-                    {conv.lastMessage && <span className="text-xs text-gray-400">{formatTime(conv.lastMessage.createdAt)}</span>}
+                    <p className="font-semibold text-white truncate">{conv.otherUser.name}</p>
+                    {conv.lastMessage && <span className="text-xs text-slate-500">{formatTime(conv.lastMessage.createdAt)}</span>}
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-500 truncate">{conv.lastMessage?.content || 'No messages yet'}</p>
+                    <p className="text-sm text-slate-400 truncate">{conv.lastMessage?.content || 'No messages yet'}</p>
                     {conv.unreadCount > 0 && (
-                      <span className="ml-2 px-2 py-0.5 bg-indigo-600 text-white text-xs font-bold rounded-full">{conv.unreadCount}</span>
+                      <span className="ml-2 px-2 py-0.5 bg-indigo-500 text-white text-xs font-bold rounded-full">{conv.unreadCount}</span>
                     )}
                   </div>
                 </div>
@@ -283,14 +283,14 @@ export default function Messages() {
       {/* Chat Panel */}
       <div className="flex-1 flex flex-col">
         {!activeConversation ? (
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50">
+          <div className="flex-1 flex items-center justify-center bg-slate-900">
             <div className="text-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiMessageSquare className="text-4xl text-indigo-500" />
+              <div className="w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FiMessageSquare className="text-4xl text-indigo-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Messages</h2>
-              <p className="text-gray-500 mb-6">Select a conversation or start a new one</p>
-              <button onClick={() => setShowNewChat(true)} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg">
+              <h2 className="text-2xl font-bold text-white mb-2">Your Messages</h2>
+              <p className="text-slate-400 mb-6">Select a conversation or start a new one</p>
+              <button onClick={() => setShowNewChat(true)} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-indigo-500/20">
                 <FiPlus className="inline mr-2" /> New Message
               </button>
             </div>
@@ -298,35 +298,35 @@ export default function Messages() {
         ) : (
           <>
             {/* Chat Header */}
-            <div className="bg-white border-b px-6 py-4 flex items-center gap-4 shadow-sm">
+            <div className="bg-slate-800/50 backdrop-blur border-b border-slate-700/50 px-6 py-4 flex items-center gap-4">
               <div className="relative">
                 <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(activeConversation.otherUser.name)} flex items-center justify-center text-white font-bold shadow-md`}>
                   {activeConversation.otherUser.avatar ? <img src={activeConversation.otherUser.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : activeConversation.otherUser.name.charAt(0).toUpperCase()}
                 </div>
                 {onlineUsers.includes(activeConversation.otherUser.id) && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
                 )}
               </div>
               <div>
-                <h2 className="font-bold text-lg text-gray-900">{activeConversation.otherUser.name}</h2>
-                <p className="text-sm text-gray-500">{onlineUsers.includes(activeConversation.otherUser.id) ? <span className="text-green-500">● Online</span> : 'Offline'}</p>
+                <h2 className="font-bold text-lg text-white">{activeConversation.otherUser.name}</h2>
+                <p className="text-sm text-slate-400">{onlineUsers.includes(activeConversation.otherUser.id) ? <span className="text-green-400">● Online</span> : 'Offline'}</p>
               </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-b from-slate-50 to-white">
+            <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-900">
               {loadingMessages ? (
-                <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600"></div></div>
+                <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-700 border-t-indigo-500"></div></div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <p className="text-gray-500">No messages yet. Say hello! 👋</p>
+                  <p className="text-slate-400">No messages yet. Say hello! 👋</p>
                 </div>
               ) : (
                 <div className="space-y-6">
                   {groupedMessages.map((group, groupIdx) => (
                     <div key={groupIdx}>
                       <div className="flex items-center justify-center my-6">
-                        <div className="px-4 py-1.5 bg-white rounded-full shadow-sm border text-xs font-medium text-gray-500">{formatMessageDate(group.messages[0].createdAt)}</div>
+                        <div className="px-4 py-1.5 bg-slate-800 rounded-full border border-slate-700/50 text-xs font-medium text-slate-400">{formatMessageDate(group.messages[0].createdAt)}</div>
                       </div>
                       <div className="space-y-3">
                         {group.messages.map((message, idx) => {
@@ -340,14 +340,14 @@ export default function Messages() {
                                 </div>
                               )}
                               <div className="max-w-[65%] relative">
-                                <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-md' : 'bg-white text-gray-800 shadow-sm border rounded-bl-md'}`}>
+                                <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-md' : 'bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-md'}`}>
                                   <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
                                 </div>
                                 <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                                  <span className="text-[11px] text-gray-400">{formatTime(message.createdAt)}</span>
-                                  {isOwn && (message.isRead ? <FiCheckCircle className="text-indigo-500" size={12} /> : <FiCheck className="text-gray-400" size={12} />)}
+                                  <span className="text-[11px] text-slate-500">{formatTime(message.createdAt)}</span>
+                                  {isOwn && (message.isRead ? <FiCheckCircle className="text-indigo-400" size={12} /> : <FiCheck className="text-slate-500" size={12} />)}
                                   {isOwn && (
-                                    <button onClick={() => handleDeleteMessage(message.id)} className="ml-1 opacity-0 group-hover/msg:opacity-100 text-gray-400 hover:text-red-500 transition-all" title="Delete message">
+                                    <button onClick={() => handleDeleteMessage(message.id)} className="ml-1 opacity-0 group-hover/msg:opacity-100 text-slate-500 hover:text-red-400 transition-all" title="Delete message">
                                       <FiTrash2 size={12} />
                                     </button>
                                   )}
@@ -371,12 +371,12 @@ export default function Messages() {
 
             {/* Typing Indicator */}
             {typingUser && (
-              <div className="px-6 py-2 bg-white border-t">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="px-6 py-2 bg-slate-800/50 border-t border-slate-700/50">
+                <div className="flex items-center gap-2 text-sm text-slate-400">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                   <span>{typingUser} is typing...</span>
                 </div>
@@ -384,11 +384,11 @@ export default function Messages() {
             )}
 
             {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="bg-white border-t p-4 shadow-lg">
-              <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-2">
+            <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-4">
+              <div className="flex items-center gap-3 bg-slate-700/50 rounded-2xl px-4 py-2 border border-slate-600/50">
                 <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-                  placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-gray-800 placeholder-gray-400 focus:outline-none text-[15px]" />
-                <button type="submit" disabled={!newMessage.trim()} className={`p-3 rounded-xl transition-all ${newMessage.trim() ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md hover:shadow-lg' : 'bg-gray-200 text-gray-400'}`}>
+                  placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" />
+                <button type="submit" disabled={!newMessage.trim()} className={`p-3 rounded-xl transition-all ${newMessage.trim() ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
                   <FiSend size={18} />
                 </button>
               </div>
@@ -399,28 +399,28 @@ export default function Messages() {
 
       {/* New Chat Modal */}
       {showNewChat && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700/50 w-full max-w-md overflow-hidden">
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white flex items-center justify-between">
               <h2 className="text-lg font-bold">New Message</h2>
               <button onClick={() => { setShowNewChat(false); setSearchUsers(''); setUserResults([]); }} className="p-2 hover:bg-white/20 rounded-lg"><FiX size={20} /></button>
             </div>
             <div className="p-4">
               <div className="relative mb-4">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input type="text" placeholder="Search users..." value={searchUsers} onChange={(e) => { setSearchUsers(e.target.value); searchForUsers(e.target.value); }}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" autoFocus />
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" autoFocus />
               </div>
               <div className="max-h-64 overflow-y-auto">
-                {userResults.length === 0 && searchUsers && <p className="text-center text-gray-500 py-4">No users found</p>}
+                {userResults.length === 0 && searchUsers && <p className="text-center text-slate-400 py-4">No users found</p>}
                 {userResults.map((u) => (
-                  <div key={u.id} onClick={() => startConversation(u)} className="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors">
+                  <div key={u.id} onClick={() => startConversation(u)} className="flex items-center gap-3 p-3 hover:bg-slate-700/50 rounded-xl cursor-pointer transition-colors">
                     <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(u.name)} flex items-center justify-center text-white font-semibold`}>
                       {u.avatar ? <img src={u.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : u.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{u.name}</p>
-                      <p className="text-sm text-gray-500">{u.email}</p>
+                      <p className="font-medium text-white">{u.name}</p>
+                      <p className="text-sm text-slate-400">{u.email}</p>
                     </div>
                   </div>
                 ))}

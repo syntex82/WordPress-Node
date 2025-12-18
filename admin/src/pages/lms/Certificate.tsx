@@ -47,8 +47,8 @@ export default function Certificate() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{generating ? 'Generating your certificate...' : 'Loading...'}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">{generating ? 'Generating your certificate...' : 'Loading...'}</p>
         </div>
       </div>
     );
@@ -57,11 +57,11 @@ export default function Certificate() {
   if (!certificate) {
     return (
       <div className="p-6 max-w-2xl mx-auto text-center">
-        <h1 className="text-2xl font-bold mb-4">Certificate Not Available</h1>
-        <p className="text-gray-600 mb-6">
+        <h1 className="text-2xl font-bold text-white mb-4">Certificate Not Available</h1>
+        <p className="text-slate-400 mb-6">
           You need to complete the course to receive a certificate.
         </p>
-        <Link to={`/lms/learn/${courseId}`} className="text-blue-600 hover:underline">
+        <Link to={`/lms/learn/${courseId}`} className="text-blue-400 hover:text-blue-300 transition-colors">
           ← Back to Course
         </Link>
       </div>
@@ -70,41 +70,41 @@ export default function Certificate() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <Link to={`/lms/learn/${courseId}`} className="text-blue-600 hover:underline flex items-center gap-1 mb-6">
+      <Link to={`/lms/learn/${courseId}`} className="text-blue-400 hover:text-blue-300 flex items-center gap-1 mb-6 transition-colors">
         <FiArrowLeft /> Back to Course
       </Link>
 
       {/* Certificate Display */}
-      <div className="bg-white border-8 border-double border-yellow-500 rounded-lg p-8 shadow-lg mb-6">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 border-8 border-double border-yellow-500/50 rounded-2xl p-8 shadow-2xl mb-6">
         <div className="text-center">
-          <div className="text-yellow-600 text-5xl mb-4">🏆</div>
-          <h1 className="text-3xl font-serif font-bold text-gray-800 mb-2">
+          <div className="text-yellow-400 text-5xl mb-4">🏆</div>
+          <h1 className="text-3xl font-serif font-bold text-white mb-2">
             Certificate of Completion
           </h1>
-          <p className="text-gray-500 mb-6">This certifies that</p>
-          
-          <p className="text-2xl font-bold text-blue-600 mb-6">
+          <p className="text-slate-400 mb-6">This certifies that</p>
+
+          <p className="text-2xl font-bold text-blue-400 mb-6">
             {certificate.user?.name || 'Student'}
           </p>
-          
-          <p className="text-gray-500 mb-2">has successfully completed</p>
-          
-          <p className="text-xl font-semibold text-gray-800 mb-6">
+
+          <p className="text-slate-400 mb-2">has successfully completed</p>
+
+          <p className="text-xl font-semibold text-white mb-6">
             {certificate.course?.title || 'Course'}
           </p>
-          
-          <div className="flex justify-center gap-8 text-sm text-gray-500 mb-4">
+
+          <div className="flex justify-center gap-8 text-sm text-slate-400 mb-4">
             <div>
-              <p className="font-semibold">Date Issued</p>
+              <p className="font-semibold text-slate-300">Date Issued</p>
               <p>{new Date(certificate.issuedAt).toLocaleDateString()}</p>
             </div>
             <div>
-              <p className="font-semibold">Certificate ID</p>
+              <p className="font-semibold text-slate-300">Certificate ID</p>
               <p className="font-mono">{certificate.certificateNumber}</p>
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-green-600">
+          <div className="flex items-center justify-center gap-2 text-green-400">
             <FiCheck /> Verified
           </div>
         </div>
@@ -116,21 +116,21 @@ export default function Certificate() {
           <a
             href={certificate.pdfUrl}
             download
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-600 transition-colors shadow-lg shadow-blue-500/20"
           >
             <FiDownload /> Download PDF
           </a>
         )}
-        
+
         <button
           onClick={handleShare}
-          className="flex items-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200"
+          className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/50 text-slate-300 px-6 py-3 rounded-xl hover:bg-slate-700/50 transition-colors"
         >
           <FiShare2 /> Share Verification Link
         </button>
       </div>
 
-      <p className="text-center text-sm text-gray-500 mt-6">
+      <p className="text-center text-sm text-slate-500 mt-6">
         Verify this certificate at: {window.location.origin}/lms/verify/{certificate.verificationHash}
       </p>
     </div>

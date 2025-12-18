@@ -75,11 +75,11 @@ export default function AuditLog() {
   };
 
   const getEventBadgeColor = (type: string) => {
-    if (type.includes('SUCCESS')) return 'bg-green-100 text-green-800';
-    if (type.includes('FAILED') || type.includes('LOCKOUT')) return 'bg-red-100 text-red-800';
-    if (type.includes('BLOCKED')) return 'bg-orange-100 text-orange-800';
-    if (type.includes('2FA') || type.includes('TWO_FA')) return 'bg-purple-100 text-purple-800';
-    return 'bg-blue-100 text-blue-800';
+    if (type.includes('SUCCESS')) return 'bg-green-500/20 text-green-400';
+    if (type.includes('FAILED') || type.includes('LOCKOUT')) return 'bg-red-500/20 text-red-400';
+    if (type.includes('BLOCKED')) return 'bg-orange-500/20 text-orange-400';
+    if (type.includes('2FA') || type.includes('TWO_FA')) return 'bg-purple-500/20 text-purple-400';
+    return 'bg-blue-500/20 text-blue-400';
   };
 
   if (loading) return <LoadingSpinner />;
@@ -87,18 +87,18 @@ export default function AuditLog() {
   return (
     <div>
       <div className="mb-6">
-        <Link to=".." relative="path" className="flex items-center text-blue-600 hover:text-blue-700 mb-4">
+        <Link to=".." relative="path" className="flex items-center text-blue-400 hover:text-blue-300 mb-4 transition-colors">
           <FiArrowLeft className="mr-2" size={18} />
           Back to Security Center
         </Link>
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Audit Log</h1>
-            <p className="text-gray-600 mt-1">Complete security event history and forensics</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Audit Log</h1>
+            <p className="text-slate-400 mt-1">Complete security event history and forensics</p>
           </div>
           <button
             onClick={exportLog}
-            className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            className="flex items-center bg-gradient-to-r from-green-600 to-green-500 text-white px-4 py-2 rounded-xl hover:from-green-700 hover:to-green-600 transition-colors shadow-lg shadow-green-500/20"
           >
             <FiDownload className="mr-2" size={18} />
             Export CSV
@@ -107,12 +107,12 @@ export default function AuditLog() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-4 mb-6">
         <div className="flex items-center flex-wrap gap-2">
-          <FiFilter className="text-gray-500 mr-2" size={20} />
+          <FiFilter className="text-slate-400 mr-2" size={20} />
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-md text-sm ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50'}`}
           >
             All Events
           </button>
@@ -120,7 +120,7 @@ export default function AuditLog() {
             <button
               key={type}
               onClick={() => setFilter(type)}
-              className={`px-3 py-1 rounded-md text-sm ${filter === type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === type ? 'bg-blue-500 text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50'}`}
             >
               {formatEventType(type)}
             </button>
@@ -129,42 +129,42 @@ export default function AuditLog() {
       </div>
 
       {/* Events Table */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Security Events ({events.length})</h2>
+      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
+        <div className="p-6 border-b border-slate-700/50">
+          <h2 className="text-xl font-bold text-white">Security Events ({events.length})</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-slate-700/50">
+            <thead className="bg-slate-700/30">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Timestamp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Event Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   IP Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Details
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-700/50">
               {events.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
                     No security events found
                   </td>
                 </tr>
               ) : (
                 events.map((event) => (
-                  <tr key={event.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <tr key={event.id} className="hover:bg-slate-700/30 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                       {new Date(event.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -172,17 +172,17 @@ export default function AuditLog() {
                         {formatEventType(event.type)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                       {event.user?.email || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-300">
                       {event.ip || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-slate-400">
                       {event.metadata && Object.keys(event.metadata).length > 0 ? (
                         <details className="cursor-pointer">
-                          <summary className="text-blue-600 hover:text-blue-700">View Details</summary>
-                          <pre className="mt-2 text-xs bg-gray-50 p-2 rounded overflow-x-auto">
+                          <summary className="text-blue-400 hover:text-blue-300 transition-colors">View Details</summary>
+                          <pre className="mt-2 text-xs bg-slate-900/50 p-2 rounded-lg overflow-x-auto text-slate-300">
                             {JSON.stringify(event.metadata, null, 2)}
                           </pre>
                         </details>

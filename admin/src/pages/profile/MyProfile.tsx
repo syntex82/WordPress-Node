@@ -148,7 +148,7 @@ export default function MyProfile() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500"></div>
       </div>
     );
   }
@@ -156,20 +156,20 @@ export default function MyProfile() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-600 text-lg mb-4">{error}</p>
-          <button onClick={loadProfile} className="text-red-700 hover:underline">Try Again</button>
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
+          <p className="text-red-400 text-lg mb-4">{error}</p>
+          <button onClick={loadProfile} className="text-red-400 hover:text-red-300 transition-colors">Try Again</button>
         </div>
       </div>
     );
   }
 
-  if (!profile) return <div className="p-6">Profile not found</div>;
+  if (!profile) return <div className="p-6 text-slate-400">Profile not found</div>;
 
   return (
     <div className="max-w-6xl mx-auto">
       {/* Cover Image */}
-      <div className="relative h-64 md:h-80 rounded-xl overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
+      <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
         {profile.coverImage && (
           <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover" />
         )}
@@ -182,10 +182,10 @@ export default function MyProfile() {
             coverInputRef.current?.click();
           }}
           disabled={uploadingCover}
-          className="absolute bottom-4 right-4 z-10 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-lg flex items-center gap-2 transition disabled:opacity-50 cursor-pointer shadow-lg"
+          className="absolute bottom-4 right-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition disabled:opacity-50 cursor-pointer shadow-lg border border-slate-600/50"
         >
           {uploadingCover ? (
-            <><div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div> Uploading...</>
+            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Uploading...</>
           ) : (
             <><FiCamera className="w-4 h-4" /> Change Cover</>
           )}
@@ -197,7 +197,7 @@ export default function MyProfile() {
         <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-20 md:-mt-24">
           {/* Avatar */}
           <div className="relative group">
-            <div className="w-36 h-36 md:w-44 md:h-44 rounded-2xl border-4 border-white bg-white shadow-xl overflow-hidden">
+            <div className="w-36 h-36 md:w-44 md:h-44 rounded-2xl border-4 border-slate-800 bg-slate-800 shadow-xl overflow-hidden">
               {profile.avatar ? (
                 <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
               ) : (
@@ -224,7 +224,7 @@ export default function MyProfile() {
             <button
               onClick={() => avatarInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="absolute bottom-2 right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-full shadow-lg transition disabled:opacity-50"
+              className="absolute bottom-2 right-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white p-2.5 rounded-full shadow-lg shadow-blue-500/20 transition disabled:opacity-50"
             >
               {uploadingAvatar ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -242,10 +242,10 @@ export default function MyProfile() {
                   type="text"
                   value={formData.name || ''}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none"
+                  className="text-3xl font-bold bg-transparent border-b-2 border-blue-500 focus:outline-none text-white"
                 />
               ) : (
-                <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">{profile.name}</h1>
               )}
               {editing ? (
                 <input
@@ -253,12 +253,12 @@ export default function MyProfile() {
                   value={formData.headline || ''}
                   onChange={e => setFormData({ ...formData, headline: e.target.value })}
                   placeholder="Your headline..."
-                  className="text-lg text-gray-600 bg-transparent border-b border-gray-300 focus:outline-none focus:border-indigo-500 w-full mt-1"
+                  className="text-lg text-slate-400 bg-transparent border-b border-slate-600 focus:outline-none focus:border-blue-500 w-full mt-1"
                 />
               ) : (
-                profile.headline && <p className="text-lg text-gray-600 mt-1">{profile.headline}</p>
+                profile.headline && <p className="text-lg text-slate-400 mt-1">{profile.headline}</p>
               )}
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+              <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
                 {profile.location && (
                   <span className="flex items-center gap-1"><FiMapPin className="w-4 h-4" /> {profile.location}</span>
                 )}
@@ -268,15 +268,15 @@ export default function MyProfile() {
             <div className="flex gap-3">
               {editing ? (
                 <>
-                  <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50">
+                  <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/20 transition disabled:opacity-50">
                     <FiCheck className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
                   </button>
-                  <button onClick={() => { setEditing(false); setFormData(profile); }} className="flex items-center gap-2 px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                  <button onClick={() => { setEditing(false); setFormData(profile); }} className="flex items-center gap-2 px-6 py-2.5 border border-slate-600/50 text-slate-300 rounded-xl hover:bg-slate-700/50 transition">
                     <FiX className="w-4 h-4" /> Cancel
                   </button>
                 </>
               ) : (
-                <button onClick={() => setEditing(true)} className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                <button onClick={() => setEditing(true)} className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/20 transition">
                   <FiEdit2 className="w-4 h-4" /> Edit Profile
                 </button>
               )}
@@ -294,12 +294,12 @@ export default function MyProfile() {
           { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, color: 'bg-orange-500' },
           { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiAward, color: 'bg-pink-500' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
+          <div key={i} className="bg-slate-800/50 backdrop-blur rounded-xl p-4 border border-slate-700/50 hover:bg-slate-700/50 transition">
             <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
               <stat.icon className="w-5 h-5 text-white" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-            <div className="text-sm text-gray-500">{stat.label}</div>
+            <div className="text-2xl font-bold text-white">{stat.value}</div>
+            <div className="text-sm text-slate-400">{stat.label}</div>
           </div>
         ))}
       </div>
@@ -308,9 +308,9 @@ export default function MyProfile() {
         {/* Left Column - About & Details */}
         <div className="lg:col-span-2 space-y-6">
           {/* About Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiUser className="w-5 h-5 text-indigo-600" /> About
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <FiUser className="w-5 h-5 text-blue-400" /> About
             </h2>
             {editing ? (
               <textarea
@@ -318,87 +318,87 @@ export default function MyProfile() {
                 onChange={e => setFormData({ ...formData, bio: e.target.value })}
                 placeholder="Write a short bio..."
                 rows={4}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               />
             ) : (
-              <p className="text-gray-600 leading-relaxed">{profile.bio || 'No bio yet.'}</p>
+              <p className="text-slate-300 leading-relaxed">{profile.bio || 'No bio yet.'}</p>
             )}
           </div>
 
           {/* Work & Education */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiBriefcase className="w-5 h-5 text-indigo-600" /> Work
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <FiBriefcase className="w-5 h-5 text-blue-400" /> Work
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Job Title</label>
                 {editing ? (
-                  <input type="text" value={formData.jobTitle || ''} onChange={e => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-2 border border-gray-300 rounded-lg" />
+                  <input type="text" value={formData.jobTitle || ''} onChange={e => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                 ) : (
-                  <p className="text-gray-600">{profile.jobTitle || '-'}</p>
+                  <p className="text-slate-400">{profile.jobTitle || '-'}</p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Company</label>
                 {editing ? (
-                  <input type="text" value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} className="w-full p-2 border border-gray-300 rounded-lg" />
+                  <input type="text" value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                 ) : (
-                  <p className="text-gray-600">{profile.company || '-'}</p>
+                  <p className="text-slate-400">{profile.company || '-'}</p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Location</label>
                 {editing ? (
-                  <input type="text" value={formData.location || ''} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full p-2 border border-gray-300 rounded-lg" />
+                  <input type="text" value={formData.location || ''} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                 ) : (
-                  <p className="text-gray-600">{profile.location || '-'}</p>
+                  <p className="text-slate-400">{profile.location || '-'}</p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Website</label>
                 {editing ? (
-                  <input type="url" value={formData.website || ''} onChange={e => setFormData({ ...formData, website: e.target.value })} className="w-full p-2 border border-gray-300 rounded-lg" />
+                  <input type="url" value={formData.website || ''} onChange={e => setFormData({ ...formData, website: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                 ) : (
-                  profile.website ? <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">{profile.website}</a> : <p className="text-gray-600">-</p>
+                  profile.website ? <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">{profile.website}</a> : <p className="text-slate-400">-</p>
                 )}
               </div>
             </div>
           </div>
 
           {/* Skills */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4">Skills</h2>
             <div className="flex flex-wrap gap-2">
               {(editing ? formData.skills : profile.skills)?.map((skill, i) => (
-                <span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                <span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded-full text-sm font-medium">
                   {skill}
-                  {editing && <button onClick={() => removeSkill(skill)} className="hover:text-red-600"><FiX className="w-3 h-3" /></button>}
+                  {editing && <button onClick={() => removeSkill(skill)} className="hover:text-red-400"><FiX className="w-3 h-3" /></button>}
                 </span>
               ))}
               {editing && (
                 <div className="flex items-center gap-2">
-                  <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyPress={e => e.key === 'Enter' && addSkill()} placeholder="Add skill..." className="px-3 py-1.5 border border-gray-300 rounded-full text-sm" />
-                  <button onClick={addSkill} className="p-1.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"><FiPlus className="w-4 h-4" /></button>
+                  <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyPress={e => e.key === 'Enter' && addSkill()} placeholder="Add skill..." className="px-3 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-full text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
+                  <button onClick={addSkill} className="p-1.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full hover:from-blue-700 hover:to-blue-600"><FiPlus className="w-4 h-4" /></button>
                 </div>
               )}
             </div>
           </div>
 
           {/* Interests */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Interests</h2>
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4">Interests</h2>
             <div className="flex flex-wrap gap-2">
               {(editing ? formData.interests : profile.interests)?.map((interest, i) => (
-                <span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                <span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
                   {interest}
-                  {editing && <button onClick={() => removeInterest(interest)} className="hover:text-red-600"><FiX className="w-3 h-3" /></button>}
+                  {editing && <button onClick={() => removeInterest(interest)} className="hover:text-red-400"><FiX className="w-3 h-3" /></button>}
                 </span>
               ))}
               {editing && (
                 <div className="flex items-center gap-2">
-                  <input type="text" value={newInterest} onChange={e => setNewInterest(e.target.value)} onKeyPress={e => e.key === 'Enter' && addInterest()} placeholder="Add interest..." className="px-3 py-1.5 border border-gray-300 rounded-full text-sm" />
-                  <button onClick={addInterest} className="p-1.5 bg-green-600 text-white rounded-full hover:bg-green-700"><FiPlus className="w-4 h-4" /></button>
+                  <input type="text" value={newInterest} onChange={e => setNewInterest(e.target.value)} onKeyPress={e => e.key === 'Enter' && addInterest()} placeholder="Add interest..." className="px-3 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-full text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500/50" />
+                  <button onClick={addInterest} className="p-1.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full hover:from-green-700 hover:to-green-600"><FiPlus className="w-4 h-4" /></button>
                 </div>
               )}
             </div>
@@ -408,9 +408,9 @@ export default function MyProfile() {
         {/* Right Column - Social & Activity */}
         <div className="space-y-6">
           {/* Social Links */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiGlobe className="w-5 h-5 text-indigo-600" /> Social
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <FiGlobe className="w-5 h-5 text-blue-400" /> Social
             </h2>
             {editing ? (
               <div className="space-y-3">
@@ -421,69 +421,69 @@ export default function MyProfile() {
                   { key: 'youtube', icon: FiYoutube, label: 'YouTube' },
                 ].map(social => (
                   <div key={social.key} className="flex items-center gap-2">
-                    <social.icon className="w-5 h-5 text-gray-400" />
+                    <social.icon className="w-5 h-5 text-slate-400" />
                     <input
                       type="url"
                       value={(formData.socialLinks as any)?.[social.key] || ''}
                       onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, [social.key]: e.target.value } })}
                       placeholder={`${social.label} URL`}
-                      className="flex-1 p-2 border border-gray-300 rounded-lg text-sm"
+                      className="flex-1 p-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     />
                   </div>
                 ))}
               </div>
             ) : (
               <div className="flex flex-wrap gap-3">
-                {profile.socialLinks?.twitter && <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition"><FiTwitter className="w-5 h-5" /></a>}
-                {profile.socialLinks?.linkedin && <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"><FiLinkedin className="w-5 h-5" /></a>}
-                {profile.socialLinks?.github && <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer" className="p-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"><FiGithub className="w-5 h-5" /></a>}
-                {profile.socialLinks?.youtube && <a href={profile.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"><FiYoutube className="w-5 h-5" /></a>}
-                {!profile.socialLinks?.twitter && !profile.socialLinks?.linkedin && !profile.socialLinks?.github && <p className="text-gray-500 text-sm">No social links added</p>}
+                {profile.socialLinks?.twitter && <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/30 transition"><FiTwitter className="w-5 h-5" /></a>}
+                {profile.socialLinks?.linkedin && <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/30 transition"><FiLinkedin className="w-5 h-5" /></a>}
+                {profile.socialLinks?.github && <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-600/50 text-slate-300 rounded-xl hover:bg-slate-600/70 transition"><FiGithub className="w-5 h-5" /></a>}
+                {profile.socialLinks?.youtube && <a href={profile.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-3 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 transition"><FiYoutube className="w-5 h-5" /></a>}
+                {!profile.socialLinks?.twitter && !profile.socialLinks?.linkedin && !profile.socialLinks?.github && <p className="text-slate-500 text-sm">No social links added</p>}
               </div>
             )}
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiActivity className="w-5 h-5 text-indigo-600" /> Recent Activity
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <FiActivity className="w-5 h-5 text-blue-400" /> Recent Activity
             </h2>
             <div className="space-y-4">
               {activities.slice(0, 5).map((activity, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    activity.type === 'post_published' ? 'bg-blue-100 text-blue-600' :
-                    activity.type === 'certificate_earned' ? 'bg-green-100 text-green-600' :
-                    'bg-purple-100 text-purple-600'
+                    activity.type === 'post_published' ? 'bg-blue-500/20 text-blue-400' :
+                    activity.type === 'certificate_earned' ? 'bg-green-500/20 text-green-400' :
+                    'bg-purple-500/20 text-purple-400'
                   }`}>
                     {activity.type === 'post_published' ? <FiBook className="w-4 h-4" /> :
                      activity.type === 'certificate_earned' ? <FiAward className="w-4 h-4" /> :
                      <FiBook className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 truncate">{activity.title}</p>
-                    <p className="text-xs text-gray-500">{new Date(activity.date).toLocaleDateString()}</p>
+                    <p className="text-sm text-slate-300 truncate">{activity.title}</p>
+                    <p className="text-xs text-slate-500">{new Date(activity.date).toLocaleDateString()}</p>
                   </div>
                 </div>
               ))}
-              {activities.length === 0 && <p className="text-gray-500 text-sm">No recent activity</p>}
+              {activities.length === 0 && <p className="text-slate-500 text-sm">No recent activity</p>}
             </div>
           </div>
 
           {/* Profile Settings */}
           {editing && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Settings</h2>
+            <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+              <h2 className="text-lg font-semibold text-white mb-4">Settings</h2>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.isPublic !== false}
                   onChange={e => setFormData({ ...formData, isPublic: e.target.checked })}
-                  className="w-5 h-5 rounded text-indigo-600"
+                  className="w-5 h-5 rounded text-blue-500 bg-slate-700 border-slate-600 focus:ring-blue-500/50"
                 />
-                <span className="text-gray-700">Public Profile</span>
+                <span className="text-slate-300">Public Profile</span>
               </label>
-              <p className="text-sm text-gray-500 mt-1">Allow others to view your profile</p>
+              <p className="text-sm text-slate-500 mt-1">Allow others to view your profile</p>
             </div>
           )}
         </div>

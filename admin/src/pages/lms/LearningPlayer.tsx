@@ -163,23 +163,27 @@ export default function LearningPlayer() {
     );
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!course) return <div className="min-h-screen flex items-center justify-center">Course not found</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500"></div>
+    </div>
+  );
+  if (!course) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">Course not found</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-slate-900 flex">
       {/* Sidebar */}
-      <aside className="w-80 bg-white shadow-lg flex flex-col">
-        <div className="p-4 border-b">
-          <Link to={`/lms/course/${course.slug}`} className="text-blue-600 text-sm hover:underline">← Back to Course</Link>
-          <h2 className="font-bold text-lg mt-2">{course.title}</h2>
+      <aside className="w-80 bg-slate-800 border-r border-slate-700/50 flex flex-col">
+        <div className="p-4 border-b border-slate-700/50">
+          <Link to={`/lms/course/${course.slug}`} className="text-blue-400 text-sm hover:text-blue-300 transition-colors">← Back to Course</Link>
+          <h2 className="font-bold text-lg mt-2 text-white">{course.title}</h2>
           <div className="mt-2">
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
+            <div className="flex justify-between text-sm text-slate-400 mb-1">
               <span>Progress</span>
               <span>{progress?.percentComplete || 0}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${progress?.percentComplete || 0}%` }} />
+            <div className="w-full bg-slate-700 rounded-full h-2">
+              <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${progress?.percentComplete || 0}%` }} />
             </div>
           </div>
         </div>
@@ -188,18 +192,18 @@ export default function LearningPlayer() {
             <button
               key={lesson.id}
               onClick={() => loadLesson(lesson.id)}
-              className={`w-full text-left px-4 py-3 border-b flex items-center gap-3 hover:bg-gray-50 ${
-                currentLesson?.id === lesson.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''
+              className={`w-full text-left px-4 py-3 border-b border-slate-700/50 flex items-center gap-3 hover:bg-slate-700/50 transition-colors ${
+                currentLesson?.id === lesson.id ? 'bg-blue-500/10 border-l-4 border-l-blue-500' : ''
               }`}
             >
               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                isLessonComplete(lesson.id) ? 'bg-green-500 text-white' : 'bg-gray-200'
+                isLessonComplete(lesson.id) ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-400'
               }`}>
                 {isLessonComplete(lesson.id) ? '✓' : index + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{lesson.title}</div>
-                <div className="text-xs text-gray-500">{lesson.type} • {lesson.estimatedMinutes || 0} min</div>
+                <div className="font-medium truncate text-white">{lesson.title}</div>
+                <div className="text-xs text-slate-500">{lesson.type} • {lesson.estimatedMinutes || 0} min</div>
               </div>
             </button>
           ))}
@@ -213,23 +217,23 @@ export default function LearningPlayer() {
             {/* Lesson Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <span className={`p-2 rounded-lg ${
-                  currentLesson.type === 'VIDEO' ? 'bg-purple-100 text-purple-600' :
-                  currentLesson.type === 'QUIZ' ? 'bg-orange-100 text-orange-600' :
-                  'bg-blue-100 text-blue-600'
+                <span className={`p-2 rounded-xl ${
+                  currentLesson.type === 'VIDEO' ? 'bg-purple-500/20 text-purple-400' :
+                  currentLesson.type === 'QUIZ' ? 'bg-orange-500/20 text-orange-400' :
+                  'bg-blue-500/20 text-blue-400'
                 }`}>
                   {currentLesson.type === 'VIDEO' ? <FiPlay /> :
                    currentLesson.type === 'QUIZ' ? <FiFileText /> : <FiBookOpen />}
                 </span>
                 <div>
-                  <h1 className="text-2xl font-bold">{currentLesson.title}</h1>
-                  <p className="text-sm text-gray-500">
+                  <h1 className="text-2xl font-bold text-white">{currentLesson.title}</h1>
+                  <p className="text-sm text-slate-400">
                     Lesson {getCurrentLessonIndex() + 1} of {course.lessons?.length || 0}
                   </p>
                 </div>
               </div>
               {isLessonComplete(currentLesson.id) && (
-                <span className="flex items-center gap-1 text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                <span className="flex items-center gap-1 text-green-400 bg-green-500/20 px-3 py-1 rounded-full">
                   <FiCheck /> Completed
                 </span>
               )}
@@ -237,20 +241,20 @@ export default function LearningPlayer() {
 
             {/* Video Player */}
             {currentLesson.type === 'VIDEO' && currentLesson.videoAsset && (
-              <div className="aspect-video bg-black rounded-lg mb-6 overflow-hidden">
+              <div className="aspect-video bg-black rounded-xl mb-6 overflow-hidden">
                 {getVideoEmbed(currentLesson.videoAsset)}
               </div>
             )}
 
             {/* Quiz Link */}
             {currentLesson.type === 'QUIZ' && currentLesson.quiz && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 mb-6 text-center">
-                <FiFileText className="text-4xl text-orange-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">{currentLesson.quiz.title}</h3>
-                <p className="text-gray-600 mb-4">Test your knowledge with this quiz</p>
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-6 mb-6 text-center">
+                <FiFileText className="text-4xl text-orange-400 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">{currentLesson.quiz.title}</h3>
+                <p className="text-slate-400 mb-4">Test your knowledge with this quiz</p>
                 <Link
                   to={`/lms/quiz/${courseId}/${currentLesson.quiz.id}`}
-                  className="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
+                  className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-2 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-colors shadow-lg shadow-orange-500/20"
                 >
                   Start Quiz
                 </Link>
@@ -259,17 +263,17 @@ export default function LearningPlayer() {
 
             {/* Lesson Content */}
             {currentLesson.content && (
-              <div className="prose max-w-none bg-white rounded-lg p-6 shadow mb-6">
+              <div className="prose prose-invert max-w-none bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6 mb-6">
                 <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
               </div>
             )}
 
             {/* Actions */}
-            <div className="flex justify-between items-center bg-white rounded-lg p-4 shadow">
+            <div className="flex justify-between items-center bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-4">
               <button
                 onClick={goToPrevLesson}
                 disabled={getCurrentLessonIndex() <= 0}
-                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FiChevronLeft /> Previous
               </button>
@@ -277,14 +281,14 @@ export default function LearningPlayer() {
               <div className="flex items-center gap-4">
                 {!isLessonComplete(currentLesson.id) && currentLesson.type !== 'VIDEO' && (
                   <button onClick={handleMarkComplete}
-                    className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                    className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-2 rounded-xl hover:from-green-700 hover:to-green-600 transition-colors shadow-lg shadow-green-500/20">
                     <FiCheck /> Mark Complete
                   </button>
                 )}
 
                 {progress?.isComplete && course.certificateEnabled && (
                   <Link to={`/lms/certificate/${courseId}`}
-                    className="flex items-center gap-2 bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600">
+                    className="flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white px-6 py-2 rounded-xl hover:from-yellow-700 hover:to-yellow-600 transition-colors shadow-lg shadow-yellow-500/20">
                     <FiAward /> Get Certificate
                   </Link>
                 )}
@@ -293,14 +297,14 @@ export default function LearningPlayer() {
               <button
                 onClick={goToNextLesson}
                 disabled={getCurrentLessonIndex() >= (course.lessons?.length || 0) - 1}
-                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next <FiChevronRight />
               </button>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-slate-400">
             Select a lesson to begin
           </div>
         )}

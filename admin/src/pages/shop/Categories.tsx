@@ -76,37 +76,39 @@ export default function Categories() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Product Categories</h1>
-        <button onClick={() => openModal()} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Product Categories</h1>
+        <button onClick={() => openModal()} className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-blue-600 transition-colors shadow-lg shadow-blue-500/20">
           Add Category
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center">Loading...</div>
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-700 border-t-blue-500 mx-auto"></div>
+          </div>
         ) : categories.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No categories found</div>
+          <div className="p-8 text-center text-slate-400">No categories found</div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-slate-700/30">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Slug</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Parent</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Name</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Slug</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Parent</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-slate-700/50">
               {categories.map((category) => (
-                <tr key={category.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{category.name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{category.slug}</td>
-                  <td className="px-4 py-3 text-sm">{category.parent?.name || '-'}</td>
+                <tr key={category.id} className="hover:bg-slate-700/30 transition-colors">
+                  <td className="px-4 py-3 font-medium text-white">{category.name}</td>
+                  <td className="px-4 py-3 text-sm text-slate-400">{category.slug}</td>
+                  <td className="px-4 py-3 text-sm text-slate-300">{category.parent?.name || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <button onClick={() => openModal(category)} className="text-blue-600 hover:underline text-sm">Edit</button>
-                      <button onClick={() => handleDelete(category.id)} className="text-red-600 hover:underline text-sm">Delete</button>
+                      <button onClick={() => openModal(category)} className="text-blue-400 hover:text-blue-300 text-sm transition-colors">Edit</button>
+                      <button onClick={() => handleDelete(category.id)} className="text-red-400 hover:text-red-300 text-sm transition-colors">Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -118,21 +120,21 @@ export default function Categories() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">{editingCategory ? 'Edit Category' : 'Add Category'}</h2>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 shadow-2xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">{editingCategory ? 'Edit Category' : 'Add Category'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Name *</label>
-                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border rounded px-3 py-2" required />
+                <label className="block text-sm font-medium text-slate-300 mb-1">Name *</label>
+                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50" required />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full border rounded px-3 py-2 h-20" />
+                <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 h-20 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Parent Category</label>
-                <select value={form.parentId} onChange={(e) => setForm({ ...form, parentId: e.target.value })} className="w-full border rounded px-3 py-2">
+                <label className="block text-sm font-medium text-slate-300 mb-1">Parent Category</label>
+                <select value={form.parentId} onChange={(e) => setForm({ ...form, parentId: e.target.value })} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50">
                   <option value="">None</option>
                   {categories.filter(c => c.id !== editingCategory?.id).map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -140,8 +142,8 @@ export default function Categories() {
                 </select>
               </div>
               <div className="flex gap-2 justify-end">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-colors">Cancel</button>
+                <button type="submit" disabled={saving} className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 transition-colors">
                   {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>

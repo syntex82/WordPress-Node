@@ -70,9 +70,9 @@ const getAvatarColor = (name: string) => {
 const getRoleBadge = (role: string) => {
   switch (role) {
     case 'OWNER':
-      return { icon: FiStar, color: 'text-yellow-500', bg: 'bg-yellow-100', label: 'Owner' };
+      return { icon: FiStar, color: 'text-yellow-400', bg: 'bg-yellow-500/20', label: 'Owner' };
     case 'MODERATOR':
-      return { icon: FiShield, color: 'text-blue-500', bg: 'bg-blue-100', label: 'Mod' };
+      return { icon: FiShield, color: 'text-blue-400', bg: 'bg-blue-500/20', label: 'Mod' };
     default:
       return null;
   }
@@ -274,10 +274,10 @@ export default function GroupChat() {
 
   if (!group) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+      <div className="flex items-center justify-center h-screen bg-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading group...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-indigo-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading group...</p>
         </div>
       </div>
     );
@@ -285,8 +285,8 @@ export default function GroupChat() {
 
   if (!group.isMember) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+        <div className="bg-slate-800/50 backdrop-blur rounded-3xl shadow-2xl border border-slate-700/50 w-full max-w-md overflow-hidden">
           <div className="h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative">
             <Link to="/groups" className="absolute top-4 left-4 p-2 bg-white/20 backdrop-blur-sm rounded-xl text-white hover:bg-white/30 transition-colors">
               <FiArrowLeft size={20} />
@@ -296,12 +296,12 @@ export default function GroupChat() {
             <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto shadow-lg">
               <FiHash size={28} />
             </div>
-            <h2 className="text-2xl font-bold mt-4 mb-2">{group.name}</h2>
-            <p className="text-gray-500 mb-6">{group.description || 'Join this community to start chatting!'}</p>
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-400 mb-8">
+            <h2 className="text-2xl font-bold mt-4 mb-2 text-white">{group.name}</h2>
+            <p className="text-slate-400 mb-6">{group.description || 'Join this community to start chatting!'}</p>
+            <div className="flex items-center justify-center gap-4 text-sm text-slate-500 mb-8">
               <span className="flex items-center gap-1"><FiUsers /> {group._count?.members || 0} members</span>
             </div>
-            <button onClick={handleJoinGroup} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg">
+            <button onClick={handleJoinGroup} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-indigo-500/20">
               Join Group
             </button>
           </div>
@@ -311,13 +311,13 @@ export default function GroupChat() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-900">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm">
+        <div className="bg-slate-800/50 backdrop-blur border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/groups" className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors">
+            <Link to="/groups" className="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 transition-colors">
               <FiArrowLeft size={20} />
             </Link>
             <div className="flex items-center gap-3">
@@ -325,34 +325,34 @@ export default function GroupChat() {
                 <FiHash size={20} />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-gray-900">{group.name}</h2>
-                <p className="text-sm text-gray-500">{onlineCount} online · {members.length} members</p>
+                <h2 className="font-bold text-lg text-white">{group.name}</h2>
+                <p className="text-sm text-slate-400">{onlineCount} online · {members.length} members</p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setShowMembers(!showMembers)} className={`p-2.5 rounded-xl transition-colors ${showMembers ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'}`}>
+            <button onClick={() => setShowMembers(!showMembers)} className={`p-2.5 rounded-xl transition-colors ${showMembers ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-slate-700/50 text-slate-400'}`}>
               <FiUsers size={20} />
             </button>
-            <button onClick={handleLeaveGroup} className="p-2.5 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-xl transition-colors">
+            <button onClick={handleLeaveGroup} className="p-2.5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl transition-colors">
               <FiLogOut size={20} />
             </button>
           </div>
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-b from-slate-50 to-white">
+        <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-900">
           {loading ? (
             <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-700 border-t-indigo-500"></div>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mb-4">
-                <FiMessageSquare className="text-3xl text-indigo-500" />
+              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full flex items-center justify-center mb-4">
+                <FiMessageSquare className="text-3xl text-indigo-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No messages yet</h3>
-              <p className="text-gray-500">Be the first to start the conversation!</p>
+              <h3 className="text-xl font-semibold text-white mb-2">No messages yet</h3>
+              <p className="text-slate-400">Be the first to start the conversation!</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -360,7 +360,7 @@ export default function GroupChat() {
                 <div key={groupIdx}>
                   {/* Date Divider */}
                   <div className="flex items-center justify-center my-6">
-                    <div className="px-4 py-1.5 bg-white rounded-full shadow-sm border text-xs font-medium text-gray-500">
+                    <div className="px-4 py-1.5 bg-slate-800 rounded-full border border-slate-700/50 text-xs font-medium text-slate-400">
                       {formatMessageDate(msgGroup.messages[0].createdAt)}
                     </div>
                   </div>
@@ -378,15 +378,15 @@ export default function GroupChat() {
                             </div>
                           )}
                           <div className={`max-w-[65%] ${isOwn ? 'items-end' : 'items-start'}`}>
-                            {!isOwn && showAvatar && <p className="text-xs font-medium text-gray-500 mb-1 ml-1">{message.sender.name}</p>}
-                            <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-md' : 'bg-white text-gray-800 shadow-sm border rounded-bl-md'}`}>
+                            {!isOwn && showAvatar && <p className="text-xs font-medium text-slate-400 mb-1 ml-1">{message.sender.name}</p>}
+                            <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-md' : 'bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-md'}`}>
                               <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
                             </div>
                             <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                              <span className={`text-[11px] ${isOwn ? 'text-gray-400' : 'text-gray-400'}`}>{formatTime(message.createdAt)}</span>
-                              {isOwn && <FiCheck className="text-gray-400" size={12} />}
+                              <span className="text-[11px] text-slate-500">{formatTime(message.createdAt)}</span>
+                              {isOwn && <FiCheck className="text-slate-500" size={12} />}
                               {canDelete && (
-                                <button onClick={() => handleDeleteMessage(message.id)} className="ml-1 opacity-0 group-hover/msg:opacity-100 text-gray-400 hover:text-red-500 transition-all" title="Delete message">
+                                <button onClick={() => handleDeleteMessage(message.id)} className="ml-1 opacity-0 group-hover/msg:opacity-100 text-slate-500 hover:text-red-400 transition-all" title="Delete message">
                                   <FiTrash2 size={12} />
                                 </button>
                               )}
@@ -410,12 +410,12 @@ export default function GroupChat() {
 
         {/* Typing Indicator */}
         {typingUsers.length > 0 && (
-          <div className="px-6 py-2 bg-white border-t">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="px-6 py-2 bg-slate-800/50 border-t border-slate-700/50">
+            <div className="flex items-center gap-2 text-sm text-slate-400">
               <div className="flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
               </div>
               <span>{typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...</span>
             </div>
@@ -423,11 +423,11 @@ export default function GroupChat() {
         )}
 
         {/* Message Input */}
-        <form onSubmit={handleSendMessage} className="bg-white border-t p-4 shadow-lg">
-          <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-2">
+        <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-4">
+          <div className="flex items-center gap-3 bg-slate-700/50 rounded-2xl px-4 py-2 border border-slate-600/50">
             <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-              placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-gray-800 placeholder-gray-400 focus:outline-none text-[15px]" />
-            <button type="submit" disabled={!newMessage.trim()} className={`p-3 rounded-xl transition-all ${newMessage.trim() ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md hover:shadow-lg' : 'bg-gray-200 text-gray-400'}`}>
+              placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" />
+            <button type="submit" disabled={!newMessage.trim()} className={`p-3 rounded-xl transition-all ${newMessage.trim() ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
               <FiSend size={18} />
             </button>
           </div>
@@ -436,36 +436,36 @@ export default function GroupChat() {
 
       {/* Members Sidebar */}
       {showMembers && (
-        <div className="w-80 bg-white border-l flex flex-col">
-          <div className="p-4 border-b">
-            <h3 className="font-bold text-gray-900 mb-3">Members ({members.length})</h3>
+        <div className="w-80 bg-slate-800 border-l border-slate-700/50 flex flex-col">
+          <div className="p-4 border-b border-slate-700/50">
+            <h3 className="font-bold text-white mb-3">Members ({members.length})</h3>
             <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
               <input type="text" placeholder="Search members..." value={searchMembers} onChange={(e) => setSearchMembers(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {/* Online Members */}
             <div className="p-3">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Online — {onlineCount}</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Online — {onlineCount}</p>
               {filteredMembers.filter(m => onlineUsers.includes(m.user.id)).map((member) => {
                 const badge = getRoleBadge(member.role);
                 return (
-                  <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+                  <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-700/50 transition-colors cursor-pointer">
                     <div className="relative">
                       <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(member.user.name)} flex items-center justify-center text-white text-sm font-semibold shadow-sm`}>
                         {member.user.avatar ? <img src={member.user.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : member.user.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-slate-800"></div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900 truncate">{member.user.name}</p>
+                        <p className="text-sm font-medium text-white truncate">{member.user.name}</p>
                         {badge && <span className={`px-1.5 py-0.5 ${badge.bg} ${badge.color} rounded text-[10px] font-semibold`}>{badge.label}</span>}
                       </div>
-                      <p className="text-xs text-gray-400 truncate">{member.user.email}</p>
+                      <p className="text-xs text-slate-400 truncate">{member.user.email}</p>
                     </div>
                   </div>
                 );
@@ -473,12 +473,12 @@ export default function GroupChat() {
             </div>
 
             {/* Offline Members */}
-            <div className="p-3 border-t">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Offline — {members.length - onlineCount}</p>
+            <div className="p-3 border-t border-slate-700/50">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Offline — {members.length - onlineCount}</p>
               {filteredMembers.filter(m => !onlineUsers.includes(m.user.id)).map((member) => {
                 const badge = getRoleBadge(member.role);
                 return (
-                  <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer opacity-60">
+                  <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-700/50 transition-colors cursor-pointer opacity-60">
                     <div className="relative">
                       <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(member.user.name)} flex items-center justify-center text-white text-sm font-semibold`}>
                         {member.user.avatar ? <img src={member.user.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : member.user.name.charAt(0).toUpperCase()}
@@ -486,10 +486,10 @@ export default function GroupChat() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900 truncate">{member.user.name}</p>
+                        <p className="text-sm font-medium text-white truncate">{member.user.name}</p>
                         {badge && <span className={`px-1.5 py-0.5 ${badge.bg} ${badge.color} rounded text-[10px] font-semibold`}>{badge.label}</span>}
                       </div>
-                      <p className="text-xs text-gray-400 truncate">{member.user.email}</p>
+                      <p className="text-xs text-slate-400 truncate">{member.user.email}</p>
                     </div>
                   </div>
                 );

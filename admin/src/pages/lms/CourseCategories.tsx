@@ -69,10 +69,10 @@ export default function CourseCategories() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PUBLISHED': return 'bg-green-100 text-green-800';
-      case 'DRAFT': return 'bg-gray-100 text-gray-800';
-      case 'ARCHIVED': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'PUBLISHED': return 'bg-green-500/20 text-green-400';
+      case 'DRAFT': return 'bg-slate-500/20 text-slate-400';
+      case 'ARCHIVED': return 'bg-yellow-500/20 text-yellow-400';
+      default: return 'bg-slate-500/20 text-slate-400';
     }
   };
 
@@ -81,22 +81,22 @@ export default function CourseCategories() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Course Categories</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Course Categories</h1>
+          <p className="text-sm text-slate-400 mt-1">
             Categories are automatically extracted from courses. Create a new course with a category to add it here.
           </p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={loadCategories}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-colors"
           >
             <FiRefreshCw size={16} />
             Refresh
           </button>
           <Link
             to="/lms/courses/new"
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/20 transition-all"
           >
             <FiPlus size={18} />
             New Course
@@ -106,26 +106,26 @@ export default function CourseCategories() {
 
       {/* Content */}
       {loading ? (
-        <div className="bg-white rounded-lg shadow p-8 flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-8 flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-700 border-t-blue-500"></div>
         </div>
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <p className="text-red-600 font-medium">{error}</p>
-          <button onClick={loadCategories} className="mt-3 text-red-700 hover:underline font-medium">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">
+          <p className="text-red-400 font-medium">{error}</p>
+          <button onClick={loadCategories} className="mt-3 text-red-300 hover:text-red-200 font-medium transition-colors">
             Try Again
           </button>
         </div>
       ) : categories.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <FiTag className="mx-auto text-gray-300 mb-4" size={48} />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No categories yet</h3>
-          <p className="text-gray-500 mb-4">
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-12 text-center">
+          <FiTag className="mx-auto text-slate-600 mb-4" size={48} />
+          <h3 className="text-lg font-medium text-white mb-2">No categories yet</h3>
+          <p className="text-slate-400 mb-4">
             Categories are created when you add a category to a course.
           </p>
           <Link
             to="/lms/courses/new"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/20 transition-all"
           >
             <FiPlus size={18} />
             Create Course
@@ -134,33 +134,33 @@ export default function CourseCategories() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => (
-            <div key={category.name} className="bg-white rounded-lg shadow overflow-hidden">
+            <div key={category.name} className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <FiTag className="text-blue-600" size={20} />
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                      <FiTag className="text-blue-400" size={20} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{category.name}</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-semibold text-white">{category.name}</h3>
+                      <p className="text-sm text-slate-400">
                         {category.courseCount} {category.courseCount === 1 ? 'course' : 'courses'}
                       </p>
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Course list preview */}
                 <div className="space-y-2 mb-4">
                   {category.courses.slice(0, 3).map((course) => (
                     <Link
                       key={course.id}
                       to={`/lms/courses/${course.id}`}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                      className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-700/50 transition-colors group"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <FiBook className="text-gray-400 flex-shrink-0" size={14} />
-                        <span className="text-sm text-gray-700 truncate">{course.title}</span>
+                        <FiBook className="text-slate-500 flex-shrink-0" size={14} />
+                        <span className="text-sm text-slate-300 truncate">{course.title}</span>
                       </div>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(course.status)}`}>
                         {course.status}
@@ -168,18 +168,18 @@ export default function CourseCategories() {
                     </Link>
                   ))}
                   {category.courses.length > 3 && (
-                    <p className="text-xs text-gray-400 pl-2">
+                    <p className="text-xs text-slate-500 pl-2">
                       +{category.courses.length - 3} more courses
                     </p>
                   )}
                 </div>
               </div>
-              
+
               {/* Footer */}
-              <div className="px-6 py-3 bg-gray-50 border-t">
+              <div className="px-6 py-3 bg-slate-700/30 border-t border-slate-700/50">
                 <Link
                   to={`/lms/courses?category=${encodeURIComponent(category.name)}`}
-                  className="flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="flex items-center justify-center gap-2 text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
                 >
                   View all courses
                   <FiArrowRight size={14} />
