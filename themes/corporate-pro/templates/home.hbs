@@ -1,0 +1,86 @@
+{{> header}}
+
+<!-- Hero Section -->
+<section class="hero">
+  <h1>Welcome to {{siteName}}</h1>
+  <p>Delivering Excellence in Business Solutions</p>
+  <a href="/contact" class="cta-button" style="display: inline-block; margin-top: 1rem;">Get in Touch</a>
+</section>
+
+<!-- Services Section -->
+<section style="padding: 80px 60px; background: #F9FAFB;">
+  <div style="max-width: 1400px; margin: 0 auto;">
+    <h2 style="text-align: center; font-size: 40px; margin-bottom: 3rem;">Our Services</h2>
+    
+    <div class="services-grid">
+      {{#each services}}
+        <div class="service-card">
+          <div class="service-icon">{{this.icon}}</div>
+          <h3 class="service-title">{{this.title}}</h3>
+          <p class="service-description">{{this.description}}</p>
+          <a href="/services/{{this.slug}}" style="color: #1E40AF; text-decoration: none; font-weight: 600; margin-top: 1rem; display: inline-block;">Learn More →</a>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!-- Portfolio Section -->
+<section style="padding: 80px 60px;">
+  <div style="max-width: 1400px; margin: 0 auto;">
+    <h2 style="text-align: center; font-size: 40px; margin-bottom: 3rem;">Recent Projects</h2>
+    
+    <div class="portfolio-grid">
+      {{#each portfolio}}
+        <div class="portfolio-item">
+          <div class="portfolio-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">
+            {{this.icon}}
+          </div>
+          <div class="portfolio-info">
+            <div class="portfolio-category">{{this.category}}</div>
+            <h3 class="portfolio-title">{{this.title}}</h3>
+            <p style="color: #6B7280; font-size: 14px; margin-bottom: 1rem;">{{this.description}}</p>
+            <a href="/portfolio/{{this.slug}}" style="color: #1E40AF; text-decoration: none; font-weight: 600;">View Project →</a>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!-- Team Section -->
+<section style="padding: 80px 60px; background: #F9FAFB;">
+  <div style="max-width: 1400px; margin: 0 auto;">
+    <h2 style="text-align: center; font-size: 40px; margin-bottom: 3rem;">Meet Our Team</h2>
+    
+    <div class="team-grid">
+      {{#each team}}
+        <div class="team-member">
+          <div class="team-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">
+            {{this.icon}}
+          </div>
+          <div class="team-info">
+            <h3 class="team-name">{{this.name}}</h3>
+            <p class="team-position">{{this.position}}</p>
+            <p class="team-bio">{{this.bio}}</p>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section style="background: linear-gradient(135deg, #1E40AF 0%, #1F2937 100%); color: white; padding: 80px 60px; text-align: center;">
+  <div style="max-width: 1400px; margin: 0 auto;">
+    <h2 style="color: white; margin-bottom: 1rem; font-size: 40px;">Ready to Work Together?</h2>
+    <p style="margin-bottom: 2rem; opacity: 0.9; font-size: 18px;">Let's discuss how we can help your business grow</p>
+    
+    <a href="/contact" class="cta-button" style="background: #F59E0B; color: #000;">
+      Start Your Project
+    </a>
+  </div>
+</section>
+
+{{> footer}}
+

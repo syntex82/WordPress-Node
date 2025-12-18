@@ -1,0 +1,48 @@
+{
+  "name": "Corporate Pro",
+  "version": "1.0.0",
+  "author": "WordPress Node CMS",
+  "description": "Professional corporate and business theme with modern design, portfolio showcase, team pages, and service listings",
+  "thumbnail": "/themes/corporate-pro/screenshot.png",
+  "designConfig": {
+    "colors": {
+      "primary": "#1E40AF",
+      "secondary": "#1F2937",
+      "accent": "#F59E0B",
+      "background": "#FFFFFF",
+      "surface": "#F9FAFB",
+      "text": "#111827",
+      "textMuted": "#6B7280",
+      "heading": "#000000",
+      "link": "#1E40AF",
+      "linkHover": "#1E3A8A",
+      "border": "#E5E7EB",
+      "success": "#059669",
+      "warning": "#D97706",
+      "danger": "#DC2626"
+    },
+    "typography": {
+      "headingFont": "Playfair Display",
+      "bodyFont": "Lato",
+      "baseFontSize": 16,
+      "lineHeight": 1.6,
+      "headingWeight": 700
+    },
+    "layout": {
+      "headerStyle": "minimal",
+      "footerStyle": "full",
+      "contentWidth": 1400,
+      "sidebarPosition": "right"
+    },
+    "spacing": {
+      "sectionPadding": 80,
+      "elementSpacing": 32,
+      "containerPadding": 60
+    },
+    "borders": {
+      "radius": 8,
+      "width": 1
+    }
+  }
+}
+

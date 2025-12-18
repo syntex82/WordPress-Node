@@ -1,0 +1,163 @@
+{{> header}}
+
+<div class="courses-container" style="max-width: 1400px; margin: 0 auto; padding: 40px;">
+  <!-- Page Header -->
+  <div style="margin-bottom: 3rem;">
+    <h1 style="font-size: 36px; margin-bottom: 0.5rem;">All Courses</h1>
+    <p style="color: #6B7280; font-size: 18px;">Explore our complete catalog of professional courses</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+    <!-- Sidebar Filters -->
+    <aside class="courses-sidebar" style="background: #F3F4F6; padding: 2rem; border-radius: 12px; height: fit-content;">
+      <h3 style="margin-bottom: 1.5rem; font-size: 18px;">Filters</h3>
+
+      <!-- Category Filter -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6B7280;">Categories</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each categories}}
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" name="category" value="{{this.slug}}" style="cursor: pointer;">
+              <span>{{this.name}}</span>
+            </label>
+          {{/each}}
+        </div>
+      </div>
+
+      <!-- Level Filter -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6B7280;">Level</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="checkbox" name="level" value="beginner" style="cursor: pointer;">
+            <span>Beginner</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="checkbox" name="level" value="intermediate" style="cursor: pointer;">
+            <span>Intermediate</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="checkbox" name="level" value="advanced" style="cursor: pointer;">
+            <span>Advanced</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Price Filter -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6B7280;">Price</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="checkbox" name="price" value="free" style="cursor: pointer;">
+            <span>Free</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="checkbox" name="price" value="paid" style="cursor: pointer;">
+            <span>Paid</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Rating Filter -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6B7280;">Rating</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each (range 5 4)}}
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" name="rating" value="{{this}}" style="cursor: pointer;">
+              <span>{{this}}+ ⭐</span>
+            </label>
+          {{/each}}
+        </div>
+      </div>
+
+      <button style="
+        width: 100%;
+        padding: 10px;
+        background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        Apply Filters
+      </button>
+    </aside>
+
+    <!-- Courses Grid -->
+    <main>
+      <!-- Sorting Options -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #E5E7EB;">
+        <p style="color: #6B7280;">Showing {{courses.length}} courses</p>
+        <select style="
+          padding: 8px 12px;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
+          font-size: 14px;
+          cursor: pointer;
+        ">
+          <option>Sort by: Newest</option>
+          <option>Most Popular</option>
+          <option>Highest Rated</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+        </select>
+      </div>
+
+      <!-- Courses Grid -->
+      <div class="courses-grid">
+        {{#each courses}}
+          <div class="course-card">
+            <div class="course-image" style="background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">
+              {{this.icon}}
+            </div>
+            <div class="course-info">
+              <span class="course-category">{{this.category}}</span>
+              <h3 class="course-title">{{this.title}}</h3>
+              <p class="course-instructor">By {{this.instructor}}</p>
+              
+              <div class="course-stats">
+                <span>⭐ {{this.rating}}</span>
+                <span>👥 {{this.students}}</span>
+                <span>⏱️ {{this.duration}}</span>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="course-price">${{this.price}}</div>
+                <span style="
+                  display: inline-block;
+                  padding: 4px 12px;
+                  background: {{#if this.level 'beginner'}}#D1FAE5{{else if this.level 'intermediate'}}#FEF3C7{{else}}#FEE2E2{{/if}};
+                  color: {{#if this.level 'beginner'}}#065F46{{else if this.level 'intermediate'}}#92400E{{else}}#7F1D1D{{/if}};
+                  border-radius: 20px;
+                  font-size: 12px;
+                  font-weight: 600;
+                  text-transform: capitalize;
+                ">{{this.level}}</span>
+              </div>
+              
+              <button class="enroll-btn" onclick="enrollCourse('{{this.id}}')">
+                Enroll Now
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+
+      <!-- Pagination -->
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem;">
+        <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">← Previous</button>
+        <button style="padding: 8px 12px; background: #5B21B6; color: white; border: none; border-radius: 4px; cursor: pointer;">1</button>
+        <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">2</button>
+        <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">3</button>
+        <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">Next →</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+{{> footer}}
+

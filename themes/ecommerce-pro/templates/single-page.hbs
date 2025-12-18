@@ -1,0 +1,61 @@
+{{> header}}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px;">
+  <!-- Breadcrumb -->
+  <div style="margin-bottom: 2rem; color: #6C757D; font-size: 14px;">
+    <a href="/" style="color: #FF6B35; text-decoration: none;">Home</a> / 
+    <span>{{page.title}}</span>
+  </div>
+
+  <article>
+    <header style="margin-bottom: 3rem;">
+      <h1 style="font-size: 40px; margin-bottom: 1rem;">{{page.title}}</h1>
+      <div style="color: #6C757D; font-size: 14px;">
+        Last updated: {{formatDate page.updatedAt}}
+      </div>
+    </header>
+
+    {{#if page.featuredImage}}
+      <img src="{{page.featuredImage}}" alt="{{page.title}}" style="
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+      ">
+    {{/if}}
+
+    <div style="
+      font-size: 16px;
+      line-height: 1.8;
+      color: #1A1A1A;
+      max-width: 800px;
+    ">
+      {{{page.content}}}
+    </div>
+  </article>
+
+  <!-- Related Pages -->
+  {{#if relatedPages}}
+    <section style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #E9ECEF;">
+      <h2 style="font-size: 28px; margin-bottom: 2rem;">Related Pages</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+        {{#each relatedPages}}
+          <a href="{{this.slug}}" style="
+            text-decoration: none;
+            padding: 1.5rem;
+            background: #F8F9FA;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='#E9ECEF'; this.style.transform='translateY(-4px)'" onmouseout="this.style.background='#F8F9FA'; this.style.transform='translateY(0)'">
+            <h3 style="color: #FF6B35; margin-bottom: 0.5rem;">{{this.title}}</h3>
+            <p style="color: #6C757D; font-size: 14px;">{{truncate this.excerpt 100}}</p>
+          </a>
+        {{/each}}
+      </div>
+    </section>
+  {{/if}}
+</div>
+
+{{> footer}}
+

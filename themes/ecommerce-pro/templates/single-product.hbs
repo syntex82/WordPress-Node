@@ -1,0 +1,165 @@
+{{> header}}
+
+<div class="product-detail-container" style="max-width: 1400px; margin: 0 auto; padding: 40px;">
+  <!-- Breadcrumb -->
+  <div style="margin-bottom: 2rem; color: #6C757D; font-size: 14px;">
+    <a href="/" style="color: #FF6B35; text-decoration: none;">Home</a> / 
+    <a href="/shop" style="color: #FF6B35; text-decoration: none;">Shop</a> / 
+    <span>{{product.name}}</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+    <!-- Product Images -->
+    <div>
+      <div style="
+        background: #F8F9FA;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <img src="{{product.image}}" alt="{{product.name}}" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      
+      <!-- Thumbnail Gallery -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        {{#each product.gallery}}
+          <img src="{{this}}" alt="Product" style="
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.borderColor='#FF6B35'" onmouseout="this.style.borderColor='transparent'">
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Product Details -->
+    <div>
+      <h1 style="font-size: 32px; margin-bottom: 1rem;">{{product.name}}</h1>
+      
+      <!-- Rating -->
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="color: #F7931E; font-size: 18px;">⭐ {{product.rating}}</div>
+        <span style="color: #6C757D;">({{product.reviews}} customer reviews)</span>
+      </div>
+
+      <!-- Price -->
+      <div style="margin-bottom: 2rem;">
+        <div style="font-size: 32px; color: #FF6B35; font-weight: 700; margin-bottom: 0.5rem;">
+          ${{product.price}}
+        </div>
+        {{#if product.originalPrice}}
+          <div style="font-size: 18px; color: #6C757D; text-decoration: line-through;">
+            ${{product.originalPrice}}
+          </div>
+        {{/if}}
+      </div>
+
+      <!-- Description -->
+      <p style="color: #6C757D; line-height: 1.8; margin-bottom: 2rem;">
+        {{product.description}}
+      </p>
+
+      <!-- Product Features -->
+      <div style="background: #F8F9FA; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Key Features</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each product.features}}
+            <li style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: #28A745;">✓</span> {{this}}
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <!-- Quantity & Add to Cart -->
+      <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; border: 1px solid #E9ECEF; border-radius: 8px; overflow: hidden;">
+          <button style="padding: 10px 15px; background: white; border: none; cursor: pointer; font-size: 18px;">−</button>
+          <input type="number" value="1" min="1" style="
+            width: 60px;
+            text-align: center;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+          ">
+          <button style="padding: 10px 15px; background: white; border: none; cursor: pointer; font-size: 18px;">+</button>
+        </div>
+        
+        <button style="
+          flex: 1;
+          padding: 12px 24px;
+          background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+          Add to Cart
+        </button>
+      </div>
+
+      <!-- Wishlist & Share -->
+      <div style="display: flex; gap: 1rem; padding-top: 1rem; border-top: 1px solid #E9ECEF;">
+        <button style="
+          flex: 1;
+          padding: 10px;
+          border: 1px solid #E9ECEF;
+          background: white;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        " onmouseover="this.style.background='#F8F9FA'" onmouseout="this.style.background='white'">
+          ♡ Add to Wishlist
+        </button>
+        <button style="
+          flex: 1;
+          padding: 10px;
+          border: 1px solid #E9ECEF;
+          background: white;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        " onmouseover="this.style.background='#F8F9FA'" onmouseout="this.style.background='white'">
+          📤 Share
+        </button>
+      </div>
+
+      <!-- Shipping Info -->
+      <div style="background: #E8F5E9; padding: 1rem; border-radius: 8px; margin-top: 2rem; color: #28A745; font-size: 14px;">
+        ✓ Free shipping on orders over $50 | ✓ 30-day money-back guarantee
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  <section style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #E9ECEF;">
+    <h2 style="font-size: 28px; margin-bottom: 2rem;">Related Products</h2>
+    <div class="products-grid">
+      {{#each relatedProducts}}
+        <div class="product-card">
+          <img src="{{this.image}}" alt="{{this.name}}" class="product-image">
+          <div class="product-info">
+            <h3 class="product-name">{{this.name}}</h3>
+            <div class="product-rating">⭐ {{this.rating}}</div>
+            <div class="product-price">${{this.price}}</div>
+            <button class="add-to-cart-btn">Add to Cart</button>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </section>
+</div>
+
+{{> footer}}
+

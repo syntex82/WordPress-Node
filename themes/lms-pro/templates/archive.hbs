@@ -1,0 +1,97 @@
+{{> header}}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px;">
+  <div style="margin-bottom: 3rem;">
+    <h1 style="font-size: 36px; margin-bottom: 0.5rem;">{{archiveTitle}}</h1>
+    <p style="color: #6B7280; font-size: 18px;">{{archiveDescription}}</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+    <!-- Sidebar -->
+    <aside style="background: #F3F4F6; padding: 2rem; border-radius: 12px; height: fit-content;">
+      <h3 style="margin-bottom: 1.5rem; font-size: 18px;">Filters</h3>
+
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6B7280;">Categories</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each categories}}
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" style="cursor: pointer;">
+              <span>{{this.name}}</span>
+            </label>
+          {{/each}}
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6B7280;">Sort By</h4>
+        <select style="width: 100%; padding: 8px; border: 1px solid #E5E7EB; border-radius: 4px; cursor: pointer;">
+          <option>Newest First</option>
+          <option>Oldest First</option>
+          <option>Most Popular</option>
+          <option>Most Commented</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- Posts Grid -->
+    <main>
+      {{#if posts.length}}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+          {{#each posts}}
+            <article style="
+              background: white;
+              border: 1px solid #E5E7EB;
+              border-radius: 12px;
+              overflow: hidden;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.boxShadow='0 12px 24px rgba(0, 0, 0, 0.1)'; this.style.transform='translateY(-8px)'" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+              {{#if this.featuredImage}}
+                <img src="{{this.featuredImage}}" alt="{{this.title}}" style="width: 100%; height: 200px; object-fit: cover;">
+              {{/if}}
+
+              <div style="padding: 1.5rem;">
+                <div style="color: #6B7280; font-size: 12px; margin-bottom: 0.5rem; text-transform: uppercase;">
+                  {{formatDate this.publishedAt}}
+                </div>
+
+                <h2 style="margin-bottom: 0.5rem;">
+                  <a href="/blog/{{this.slug}}" style="color: #5B21B6; text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='#7C3AED'" onmouseout="this.style.color='#5B21B6'">
+                    {{this.title}}
+                  </a>
+                </h2>
+
+                <p style="color: #6B7280; font-size: 14px; line-height: 1.6; margin-bottom: 1rem;">
+                  {{truncate this.excerpt 120}}
+                </p>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #6B7280;">
+                  <span>By {{this.author.name}}</span>
+                  <a href="/blog/{{this.slug}}" style="color: #5B21B6; text-decoration: none; font-weight: 600;">Read More →</a>
+                </div>
+              </div>
+            </article>
+          {{/each}}
+        </div>
+
+        <!-- Pagination -->
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem;">
+          <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">← Previous</button>
+          <button style="padding: 8px 12px; background: #5B21B6; color: white; border: none; border-radius: 4px; cursor: pointer;">1</button>
+          <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">2</button>
+          <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">3</button>
+          <button style="padding: 8px 12px; border: 1px solid #E5E7EB; background: white; border-radius: 4px; cursor: pointer;">Next →</button>
+        </div>
+      {{else}}
+        <div style="text-align: center; padding: 4rem 2rem; background: #F3F4F6; border-radius: 12px;">
+          <div style="font-size: 48px; margin-bottom: 1rem;">📝</div>
+          <h2 style="margin-bottom: 1rem;">No posts found</h2>
+          <p style="color: #6B7280;">Try adjusting your filters or browse our latest articles.</p>
+        </div>
+      {{/if}}
+    </main>
+  </div>
+</div>
+
+{{> footer}}
+

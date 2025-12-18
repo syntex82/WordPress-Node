@@ -1,0 +1,106 @@
+{{> header}}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px;">
+  <!-- Breadcrumb -->
+  <div style="margin-bottom: 2rem; color: #6C757D; font-size: 14px;">
+    <a href="/" style="color: #FF6B35; text-decoration: none;">Home</a> / 
+    <a href="/blog" style="color: #FF6B35; text-decoration: none;">Blog</a> / 
+    <span>{{post.title}}</span>
+  </div>
+
+  <article style="max-width: 800px; margin: 0 auto;">
+    <header style="margin-bottom: 2rem;">
+      <h1 style="font-size: 40px; margin-bottom: 1rem;">{{post.title}}</h1>
+      
+      <div style="display: flex; align-items: center; gap: 2rem; color: #6C757D; font-size: 14px; padding-bottom: 1rem; border-bottom: 1px solid #E9ECEF;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <img src="{{post.author.avatar}}" alt="{{post.author.name}}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+          <span>{{post.author.name}}</span>
+        </div>
+        <span>{{formatDate post.publishedAt}}</span>
+        <span>{{post.readTime}} min read</span>
+      </div>
+    </header>
+
+    {{#if post.featuredImage}}
+      <img src="{{post.featuredImage}}" alt="{{post.title}}" style="
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+      ">
+    {{/if}}
+
+    <div style="
+      font-size: 16px;
+      line-height: 1.8;
+      color: #1A1A1A;
+      margin-bottom: 2rem;
+    ">
+      {{{post.content}}}
+    </div>
+
+    <!-- Tags -->
+    {{#if post.tags}}
+      <div style="margin-bottom: 2rem; padding-top: 1rem; border-top: 1px solid #E9ECEF;">
+        <strong style="display: block; margin-bottom: 1rem;">Tags:</strong>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+          {{#each post.tags}}
+            <a href="/blog?tag={{this}}" style="
+              display: inline-block;
+              padding: 6px 12px;
+              background: #F8F9FA;
+              color: #FF6B35;
+              text-decoration: none;
+              border-radius: 20px;
+              font-size: 14px;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.background='#FF6B35'; this.style.color='white'" onmouseout="this.style.background='#F8F9FA'; this.style.color='#FF6B35'">
+              {{this}}
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    {{/if}}
+
+    <!-- Share -->
+    <div style="padding: 1rem; background: #F8F9FA; border-radius: 8px; margin-bottom: 2rem;">
+      <strong style="display: block; margin-bottom: 1rem;">Share this post:</strong>
+      <div style="display: flex; gap: 1rem;">
+        <a href="#" style="color: #FF6B35; text-decoration: none; font-weight: 600;">Facebook</a>
+        <a href="#" style="color: #FF6B35; text-decoration: none; font-weight: 600;">Twitter</a>
+        <a href="#" style="color: #FF6B35; text-decoration: none; font-weight: 600;">LinkedIn</a>
+        <a href="#" style="color: #FF6B35; text-decoration: none; font-weight: 600;">Copy Link</a>
+      </div>
+    </div>
+  </article>
+
+  <!-- Related Posts -->
+  {{#if relatedPosts}}
+    <section style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #E9ECEF;">
+      <h2 style="font-size: 28px; margin-bottom: 2rem;">Related Articles</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+        {{#each relatedPosts}}
+          <a href="/blog/{{this.slug}}" style="
+            text-decoration: none;
+            background: white;
+            border: 1px solid #E9ECEF;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.boxShadow='0 8px 16px rgba(0, 0, 0, 0.1)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+            <img src="{{this.featuredImage}}" alt="{{this.title}}" style="width: 100%; height: 200px; object-fit: cover;">
+            <div style="padding: 1rem;">
+              <h3 style="color: #FF6B35; margin-bottom: 0.5rem;">{{this.title}}</h3>
+              <p style="color: #6C757D; font-size: 14px;">{{truncate this.excerpt 80}}</p>
+            </div>
+          </a>
+        {{/each}}
+      </div>
+    </section>
+  {{/if}}
+</div>
+
+{{> footer}}
+

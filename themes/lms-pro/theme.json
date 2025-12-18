@@ -1,0 +1,48 @@
+{
+  "name": "LMS Pro",
+  "version": "1.0.0",
+  "author": "WordPress Node CMS",
+  "description": "Professional online learning management system theme with course listings, lessons, student dashboard, and certification support",
+  "thumbnail": "/themes/lms-pro/screenshot.png",
+  "designConfig": {
+    "colors": {
+      "primary": "#5B21B6",
+      "secondary": "#7C3AED",
+      "accent": "#06B6D4",
+      "background": "#FFFFFF",
+      "surface": "#F3F4F6",
+      "text": "#1F2937",
+      "textMuted": "#6B7280",
+      "heading": "#111827",
+      "link": "#5B21B6",
+      "linkHover": "#7C3AED",
+      "border": "#E5E7EB",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "danger": "#EF4444"
+    },
+    "typography": {
+      "headingFont": "Sora",
+      "bodyFont": "Inter",
+      "baseFontSize": 16,
+      "lineHeight": 1.6,
+      "headingWeight": 700
+    },
+    "layout": {
+      "headerStyle": "modern",
+      "footerStyle": "full",
+      "contentWidth": 1400,
+      "sidebarPosition": "left"
+    },
+    "spacing": {
+      "sectionPadding": 60,
+      "elementSpacing": 24,
+      "containerPadding": 40
+    },
+    "borders": {
+      "radius": 12,
+      "width": 1
+    }
+  }
+}
+

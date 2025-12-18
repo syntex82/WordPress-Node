@@ -1,0 +1,48 @@
+{
+  "name": "E-Commerce Pro",
+  "version": "1.0.0",
+  "author": "WordPress Node CMS",
+  "description": "Professional e-commerce theme optimized for online stores with modern design, product showcase, and seamless checkout experience",
+  "thumbnail": "/themes/ecommerce-pro/screenshot.png",
+  "designConfig": {
+    "colors": {
+      "primary": "#FF6B35",
+      "secondary": "#004E89",
+      "accent": "#F7931E",
+      "background": "#FFFFFF",
+      "surface": "#F8F9FA",
+      "text": "#1A1A1A",
+      "textMuted": "#6C757D",
+      "heading": "#0D1B2A",
+      "link": "#FF6B35",
+      "linkHover": "#E55A2B",
+      "border": "#E9ECEF",
+      "success": "#28A745",
+      "warning": "#FFC107",
+      "danger": "#DC3545"
+    },
+    "typography": {
+      "headingFont": "Poppins",
+      "bodyFont": "Inter",
+      "baseFontSize": 16,
+      "lineHeight": 1.6,
+      "headingWeight": 700
+    },
+    "layout": {
+      "headerStyle": "modern",
+      "footerStyle": "full",
+      "contentWidth": 1400,
+      "sidebarPosition": "right"
+    },
+    "spacing": {
+      "sectionPadding": 60,
+      "elementSpacing": 24,
+      "containerPadding": 40
+    },
+    "borders": {
+      "radius": 12,
+      "width": 1
+    }
+  }
+}
+

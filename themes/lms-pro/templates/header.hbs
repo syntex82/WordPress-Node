@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{pageTitle}} - {{siteName}}</title>
+  <meta name="description" content="{{pageDescription}}">
+  <link rel="stylesheet" href="/themes/lms-pro/assets/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" class="logo">{{siteName}}</a>
+      
+      <nav>
+        <ul class="nav-menu">
+          <li><a href="/">Home</a></li>
+          <li><a href="/courses">Courses</a></li>
+          <li><a href="/my-courses">My Courses</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <div class="search-box" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.1); padding: 8px 12px; border-radius: 6px; margin-right: 1rem;">
+          <input type="text" placeholder="Search courses..." style="
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            width: 200px;
+            font-size: 14px;
+          ">
+          <span style="cursor: pointer;">🔍</span>
+        </div>
+
+        <a href="/my-account" class="user-icon" title="My Account" style="color: white; text-decoration: none; font-size: 20px;">👤</a>
+        
+        <a href="/notifications" style="color: white; text-decoration: none; font-size: 20px; position: relative;">
+          🔔
+          <span style="
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #EF4444;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+          ">{{notificationCount}}</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+

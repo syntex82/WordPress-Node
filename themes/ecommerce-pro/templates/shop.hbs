@@ -1,0 +1,122 @@
+{{> header}}
+
+<div class="shop-container" style="max-width: 1400px; margin: 0 auto; padding: 40px;">
+  <!-- Page Header -->
+  <div style="margin-bottom: 3rem;">
+    <h1 style="font-size: 36px; margin-bottom: 0.5rem;">Our Products</h1>
+    <p style="color: #6C757D; font-size: 18px;">Browse our complete collection of premium products</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+    <!-- Sidebar Filters -->
+    <aside class="shop-sidebar" style="background: #F8F9FA; padding: 2rem; border-radius: 12px; height: fit-content;">
+      <h3 style="margin-bottom: 1.5rem; font-size: 18px;">Filters</h3>
+
+      <!-- Category Filter -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6C757D;">Categories</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each categories}}
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" name="category" value="{{this.slug}}" style="cursor: pointer;">
+              <span>{{this.name}}</span>
+            </label>
+          {{/each}}
+        </div>
+      </div>
+
+      <!-- Price Filter -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6C757D;">Price Range</h4>
+        <input type="range" min="0" max="1000" style="width: 100%; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 14px;">
+          <span>$0</span>
+          <span>$1000</span>
+        </div>
+      </div>
+
+      <!-- Rating Filter -->
+      <div style="margin-bottom: 2rem;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; color: #6C757D;">Rating</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each (range 5 1)}}
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" name="rating" value="{{this}}" style="cursor: pointer;">
+              <span>{{this}}+ ⭐</span>
+            </label>
+          {{/each}}
+        </div>
+      </div>
+
+      <button style="
+        width: 100%;
+        padding: 10px;
+        background: #FF6B35;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      " onmouseover="this.style.background='#E55A2B'" onmouseout="this.style.background='#FF6B35'">
+        Apply Filters
+      </button>
+    </aside>
+
+    <!-- Products Grid -->
+    <main>
+      <!-- Sorting Options -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #E9ECEF;">
+        <p style="color: #6C757D;">Showing {{products.length}} products</p>
+        <select style="
+          padding: 8px 12px;
+          border: 1px solid #E9ECEF;
+          border-radius: 8px;
+          font-size: 14px;
+          cursor: pointer;
+        ">
+          <option>Sort by: Newest</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+          <option>Best Sellers</option>
+          <option>Top Rated</option>
+        </select>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid">
+        {{#each products}}
+          <div class="product-card">
+            <img src="{{this.image}}" alt="{{this.name}}" class="product-image">
+            <div class="product-info">
+              <h3 class="product-name">{{this.name}}</h3>
+              <p style="color: #6C757D; font-size: 14px; margin-bottom: 0.5rem;">{{this.category}}</p>
+              <div class="product-rating">
+                ⭐ {{this.rating}} ({{this.reviews}} reviews)
+              </div>
+              <div class="product-price">${{this.price}}</div>
+              {{#if this.discount}}
+                <p style="color: #28A745; font-size: 14px; margin-bottom: 1rem;">Save {{this.discount}}%</p>
+              {{/if}}
+              <button class="add-to-cart-btn" onclick="addToCart('{{this.id}}')">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+
+      <!-- Pagination -->
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem;">
+        <button style="padding: 8px 12px; border: 1px solid #E9ECEF; background: white; border-radius: 4px; cursor: pointer;">← Previous</button>
+        <button style="padding: 8px 12px; background: #FF6B35; color: white; border: none; border-radius: 4px; cursor: pointer;">1</button>
+        <button style="padding: 8px 12px; border: 1px solid #E9ECEF; background: white; border-radius: 4px; cursor: pointer;">2</button>
+        <button style="padding: 8px 12px; border: 1px solid #E9ECEF; background: white; border-radius: 4px; cursor: pointer;">3</button>
+        <button style="padding: 8px 12px; border: 1px solid #E9ECEF; background: white; border-radius: 4px; cursor: pointer;">Next →</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+{{> footer}}
+

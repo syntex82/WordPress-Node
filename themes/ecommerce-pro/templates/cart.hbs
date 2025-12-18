@@ -1,0 +1,141 @@
+{{> header}}
+
+<div class="cart-container">
+  <h1 style="font-size: 32px; margin-bottom: 2rem;">Shopping Cart</h1>
+
+  {{#if cartItems.length}}
+    <div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+      <!-- Cart Items -->
+      <div class="cart-items">
+        {{#each cartItems}}
+          <div class="cart-item">
+            <img src="{{this.image}}" alt="{{this.name}}" class="cart-item-image">
+            
+            <div style="flex: 1;">
+              <h3 style="margin-bottom: 0.5rem;">{{this.name}}</h3>
+              <p style="color: #6C757D; font-size: 14px; margin-bottom: 1rem;">SKU: {{this.sku}}</p>
+              
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; border: 1px solid #E9ECEF; border-radius: 4px; overflow: hidden;">
+                  <button style="padding: 5px 10px; background: white; border: none; cursor: pointer;">−</button>
+                  <input type="number" value="{{this.quantity}}" style="width: 40px; text-align: center; border: none; font-weight: 600;">
+                  <button style="padding: 5px 10px; background: white; border: none; cursor: pointer;">+</button>
+                </div>
+                
+                <div style="font-weight: 600; color: #FF6B35;">
+                  ${{multiply this.price this.quantity}}
+                </div>
+              </div>
+            </div>
+
+            <button style="
+              padding: 8px 12px;
+              background: #FFE5E5;
+              color: #DC3545;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 14px;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.background='#DC3545'; this.style.color='white'" onmouseout="this.style.background='#FFE5E5'; this.style.color='#DC3545'">
+              Remove
+            </button>
+          </div>
+        {{/each}}
+      </div>
+
+      <!-- Order Summary -->
+      <div class="cart-summary">
+        <h3 style="margin-bottom: 1.5rem; font-size: 18px;">Order Summary</h3>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>${{cartSubtotal}}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span>${{shippingCost}}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Tax</span>
+          <span>${{taxAmount}}</span>
+        </div>
+
+        {{#if discountCode}}
+          <div class="summary-row">
+            <span>Discount</span>
+            <span style="color: #28A745;">-${{discountAmount}}</span>
+          </div>
+        {{/if}}
+
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>${{cartTotal}}</span>
+        </div>
+
+        <button class="checkout-btn">
+          Proceed to Checkout
+        </button>
+
+        <a href="/shop" style="
+          display: block;
+          text-align: center;
+          margin-top: 1rem;
+          color: #FF6B35;
+          text-decoration: none;
+          font-weight: 600;
+          transition: color 0.3s ease;
+        " onmouseover="this.style.color='#E55A2B'" onmouseout="this.style.color='#FF6B35'">
+          Continue Shopping
+        </a>
+
+        <!-- Promo Code -->
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #E9ECEF;">
+          <input type="text" placeholder="Promo code" style="
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #E9ECEF;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 14px;
+          ">
+          <button style="
+            width: 100%;
+            padding: 8px;
+            background: white;
+            border: 1px solid #E9ECEF;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='#F8F9FA'" onmouseout="this.style.background='white'">
+            Apply Code
+          </button>
+        </div>
+      </div>
+    </div>
+  {{else}}
+    <div style="text-align: center; padding: 4rem 2rem; background: #F8F9FA; border-radius: 12px;">
+      <div style="font-size: 48px; margin-bottom: 1rem;">🛒</div>
+      <h2 style="margin-bottom: 1rem;">Your cart is empty</h2>
+      <p style="color: #6C757D; margin-bottom: 2rem;">Add some products to get started!</p>
+      <a href="/shop" style="
+        display: inline-block;
+        padding: 12px 32px;
+        background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        Start Shopping
+      </a>
+    </div>
+  {{/if}}
+</div>
+
+{{> footer}}
+

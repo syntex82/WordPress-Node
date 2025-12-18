@@ -1,0 +1,184 @@
+{{> header}}
+
+<div style="max-width: 1400px; margin: 0 auto; padding: 40px;">
+  <!-- Breadcrumb -->
+  <div style="margin-bottom: 2rem; color: #6B7280; font-size: 14px;">
+    <a href="/" style="color: #5B21B6; text-decoration: none;">Home</a> / 
+    <a href="/courses" style="color: #5B21B6; text-decoration: none;">Courses</a> / 
+    <span>{{course.title}}</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 350px; gap: 3rem; margin-bottom: 3rem;">
+    <!-- Course Details -->
+    <div>
+      <h1 style="font-size: 40px; margin-bottom: 1rem;">{{course.title}}</h1>
+      
+      <p style="color: #6B7280; font-size: 18px; margin-bottom: 1.5rem;">{{course.description}}</p>
+
+      <!-- Instructor Info -->
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #E5E7EB;">
+        <img src="{{course.instructor.avatar}}" alt="{{course.instructor.name}}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+        <div>
+          <div style="font-weight: 600;">{{course.instructor.name}}</div>
+          <div style="color: #6B7280; font-size: 14px;">{{course.instructor.title}}</div>
+        </div>
+      </div>
+
+      <!-- Course Stats -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; padding: 1.5rem; background: #F3F4F6; border-radius: 12px;">
+        <div style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: #5B21B6;">{{course.lessons}}</div>
+          <div style="font-size: 12px; color: #6B7280; text-transform: uppercase;">Lessons</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: #5B21B6;">{{course.duration}}</div>
+          <div style="font-size: 12px; color: #6B7280; text-transform: uppercase;">Hours</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: #5B21B6;">⭐ {{course.rating}}</div>
+          <div style="font-size: 12px; color: #6B7280; text-transform: uppercase;">Rating</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: #5B21B6;">{{course.students}}</div>
+          <div style="font-size: 12px; color: #6B7280; text-transform: uppercase;">Students</div>
+        </div>
+      </div>
+
+      <!-- Course Content -->
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-size: 24px; margin-bottom: 1.5rem;">Course Content</h2>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {{#each course.modules}}
+            <div style="border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden;">
+              <div style="
+                padding: 1rem;
+                background: #F3F4F6;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-weight: 600;
+              " onclick="toggleModule(this)">
+                <span>📚 {{this.title}}</span>
+                <span>▼</span>
+              </div>
+              
+              <div style="display: none; padding: 1rem; background: white;">
+                {{#each this.lessons}}
+                  <div style="padding: 0.75rem; display: flex; align-items: center; gap: 0.5rem; color: #6B7280; font-size: 14px;">
+                    <span>▶</span> {{this.title}} ({{this.duration}} min)
+                  </div>
+                {{/each}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      <!-- Requirements -->
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-size: 24px; margin-bottom: 1.5rem;">Requirements</h2>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each course.requirements}}
+            <li style="display: flex; align-items: center; gap: 0.5rem; color: #6B7280;">
+              <span style="color: #10B981;">✓</span> {{this}}
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <!-- What You'll Learn -->
+      <div>
+        <h2 style="font-size: 24px; margin-bottom: 1.5rem;">What You'll Learn</h2>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
+          {{#each course.learningPoints}}
+            <li style="display: flex; align-items: center; gap: 0.5rem; color: #6B7280;">
+              <span style="color: #10B981;">✓</span> {{this}}
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <!-- Course Card -->
+      <div style="background: white; border: 1px solid #E5E7EB; border-radius: 12px; padding: 2rem; position: sticky; top: 100px;">
+        <div style="
+          background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%);
+          height: 200px;
+          border-radius: 8px;
+          margin-bottom: 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 64px;
+        ">
+          {{course.icon}}
+        </div>
+
+        <div style="font-size: 32px; color: #5B21B6; font-weight: 700; margin-bottom: 1rem;">
+          ${{course.price}}
+        </div>
+
+        <button style="
+          width: 100%;
+          padding: 12px;
+          background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-bottom: 1rem;
+          transition: all 0.3s ease;
+        " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+          Enroll Now
+        </button>
+
+        <button style="
+          width: 100%;
+          padding: 12px;
+          background: white;
+          color: #5B21B6;
+          border: 2px solid #5B21B6;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        " onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">
+          Add to Wishlist
+        </button>
+
+        <!-- Course Info -->
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 14px;">
+            <span style="color: #6B7280;">Level:</span>
+            <span style="font-weight: 600; text-transform: capitalize;">{{course.level}}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 14px;">
+            <span style="color: #6B7280;">Duration:</span>
+            <span style="font-weight: 600;">{{course.duration}} hours</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: #6B7280;">Certificate:</span>
+            <span style="font-weight: 600; color: #10B981;">✓ Yes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{> footer}}
+
+<script>
+function toggleModule(element) {
+  const content = element.nextElementSibling;
+  content.style.display = content.style.display === 'none' ? 'block' : 'none';
+  element.querySelector('span:last-child').style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+</script>
+

@@ -1,0 +1,142 @@
+{{> header}}
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Learn Anything, Anytime</h1>
+    <p>Unlock your potential with our comprehensive online courses and expert instructors</p>
+    <a href="/courses" class="cta-button">Explore Courses</a>
+  </div>
+</section>
+
+<!-- Featured Courses Section -->
+<section class="featured-section">
+  <div class="container">
+    <h2 style="text-align: center; margin-bottom: 3rem; font-size: 36px;">Featured Courses</h2>
+    
+    <div class="courses-grid">
+      {{#each courses}}
+        <div class="course-card">
+          <div class="course-image" style="background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">
+            {{this.icon}}
+          </div>
+          <div class="course-info">
+            <span class="course-category">{{this.category}}</span>
+            <h3 class="course-title">{{this.title}}</h3>
+            <p class="course-instructor">By {{this.instructor}}</p>
+            
+            <div class="course-stats">
+              <span>⭐ {{this.rating}}</span>
+              <span>👥 {{this.students}} students</span>
+              <span>⏱️ {{this.duration}}</span>
+            </div>
+            
+            <div class="course-price">${{this.price}}</div>
+            <button class="enroll-btn" onclick="enrollCourse('{{this.id}}')">
+              Enroll Now
+            </button>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section" style="padding: 60px 40px; background: #F3F4F6;">
+  <div class="container">
+    <h2 style="text-align: center; margin-bottom: 3rem; font-size: 36px;">Browse by Category</h2>
+    
+    <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 1400px; margin: 0 auto;">
+      {{#each categories}}
+        <a href="/courses?category={{this.slug}}" class="category-card" style="
+          background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%);
+          color: white;
+          padding: 2rem;
+          border-radius: 12px;
+          text-decoration: none;
+          text-align: center;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 24px rgba(0, 0, 0, 0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.1)';">
+          <div style="font-size: 32px; margin-bottom: 0.5rem;">{{this.icon}}</div>
+          <h3 style="font-size: 20px; margin-bottom: 0.5rem;">{{this.name}}</h3>
+          <p style="opacity: 0.9;">{{this.count}} courses</p>
+        </a>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section style="padding: 60px 40px;">
+  <div class="container">
+    <h2 style="text-align: center; margin-bottom: 3rem; font-size: 36px;">Why Choose Our Platform?</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1400px; margin: 0 auto;">
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 48px; margin-bottom: 1rem;">🎓</div>
+        <h3 style="margin-bottom: 0.5rem;">Expert Instructors</h3>
+        <p style="color: #6B7280;">Learn from industry professionals with years of experience</p>
+      </div>
+
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 48px; margin-bottom: 1rem;">📱</div>
+        <h3 style="margin-bottom: 0.5rem;">Learn Anywhere</h3>
+        <p style="color: #6B7280;">Access courses on any device, anytime, anywhere</p>
+      </div>
+
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 48px; margin-bottom: 1rem;">🏆</div>
+        <h3 style="margin-bottom: 0.5rem;">Certifications</h3>
+        <p style="color: #6B7280;">Earn recognized certificates upon course completion</p>
+      </div>
+
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 48px; margin-bottom: 1rem;">💬</div>
+        <h3 style="margin-bottom: 0.5rem;">Community Support</h3>
+        <p style="color: #6B7280;">Connect with peers and get help from instructors</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section style="background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%); color: white; padding: 60px 40px; text-align: center;">
+  <div class="container">
+    <h2 style="color: white; margin-bottom: 1rem; font-size: 32px;">Ready to Start Learning?</h2>
+    <p style="margin-bottom: 2rem; opacity: 0.9; font-size: 18px;">Join thousands of students already learning on our platform</p>
+    
+    <a href="/courses" style="
+      display: inline-block;
+      padding: 14px 40px;
+      background: #06B6D4;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+      Browse All Courses
+    </a>
+  </div>
+</section>
+
+{{> footer}}
+
+<style>
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .featured-section {
+    padding: 60px 40px;
+  }
+
+  .categories-grid a:hover {
+    text-decoration: none;
+  }
+</style>
+

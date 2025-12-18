@@ -1,0 +1,108 @@
+{{> header}}
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Welcome to Our Store</h1>
+    <p>Discover amazing products with premium quality and unbeatable prices</p>
+    <a href="/shop" class="cta-button">Shop Now</a>
+  </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="featured-section">
+  <div class="container">
+    <h2 style="text-align: center; margin-bottom: 3rem; font-size: 36px;">Featured Products</h2>
+    
+    <div class="products-grid">
+      {{#each products}}
+        <div class="product-card">
+          <img src="{{this.image}}" alt="{{this.name}}" class="product-image">
+          <div class="product-info">
+            <h3 class="product-name">{{this.name}}</h3>
+            <div class="product-rating">
+              ⭐ {{this.rating}} ({{this.reviews}} reviews)
+            </div>
+            <div class="product-price">${{this.price}}</div>
+            <button class="add-to-cart-btn" onclick="addToCart('{{this.id}}')">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section" style="padding: 60px 40px; background: #F8F9FA;">
+  <div class="container">
+    <h2 style="text-align: center; margin-bottom: 3rem; font-size: 36px;">Shop by Category</h2>
+    
+    <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 1400px; margin: 0 auto;">
+      {{#each categories}}
+        <a href="/shop?category={{this.slug}}" class="category-card" style="
+          background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+          color: white;
+          padding: 2rem;
+          border-radius: 12px;
+          text-decoration: none;
+          text-align: center;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 24px rgba(0, 0, 0, 0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.1)';">
+          <h3 style="font-size: 20px; margin-bottom: 0.5rem;">{{this.name}}</h3>
+          <p style="opacity: 0.9;">{{this.count}} products</p>
+        </a>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section" style="background: linear-gradient(135deg, #004E89 0%, #003d6b 100%); color: white; padding: 60px 40px; text-align: center;">
+  <div class="container">
+    <h2 style="color: white; margin-bottom: 1rem; font-size: 32px;">Subscribe to Our Newsletter</h2>
+    <p style="margin-bottom: 2rem; opacity: 0.9; font-size: 18px;">Get exclusive deals and updates delivered to your inbox</p>
+    
+    <form style="max-width: 500px; margin: 0 auto; display: flex; gap: 1rem;">
+      <input type="email" placeholder="Enter your email" style="
+        flex: 1;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+      " required>
+      <button type="submit" style="
+        padding: 12px 32px;
+        background: #F7931E;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        Subscribe
+      </button>
+    </form>
+  </div>
+</section>
+
+{{> footer}}
+
+<style>
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .featured-section {
+    padding: 60px 40px;
+  }
+
+  .categories-grid a:hover {
+    text-decoration: none;
+  }
+</style>
+
