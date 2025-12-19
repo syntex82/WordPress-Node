@@ -170,26 +170,40 @@ export class AddManualRecommendationDto {
 export class UpdateRecommendationSettingsDto {
   @IsOptional()
   @IsBoolean()
-  enablePersonalized?: boolean;
+  enablePersonalization?: boolean;
 
   @IsOptional()
   @IsBoolean()
   enableTrending?: boolean;
 
   @IsOptional()
-  @IsNumber()
-  cacheDurationMinutes?: number;
-
-  @IsOptional()
-  @IsNumber()
-  defaultLimit?: number;
-
-  @IsOptional()
-  @IsNumber()
-  trendingTimeframeDays?: number;
+  @IsBoolean()
+  enableRelated?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  trackAnonymousUsers?: boolean;
+  cacheEnabled?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  cacheDuration?: number;
+
+  @IsOptional()
+  @IsNumber()
+  maxRecommendations?: number;
+
+  @IsOptional()
+  @IsNumber()
+  minScore?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  excludeCategories?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  excludeTags?: string[];
 }
 

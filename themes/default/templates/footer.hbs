@@ -38,6 +38,13 @@
   <script>
     // Add any global scripts here
   </script>
+  <!-- Analytics Tracking -->
+  <script src="/api/plugins/analytics/tracker.js"></script>
+  <script>
+    if (typeof WPAnalytics !== 'undefined') {
+      WPAnalytics.init({ apiUrl: '/api/analytics' });
+    }
+  </script>
 </body>
 </html>
 

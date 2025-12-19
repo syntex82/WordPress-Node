@@ -704,6 +704,216 @@ async function main() {
   });
   console.log('✅ Sample product variants created for t-shirt');
 
+  // =============================================
+  // Seed Recommendation Settings
+  // =============================================
+  console.log('📊 Seeding recommendation settings...');
+
+  const recommendationSettings = [
+    { key: 'enablePersonalization', value: true, description: 'Enable personalized recommendations based on user history' },
+    { key: 'enableTrending', value: true, description: 'Enable trending content recommendations' },
+    { key: 'enableRelated', value: true, description: 'Enable related content recommendations' },
+    { key: 'cacheEnabled', value: true, description: 'Enable caching for recommendations' },
+    { key: 'cacheDuration', value: 60, description: 'Cache duration in minutes' },
+    { key: 'maxRecommendations', value: 10, description: 'Maximum recommendations to show' },
+    { key: 'minScore', value: 0.1, description: 'Minimum score for recommendations' },
+  ];
+
+  for (const setting of recommendationSettings) {
+    await prisma.recommendationSettings.upsert({
+      where: { key: setting.key },
+      update: { value: setting.value, description: setting.description },
+      create: { key: setting.key, value: setting.value, description: setting.description },
+    });
+  }
+  console.log('✅ Recommendation settings seeded');
+
+  // Seed a sample recommendation rule
+  console.log('📋 Seeding sample recommendation rule...');
+  await prisma.recommendationRule.upsert({
+    where: { id: 'sample-related-posts-rule' },
+    update: {},
+    create: {
+      id: 'sample-related-posts-rule',
+      name: 'Related Posts',
+      description: 'Show related posts based on categories and tags',
+      sourceType: 'post',
+      targetType: 'post',
+      algorithm: 'related',
+      settings: { matchCategories: true, matchTags: true, limit: 6 },
+      priority: 10,
+      isActive: true,
+    },
+  });
+
+  await prisma.recommendationRule.upsert({
+    where: { id: 'sample-trending-rule' },
+    update: {},
+    create: {
+      id: 'sample-trending-rule',
+      name: 'Trending Content',
+      description: 'Show trending posts from the last 7 days',
+      sourceType: 'global',
+      targetType: 'post',
+      algorithm: 'trending',
+      settings: { timeframeDays: 7, limit: 5 },
+      priority: 5,
+      isActive: true,
+    },
+  });
+
+  await prisma.recommendationRule.upsert({
+    where: { id: 'sample-related-products-rule' },
+    update: {},
+    create: {
+      id: 'sample-related-products-rule',
+      name: 'Related Products',
+      description: 'Show related products based on categories',
+      sourceType: 'product',
+      targetType: 'product',
+      algorithm: 'related',
+      settings: { matchCategories: true, limit: 4 },
+      priority: 8,
+      isActive: true,
+    },
+  });
+  console.log('✅ Sample recommendation rules seeded');
+
+  // =============================================
+  // Seed Sample Analytics Data
+  // =============================================
+  console.log('📊 Seeding sample analytics data...');
+
+  // Sample pages for analytics
+  const samplePaths = ['/', '/blog', '/about', '/contact', '/products', '/courses', '/blog/getting-started', '/products/premium-headphones'];
+  const devices = ['desktop', 'mobile', 'tablet'];
+  const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge'];
+  const osList = ['Windows', 'macOS', 'iOS', 'Android', 'Linux'];
+  const referers = [null, 'https://google.com', 'https://twitter.com', 'https://facebook.com', 'https://linkedin.com'];
+
+  // Generate analytics for the last 30 days
+  const now = new Date();
+  for (let daysAgo = 0; daysAgo < 30; daysAgo++) {
+    const date = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+    const dailyViews = Math.floor(Math.random() * 50) + 20; // 20-70 views per day
+
+    for (let i = 0; i < dailyViews; i++) {
+      const randomHour = Math.floor(Math.random() * 24);
+      const randomMinute = Math.floor(Math.random() * 60);
+      const viewDate = new Date(date);
+      viewDate.setHours(randomHour, randomMinute, 0, 0);
+
+      await prisma.pageView.create({
+        data: {
+          path: samplePaths[Math.floor(Math.random() * samplePaths.length)],
+          sessionId: `session-${daysAgo}-${Math.floor(i / 5)}`,
+          ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+          userAgent: `Mozilla/5.0 (${osList[Math.floor(Math.random() * osList.length)]})`,
+          device: devices[Math.floor(Math.random() * devices.length)],
+          browser: browsers[Math.floor(Math.random() * browsers.length)],
+          os: osList[Math.floor(Math.random() * osList.length)],
+          referer: referers[Math.floor(Math.random() * referers.length)],
+          duration: Math.floor(Math.random() * 300) + 10,
+          createdAt: viewDate,
+        },
+      });
+    }
+
+    // Create some sessions
+    const dailySessions = Math.floor(dailyViews / 5);
+    for (let s = 0; s < dailySessions; s++) {
+      const sessionDate = new Date(date);
+      sessionDate.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60), 0, 0);
+
+      await prisma.analyticsSession.create({
+        data: {
+          ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+          userAgent: `Mozilla/5.0 (${osList[Math.floor(Math.random() * osList.length)]})`,
+          device: devices[Math.floor(Math.random() * devices.length)],
+          browser: browsers[Math.floor(Math.random() * browsers.length)],
+          os: osList[Math.floor(Math.random() * osList.length)],
+          referer: referers[Math.floor(Math.random() * referers.length)],
+          landingPage: samplePaths[Math.floor(Math.random() * samplePaths.length)],
+          pageCount: Math.floor(Math.random() * 8) + 1,
+          duration: Math.floor(Math.random() * 600) + 30,
+          isActive: daysAgo === 0 && Math.random() > 0.8,
+          startedAt: sessionDate,
+        },
+      });
+    }
+  }
+  console.log('✅ Sample page views and sessions seeded');
+
+  // =============================================
+  // Seed Sample Recommendation Analytics Data
+  // =============================================
+  console.log('📊 Seeding sample recommendation analytics data...');
+
+  // Get all posts and products for recommendations
+  const allPosts = await prisma.post.findMany({ take: 10, select: { id: true } });
+  const allProducts = await prisma.product.findMany({ take: 10, select: { id: true } });
+  const allCourses = await prisma.course.findMany({ take: 5, select: { id: true } });
+  const interactionTypes = ['view', 'click', 'like', 'share', 'purchase', 'bookmark'];
+  const recommendationTypes = ['related', 'trending', 'popular', 'personalized', 'similar'];
+
+  // Generate user interactions and recommendation clicks for last 30 days
+  for (let daysAgo = 0; daysAgo < 30; daysAgo++) {
+    const date = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+    const dailyInteractions = Math.floor(Math.random() * 30) + 10;
+
+    for (let i = 0; i < dailyInteractions; i++) {
+      const interactionDate = new Date(date);
+      interactionDate.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60), 0, 0);
+
+      // Pick random content
+      let contentType: string;
+      let contentId: string;
+      const contentRand = Math.random();
+      if (contentRand < 0.5 && allPosts.length > 0) {
+        contentType = 'post';
+        contentId = allPosts[Math.floor(Math.random() * allPosts.length)].id;
+      } else if (contentRand < 0.8 && allProducts.length > 0) {
+        contentType = 'product';
+        contentId = allProducts[Math.floor(Math.random() * allProducts.length)].id;
+      } else if (allCourses.length > 0) {
+        contentType = 'course';
+        contentId = allCourses[Math.floor(Math.random() * allCourses.length)].id;
+      } else {
+        contentType = 'post';
+        contentId = allPosts[0]?.id || 'unknown';
+      }
+
+      // Create user interaction
+      await prisma.userInteraction.create({
+        data: {
+          sessionId: `rec-session-${daysAgo}-${Math.floor(i / 3)}`,
+          contentType,
+          contentId,
+          interactionType: interactionTypes[Math.floor(Math.random() * interactionTypes.length)],
+          metadata: { score: Math.random() * 0.5 + 0.5 },
+          createdAt: interactionDate,
+        },
+      });
+
+      // Create recommendation click (30% of interactions)
+      if (Math.random() < 0.3) {
+        await prisma.recommendationClick.create({
+          data: {
+            sessionId: `rec-session-${daysAgo}-${Math.floor(i / 3)}`,
+            sourceType: contentType,
+            sourceId: contentId,
+            clickedType: contentType,
+            clickedId: contentId,
+            recommendationType: recommendationTypes[Math.floor(Math.random() * recommendationTypes.length)],
+            position: Math.floor(Math.random() * 10) + 1,
+            createdAt: interactionDate,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Sample recommendation analytics seeded');
+
   console.log('🎉 Database seed completed successfully!');
 }
 

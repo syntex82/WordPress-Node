@@ -132,23 +132,26 @@
     progress = prog || {};
     document.getElementById('courseTitle').textContent = course.title;
     updateProgress();
-    
-    // Flatten lessons from modules
+
+    // Get lessons directly from course (no modules structure)
     lessons = [];
     var html = '';
-    (course.modules || []).forEach(function(mod, mi) {
-      html += '<div class="module-item"><div class="module-header">' + mod.title + '</div>';
-      (mod.lessons || []).forEach(function(lesson, li) {
+    var courseLessons = course.lessons || [];
+
+    if (courseLessons.length > 0) {
+      html += '<div class="module-item"><div class="module-header">Course Content</div>';
+      courseLessons.forEach(function(lesson, li) {
         var isCompleted = progress.completedLessons?.includes(lesson.id);
-        lessons.push({ ...lesson, moduleIndex: mi, lessonIndex: li, completed: isCompleted });
-        html += '<div class="lesson-item' + (isCompleted ? ' completed' : '') + '" data-lesson-id="' + lesson.id + '" data-index="' + (lessons.length - 1) + '">' +
-          '<span class="lesson-status">' + (isCompleted ? '✓' : (lessons.length)) + '</span>' +
+        lessons.push({ ...lesson, lessonIndex: li, completed: isCompleted });
+        var duration = lesson.estimatedMinutes ? lesson.estimatedMinutes + ' min' : '';
+        html += '<div class="lesson-item' + (isCompleted ? ' completed' : '') + '" data-lesson-id="' + lesson.id + '" data-index="' + li + '">' +
+          '<span class="lesson-status">' + (isCompleted ? '✓' : (li + 1)) + '</span>' +
           '<span class="lesson-title">' + lesson.title + '</span>' +
-          '<span class="lesson-duration">' + (lesson.duration || '') + '</span>' +
+          '<span class="lesson-duration">' + duration + '</span>' +
         '</div>';
       });
       html += '</div>';
-    });
+    }
     document.getElementById('lessonsList').innerHTML = html || '<div class="loading-state">No lessons available</div>';
     
     // Add click handlers

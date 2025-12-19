@@ -165,6 +165,12 @@ async function bootstrap() {
     ...staticOptions,
   });
 
+  // Serve plugin static files (e.g., analytics tracker.js)
+  app.useStaticAssets(join(process.cwd(), 'plugins'), {
+    prefix: '/api/plugins/',
+    ...staticOptions,
+  });
+
   // Set view engine
   app.setBaseViewsDir(join(process.cwd(), 'themes'));
   app.setViewEngine('hbs');

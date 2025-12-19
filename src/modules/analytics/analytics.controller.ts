@@ -72,7 +72,7 @@ export class AnalyticsController {
   async trackPageView(@Req() req: Request, @Body() body: { path: string; sessionId?: string }) {
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || null;
-    const ip = req.ip || req.socket.remoteAddress || '';
+    const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
     const { device, browser, os } = this.parseUserAgent(userAgent);
 
     return this.prisma.pageView.create({
@@ -102,7 +102,7 @@ export class AnalyticsController {
       sessionId?: string;
     },
   ) {
-    const ip = req.ip || req.socket.remoteAddress || '';
+    const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
     return this.prisma.analyticsEvent.create({
       data: {
         ...body,
@@ -115,7 +115,7 @@ export class AnalyticsController {
   async trackSession(@Req() req: Request, @Body() body: { path?: string }) {
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || null;
-    const ip = req.ip || req.socket.remoteAddress || '';
+    const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
     const { device, browser, os } = this.parseUserAgent(userAgent);
 
     const session = await this.prisma.analyticsSession.create({
@@ -130,6 +130,30 @@ export class AnalyticsController {
       },
     });
     return { sessionId: session.id };
+  }
+
+  /**
+   * Anonymize IP address for GDPR compliance
+   * Removes the last octet for IPv4 or last 80 bits for IPv6
+   */
+  private anonymizeIp(ip: string): string {
+    if (!ip) return '';
+    // IPv4: Replace last octet with 0
+    if (ip.includes('.')) {
+      const parts = ip.split('.');
+      if (parts.length === 4) {
+        parts[3] = '0';
+        return parts.join('.');
+      }
+    }
+    // IPv6: Replace last 80 bits (last 5 groups) with zeros
+    if (ip.includes(':')) {
+      const parts = ip.split(':');
+      if (parts.length >= 5) {
+        return parts.slice(0, 3).join(':') + ':0:0:0:0:0';
+      }
+    }
+    return ip;
   }
 
   private parseUserAgent(ua: string) {

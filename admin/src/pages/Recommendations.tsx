@@ -99,9 +99,20 @@ export default function Recommendations() {
       const newValue = !settings[key];
       await recommendationsApi.updateSettings({ [key]: newValue });
       setSettings({ ...settings, [key]: newValue } as RecommendationSettings);
-      toast.success('Setting updated');
+      toast.success(`${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} ${newValue ? 'enabled' : 'disabled'}`);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to update setting');
+    }
+  };
+
+  const handleUpdatePerformance = async (data: Partial<RecommendationSettings>) => {
+    if (!settings) return;
+    try {
+      await recommendationsApi.updateSettings(data);
+      setSettings({ ...settings, ...data } as RecommendationSettings);
+      toast.success('Performance settings saved');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save settings');
     }
   };
 
@@ -195,7 +206,7 @@ export default function Recommendations() {
         <RulesTab rules={rules} onEdit={(r) => { setEditingRule(r); setShowRuleModal(true); }} onDelete={handleDeleteRule} />
       )}
       {activeTab === 'settings' && settings && (
-        <SettingsTab settings={settings} onToggle={handleToggleSetting} />
+        <SettingsTab settings={settings} onToggle={handleToggleSetting} onUpdatePerformance={handleUpdatePerformance} />
       )}
       {activeTab === 'analytics' && analytics && (
         <AnalyticsTab analytics={analytics} />
@@ -504,7 +515,23 @@ function RuleModal({ rule, onClose, onSave }: { rule: RecommendationRule | null;
 }
 
 // Settings Tab Component
-function SettingsTab({ settings, onToggle }: { settings: RecommendationSettings; onToggle: (key: keyof RecommendationSettings) => void }) {
+function SettingsTab({
+  settings,
+  onToggle,
+  onUpdatePerformance
+}: {
+  settings: RecommendationSettings;
+  onToggle: (key: keyof RecommendationSettings) => void;
+  onUpdatePerformance: (data: Partial<RecommendationSettings>) => Promise<void>;
+}) {
+  const [localSettings, setLocalSettings] = useState({
+    cacheDuration: settings.cacheDuration || 60,
+    maxRecommendations: settings.maxRecommendations || 10,
+    minScore: settings.minScore || 0.1,
+  });
+  const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
   const toggleSettings = [
     { key: 'enablePersonalization' as const, label: 'Personalization', desc: 'Show personalized recommendations based on user browsing history', icon: <FiTarget className="text-purple-400" size={20} />, color: 'purple' },
     { key: 'enableTrending' as const, label: 'Trending Content', desc: 'Show trending content based on recent user interactions', icon: <FiTrendingUp className="text-orange-400" size={20} />, color: 'orange' },
@@ -513,6 +540,21 @@ function SettingsTab({ settings, onToggle }: { settings: RecommendationSettings;
   ];
 
   const inputClass = "w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white focus:ring-2 focus:ring-purple-500/50 transition-all";
+
+  const handleLocalChange = (key: string, value: number) => {
+    setLocalSettings(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
+  };
+
+  const handleSavePerformance = async () => {
+    setSaving(true);
+    try {
+      await onUpdatePerformance(localSettings);
+      setHasChanges(false);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -524,12 +566,12 @@ function SettingsTab({ settings, onToggle }: { settings: RecommendationSettings;
           </div>
           <div>
             <h3 className="text-lg font-bold text-white">Feature Toggles</h3>
-            <p className="text-sm text-slate-400">Enable or disable recommendation features</p>
+            <p className="text-sm text-slate-400">Click to enable or disable features</p>
           </div>
         </div>
         <div className="space-y-3">
           {toggleSettings.map(({ key, label, desc, icon }) => (
-            <Tooltip key={key} content={desc} position="right">
+            <Tooltip key={key} content={`Click to ${settings[key] ? 'disable' : 'enable'} ${label.toLowerCase()}`} position="right">
               <div
                 className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer hover:bg-slate-700/30 ${
                   settings[key]
@@ -560,39 +602,72 @@ function SettingsTab({ settings, onToggle }: { settings: RecommendationSettings;
       {/* Performance Settings */}
       <div className="space-y-6">
         <div className="bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700/50 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-amber-500/20 rounded-lg">
-              <FiCpu className="text-amber-400" size={20} />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-500/20 rounded-lg">
+                <FiCpu className="text-amber-400" size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Performance</h3>
+                <p className="text-sm text-slate-400">Cache and display settings</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Performance</h3>
-              <p className="text-sm text-slate-400">Cache and display settings</p>
-            </div>
+            {hasChanges && (
+              <button
+                onClick={handleSavePerformance}
+                disabled={saving}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-medium rounded-lg hover:from-purple-500 hover:to-pink-400 shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            )}
           </div>
           <div className="space-y-4">
-            <Tooltip content="How long recommendations are cached before refreshing" position="top">
+            <Tooltip content="How long recommendations are cached before refreshing (1-1440 minutes)" position="top">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Cache Duration</label>
                 <div className="flex items-center gap-3">
-                  <input type="number" value={settings.cacheDuration} readOnly className={inputClass} />
+                  <input
+                    type="number"
+                    min="1"
+                    max="1440"
+                    value={localSettings.cacheDuration}
+                    onChange={(e) => handleLocalChange('cacheDuration', parseInt(e.target.value) || 60)}
+                    className={inputClass}
+                  />
                   <span className="text-slate-500 text-sm whitespace-nowrap">minutes</span>
                 </div>
               </div>
             </Tooltip>
-            <Tooltip content="Maximum number of items to show in recommendation widgets" position="top">
+            <Tooltip content="Maximum number of items to show in recommendation widgets (1-50)" position="top">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Max Recommendations</label>
                 <div className="flex items-center gap-3">
-                  <input type="number" value={settings.maxRecommendations} readOnly className={inputClass} />
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={localSettings.maxRecommendations}
+                    onChange={(e) => handleLocalChange('maxRecommendations', parseInt(e.target.value) || 10)}
+                    className={inputClass}
+                  />
                   <span className="text-slate-500 text-sm whitespace-nowrap">items</span>
                 </div>
               </div>
             </Tooltip>
-            <Tooltip content="Minimum relevance score required for content to be recommended" position="top">
+            <Tooltip content="Minimum relevance score required for content to be recommended (0.0-1.0)" position="top">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Minimum Score</label>
                 <div className="flex items-center gap-3">
-                  <input type="number" value={settings.minScore} step="0.1" readOnly className={inputClass} />
+                  <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={localSettings.minScore}
+                    onChange={(e) => handleLocalChange('minScore', parseFloat(e.target.value) || 0.1)}
+                    className={inputClass}
+                  />
                   <span className="text-slate-500 text-sm whitespace-nowrap">0.0 - 1.0</span>
                 </div>
               </div>

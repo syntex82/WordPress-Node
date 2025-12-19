@@ -2,9 +2,10 @@
  * Learning Controller for LMS Module
  * Handles student learning experience
  */
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../../auth/guards/optional-jwt-auth.guard';
+import { PrismaService } from '../../../database/prisma.service';
 import { CoursesService } from '../services/courses.service';
 import { LessonsService } from '../services/lessons.service';
 import { QuizzesService } from '../services/quizzes.service';
@@ -17,6 +18,7 @@ import { SubmitQuizDto } from '../dto/quiz.dto';
 @Controller('api/lms')
 export class LearningController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly coursesService: CoursesService,
     private readonly lessonsService: LessonsService,
     private readonly quizzesService: QuizzesService,
@@ -46,11 +48,25 @@ export class LearningController {
   @Get('learn/:courseId')
   @UseGuards(JwtAuthGuard)
   async getCourseForLearning(@Param('courseId') courseId: string, @Request() req) {
+    // Check enrollment first
+    const enrollment = await this.prisma.enrollment.findUnique({
+      where: {
+        courseId_userId: {
+          courseId,
+          userId: req.user.id,
+        },
+      },
+    });
+
+    if (!enrollment || enrollment.status !== 'ACTIVE') {
+      throw new ForbiddenException('You must be enrolled to access this course');
+    }
+
     const [course, progress] = await Promise.all([
       this.coursesService.findOne(courseId),
       this.progressService.getCourseProgress(courseId, req.user.id),
     ]);
-    return { course, progress };
+    return { course, progress, enrollment };
   }
 
   @Get('learn/:courseId/lessons/:lessonId')
