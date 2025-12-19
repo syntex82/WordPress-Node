@@ -3,7 +3,7 @@
  * Enhanced with video upload, drag-drop reordering, and auto-save
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { lmsAdminApi, Lesson, Course } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ import { FiUpload, FiVideo, FiLink, FiTrash2, FiEdit2, FiMove, FiEye, FiCheck, F
 
 export default function Lessons() {
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export default function Lessons() {
   const [externalVideoProvider, setExternalVideoProvider] = useState('YOUTUBE');
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [creatingQuiz, setCreatingQuiz] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Warn before closing browser/tab with unsaved changes
@@ -125,6 +127,27 @@ export default function Lessons() {
     setExternalVideoUrl('');
     setExternalVideoProvider('YOUTUBE');
     setShowVideoModal(true);
+  };
+
+  const handleCreateQuizForLesson = async (lesson: Lesson) => {
+    setCreatingQuiz(lesson.id);
+    try {
+      // Create a quiz for this lesson
+      const response = await lmsAdminApi.createQuiz(courseId!, {
+        title: lesson.title,
+        description: lesson.content || '',
+        isRequired: lesson.isRequired ?? true,
+        lessonId: lesson.id,
+      });
+      const quiz = response.data;
+      toast.success('Quiz created! Redirecting to add questions...');
+      // Navigate to questions page
+      navigate(`/lms/courses/${courseId}/quizzes/${quiz.id}/questions`);
+    } catch (error: any) {
+      console.error('Failed to create quiz:', error);
+      toast.error('Failed to create quiz');
+      setCreatingQuiz(null);
+    }
   };
 
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,14 +286,29 @@ export default function Lessons() {
                       <FiVideo />
                     </button>
                   )}
-                  {lesson.type === 'QUIZ' && (lesson as any).quiz?.id && (
-                    <Link
-                      to={`/lms/courses/${courseId}/quizzes/${(lesson as any).quiz.id}/questions`}
-                      className="p-2 text-amber-400 hover:bg-amber-500/20 rounded-xl transition-colors"
-                      title="Manage Questions"
-                    >
-                      <FiList />
-                    </Link>
+                  {lesson.type === 'QUIZ' && (
+                    (lesson as any).quiz?.id ? (
+                      <Link
+                        to={`/lms/courses/${courseId}/quizzes/${(lesson as any).quiz.id}/questions`}
+                        className="p-2 text-amber-400 hover:bg-amber-500/20 rounded-xl transition-colors"
+                        title="Manage Questions"
+                      >
+                        <FiList />
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => handleCreateQuizForLesson(lesson)}
+                        disabled={creatingQuiz === lesson.id}
+                        className="p-2 text-amber-400 hover:bg-amber-500/20 rounded-xl transition-colors disabled:opacity-50"
+                        title="Create Quiz & Add Questions"
+                      >
+                        {creatingQuiz === lesson.id ? (
+                          <span className="animate-spin">⏳</span>
+                        ) : (
+                          <FiList />
+                        )}
+                      </button>
+                    )
                   )}
                   <button
                     onClick={() => openModal(lesson)}
