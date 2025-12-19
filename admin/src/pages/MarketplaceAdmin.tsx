@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import {
   FiPackage, FiCheck, FiX, FiStar, FiTrash2, FiLoader, FiSearch,
   FiEye, FiDownload, FiClock, FiUser, FiExternalLink,
-  FiAlertCircle, FiAward, FiTrendingUp, FiRefreshCw
+  FiAlertCircle, FiAward, FiTrendingUp, FiRefreshCw, FiCheckSquare, FiSquare
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { marketplaceApi, MarketplaceTheme } from '../services/api';
@@ -26,6 +26,10 @@ export default function MarketplaceAdmin() {
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [showBulkRejectModal, setShowBulkRejectModal] = useState(false);
+  const [bulkRejectReason, setBulkRejectReason] = useState('');
 
   // Fetch themes based on tab
   const fetchThemes = async () => {
@@ -140,6 +144,75 @@ export default function MarketplaceAdmin() {
       toast.error(error.response?.data?.message || 'Failed to delete theme');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  // Selection helpers
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === themes.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(themes.map(t => t.id));
+    }
+  };
+
+  // Bulk actions
+  const handleBulkApprove = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to approve ${selectedIds.length} theme(s)?`)) return;
+    setBulkLoading(true);
+    try {
+      const result = await marketplaceApi.bulkApprove(selectedIds);
+      toast.success(`Approved ${result.data.succeeded} of ${result.data.total} themes`);
+      setSelectedIds([]);
+      fetchThemes();
+      fetchStats();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Bulk approve failed');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedIds.length === 0 || !bulkRejectReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+    setBulkLoading(true);
+    try {
+      const result = await marketplaceApi.bulkReject(selectedIds, bulkRejectReason);
+      toast.success(`Rejected ${result.data.succeeded} of ${result.data.total} themes`);
+      setSelectedIds([]);
+      setBulkRejectReason('');
+      setShowBulkRejectModal(false);
+      fetchThemes();
+      fetchStats();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Bulk reject failed');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to DELETE ${selectedIds.length} theme(s)? This cannot be undone!`)) return;
+    setBulkLoading(true);
+    try {
+      const result = await marketplaceApi.bulkDelete(selectedIds);
+      toast.success(`Deleted ${result.data.succeeded} of ${result.data.total} themes`);
+      setSelectedIds([]);
+      fetchThemes();
+      fetchStats();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Bulk delete failed');
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -271,6 +344,47 @@ export default function MarketplaceAdmin() {
         </div>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedIds.length > 0 && (
+        <div className="mb-4 p-4 bg-violet-500/10 border border-violet-500/30 rounded-xl flex items-center justify-between">
+          <span className="text-violet-300">
+            <strong>{selectedIds.length}</strong> theme(s) selected
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBulkApprove}
+              disabled={bulkLoading}
+              className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {bulkLoading ? <FiLoader className="animate-spin" size={14} /> : <FiCheck size={14} />}
+              Approve All
+            </button>
+            <button
+              onClick={() => setShowBulkRejectModal(true)}
+              disabled={bulkLoading}
+              className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <FiX size={14} />
+              Reject All
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkLoading}
+              className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <FiTrash2 size={14} />
+              Delete All
+            </button>
+            <button
+              onClick={() => setSelectedIds([])}
+              className="px-4 py-2 bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
+            >
+              Clear Selection
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-20">
@@ -285,6 +399,11 @@ export default function MarketplaceAdmin() {
           <table className="min-w-full divide-y divide-slate-700/50">
             <thead className="bg-slate-900/50">
               <tr>
+                <th className="px-4 py-4 text-left">
+                  <button onClick={toggleSelectAll} className="text-slate-400 hover:text-white">
+                    {selectedIds.length === themes.length && themes.length > 0 ? <FiCheckSquare size={18} /> : <FiSquare size={18} />}
+                  </button>
+                </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase">Theme</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase">Author</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase">Category</th>
@@ -296,7 +415,12 @@ export default function MarketplaceAdmin() {
             </thead>
             <tbody className="divide-y divide-slate-700/50">
               {themes.map((theme) => (
-                <tr key={theme.id} className="hover:bg-slate-700/30 transition-colors">
+                <tr key={theme.id} className={`hover:bg-slate-700/30 transition-colors ${selectedIds.includes(theme.id) ? 'bg-violet-500/10' : ''}`}>
+                  <td className="px-4 py-4">
+                    <button onClick={() => toggleSelection(theme.id)} className="text-slate-400 hover:text-white">
+                      {selectedIds.includes(theme.id) ? <FiCheckSquare size={18} className="text-violet-400" /> : <FiSquare size={18} />}
+                    </button>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <img
@@ -608,6 +732,51 @@ export default function MarketplaceAdmin() {
                   Close
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Reject Modal */}
+      {showBulkRejectModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 w-full max-w-md shadow-2xl">
+            <div className="p-6 border-b border-slate-700/50">
+              <h3 className="text-xl font-bold text-white">Bulk Reject Themes</h3>
+              <p className="text-slate-400 text-sm mt-1">
+                Rejecting {selectedIds.length} theme(s). Please provide a reason.
+              </p>
+            </div>
+            <div className="p-6">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Rejection Reason <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                value={bulkRejectReason}
+                onChange={(e) => setBulkRejectReason(e.target.value)}
+                placeholder="Explain why these themes are being rejected..."
+                rows={4}
+                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              />
+            </div>
+            <div className="p-6 border-t border-slate-700/50 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowBulkRejectModal(false);
+                  setBulkRejectReason('');
+                }}
+                className="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkReject}
+                disabled={bulkLoading || !bulkRejectReason.trim()}
+                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-xl font-medium hover:from-amber-500 hover:to-amber-400 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {bulkLoading ? <FiLoader className="animate-spin" size={14} /> : <FiX size={14} />}
+                Reject {selectedIds.length} Theme(s)
+              </button>
             </div>
           </div>
         </div>

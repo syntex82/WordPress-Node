@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { FiDownload, FiStar, FiExternalLink, FiLoader, FiSearch, FiGrid, FiList, FiFilter, FiCheck, FiHeart, FiEye, FiUpload, FiX, FiPlus, FiPackage, FiAward, FiTrendingUp } from 'react-icons/fi';
+import { FiDownload, FiStar, FiExternalLink, FiLoader, FiSearch, FiGrid, FiList, FiFilter, FiCheck, FiHeart, FiEye, FiUpload, FiX, FiPlus, FiPackage, FiAward, FiTrendingUp, FiImage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { marketplaceApi, MarketplaceTheme } from '../services/api';
 
@@ -38,6 +38,8 @@ export default function ThemeShop({ onThemeInstalled }: ThemeShopProps) {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitFile, setSubmitFile] = useState<File | null>(null);
+  const [submitThumbnail, setSubmitThumbnail] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [submitForm, setSubmitForm] = useState<SubmitFormData>({
     name: '', description: '', version: '1.0.0', category: 'blog',
     tags: '', features: '', demoUrl: '', repositoryUrl: '',
@@ -125,6 +127,16 @@ export default function ThemeShop({ onThemeInstalled }: ThemeShopProps) {
     }
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSubmitThumbnail(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setThumbnailPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmitTheme = async () => {
     if (!submitFile) {
       toast.error('Please select a theme ZIP file');
@@ -138,6 +150,7 @@ export default function ThemeShop({ onThemeInstalled }: ThemeShopProps) {
     try {
       const formData = new FormData();
       formData.append('file', submitFile);
+      if (submitThumbnail) formData.append('thumbnail', submitThumbnail);
       formData.append('name', submitForm.name);
       formData.append('description', submitForm.description);
       formData.append('version', submitForm.version);
@@ -151,6 +164,8 @@ export default function ThemeShop({ onThemeInstalled }: ThemeShopProps) {
       toast.success('Theme submitted successfully! It will be reviewed by an admin.');
       setShowSubmitModal(false);
       setSubmitFile(null);
+      setSubmitThumbnail(null);
+      setThumbnailPreview(null);
       setSubmitForm({ name: '', description: '', version: '1.0.0', category: 'blog', tags: '', features: '', demoUrl: '', repositoryUrl: '' });
       fetchThemes();
       fetchStats();
@@ -568,6 +583,41 @@ export default function ThemeShop({ onThemeInstalled }: ThemeShopProps) {
                       <div className="text-slate-400">
                         <FiUpload size={32} className="mx-auto mb-2" />
                         <p>Click to select or drag & drop your theme ZIP</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              {/* Thumbnail Upload */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Theme Thumbnail (optional)</label>
+                <div className="border-2 border-dashed border-slate-600 rounded-xl p-4 hover:border-violet-500/50 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailChange}
+                    className="hidden"
+                    id="theme-thumbnail"
+                  />
+                  <label htmlFor="theme-thumbnail" className="cursor-pointer flex items-center gap-4">
+                    {thumbnailPreview ? (
+                      <>
+                        <img src={thumbnailPreview} alt="Thumbnail preview" className="w-24 h-16 object-cover rounded-lg" />
+                        <div className="text-emerald-400">
+                          <p className="font-medium">{submitThumbnail?.name}</p>
+                          <p className="text-xs text-slate-500">Click to change</p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-slate-400 flex items-center gap-3">
+                        <div className="w-24 h-16 bg-slate-700/50 rounded-lg flex items-center justify-center">
+                          <FiImage size={24} />
+                        </div>
+                        <div>
+                          <p>Upload a preview image</p>
+                          <p className="text-xs text-slate-500">Recommended: 800x600px</p>
+                        </div>
                       </div>
                     )}
                   </label>

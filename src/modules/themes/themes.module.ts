@@ -23,6 +23,7 @@ import { MarketplaceController } from './marketplace.controller';
 import { ContentModule } from '../content/content.module';
 import { SettingsModule } from '../settings/settings.module';
 import { MenusModule } from '../menus/menus.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MenusModule } from '../menus/menus.module';
     ContentModule,
     SettingsModule,
     MenusModule,
+    EmailModule,
     // JWT for preview token generation
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -13,10 +13,10 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
+  UploadedFiles,
   Request,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { MarketplaceService } from './marketplace.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -99,13 +99,17 @@ export class MarketplaceController {
   /**
    * Submit a theme to the marketplace
    * POST /api/marketplace/submit
+   * Accepts: file (theme ZIP), thumbnail (image)
    */
   @Post('submit')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'file', maxCount: 1 },
+    { name: 'thumbnail', maxCount: 1 },
+  ]))
   submitTheme(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: { file?: Express.Multer.File[], thumbnail?: Express.Multer.File[] },
     @Body() body: any,
     @Request() req: any,
   ) {
@@ -124,7 +128,13 @@ export class MarketplaceController {
       repositoryUrl: body.repositoryUrl,
       licenseType: body.licenseType,
     };
-    return this.marketplaceService.submitTheme(dto, file, req.user.id);
+    if (!files.file?.[0]) {
+      throw new Error('Theme file is required');
+    }
+    return this.marketplaceService.submitTheme(dto, {
+      themeFile: files.file[0],
+      thumbnailFile: files.thumbnail?.[0],
+    }, req.user.id);
   }
 
   /**
@@ -228,6 +238,39 @@ export class MarketplaceController {
   @Roles(UserRole.ADMIN)
   deleteTheme(@Param('id') id: string) {
     return this.marketplaceService.deleteTheme(id);
+  }
+
+  /**
+   * Bulk approve themes
+   * POST /api/marketplace/admin/bulk/approve
+   */
+  @Post('admin/bulk/approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  bulkApprove(@Body() body: { ids: string[] }, @Request() req: any) {
+    return this.marketplaceService.bulkApprove(body.ids, req.user.id);
+  }
+
+  /**
+   * Bulk reject themes
+   * POST /api/marketplace/admin/bulk/reject
+   */
+  @Post('admin/bulk/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  bulkReject(@Body() body: { ids: string[]; reason: string }, @Request() req: any) {
+    return this.marketplaceService.bulkReject(body.ids, req.user.id, body.reason);
+  }
+
+  /**
+   * Bulk delete themes
+   * POST /api/marketplace/admin/bulk/delete
+   */
+  @Post('admin/bulk/delete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  bulkDelete(@Body() body: { ids: string[] }) {
+    return this.marketplaceService.bulkDelete(body.ids);
   }
 }
 

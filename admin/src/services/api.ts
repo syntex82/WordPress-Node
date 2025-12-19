@@ -212,6 +212,14 @@ export const marketplaceApi = {
     api.post(`/marketplace/admin/themes/${id}/feature`, { featured, order }),
   deleteTheme: (id: string) =>
     api.delete(`/marketplace/admin/themes/${id}`),
+
+  // Bulk actions
+  bulkApprove: (ids: string[]) =>
+    api.post<{ succeeded: number; failed: number; total: number }>('/marketplace/admin/bulk/approve', { ids }),
+  bulkReject: (ids: string[], reason: string) =>
+    api.post<{ succeeded: number; failed: number; total: number }>('/marketplace/admin/bulk/reject', { ids, reason }),
+  bulkDelete: (ids: string[]) =>
+    api.post<{ succeeded: number; failed: number; total: number }>('/marketplace/admin/bulk/delete', { ids }),
 };
 
 // Custom Themes API (for Theme Designer)
