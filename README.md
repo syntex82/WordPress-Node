@@ -1,7 +1,8 @@
 <div align="center">
 
 <!-- Hero Banner -->
-<img width="1281" height="745" alt="Screenshot 2025-12-14 043442" src="https://github.com/user-attachments/assets/4e5f2cac-30e2-4461-b519-ce90d1cce293" />
+<img width="1007" height="592" alt="Screenshot 2025-12-19 234046" src="https://github.com/user-attachments/assets/9c4a0cd6-d4aa-4d45-864f-48abb954e72b" />
+
 
 <br />
 
