@@ -32,7 +32,7 @@ import {
   FiBold, FiItalic, FiList, FiCode, FiImage as FiImageIcon,
   FiLink, FiAlignLeft, FiAlignCenter, FiAlignRight, FiVideo,
   FiMusic, FiYoutube, FiSquare, FiMessageSquare, FiShoppingBag,
-  FiPlus
+  FiPlus, FiTrash2
 } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import MediaPickerModal from './MediaPickerModal';
@@ -428,6 +428,36 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
             title="Insert Content Block"
           >
             <FiPlus size={18} />
+          </button>
+
+          <div className={dividerClass}></div>
+
+          {/* Delete Selected Element */}
+          <button
+            onClick={() => {
+              // Delete the current node (image, video, block, etc.)
+              const { state } = editor;
+              const { selection } = state;
+              const node = state.doc.nodeAt(selection.from);
+
+              if (node) {
+                // Delete the node at current position
+                editor.chain().focus().deleteSelection().run();
+              } else {
+                // Try to delete the parent node
+                editor.chain().focus().deleteNode('imageWithCaption').run() ||
+                editor.chain().focus().deleteNode('image').run() ||
+                editor.chain().focus().deleteNode('video').run() ||
+                editor.chain().focus().deleteNode('audio').run() ||
+                editor.chain().focus().deleteNode('youtube').run() ||
+                editor.chain().focus().deleteSelection().run();
+              }
+            }}
+            className="p-2 rounded-lg transition-all bg-red-600/20 text-red-400 hover:bg-red-600/40 ring-1 ring-red-500/30"
+            type="button"
+            title="Delete Selected (click on image/block first, then click this)"
+          >
+            <FiTrash2 size={18} />
           </button>
         </div>
 

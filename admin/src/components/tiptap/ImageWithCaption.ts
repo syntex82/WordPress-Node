@@ -25,6 +25,10 @@ export const ImageWithCaption = Node.create<ImageWithCaptionOptions>({
 
   draggable: true,
 
+  selectable: true,
+
+  atom: true, // Treat as a single unit for selection
+
   addOptions() {
     return {
       HTMLAttributes: {},
