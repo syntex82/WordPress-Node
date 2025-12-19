@@ -267,6 +267,317 @@
   .wp-cta .wp-btn-primary:hover {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   }
+  /* User Access Section */
+  .wp-user-access {
+    background: var(--light);
+    padding: 100px 40px;
+  }
+  .wp-access-content {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .wp-user-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  .wp-dashboard-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+  }
+  .wp-dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-color: var(--primary);
+  }
+  .wp-dashboard-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  .wp-dashboard-card h3 {
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+  }
+  .wp-dashboard-card p {
+    color: var(--gray);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .wp-auth-forms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+  .wp-auth-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 2rem;
+  }
+  .wp-auth-card h3 {
+    color: var(--dark);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+  .wp-form-group {
+    margin-bottom: 1rem;
+  }
+  .wp-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  .wp-input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .wp-btn-block {
+    width: 100%;
+    justify-content: center;
+  }
+  .wp-btn-secondary {
+    background: linear-gradient(135deg, var(--secondary) 0%, #4f46e5 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+  .wp-btn-sm {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  .wp-auth-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--gray);
+  }
+  .wp-auth-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  /* Courses Section */
+  .wp-courses, .wp-posts, .wp-navigation {
+    padding: 100px 40px;
+  }
+  .wp-courses {
+    background: var(--dark);
+  }
+  .wp-courses .wp-section-header h2,
+  .wp-courses .wp-section-header p {
+    color: white;
+  }
+  .wp-courses .wp-section-header p {
+    opacity: 0.7;
+  }
+  .wp-courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .wp-course-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .wp-course-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+  }
+  .wp-course-image {
+    height: 160px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wp-course-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .wp-course-placeholder {
+    font-size: 3rem;
+  }
+  .wp-course-price {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--dark);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .wp-course-price.wp-free {
+    background: var(--primary);
+  }
+  .wp-course-body {
+    padding: 1.5rem;
+  }
+  .wp-course-body h3 {
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  .wp-course-body p {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .wp-course-meta {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .wp-badge {
+    background: rgba(255,255,255,0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.8);
+  }
+  .wp-course-meta span {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+  }
+  /* Posts Section */
+  .wp-posts {
+    background: var(--light);
+  }
+  .wp-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .wp-post-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .wp-post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  }
+  .wp-post-image {
+    height: 180px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wp-post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .wp-post-placeholder {
+    font-size: 3rem;
+    opacity: 0.3;
+  }
+  .wp-post-body {
+    padding: 1.5rem;
+  }
+  .wp-post-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--gray);
+  }
+  .wp-post-body h3 {
+    margin-bottom: 0.5rem;
+  }
+  .wp-post-body h3 a {
+    color: var(--dark);
+    text-decoration: none;
+  }
+  .wp-post-body h3 a:hover {
+    color: var(--primary);
+  }
+  .wp-post-body p {
+    color: var(--gray);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  .wp-read-more {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .wp-section-footer {
+    text-align: center;
+    margin-top: 3rem;
+  }
+  /* Navigation Section */
+  .wp-navigation {
+    background: var(--dark);
+  }
+  .wp-navigation .wp-section-header h2,
+  .wp-navigation .wp-section-header p {
+    color: white;
+  }
+  .wp-navigation .wp-section-header p {
+    opacity: 0.7;
+  }
+  .wp-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .wp-nav-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  .wp-nav-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    background: rgba(255,255,255,0.05);
+  }
+  .wp-nav-card.wp-nav-highlight {
+    border-color: var(--primary);
+    background: rgba(16, 185, 129, 0.1);
+  }
+  .wp-nav-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 1rem;
+  }
+  .wp-nav-card h3 {
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  .wp-nav-card p {
+    color: rgba(255,255,255,0.6);
+    margin: 0;
+    font-size: 0.9rem;
+  }
   @media (max-width: 900px) {
     .wp-hero-content {
       grid-template-columns: 1fr;
@@ -279,6 +590,9 @@
       justify-content: center;
     }
     .wp-arch-grid {
+      grid-template-columns: 1fr;
+    }
+    .wp-auth-forms {
       grid-template-columns: 1fr;
     }
   }
@@ -422,6 +736,191 @@
         <li>Logging & Monitoring</li>
       </ul>
     </div>
+  </div>
+</section>
+
+<!-- User Access Section -->
+<section class="wp-user-access" id="get-started">
+  <div class="wp-section-header">
+    {{#if user}}
+    <h2>Welcome back, {{user.name}}!</h2>
+    <p>Continue your journey or manage your content.</p>
+    {{else}}
+    <h2>Get Started Today</h2>
+    <p>Create an account to access courses, manage content, and explore all features.</p>
+    {{/if}}
+  </div>
+  <div class="wp-access-content">
+    {{#if user}}
+    <div class="wp-user-dashboard">
+      <a href="/admin" class="wp-dashboard-card">
+        <div class="wp-dashboard-icon">⚙️</div>
+        <h3>Admin Panel</h3>
+        <p>Manage your site</p>
+      </a>
+      <a href="/my-courses" class="wp-dashboard-card">
+        <div class="wp-dashboard-icon">📚</div>
+        <h3>My Courses</h3>
+        <p>Continue learning</p>
+      </a>
+      <a href="/my-account" class="wp-dashboard-card">
+        <div class="wp-dashboard-icon">👤</div>
+        <h3>My Account</h3>
+        <p>View profile</p>
+      </a>
+      <a href="/shop" class="wp-dashboard-card">
+        <div class="wp-dashboard-icon">🛒</div>
+        <h3>Shop</h3>
+        <p>Browse products</p>
+      </a>
+    </div>
+    {{else}}
+    <div class="wp-auth-forms">
+      <div class="wp-auth-card wp-login-card">
+        <h3>Sign In</h3>
+        <form method="POST" action="/login">
+          <div class="wp-form-group">
+            <input type="email" name="email" placeholder="Email address" required class="wp-input">
+          </div>
+          <div class="wp-form-group">
+            <input type="password" name="password" placeholder="Password" required class="wp-input">
+          </div>
+          <button type="submit" class="wp-btn wp-btn-primary wp-btn-block">Sign In</button>
+        </form>
+        <p class="wp-auth-link">New here? <a href="/register">Create account</a></p>
+      </div>
+      <div class="wp-auth-card wp-register-card">
+        <h3>Create Account</h3>
+        <form method="POST" action="/register">
+          <div class="wp-form-group">
+            <input type="text" name="name" placeholder="Full name" required class="wp-input">
+          </div>
+          <div class="wp-form-group">
+            <input type="email" name="email" placeholder="Email address" required class="wp-input">
+          </div>
+          <div class="wp-form-group">
+            <input type="password" name="password" placeholder="Password (min 8 chars)" required minlength="8" class="wp-input">
+          </div>
+          <button type="submit" class="wp-btn wp-btn-secondary wp-btn-block">Create Account</button>
+        </form>
+        <p class="wp-auth-link">Have an account? <a href="/login">Sign in</a></p>
+      </div>
+    </div>
+    {{/if}}
+  </div>
+</section>
+
+<!-- Featured Courses Section -->
+{{#if featuredCourses.length}}
+<section class="wp-courses" id="courses">
+  <div class="wp-section-header">
+    <h2>📚 Featured Courses</h2>
+    <p>Start learning with our most popular courses. Enroll now and boost your skills.</p>
+  </div>
+  <div class="wp-courses-grid">
+    {{#each featuredCourses}}
+    <div class="wp-course-card">
+      <div class="wp-course-image">
+        {{#if featuredImage}}
+        <img src="{{featuredImage}}" alt="{{title}}">
+        {{else}}
+        <div class="wp-course-placeholder">📚</div>
+        {{/if}}
+        {{#if price}}
+        <span class="wp-course-price">${{price}}</span>
+        {{else}}
+        <span class="wp-course-price wp-free">Free</span>
+        {{/if}}
+      </div>
+      <div class="wp-course-body">
+        <h3>{{title}}</h3>
+        <p>{{shortDescription}}</p>
+        <div class="wp-course-meta">
+          {{#if level}}<span class="wp-badge">{{level}}</span>{{/if}}
+          {{#if _count.lessons}}<span>{{_count.lessons}} lessons</span>{{/if}}
+        </div>
+        <a href="/courses/{{slug}}" class="wp-btn wp-btn-outline wp-btn-sm">View Course</a>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  <div class="wp-section-footer">
+    <a href="/courses" class="wp-btn wp-btn-outline">Browse All Courses →</a>
+  </div>
+</section>
+{{/if}}
+
+<!-- Latest Blog Posts Section -->
+{{#if posts.length}}
+<section class="wp-posts" id="blog">
+  <div class="wp-section-header">
+    <h2>📝 Latest from the Blog</h2>
+    <p>Stay updated with the latest news, tutorials, and insights.</p>
+  </div>
+  <div class="wp-posts-grid">
+    {{#each posts}}
+    <article class="wp-post-card">
+      <div class="wp-post-image">
+        {{#if featuredImage}}
+        <img src="{{featuredImage}}" alt="{{title}}">
+        {{else}}
+        <div class="wp-post-placeholder">📝</div>
+        {{/if}}
+      </div>
+      <div class="wp-post-body">
+        <div class="wp-post-meta">
+          <span>{{formatDate createdAt}}</span>
+          {{#if author}}<span>by {{author.name}}</span>{{/if}}
+        </div>
+        <h3><a href="/post/{{slug}}">{{title}}</a></h3>
+        <p>{{excerpt content 120}}</p>
+        <a href="/post/{{slug}}" class="wp-read-more">Read More →</a>
+      </div>
+    </article>
+    {{/each}}
+  </div>
+  <div class="wp-section-footer">
+    <a href="/blog" class="wp-btn wp-btn-outline">View All Posts →</a>
+  </div>
+</section>
+{{/if}}
+
+<!-- Quick Navigation Section -->
+<section class="wp-navigation">
+  <div class="wp-section-header">
+    <h2>🧭 Explore</h2>
+    <p>Navigate to different areas of the platform.</p>
+  </div>
+  <div class="wp-nav-grid">
+    <a href="/courses" class="wp-nav-card">
+      <span class="wp-nav-icon">🎓</span>
+      <h3>Courses</h3>
+      <p>Browse all available courses</p>
+    </a>
+    <a href="/shop" class="wp-nav-card">
+      <span class="wp-nav-icon">🛍️</span>
+      <h3>Shop</h3>
+      <p>Browse products and merchandise</p>
+    </a>
+    <a href="/blog" class="wp-nav-card">
+      <span class="wp-nav-icon">📰</span>
+      <h3>Blog</h3>
+      <p>Read articles and tutorials</p>
+    </a>
+    {{#unless user}}
+    <a href="/register" class="wp-nav-card wp-nav-highlight">
+      <span class="wp-nav-icon">🚀</span>
+      <h3>Get Started</h3>
+      <p>Create your free account</p>
+    </a>
+    {{/unless}}
+    {{#if user}}
+    <a href="/admin" class="wp-nav-card wp-nav-highlight">
+      <span class="wp-nav-icon">⚙️</span>
+      <h3>Admin Panel</h3>
+      <p>Manage your content</p>
+    </a>
+    {{/if}}
   </div>
 </section>
 

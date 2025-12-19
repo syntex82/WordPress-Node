@@ -1,0 +1,176 @@
+{{> header}}
+
+<style>
+  .courses-page {
+    background: #f8fafc;
+    min-height: calc(100vh - 70px);
+    padding: 60px 40px;
+  }
+  .courses-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 3rem;
+  }
+  .courses-header h1 {
+    font-size: 2.5rem;
+    color: #0f172a;
+    margin-bottom: 1rem;
+  }
+  .courses-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+  }
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .course-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+  }
+  .course-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  }
+  .course-image {
+    height: 180px;
+    background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .course-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .course-placeholder {
+    font-size: 4rem;
+  }
+  .course-price {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #0f172a;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .course-price.free {
+    background: #10b981;
+  }
+  .course-body {
+    padding: 1.5rem;
+  }
+  .course-body h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #0f172a;
+  }
+  .course-body h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .course-body h3 a:hover {
+    color: #10b981;
+  }
+  .course-body p {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  .course-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .course-badge {
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+  .btn-enroll {
+    display: inline-block;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+  .btn-enroll:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+  }
+  .empty-state span {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<section class="courses-page">
+  <div class="courses-header">
+    <h1>📚 All Courses</h1>
+    <p>Browse our collection of courses and start learning today.</p>
+  </div>
+
+  {{#if courses.length}}
+  <div class="courses-grid">
+    {{#each courses}}
+    <div class="course-card">
+      <div class="course-image">
+        {{#if featuredImage}}
+        <img src="{{featuredImage}}" alt="{{title}}">
+        {{else}}
+        <div class="course-placeholder">📚</div>
+        {{/if}}
+        {{#if price}}
+        <span class="course-price">${{price}}</span>
+        {{else}}
+        <span class="course-price free">Free</span>
+        {{/if}}
+      </div>
+      <div class="course-body">
+        <h3><a href="/courses/{{slug}}">{{title}}</a></h3>
+        <p>{{shortDescription}}</p>
+        <div class="course-meta">
+          {{#if level}}<span class="course-badge">{{level}}</span>{{/if}}
+          {{#if _count.lessons}}<span class="course-badge">{{_count.lessons}} lessons</span>{{/if}}
+        </div>
+        <a href="/courses/{{slug}}" class="btn-enroll">View Course</a>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  {{else}}
+  <div class="empty-state">
+    <span>📭</span>
+    <h2>No courses available yet</h2>
+    <p>Check back soon for new learning opportunities!</p>
+  </div>
+  {{/if}}
+</section>
+
+{{> footer}}
+

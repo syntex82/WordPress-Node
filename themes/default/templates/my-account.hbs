@@ -1,0 +1,188 @@
+{{> header}}
+
+<style>
+  .account-page {
+    background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+    min-height: calc(100vh - 70px);
+    padding: 60px 40px;
+  }
+  .account-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .account-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  .account-header h1 {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  .account-header p {
+    color: #64748b;
+  }
+  .account-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .account-card h2 {
+    color: white;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .info-row:last-child {
+    border-bottom: none;
+  }
+  .info-label {
+    color: #64748b;
+  }
+  .info-value {
+    color: white;
+    font-weight: 500;
+  }
+  .quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .quick-link {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  .quick-link:hover {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+  }
+  .quick-link span {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .quick-link h3 {
+    color: white;
+    font-size: 1rem;
+    margin: 0;
+  }
+  .btn-logout {
+    display: inline-block;
+    padding: 12px 24px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+  }
+  .btn-logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+  .guest-message {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .guest-message span {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+  }
+  .guest-message h2 {
+    color: white;
+    margin-bottom: 1rem;
+  }
+  .guest-message p {
+    color: #64748b;
+    margin-bottom: 2rem;
+  }
+  .guest-message a {
+    display: inline-block;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    margin: 0 0.5rem;
+  }
+</style>
+
+<section class="account-page">
+  <div class="account-container">
+    {{#if user}}
+    <div class="account-header">
+      <h1>👋 Hello, {{user.name}}!</h1>
+      <p>Manage your account and preferences</p>
+    </div>
+
+    <div class="account-card">
+      <h2>👤 Profile Information</h2>
+      <div class="info-row">
+        <span class="info-label">Name</span>
+        <span class="info-value">{{user.name}}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Email</span>
+        <span class="info-value">{{user.email}}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Role</span>
+        <span class="info-value">{{user.role}}</span>
+      </div>
+    </div>
+
+    <div class="account-card">
+      <h2>⚡ Quick Links</h2>
+      <div class="quick-links">
+        <a href="/my-courses" class="quick-link">
+          <span>📚</span>
+          <h3>My Courses</h3>
+        </a>
+        <a href="/admin" class="quick-link">
+          <span>⚙️</span>
+          <h3>Admin Panel</h3>
+        </a>
+        <a href="/shop" class="quick-link">
+          <span>🛒</span>
+          <h3>Shop</h3>
+        </a>
+        <a href="/blog" class="quick-link">
+          <span>📰</span>
+          <h3>Blog</h3>
+        </a>
+      </div>
+    </div>
+
+    <a href="/logout" class="btn-logout">🚪 Sign Out</a>
+    {{else}}
+    <div class="guest-message">
+      <span>🔒</span>
+      <h2>Please sign in</h2>
+      <p>You need to be logged in to view your account.</p>
+      <a href="/login">Sign In</a>
+      <a href="/register">Create Account</a>
+    </div>
+    {{/if}}
+  </div>
+</section>
+
+{{> footer}}
+

@@ -1,0 +1,153 @@
+{{> header}}
+
+<style>
+  .shop-page {
+    background: #f8fafc;
+    min-height: calc(100vh - 70px);
+    padding: 60px 40px;
+  }
+  .shop-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 3rem;
+  }
+  .shop-header h1 {
+    font-size: 2.5rem;
+    color: #0f172a;
+    margin-bottom: 1rem;
+  }
+  .shop-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+  }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .product-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+  }
+  .product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  }
+  .product-image {
+    height: 200px;
+    background: linear-gradient(135deg, #6366f1 0%, #10b981 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .product-placeholder {
+    font-size: 4rem;
+  }
+  .product-body {
+    padding: 1.5rem;
+  }
+  .product-body h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #0f172a;
+  }
+  .product-body h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .product-body h3 a:hover {
+    color: #6366f1;
+  }
+  .product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #10b981;
+    margin-bottom: 1rem;
+  }
+  .product-price .original {
+    text-decoration: line-through;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 400;
+    margin-left: 0.5rem;
+  }
+  .btn-cart {
+    display: inline-block;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+  .btn-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+  }
+  .empty-state span {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<section class="shop-page">
+  <div class="shop-header">
+    <h1>🛍️ Shop</h1>
+    <p>Browse our collection of products and merchandise.</p>
+  </div>
+
+  {{#if products.length}}
+  <div class="products-grid">
+    {{#each products}}
+    <div class="product-card">
+      <div class="product-image">
+        {{#if images.[0]}}
+        <img src="{{images.[0]}}" alt="{{name}}">
+        {{else}}
+        <div class="product-placeholder">🛍️</div>
+        {{/if}}
+      </div>
+      <div class="product-body">
+        <h3><a href="/shop/product/{{slug}}">{{name}}</a></h3>
+        <div class="product-price">
+          ${{price}}
+          {{#if compareAtPrice}}
+          <span class="original">${{compareAtPrice}}</span>
+          {{/if}}
+        </div>
+        <a href="/shop/product/{{slug}}" class="btn-cart">View Product</a>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  {{else}}
+  <div class="empty-state">
+    <span>📭</span>
+    <h2>No products available yet</h2>
+    <p>Check back soon for new products!</p>
+  </div>
+  {{/if}}
+</section>
+
+{{> footer}}
+

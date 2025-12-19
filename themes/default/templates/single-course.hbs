@@ -1,0 +1,237 @@
+{{> header}}
+
+<style>
+  .course-page {
+    background: #f8fafc;
+    min-height: calc(100vh - 70px);
+  }
+  .course-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    padding: 60px 40px;
+    color: white;
+  }
+  .course-hero-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 3rem;
+    align-items: start;
+  }
+  .course-info h1 {
+    font-size: 2.25rem;
+    margin-bottom: 1rem;
+  }
+  .course-info p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+  .course-meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #94a3b8;
+    font-size: 0.95rem;
+  }
+  .enroll-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 90px;
+  }
+  .enroll-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+  }
+  .enroll-price.free {
+    color: #10b981;
+  }
+  .enroll-card p {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+  }
+  .btn-enroll {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .btn-enroll:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  }
+  .btn-enroll:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-continue {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  }
+  .enroll-features {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+  }
+  .enroll-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+  }
+  .enroll-features .check {
+    color: #10b981;
+  }
+  .course-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .course-content h2 {
+    font-size: 1.5rem;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+  }
+  .lessons-list {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .lesson-item:last-child {
+    border-bottom: none;
+  }
+  .lesson-num {
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+  .lesson-title {
+    flex: 1;
+    color: #0f172a;
+    font-weight: 500;
+  }
+  .lesson-duration {
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 800px) {
+    .course-hero-content {
+      grid-template-columns: 1fr;
+    }
+    .enroll-card {
+      position: static;
+    }
+  }
+</style>
+
+<section class="course-page">
+  <div class="course-hero">
+    <div class="course-hero-content">
+      <div class="course-info">
+        <h1>{{course.title}}</h1>
+        <p>{{course.description}}</p>
+        <div class="course-meta">
+          {{#if course.level}}<span class="meta-item">📊 {{course.level}}</span>{{/if}}
+          {{#if course._count.lessons}}<span class="meta-item">📚 {{course._count.lessons}} lessons</span>{{/if}}
+          {{#if course.instructor}}<span class="meta-item">👤 {{course.instructor.name}}</span>{{/if}}
+        </div>
+      </div>
+      <div class="enroll-card">
+        {{#if course.price}}
+        <div class="enroll-price">${{course.price}}</div>
+        {{else}}
+        <div class="enroll-price free">Free</div>
+        {{/if}}
+        <p>Full lifetime access</p>
+        {{#if isEnrolled}}
+        <a href="/learn/{{course.id}}" class="btn-enroll btn-continue">Continue Learning</a>
+        {{else}}
+        <button class="btn-enroll" id="enrollBtn" onclick="enrollCourse()">Enroll Now</button>
+        {{/if}}
+        <ul class="enroll-features">
+          <li><span class="check">✓</span> Full course access</li>
+          <li><span class="check">✓</span> Certificate of completion</li>
+          <li><span class="check">✓</span> Learn at your own pace</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="course-content">
+    <h2>Course Content</h2>
+    <div class="lessons-list">
+      {{#each course.lessons}}
+      <div class="lesson-item">
+        <span class="lesson-num">{{add @index 1}}</span>
+        <span class="lesson-title">{{title}}</span>
+        {{#if duration}}<span class="lesson-duration">{{duration}} min</span>{{/if}}
+      </div>
+      {{else}}
+      <div class="lesson-item"><span class="lesson-title" style="color:#94a3b8">Lessons coming soon...</span></div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<script>
+async function enrollCourse() {
+  var btn = document.getElementById('enrollBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enrolling...';
+  try {
+    var token = localStorage.getItem('token');
+    var headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    var r = await fetch('/api/lms/courses/{{course.id}}/enroll', { method: 'POST', credentials: 'include', headers: headers });
+    if (r.status === 401) { window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname); return; }
+    if (!r.ok) throw new Error('Enrollment failed');
+    window.location.href = '/learn/{{course.id}}';
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Enroll Now';
+    alert('Enrollment failed. Please try again.');
+  }
+}
+</script>
+
+{{> footer}}
+
