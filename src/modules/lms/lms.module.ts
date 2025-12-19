@@ -13,9 +13,10 @@ import { EnrollmentsService } from './services/enrollments.service';
 import { ProgressService } from './services/progress.service';
 import { CertificatesService } from './services/certificates.service';
 import { CertificateGeneratorService } from './services/certificate-generator.service';
+import { CoursePlaceholderService } from './services/course-placeholder.service';
 
 // Controllers
-import { CoursesController } from './controllers/courses.controller';
+import { CoursesController, PublicCoursesController } from './controllers/courses.controller';
 import { LessonsController } from './controllers/lessons.controller';
 import { QuizzesController } from './controllers/quizzes.controller';
 import { EnrollmentsController } from './controllers/enrollments.controller';
@@ -26,6 +27,7 @@ import { CertificatesController } from './controllers/certificates.controller';
   imports: [PrismaModule, ConfigModule],
   controllers: [
     CoursesController,
+    PublicCoursesController,
     LessonsController,
     QuizzesController,
     EnrollmentsController,
@@ -40,6 +42,7 @@ import { CertificatesController } from './controllers/certificates.controller';
     ProgressService,
     CertificatesService,
     CertificateGeneratorService,
+    CoursePlaceholderService,
   ],
   exports: [
     CoursesService,
@@ -48,6 +51,7 @@ import { CertificatesController } from './controllers/certificates.controller';
     EnrollmentsService,
     ProgressService,
     CertificatesService,
+    CoursePlaceholderService,
   ],
 })
 export class LmsModule {}

@@ -111,8 +111,8 @@
       {{#each featuredCourses}}
       <article class="content-card">
         <div class="content-card-image">
-          {{#if featuredImage}}<img src="{{featuredImage}}" alt="{{title}}" onerror="this.src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop'">
-          {{else}}<img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop" alt="{{title}}">{{/if}}
+          {{#if featuredImage}}<img src="{{featuredImage}}" alt="{{title}}" onerror="this.src='/api/lms/courses/placeholder-image'">
+          {{else}}<img src="/api/lms/courses/placeholder-image" alt="{{title}}">{{/if}}
         </div>
         <div class="content-card-body">
           <h3><a href="/courses/{{slug}}">{{title}}</a></h3>

@@ -71,11 +71,11 @@
       <article class="course-card" data-price-type="{{priceType}}" data-title="{{title}}">
         <div class="course-image-wrapper">
           {{#if featuredImage}}
-          <img src="{{featuredImage}}" alt="{{title}}" class="course-image" onerror="this.src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&h=280&fit=crop'">
+          <img src="{{featuredImage}}" alt="{{title}}" class="course-image" onerror="this.src='/api/lms/courses/placeholder-image'">
           {{else if thumbnail}}
-          <img src="{{thumbnail}}" alt="{{title}}" class="course-image" onerror="this.src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&h=280&fit=crop'">
+          <img src="{{thumbnail}}" alt="{{title}}" class="course-image" onerror="this.src='/api/lms/courses/placeholder-image'">
           {{else}}
-          <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&h=280&fit=crop" alt="{{title}}" class="course-image">
+          <img src="/api/lms/courses/placeholder-image" alt="{{title}}" class="course-image">
           {{/if}}
           {{#if level}}<span class="course-level">{{level}}</span>{{/if}}
           <span class="course-price-badge {{#if (eq priceType 'FREE')}}free{{else}}paid{{/if}}">

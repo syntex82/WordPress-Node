@@ -223,13 +223,12 @@ export default function Courses() {
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 w-14 h-10 rounded-lg overflow-hidden bg-slate-700">
-                          {course.featuredImage ? (
-                            <img src={course.featuredImage} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-500">
-                              <FiBook size={20} />
-                            </div>
-                          )}
+                          <img
+                            src={course.featuredImage || '/api/lms/courses/placeholder-image'}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/api/lms/courses/placeholder-image'; }}
+                          />
                         </div>
                         <div className="ml-4">
                           <div className="font-medium text-white">{course.title}</div>

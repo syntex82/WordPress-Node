@@ -141,9 +141,9 @@
     <div class="course-card">
       <div class="course-image">
         {{#if featuredImage}}
-        <img src="{{featuredImage}}" alt="{{title}}">
+        <img src="{{featuredImage}}" alt="{{title}}" onerror="this.src='/api/lms/courses/placeholder-image'">
         {{else}}
-        <div class="course-placeholder">📚</div>
+        <img src="/api/lms/courses/placeholder-image" alt="{{title}}">
         {{/if}}
         {{#if price}}
         <span class="course-price">${{price}}</span>

@@ -98,13 +98,12 @@ export default function CourseCatalog() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map((course) => (
                 <Link key={course.id} to={`/lms/course/${course.slug}`} className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden hover:border-slate-600/50 transition-all hover:scale-[1.02]">
-                  {course.featuredImage ? (
-                    <img src={course.featuredImage} alt={course.title} className="w-full h-48 object-cover" />
-                  ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                      <span className="text-white text-4xl">📚</span>
-                    </div>
-                  )}
+                  <img
+                    src={course.featuredImage || '/api/lms/courses/placeholder-image'}
+                    alt={course.title}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/api/lms/courses/placeholder-image'; }}
+                  />
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-2">
                       {getLevelBadge(course.level)}

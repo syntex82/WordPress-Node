@@ -123,9 +123,12 @@ export default function CourseLanding() {
               </div>
             </div>
             <div className="bg-slate-800 rounded-2xl p-6 text-white shadow-2xl border border-slate-700/50">
-              {course.featuredImage && (
-                <img src={course.featuredImage} alt="" className="w-full h-40 object-cover rounded-xl mb-4" />
-              )}
+              <img
+                src={course.featuredImage || '/api/lms/courses/placeholder-image'}
+                alt=""
+                className="w-full h-40 object-cover rounded-xl mb-4"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/api/lms/courses/placeholder-image'; }}
+              />
               <div className="text-3xl font-bold mb-4">
                 {course.priceType === 'FREE' ? 'Free' : `$${course.priceAmount?.toFixed(2)}`}
               </div>
