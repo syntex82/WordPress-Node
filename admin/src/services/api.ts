@@ -1330,3 +1330,41 @@ export const notificationsApi = {
   deleteAllRead: () => api.delete('/notifications/clear/read'),
   clearAll: () => api.delete('/notifications/clear/all'),
 };
+
+// Backup types
+export interface Backup {
+  id: string;
+  name: string;
+  description?: string;
+  type: 'FULL' | 'DATABASE' | 'MEDIA' | 'THEMES' | 'PLUGINS' | 'SCHEDULED';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  filePath?: string;
+  fileSize?: number;
+  checksum?: string;
+  includesDatabase: boolean;
+  includesMedia: boolean;
+  includesThemes: boolean;
+  includesPlugins: boolean;
+  tablesCount?: number;
+  recordsCount?: number;
+  filesCount?: number;
+  errorMessage?: string;
+  createdBy?: { id: string; name: string; email: string };
+  startedAt?: string;
+  completedAt?: string;
+  createdAt: string;
+}
+
+// Backups API
+export const backupsApi = {
+  getAll: (params?: { page?: number; limit?: number; status?: string; type?: string }) =>
+    api.get('/backups', { params }),
+  getStats: () => api.get('/backups/stats'),
+  getOne: (id: string) => api.get(`/backups/${id}`),
+  create: (data: { name: string; description?: string; type?: string; includesDatabase?: boolean; includesMedia?: boolean; includesThemes?: boolean; includesPlugins?: boolean }) =>
+    api.post('/backups', data),
+  quickBackup: () => api.post('/backups/quick'),
+  databaseBackup: () => api.post('/backups/database'),
+  delete: (id: string) => api.delete(`/backups/${id}`),
+  getDownloadUrl: (id: string) => `/api/backups/${id}/download`,
+};

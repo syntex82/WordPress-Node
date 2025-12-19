@@ -103,6 +103,9 @@ model User {
 
   // Notifications
   notifications         Notification[] @relation("UserNotifications")
+
+  // Backups
+  backups               Backup[] @relation("UserBackups")
 }
 
 // Follow relationship for users
@@ -1847,4 +1850,97 @@ model Notification {
   @@index([isRead])
   @@index([type])
   @@index([createdAt])
+}
+
+// =====================================================
+// BACKUP SYSTEM
+// =====================================================
+
+enum BackupStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum BackupType {
+  FULL           // Full database + files
+  DATABASE       // Database only
+  MEDIA          // Media files only
+  THEMES         // Themes only
+  PLUGINS        // Plugins only
+  SCHEDULED      // Scheduled automatic backup
+}
+
+model Backup {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  type        BackupType   @default(FULL)
+  status      BackupStatus @default(PENDING)
+
+  // File info
+  filePath    String?      // Path to backup file
+  fileSize    BigInt?      // Size in bytes
+  checksum    String?      // MD5/SHA256 for integrity
+
+  // What's included
+  includesDatabase Boolean  @default(true)
+  includesMedia    Boolean  @default(true)
+  includesThemes   Boolean  @default(true)
+  includesPlugins  Boolean  @default(true)
+
+  // Stats
+  tablesCount      Int?
+  recordsCount     Int?
+  filesCount       Int?
+
+  // Error handling
+  errorMessage String?
+
+  // Scheduling
+  isScheduled  Boolean   @default(false)
+  scheduleId   String?   // Reference to schedule config
+
+  // Who created it
+  createdById  String?
+  createdBy    User?     @relation("UserBackups", fields: [createdById], references: [id], onDelete: SetNull)
+
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@index([createdById])
+}
+
+model BackupSchedule {
+  id          String   @id @default(uuid())
+  name        String
+  isActive    Boolean  @default(true)
+
+  // Schedule config (cron-like)
+  frequency   String   // 'daily', 'weekly', 'monthly', 'custom'
+  cronExpression String? // For custom schedules
+  hour        Int      @default(3)  // Hour of day (0-23)
+  dayOfWeek   Int?     // 0-6 for weekly
+  dayOfMonth  Int?     // 1-31 for monthly
+
+  // What to backup
+  backupType  BackupType @default(FULL)
+
+  // Retention
+  retentionDays Int    @default(30)
+  maxBackups    Int    @default(10)
+
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([nextRunAt])
 }

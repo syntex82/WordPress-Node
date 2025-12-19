@@ -21,6 +21,7 @@ import ThemeBuilder from './pages/ThemeBuilder';
 import ThemeDesigner from './pages/ThemeDesigner';
 import MenuManager from './pages/MenuManager';
 import MarketplaceAdmin from './pages/MarketplaceAdmin';
+import Backups from './pages/Backups';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import Layout from './components/Layout';
@@ -179,6 +180,9 @@ function App() {
                 <Route path="email/designer" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailTemplateDesigner /></ProtectedRoute>} />
                 <Route path="email/composer" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailComposer /></ProtectedRoute>} />
                 <Route path="email/logs" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailLogs /></ProtectedRoute>} />
+
+                {/* Backups */}
+                <Route path="backups" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Backups /></ProtectedRoute>} />
 
                 {/* Settings */}
                 <Route path="settings" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Settings /></ProtectedRoute>} />

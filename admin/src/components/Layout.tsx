@@ -6,7 +6,7 @@
 
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand } from 'react-icons/fi';
+import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand, FiHardDrive } from 'react-icons/fi';
 import { useState, useEffect, useCallback } from 'react';
 import { messagesApi } from '../services/api';
 import { canAccess, ROLE_DESCRIPTIONS, type UserRole, type RolePermissions } from '../config/permissions';
@@ -87,6 +87,7 @@ export default function Layout() {
     { name: 'Messages', path: '/messages', icon: FiMail, permission: 'messages', badge: unreadMessages, tooltipKey: 'messages' },
     { name: 'Groups', path: '/groups', icon: FiMessageSquare, permission: 'groups', tooltipKey: 'groups' },
     { name: 'Security', path: '/security', icon: FiShield, permission: 'security', tooltipKey: 'security' },
+    { name: 'Backups', path: '/backups', icon: FiHardDrive, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Settings', path: '/settings', icon: FiSettings, permission: 'settings', tooltipKey: 'settings' },
   ];
 
