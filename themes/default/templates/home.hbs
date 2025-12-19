@@ -1,40 +1,438 @@
 {{> header}}
 
+<style>
+  :root {
+    --primary: #10b981;
+    --primary-dark: #059669;
+    --secondary: #6366f1;
+    --dark: #0f172a;
+    --darker: #020617;
+    --light: #f8fafc;
+    --gray: #64748b;
+  }
+  .wp-hero {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .wp-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 150%;
+    background: radial-gradient(ellipse, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .wp-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 60%;
+    height: 100%;
+    background: radial-gradient(ellipse, rgba(99, 102, 241, 0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .wp-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .wp-hero-text h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  .wp-hero-text h1 span {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .wp-hero-text p {
+    font-size: 1.25rem;
+    color: var(--gray);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+  .wp-hero-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .wp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  .wp-btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+  }
+  .wp-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+  }
+  .wp-btn-outline {
+    border: 2px solid var(--gray);
+    color: white;
+    background: transparent;
+  }
+  .wp-btn-outline:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .wp-hero-visual {
+    position: relative;
+  }
+  .wp-logo-container {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    backdrop-filter: blur(10px);
+  }
+  .wp-logo-img {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    display: block;
+  }
+  .wp-tech-stack {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+  .wp-tech-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 50px;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .wp-features {
+    background: var(--light);
+    padding: 100px 40px;
+  }
+  .wp-section-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 4rem;
+  }
+  .wp-section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 1rem;
+  }
+  .wp-section-header p {
+    font-size: 1.1rem;
+    color: var(--gray);
+  }
+  .wp-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .wp-feature-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+  }
+  .wp-feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+  }
+  .wp-feature-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .wp-feature-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 0.75rem;
+  }
+  .wp-feature-card p {
+    color: var(--gray);
+    line-height: 1.6;
+    margin: 0;
+  }
+  .wp-architecture {
+    background: var(--dark);
+    padding: 100px 40px;
+  }
+  .wp-architecture .wp-section-header h2,
+  .wp-architecture .wp-section-header p {
+    color: white;
+  }
+  .wp-architecture .wp-section-header p {
+    opacity: 0.7;
+  }
+  .wp-arch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .wp-arch-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+  }
+  .wp-arch-card h4 {
+    color: var(--primary);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+  }
+  .wp-arch-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .wp-arch-card li {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .wp-arch-card li:last-child {
+    border-bottom: none;
+  }
+  .wp-cta {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    padding: 100px 40px;
+    text-align: center;
+  }
+  .wp-cta h2 {
+    font-size: 2.5rem;
+    color: white;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  .wp-cta p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .wp-cta .wp-btn-primary {
+    background: white;
+    color: var(--dark);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  .wp-cta .wp-btn-primary:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+  @media (max-width: 900px) {
+    .wp-hero-content {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .wp-hero-text h1 {
+      font-size: 2.5rem;
+    }
+    .wp-hero-buttons {
+      justify-content: center;
+    }
+    .wp-arch-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
 <!-- Hero Section -->
-<section class="hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 100px 40px; text-align: center;">
-  <div class="hero-content" style="max-width: 800px; margin: 0 auto;">
-    <h1 style="font-size: 48px; margin-bottom: 1rem; font-weight: 700;">Welcome to Our Site</h1>
-    <p style="font-size: 20px; margin-bottom: 2rem; opacity: 0.9;">Discover amazing content and experiences</p>
-    <a href="/blog" class="cta-button" style="display: inline-block; padding: 12px 32px; background: #FF6B6B; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Explore Now</a>
+<section class="wp-hero">
+  <div class="wp-hero-content">
+    <div class="wp-hero-text">
+      <h1>The Modern <span>WordPress Alternative</span> Built with Node.js</h1>
+      <p>A blazing-fast, enterprise-grade CMS built with NestJS, React, Prisma, and PostgreSQL. Full LMS, eCommerce, analytics, and plugin ecosystem out of the box.</p>
+      <div class="wp-hero-buttons">
+        <a href="https://github.com/syntex82/WordPress-Node" target="_blank" class="wp-btn wp-btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Download on GitHub
+        </a>
+        <a href="#features" class="wp-btn wp-btn-outline">Learn More</a>
+      </div>
+    </div>
+    <div class="wp-hero-visual">
+      <div class="wp-logo-container">
+        <svg class="wp-logo-img" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- Node.js Hexagon -->
+          <polygon points="200,30 280,70 280,150 200,190 120,150 120,70" fill="none" stroke="#10b981" stroke-width="3"/>
+          <text x="200" y="140" text-anchor="middle" fill="white" font-size="32" font-weight="bold">WP</text>
+          <text x="200" y="170" text-anchor="middle" fill="#10b981" font-size="16" font-weight="600">NODE</text>
+          <!-- Decorative elements -->
+          <circle cx="120" cy="70" r="6" fill="#10b981"/>
+          <circle cx="280" cy="70" r="6" fill="#6366f1"/>
+          <circle cx="280" cy="150" r="6" fill="#10b981"/>
+          <circle cx="120" cy="150" r="6" fill="#6366f1"/>
+          <circle cx="200" cy="30" r="6" fill="#10b981"/>
+          <circle cx="200" cy="190" r="6" fill="#6366f1"/>
+          <!-- Tagline -->
+          <text x="200" y="240" text-anchor="middle" fill="#64748b" font-size="14">Modern CMS • Enterprise Ready</text>
+          <text x="200" y="260" text-anchor="middle" fill="#64748b" font-size="12">v1.0.0</text>
+        </svg>
+        <div class="wp-tech-stack">
+          <span class="wp-tech-badge">🟢 Node.js</span>
+          <span class="wp-tech-badge">⚛️ React</span>
+          <span class="wp-tech-badge">🐘 PostgreSQL</span>
+          <span class="wp-tech-badge">📦 Prisma</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- Featured Posts Section -->
-<section class="featured-section" style="padding: 60px 40px; background: #F8F9FA;">
-  <div class="container" style="max-width: 1200px; margin: 0 auto;">
-    <h2 style="text-align: center; margin-bottom: 3rem; font-size: 36px; font-weight: 700;">Latest Posts</h2>
-    
-    <div class="posts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-      {{#each posts}}
-        <article class="post-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 24px rgba(0, 0, 0, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.1)';">
-          <div style="padding: 2rem;">
-            <h3 style="font-size: 20px; margin-bottom: 0.5rem; font-weight: 600;">{{this.title}}</h3>
-            <p style="color: #666; margin-bottom: 1rem; line-height: 1.6;">{{this.excerpt}}</p>
-            <a href="/post/{{this.slug}}" style="color: #667eea; text-decoration: none; font-weight: 600;">Read More →</a>
-          </div>
-        </article>
-      {{/each}}
+<!-- Features Section -->
+<section class="wp-features" id="features">
+  <div class="wp-section-header">
+    <h2>Everything You Need, Built In</h2>
+    <p>A complete content management ecosystem with powerful features that would cost thousands in plugins elsewhere.</p>
+  </div>
+  <div class="wp-features-grid">
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">📚</div>
+      <h3>Learning Management System</h3>
+      <p>Complete LMS with courses, lessons, quizzes, certificates, and student progress tracking.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">🛒</div>
+      <h3>eCommerce Ready</h3>
+      <p>Full shopping experience with cart, checkout, orders, inventory, and payment processing.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">📊</div>
+      <h3>Advanced Analytics</h3>
+      <p>GDPR-compliant analytics with real-time tracking, pageviews, sessions, and conversion metrics.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">🎨</div>
+      <h3>Theme System</h3>
+      <p>Handlebars-based themes with live customization, multiple layouts, and custom CSS support.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">🔌</div>
+      <h3>Plugin Architecture</h3>
+      <p>Extensible plugin system with lifecycle hooks, custom routes, and marketplace support.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">🤖</div>
+      <h3>AI Recommendations</h3>
+      <p>Smart content recommendations with collaborative filtering, trending, and personalization.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">🔐</div>
+      <h3>Enterprise Security</h3>
+      <p>JWT auth, RBAC, rate limiting, IP blocking, CSRF protection, and security headers.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">📧</div>
+      <h3>Email & Notifications</h3>
+      <p>Transactional emails, push notifications, and real-time messaging built-in.</p>
+    </div>
+    <div class="wp-feature-card">
+      <div class="wp-feature-icon">🔍</div>
+      <h3>SEO Optimized</h3>
+      <p>Meta tags, sitemaps, schema markup, and search engine optimization tools.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture Section -->
+<section class="wp-architecture">
+  <div class="wp-section-header">
+    <h2>Modern Tech Stack</h2>
+    <p>Built with industry-leading technologies for performance, scalability, and developer experience.</p>
+  </div>
+  <div class="wp-arch-grid">
+    <div class="wp-arch-card">
+      <h4>Backend</h4>
+      <ul>
+        <li>NestJS Framework</li>
+        <li>TypeScript</li>
+        <li>Prisma ORM</li>
+        <li>PostgreSQL</li>
+        <li>Redis Caching</li>
+        <li>Bull Queue</li>
+      </ul>
+    </div>
+    <div class="wp-arch-card">
+      <h4>Frontend</h4>
+      <ul>
+        <li>React 18</li>
+        <li>Tailwind CSS</li>
+        <li>Vite Build</li>
+        <li>Handlebars Templates</li>
+        <li>Chart.js</li>
+        <li>Socket.io</li>
+      </ul>
+    </div>
+    <div class="wp-arch-card">
+      <h4>DevOps</h4>
+      <ul>
+        <li>Docker Ready</li>
+        <li>CI/CD Pipelines</li>
+        <li>Health Checks</li>
+        <li>Backup System</li>
+        <li>Horizontal Scaling</li>
+        <li>Logging & Monitoring</li>
+      </ul>
     </div>
   </div>
 </section>
 
 <!-- CTA Section -->
-<section class="cta-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 40px; text-align: center;">
-  <div class="container" style="max-width: 800px; margin: 0 auto;">
-    <h2 style="font-size: 32px; margin-bottom: 1rem; font-weight: 700;">Ready to Get Started?</h2>
-    <p style="font-size: 18px; margin-bottom: 2rem; opacity: 0.9;">Join our community and stay updated with the latest content</p>
-    <a href="/contact" class="cta-button" style="display: inline-block; padding: 12px 32px; background: #FF6B6B; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Contact Us</a>
-  </div>
+<section class="wp-cta">
+  <h2>Ready to Build Something Amazing?</h2>
+  <p>Get started with WordPress Node in minutes. Clone the repo, run the setup, and start building.</p>
+  <a href="https://github.com/syntex82/WordPress-Node" target="_blank" class="wp-btn wp-btn-primary">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+    Clone Repository
+  </a>
 </section>
 
 {{> footer}}
