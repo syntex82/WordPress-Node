@@ -187,11 +187,12 @@
       
       async function loadCourses() {
         try {
-          var r = await fetch(API + '/lms/my-courses', { credentials: 'include', headers: getAuthHeaders() });
+          var r = await fetch(API + '/lms/my-enrollments', { credentials: 'include', headers: getAuthHeaders() });
           if (!r.ok) throw new Error('Failed to load');
-          var data = await r.json();
-          renderCourses(data.enrollments || []);
+          var enrollments = await r.json();
+          renderCourses(enrollments || []);
         } catch(e) {
+          console.error('Load courses error:', e);
           document.getElementById('coursesContainer').innerHTML = '<div class="empty-state"><span>📭</span><h2>No courses yet</h2><p>Browse our catalog and start learning!</p><a href="/courses">Browse Courses</a></div>';
         }
       }
@@ -202,9 +203,10 @@
           return;
         }
         var html = enrollments.map(function(e) {
-          var progress = e.progress ? Math.round(e.progress) : 0;
+          var progress = e.progress && e.progress.percent ? e.progress.percent : 0;
           var c = e.course || {};
-          return '<div class="course-item"><div class="course-thumb">' + (c.featuredImage ? '<img src="'+c.featuredImage+'" alt="">' : '📚') + '</div><div class="course-info"><h3>'+c.title+'</h3><p>'+(c.shortDescription||'')+'</p><div class="progress-bar"><div class="progress-fill" style="width:'+progress+'%"></div></div><p style="margin-top:0.5rem;font-size:0.85rem">'+progress+'% complete</p></div><div class="course-actions"><a href="/admin/lms/learn/'+c.id+'" class="btn-continue">Continue</a></div></div>';
+          var statusBadge = e.status === 'COMPLETED' ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:0.75rem;margin-left:8px">Completed</span>' : '';
+          return '<div class="course-item"><div class="course-thumb">' + (c.featuredImage ? '<img src="'+c.featuredImage+'" alt="">' : '📚') + '</div><div class="course-info"><h3>'+c.title+statusBadge+'</h3><p>'+(c.shortDescription||'')+'</p><div class="progress-bar"><div class="progress-fill" style="width:'+progress+'%"></div></div><p style="margin-top:0.5rem;font-size:0.85rem">'+progress+'% complete</p></div><div class="course-actions"><a href="/admin/lms/learn/'+c.id+'" class="btn-continue">'+(e.status === 'COMPLETED' ? 'Review' : 'Continue')+'</a></div></div>';
         }).join('');
         document.getElementById('coursesContainer').innerHTML = html;
       }
