@@ -1302,3 +1302,31 @@ export const customizationPresetsApi = {
   addPreset: (data: any) => api.post('/customizations/presets', data),
   removePreset: (id: string) => api.delete(`/customizations/presets/${id}`),
 };
+
+// Notification type
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR' | 'SYSTEM' | 'USER_ACTION' | 'CONTENT' | 'SECURITY' | 'MARKETPLACE';
+  title: string;
+  message: string;
+  link?: string;
+  icon?: string;
+  iconColor?: string;
+  isRead: boolean;
+  readAt?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
+// Notifications API
+export const notificationsApi = {
+  getAll: (params?: { page?: number; limit?: number; unreadOnly?: boolean; type?: string }) =>
+    api.get('/notifications', { params }),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (id: string) => api.post(`/notifications/${id}/read`),
+  markAllAsRead: () => api.post('/notifications/read-all'),
+  delete: (id: string) => api.delete(`/notifications/${id}`),
+  deleteAllRead: () => api.delete('/notifications/clear/read'),
+  clearAll: () => api.delete('/notifications/clear/all'),
+};

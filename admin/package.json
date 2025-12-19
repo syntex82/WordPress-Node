@@ -25,6 +25,7 @@
     "@tiptap/react": "^3.13.0",
     "@tiptap/starter-kit": "^3.13.0",
     "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
     "photoswipe": "^5.4.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

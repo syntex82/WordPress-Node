@@ -34,6 +34,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { EmailModule } from './modules/email/email.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { EmailModule } from './modules/email/email.module';
     SeoModule,
     MessagesModule,
     EmailModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

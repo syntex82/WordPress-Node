@@ -13,6 +13,7 @@ import { canAccess, ROLE_DESCRIPTIONS, type UserRole, type RolePermissions } fro
 import Tooltip from './Tooltip';
 import { NAV_TOOLTIPS } from '../config/tooltips';
 import CommandPalette from './CommandPalette';
+import NotificationCenter from './NotificationCenter';
 
 export default function Layout() {
   const location = useLocation();
@@ -605,6 +606,14 @@ export default function Layout() {
 
       {/* Main Content Area with Dark Theme */}
       <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Top Bar with Notifications */}
+        <div className="sticky top-0 z-40 px-8 py-3 bg-slate-900/80 backdrop-blur-lg border-b border-slate-800/50 flex items-center justify-end gap-4">
+          <NotificationCenter />
+          <div className="w-px h-6 bg-slate-700/50" />
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <span>{user?.name}</span>
+          </div>
+        </div>
         <div className="p-8 min-h-full">
           <Outlet />
         </div>

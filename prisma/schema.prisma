@@ -100,6 +100,9 @@ model User {
   submittedThemes       MarketplaceTheme[] @relation("MarketplaceThemeSubmitter")
   approvedThemes        MarketplaceTheme[] @relation("MarketplaceThemeApprover")
   themeRatings          MarketplaceThemeRating[]
+
+  // Notifications
+  notifications         Notification[] @relation("UserNotifications")
 }
 
 // Follow relationship for users
@@ -1801,5 +1804,47 @@ model EmailLog {
   @@index([toEmail])
   @@index([status])
   @@index([sentAt])
+  @@index([createdAt])
+}
+
+// =====================================================
+// NOTIFICATIONS
+// =====================================================
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  SYSTEM
+  USER_ACTION
+  CONTENT
+  SECURITY
+  MARKETPLACE
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  type        NotificationType @default(INFO)
+  title       String
+  message     String
+  link        String?          // Optional link to navigate to
+  icon        String?          // Icon name (e.g., 'FiFileText', 'FiUser')
+  iconColor   String?          // Icon color class (e.g., 'text-blue-400')
+
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+
+  // Metadata for additional context
+  metadata    Json?            // { postId, userId, themeId, etc. }
+
+  createdAt   DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
   @@index([createdAt])
 }
