@@ -70,6 +70,8 @@ import EmailTemplates from './pages/email/EmailTemplates';
 import EmailComposer from './pages/email/EmailComposer';
 import EmailLogs from './pages/email/EmailLogs';
 import EmailTemplateDesigner from './pages/email/EmailTemplateDesigner';
+// Recommendations
+import Recommendations from './pages/Recommendations';
 
 function App() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
@@ -109,9 +111,10 @@ function App() {
                 {/* Dashboard */}
                 <Route index element={<ProtectedRoute feature="dashboard"><Dashboard /></ProtectedRoute>} />
 
-                {/* Analytics & SEO */}
+                {/* Analytics, SEO & Recommendations */}
                 <Route path="analytics" element={<ProtectedRoute feature="analytics" requiredRole="ADMIN"><Analytics /></ProtectedRoute>} />
                 <Route path="seo" element={<ProtectedRoute feature="seo" requiredRole="EDITOR"><Seo /></ProtectedRoute>} />
+                <Route path="recommendations" element={<ProtectedRoute feature="recommendations" requiredRole="ADMIN"><Recommendations /></ProtectedRoute>} />
 
                 {/* Posts - specific routes before parameterized */}
                 <Route path="posts" element={<ProtectedRoute feature="posts"><Posts /></ProtectedRoute>} />

@@ -222,6 +222,98 @@ export const marketplaceApi = {
     api.post<{ succeeded: number; failed: number; total: number }>('/marketplace/admin/bulk/delete', { ids }),
 };
 
+// Plugin Marketplace API
+export interface MarketplacePlugin {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  longDescription: string | null;
+  version: string;
+  author: string;
+  authorEmail: string | null;
+  authorUrl: string | null;
+  iconUrl: string | null;
+  screenshotUrls: string[] | null;
+  downloadUrl: string | null;
+  repositoryUrl: string | null;
+  fileSize: number | null;
+  category: string;
+  tags: string[] | null;
+  features: string[] | null;
+  price: number;
+  isPremium: boolean;
+  downloads: number;
+  activeInstalls: number;
+  rating: number;
+  ratingCount: number;
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  isFeatured: boolean;
+  submittedBy?: { id: string; name: string; avatar: string | null };
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PluginMarketplaceQuery {
+  category?: string;
+  search?: string;
+  sortBy?: 'downloads' | 'rating' | 'newest' | 'name' | 'activeInstalls';
+  page?: number;
+  limit?: number;
+}
+
+export const pluginMarketplaceApi = {
+  // Public endpoints
+  getPlugins: (query?: PluginMarketplaceQuery) =>
+    api.get<{ plugins: MarketplacePlugin[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      '/plugin-marketplace/plugins',
+      { params: query }
+    ),
+  getFeatured: (limit = 6) =>
+    api.get<MarketplacePlugin[]>('/plugin-marketplace/featured', { params: { limit } }),
+  getStats: () =>
+    api.get<{ total: number; approved: number; pending: number; featured: number; totalDownloads: number; totalActiveInstalls: number }>('/plugin-marketplace/stats'),
+  getCategories: () =>
+    api.get<{ category: string; count: number }[]>('/plugin-marketplace/categories'),
+  getPlugin: (id: string) =>
+    api.get<MarketplacePlugin>(`/plugin-marketplace/plugins/${id}`),
+  getPluginBySlug: (slug: string) =>
+    api.get<MarketplacePlugin>(`/plugin-marketplace/plugins/slug/${slug}`),
+
+  // Authenticated endpoints
+  submitPlugin: (data: FormData) =>
+    api.post<MarketplacePlugin>('/plugin-marketplace/submit', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  installPlugin: (id: string) =>
+    api.post(`/plugin-marketplace/plugins/${id}/install`),
+  ratePlugin: (id: string, rating: number, review?: string) =>
+    api.post(`/plugin-marketplace/plugins/${id}/rate`, { rating, review }),
+
+  // Admin endpoints
+  getAdminPlugins: (query?: PluginMarketplaceQuery & { status?: string }) =>
+    api.get<{ plugins: MarketplacePlugin[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      '/plugin-marketplace/admin/plugins',
+      { params: query }
+    ),
+  approvePlugin: (id: string) =>
+    api.post(`/plugin-marketplace/admin/plugins/${id}/approve`),
+  rejectPlugin: (id: string, reason: string) =>
+    api.post(`/plugin-marketplace/admin/plugins/${id}/reject`, { reason }),
+  setFeatured: (id: string, featured: boolean, order?: number) =>
+    api.post(`/plugin-marketplace/admin/plugins/${id}/feature`, { featured, order }),
+  deletePlugin: (id: string) =>
+    api.delete(`/plugin-marketplace/admin/plugins/${id}`),
+
+  // Bulk actions
+  bulkApprove: (ids: string[]) =>
+    api.post<{ succeeded: number; failed: number; total: number }>('/plugin-marketplace/admin/bulk/approve', { ids }),
+  bulkReject: (ids: string[], reason: string) =>
+    api.post<{ succeeded: number; failed: number; total: number }>('/plugin-marketplace/admin/bulk/reject', { ids, reason }),
+  bulkDelete: (ids: string[]) =>
+    api.post<{ succeeded: number; failed: number; total: number }>('/plugin-marketplace/admin/bulk/delete', { ids }),
+};
+
 // Custom Themes API (for Theme Designer)
 export interface CustomThemeSettings {
   colors: {
@@ -1367,4 +1459,68 @@ export const backupsApi = {
   databaseBackup: () => api.post('/backups/database'),
   delete: (id: string) => api.delete(`/backups/${id}`),
   getDownloadUrl: (id: string) => `/api/backups/${id}/download`,
+};
+
+// Recommendations API
+export interface RecommendationRule {
+  id: string;
+  name: string;
+  description?: string;
+  sourceType: string;   // 'post', 'page', 'product', 'course', 'category', 'tag', 'global'
+  sourceId?: string;
+  targetType: string;   // what content to recommend
+  algorithm: string;    // 'related', 'trending', 'personalized', 'manual', 'popular', 'recent'
+  priority: number;     // higher = more important
+  isActive: boolean;
+  settings: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecommendationSettings {
+  id: string;
+  enablePersonalization: boolean;
+  enableTrending: boolean;
+  enableRelated: boolean;
+  cacheEnabled: boolean;
+  cacheDuration: number;
+  maxRecommendations: number;
+  minScore: number;
+  excludeCategories: string[];
+  excludeTags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecommendationAnalytics {
+  totalClicks: number;
+  totalImpressions: number;
+  clickThroughRate: number;
+  topPerforming: Array<{ contentId: string; contentType: string; clicks: number; impressions: number; ctr: number }>;
+  byAlgorithm: Array<{ algorithm: string; clicks: number; impressions: number; ctr: number }>;
+  dailyStats: Array<{ date: string; clicks: number; impressions: number }>;
+}
+
+export const recommendationsApi = {
+  // Rules
+  getRules: () => api.get<RecommendationRule[]>('/admin/recommendations/rules'),
+  getRule: (id: string) => api.get<RecommendationRule>(`/admin/recommendations/rules/${id}`),
+  createRule: (data: Partial<RecommendationRule>) => api.post<RecommendationRule>('/admin/recommendations/rules', data),
+  updateRule: (id: string, data: Partial<RecommendationRule>) => api.put<RecommendationRule>(`/admin/recommendations/rules/${id}`, data),
+  deleteRule: (id: string) => api.delete(`/admin/recommendations/rules/${id}`),
+
+  // Settings
+  getSettings: () => api.get<RecommendationSettings>('/admin/recommendations/settings'),
+  updateSettings: (data: Partial<RecommendationSettings>) => api.put<RecommendationSettings>('/admin/recommendations/settings', data),
+
+  // Analytics
+  getAnalytics: (params?: { startDate?: string; endDate?: string }) =>
+    api.get<RecommendationAnalytics>('/admin/recommendations/analytics', { params }),
+
+  // Cache
+  clearCache: (contentType?: string) => api.post('/admin/recommendations/cache/clear', { contentType }),
+
+  // Preview recommendations
+  previewRecommendations: (contentType: string, contentId: string, limit?: number) =>
+    api.get(`/recommendations/${contentType}s/${contentId}`, { params: { limit } }),
 };

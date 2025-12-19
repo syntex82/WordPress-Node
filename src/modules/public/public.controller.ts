@@ -3,7 +3,7 @@
  * Handles public-facing routes and renders theme templates
  */
 
-import { Controller, Get, Post, Body, Param, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Req, Res, UseGuards, Inject, forwardRef } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { join } from 'path';
 import { PostsService } from '../content/services/posts.service';
@@ -15,6 +15,8 @@ import { CoursesService } from '../lms/services/courses.service';
 import { CertificatesService } from '../lms/services/certificates.service';
 import { ProfilesService } from '../users/profiles.service';
 import { AuthService } from '../auth/auth.service';
+import { RecommendationsService } from '../recommendations/recommendations.service';
+import { RecommendationTrackingService } from '../recommendations/recommendation-tracking.service';
 import { PostStatus } from '@prisma/client';
 import { CourseLevel, CoursePriceType } from '../lms/dto/course.dto';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
@@ -31,6 +33,10 @@ export class PublicController {
     private certificatesService: CertificatesService,
     private profilesService: ProfilesService,
     private authService: AuthService,
+    @Inject(forwardRef(() => RecommendationsService))
+    private recommendationsService: RecommendationsService,
+    @Inject(forwardRef(() => RecommendationTrackingService))
+    private trackingService: RecommendationTrackingService,
   ) {}
 
   /**
@@ -432,7 +438,23 @@ export class PublicController {
         return;
       }
 
-      const html = await this.themeRenderer.renderProduct(product, user);
+      // Track this view for recommendations
+      await this.trackingService.trackInteraction({
+        contentType: 'product',
+        contentId: product.id,
+        interactionType: 'view',
+        userId: user?.id,
+        sessionId: req.sessionID,
+      });
+
+      // Get related products for recommendations
+      const relatedProducts = await this.recommendationsService.getRelatedProducts(product.id, 4, user?.id);
+      const productWithRecommendations = {
+        ...product,
+        relatedProducts: relatedProducts.items,
+      };
+
+      const html = await this.themeRenderer.renderProduct(productWithRecommendations, user);
       res.send(html);
     } catch (_error) {
       res.status(404).send('Product not found');
@@ -567,7 +589,23 @@ export class PublicController {
         return;
       }
 
-      const html = await this.themeRenderer.renderPost(post, user);
+      // Track this view for recommendations
+      await this.trackingService.trackInteraction({
+        contentType: 'post',
+        contentId: post.id,
+        interactionType: 'view',
+        userId: user?.id,
+        sessionId: req.sessionID,
+      });
+
+      // Get related posts for recommendations
+      const relatedPosts = await this.recommendationsService.getRelatedPosts(post.id, 4, user?.id);
+      const postWithRecommendations = {
+        ...post,
+        relatedPosts: relatedPosts.items,
+      };
+
+      const html = await this.themeRenderer.renderPost(postWithRecommendations, user);
       res.send(html);
     } catch (_error) {
       res.status(404).send('Post not found');

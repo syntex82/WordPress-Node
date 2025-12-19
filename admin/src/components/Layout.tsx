@@ -6,7 +6,7 @@
 
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand, FiHardDrive } from 'react-icons/fi';
+import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand, FiHardDrive, FiZap } from 'react-icons/fi';
 import { useState, useEffect, useCallback } from 'react';
 import { messagesApi } from '../services/api';
 import { canAccess, ROLE_DESCRIPTIONS, type UserRole, type RolePermissions } from '../config/permissions';
@@ -70,6 +70,7 @@ export default function Layout() {
   const mainNavigation: Array<{ name: string; path: string; icon: any; permission: keyof RolePermissions; badge?: number; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [
     { name: 'Dashboard', path: '/', icon: FiHome, permission: 'dashboard', tooltipKey: 'dashboard' },
     { name: 'Analytics', path: '/analytics', icon: FiBarChart2, permission: 'analytics', tooltipKey: 'analytics' },
+    { name: 'Recommendations', path: '/recommendations', icon: FiZap, permission: 'analytics', tooltipKey: 'analytics' },
   ];
 
   // Content navigation group

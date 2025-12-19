@@ -30,6 +30,7 @@ export interface RolePermissions {
   themes: Permission;
   plugins: Permission;
   email: Permission;
+  recommendations: Permission;
 }
 
 // Define permissions for each role
@@ -52,6 +53,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     themes: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     plugins: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     email: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    recommendations: { canView: true, canCreate: true, canEdit: true, canDelete: true },
   },
   EDITOR: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
@@ -71,6 +73,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     themes: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     plugins: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    recommendations: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
   AUTHOR: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
@@ -90,6 +93,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     themes: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
   VIEWER: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
@@ -109,6 +113,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     themes: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
 };
 

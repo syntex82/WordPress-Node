@@ -36,6 +36,7 @@ import { MessagesModule } from './modules/messages/messages.module';
 import { EmailModule } from './modules/email/email.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { BackupModule } from './modules/backup/backup.module';
+import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { BackupModule } from './modules/backup/backup.module';
     EmailModule,
     NotificationsModule,
     BackupModule,
+    RecommendationsModule,
   ],
 })
 export class AppModule {}

@@ -96,16 +96,25 @@ model User {
   emailTemplatesCreated EmailTemplate[] @relation("EmailTemplateCreator")
   emailsReceived        EmailLog[]      @relation("EmailRecipient")
 
-  // Marketplace
+  // Theme Marketplace
   submittedThemes       MarketplaceTheme[] @relation("MarketplaceThemeSubmitter")
   approvedThemes        MarketplaceTheme[] @relation("MarketplaceThemeApprover")
   themeRatings          MarketplaceThemeRating[]
+
+  // Plugin Marketplace
+  submittedPlugins      MarketplacePlugin[] @relation("MarketplacePluginSubmitter")
+  approvedPlugins       MarketplacePlugin[] @relation("MarketplacePluginApprover")
+  pluginRatings         MarketplacePluginRating[]
 
   // Notifications
   notifications         Notification[] @relation("UserNotifications")
 
   // Backups
   backups               Backup[] @relation("UserBackups")
+
+  // Recommendations System
+  userInteractions      UserInteraction[]
+  recommendationClicks  RecommendationClick[]
 }
 
 // Follow relationship for users
@@ -1943,4 +1952,205 @@ model BackupSchedule {
 
   @@index([isActive])
   @@index([nextRunAt])
+}
+
+// =====================================================
+// PLUGIN MARKETPLACE
+// =====================================================
+
+// MarketplacePlugin model - plugins submitted to the marketplace
+model MarketplacePlugin {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  longDescription String?  @db.Text
+  version         String
+  author          String
+  authorEmail     String?
+  authorUrl       String?
+
+  // Plugin package
+  iconUrl         String?  // Plugin icon URL
+  screenshotUrls  Json?    // Array of screenshot URLs
+  downloadUrl     String?  // URL to download the plugin ZIP
+  repositoryUrl   String?  // GitHub/GitLab repository URL
+  fileSize        Int?     // Size in bytes
+
+  // Categorization
+  category        String   @default("utility") // utility, seo, security, social, analytics, backup, ecommerce, etc.
+  tags            Json?    // Array of tags
+  features        Json?    // Array of feature strings
+
+  // Pricing
+  price           Float    @default(0)
+  isPremium       Boolean  @default(false)
+
+  // Stats & Ratings
+  downloads       Int      @default(0)
+  activeInstalls  Int      @default(0)
+  rating          Float    @default(0)
+  ratingCount     Int      @default(0)
+
+  // Approval workflow
+  status          String   @default("pending") // pending, approved, rejected, suspended
+  submittedById   String?
+  submittedBy     User?    @relation("MarketplacePluginSubmitter", fields: [submittedById], references: [id], onDelete: SetNull)
+  approvedById    String?
+  approvedBy      User?    @relation("MarketplacePluginApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  // Featured/Promoted
+  isFeatured      Boolean  @default(false)
+  featuredOrder   Int?
+
+  // Compatibility
+  minVersion      String?  // Minimum CMS version required
+  maxVersion      String?  // Maximum CMS version supported
+  testedUpTo      String?  // Last tested CMS version
+
+  // Metadata
+  changelog       String?  @db.Text
+  documentation   String?  @db.Text
+  supportUrl      String?
+  licenseType     String?  @default("MIT")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  ratings         MarketplacePluginRating[]
+
+  @@index([status])
+  @@index([category])
+  @@index([isFeatured])
+  @@index([downloads])
+  @@index([rating])
+  @@index([submittedById])
+}
+
+// MarketplacePluginRating model - user ratings for marketplace plugins
+model MarketplacePluginRating {
+  id        String   @id @default(uuid())
+  pluginId  String
+  plugin    MarketplacePlugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int      // 1-5 stars
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pluginId, userId])
+  @@index([pluginId])
+  @@index([userId])
+}
+
+// ============================================
+// RECOMMENDATIONS SYSTEM
+// ============================================
+
+// UserInteraction - tracks user interactions for personalized recommendations
+model UserInteraction {
+  id              String   @id @default(uuid())
+  userId          String?  // nullable for anonymous users
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId       String?  // for anonymous user tracking
+  contentType     String   // 'post', 'page', 'product', 'course'
+  contentId       String   // ID of the content item
+  interactionType String   // 'view', 'click', 'purchase', 'enroll', 'like', 'share', 'bookmark'
+  metadata        Json?    // additional data (time spent, scroll depth, referrer, etc.)
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([contentType, contentId])
+  @@index([interactionType])
+  @@index([createdAt])
+}
+
+// RecommendationRule - admin-configured recommendation rules
+model RecommendationRule {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  sourceType  String   // 'post', 'page', 'product', 'course', 'category', 'tag', 'global'
+  sourceId    String?  // specific item ID, or null for all items of sourceType
+  targetType  String   // what type of content to recommend: 'post', 'page', 'product', 'course'
+  algorithm   String   // 'related', 'trending', 'personalized', 'manual', 'popular', 'recent'
+  settings    Json?    // algorithm-specific settings (limit, timeframe, weights, etc.)
+  priority    Int      @default(0) // higher priority rules take precedence
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Manual recommendation items
+  manualItems ManualRecommendation[]
+
+  @@index([sourceType, sourceId])
+  @@index([targetType])
+  @@index([algorithm])
+  @@index([isActive])
+  @@index([priority])
+}
+
+// ManualRecommendation - manually curated recommendation items
+model ManualRecommendation {
+  id          String   @id @default(uuid())
+  ruleId      String
+  rule        RecommendationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  contentType String   // type of recommended content
+  contentId   String   // ID of the recommended content
+  position    Int      @default(0) // display order
+  createdAt   DateTime @default(now())
+
+  @@index([ruleId])
+  @@index([contentType, contentId])
+}
+
+// RecommendationCache - cached recommendations for performance
+model RecommendationCache {
+  id              String   @id @default(uuid())
+  sourceType      String   // source content type
+  sourceId        String   // source content ID
+  targetType      String   // recommended content type
+  algorithm       String   // algorithm used
+  recommendations Json     // array of recommended item IDs with scores
+  expiresAt       DateTime // cache expiration time
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([sourceType, sourceId, targetType, algorithm])
+  @@index([expiresAt])
+}
+
+// RecommendationClick - tracks clicks on recommendations for analytics
+model RecommendationClick {
+  id                 String   @id @default(uuid())
+  userId             String?
+  user               User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId          String?
+  sourceType         String   // what type of page they were on
+  sourceId           String   // which specific content they were viewing
+  recommendationType String   // 'related', 'trending', 'personalized', etc.
+  clickedType        String   // type of content clicked
+  clickedId          String   // ID of content clicked
+  position           Int?     // position in the recommendation list (1-based)
+  createdAt          DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([recommendationType])
+  @@index([sourceType, sourceId])
+}
+
+// RecommendationSettings - global recommendation settings
+model RecommendationSettings {
+  id                    String   @id @default(uuid())
+  key                   String   @unique
+  value                 Json     // setting value
+  description           String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
