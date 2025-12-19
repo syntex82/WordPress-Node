@@ -453,6 +453,21 @@ export default function Layout() {
                           Content Manager
                         </Link>
                       </Tooltip>
+                      {userRole === 'ADMIN' && (
+                        <Tooltip title="Marketplace Admin" content="Manage theme submissions, approvals, and featured themes" position="right" variant="help" delay={400}>
+                          <Link
+                            to="/marketplace"
+                            className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                              isActive('/marketplace')
+                                ? 'bg-pink-500/20 text-pink-300 border-l-2 border-pink-500'
+                                : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                            }`}
+                          >
+                            <FiPackage size={16} className={isActive('/marketplace') ? 'text-pink-400' : 'text-slate-500'} />
+                            Marketplace
+                          </Link>
+                        </Tooltip>
+                      )}
                     </div>
                   )}
                 </div>

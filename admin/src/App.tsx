@@ -20,6 +20,7 @@ import GroupChat from './pages/GroupChat';
 import ThemeBuilder from './pages/ThemeBuilder';
 import ThemeDesigner from './pages/ThemeDesigner';
 import MenuManager from './pages/MenuManager';
+import MarketplaceAdmin from './pages/MarketplaceAdmin';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import Layout from './components/Layout';
@@ -139,6 +140,7 @@ function App() {
                 <Route path="theme-builder" element={<ProtectedRoute feature="themes"><ThemeBuilder /></ProtectedRoute>} />
                 <Route path="theme-designer" element={<ProtectedRoute feature="themes"><ThemeDesigner /></ProtectedRoute>} />
                 <Route path="theme-content" element={<ProtectedRoute feature="themes"><ThemeContentManager /></ProtectedRoute>} />
+                <Route path="marketplace" element={<ProtectedRoute feature="themes" requiredRole="ADMIN"><MarketplaceAdmin /></ProtectedRoute>} />
 
                 {/* Shop Admin - specific routes before parameterized */}
                 <Route path="shop/products" element={<ProtectedRoute feature="shop"><ShopProducts /></ProtectedRoute>} />
