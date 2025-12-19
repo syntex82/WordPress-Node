@@ -135,8 +135,9 @@
     font-weight: 500;
   }
   .wp-features {
-    background: var(--light);
+    background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
     padding: 100px 40px;
+    position: relative;
   }
   .wp-section-header {
     text-align: center;
@@ -146,54 +147,209 @@
   .wp-section-header h2 {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--dark);
+    color: white;
     margin-bottom: 1rem;
   }
   .wp-section-header p {
     font-size: 1.1rem;
-    color: var(--gray);
+    color: #94a3b8;
   }
   .wp-features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
   }
   .wp-feature-card {
-    background: white;
-    border-radius: 16px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .wp-feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
   .wp-feature-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  .wp-feature-card:hover::before {
+    opacity: 1;
   }
   .wp-feature-icon {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    border-radius: 14px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
-    margin-bottom: 1.25rem;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
   }
   .wp-feature-card h3 {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 600;
-    color: var(--dark);
+    color: white;
     margin-bottom: 0.75rem;
   }
   .wp-feature-card p {
-    color: var(--gray);
-    line-height: 1.6;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin: 0 0 1rem 0;
+  }
+  .wp-feature-expand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: gap 0.2s ease;
+  }
+  .wp-feature-card:hover .wp-feature-expand {
+    gap: 0.75rem;
+  }
+  /* Feature Modal */
+  .feature-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(2, 6, 23, 0.95);
+    z-index: 9999;
+    display: none;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+  }
+  .feature-modal-overlay.active {
+    display: block;
+  }
+  .feature-modal {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 0 40px 60px;
+    animation: modalSlideIn 0.3s ease;
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .feature-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .feature-modal-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    flex-shrink: 0;
+  }
+  .feature-modal-title h2 {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  .feature-modal-title p {
+    color: #94a3b8;
     margin: 0;
+  }
+  .feature-modal-content h3 {
+    color: var(--primary);
+    font-size: 1.25rem;
+    margin: 2rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .feature-modal-content p {
+    color: #cbd5e1;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+  .feature-modal-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+  }
+  .feature-modal-content li {
+    color: #cbd5e1;
+    padding: 0.75rem 0;
+    padding-left: 2rem;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .feature-modal-content li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: bold;
+  }
+  .feature-modal-content code {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9em;
+  }
+  .feature-modal-content pre {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  .feature-modal-content pre code {
+    background: none;
+    padding: 0;
+    color: #e2e8f0;
+  }
+  .btn-back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 2rem;
+  }
+  .btn-back-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
   }
   .wp-architecture {
     background: var(--dark);
@@ -267,10 +423,16 @@
   .wp-cta .wp-btn-primary:hover {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   }
-  /* User Access Section */
+  /* User Access Section - Dark Theme */
   .wp-user-access {
-    background: var(--light);
+    background: linear-gradient(135deg, #1e293b 0%, var(--dark) 100%);
     padding: 100px 40px;
+  }
+  .wp-user-access .wp-section-header h2 {
+    color: white;
+  }
+  .wp-user-access .wp-section-header p {
+    color: #94a3b8;
   }
   .wp-access-content {
     max-width: 1000px;
@@ -282,8 +444,8 @@
     gap: 1.5rem;
   }
   .wp-dashboard-card {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     padding: 2rem;
     text-align: center;
@@ -293,7 +455,7 @@
   }
   .wp-dashboard-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
     border-color: var(--primary);
   }
   .wp-dashboard-icon {
@@ -301,11 +463,11 @@
     margin-bottom: 1rem;
   }
   .wp-dashboard-card h3 {
-    color: var(--dark);
+    color: white;
     margin-bottom: 0.5rem;
   }
   .wp-dashboard-card p {
-    color: var(--gray);
+    color: #94a3b8;
     margin: 0;
     font-size: 0.9rem;
   }
@@ -315,13 +477,13 @@
     gap: 2rem;
   }
   .wp-auth-card {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     padding: 2rem;
   }
   .wp-auth-card h3 {
-    color: var(--dark);
+    color: white;
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
   }
@@ -331,14 +493,20 @@
   .wp-input {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #e2e8f0;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     font-size: 1rem;
+    color: white;
     transition: border-color 0.3s;
+  }
+  .wp-input::placeholder {
+    color: #64748b;
   }
   .wp-input:focus {
     outline: none;
     border-color: var(--primary);
+    background: rgba(15, 23, 42, 0.8);
   }
   .wp-btn-block {
     width: 100%;
@@ -356,7 +524,7 @@
   .wp-auth-link {
     text-align: center;
     margin-top: 1.5rem;
-    color: var(--gray);
+    color: #94a3b8;
   }
   .wp-auth-link a {
     color: var(--primary);
@@ -454,9 +622,16 @@
     color: rgba(255,255,255,0.6);
     font-size: 0.85rem;
   }
-  /* Posts Section */
+  /* Posts Section - Dark Theme */
   .wp-posts {
-    background: var(--light);
+    background: linear-gradient(135deg, #1e293b 0%, var(--dark) 100%);
+    padding: 100px 40px;
+  }
+  .wp-posts .wp-section-header h2 {
+    color: white;
+  }
+  .wp-posts .wp-section-header p {
+    color: #94a3b8;
   }
   .wp-posts-grid {
     display: grid;
@@ -466,19 +641,20 @@
     margin: 0 auto;
   }
   .wp-post-card {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     overflow: hidden;
     transition: all 0.3s ease;
   }
   .wp-post-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    border-color: var(--primary);
   }
   .wp-post-image {
     height: 180px;
-    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -490,7 +666,7 @@
   }
   .wp-post-placeholder {
     font-size: 3rem;
-    opacity: 0.3;
+    opacity: 0.5;
   }
   .wp-post-body {
     padding: 1.5rem;
@@ -500,20 +676,20 @@
     gap: 1rem;
     margin-bottom: 0.75rem;
     font-size: 0.85rem;
-    color: var(--gray);
+    color: #94a3b8;
   }
   .wp-post-body h3 {
     margin-bottom: 0.5rem;
   }
   .wp-post-body h3 a {
-    color: var(--dark);
+    color: white;
     text-decoration: none;
   }
   .wp-post-body h3 a:hover {
     color: var(--primary);
   }
   .wp-post-body p {
-    color: var(--gray);
+    color: #94a3b8;
     font-size: 0.95rem;
     line-height: 1.6;
     margin-bottom: 1rem;
@@ -645,53 +821,62 @@
 <section class="wp-features" id="features">
   <div class="wp-section-header">
     <h2>Everything You Need, Built In</h2>
-    <p>A complete content management ecosystem with powerful features that would cost thousands in plugins elsewhere.</p>
+    <p>A complete content management ecosystem with powerful features. Click any card to learn more.</p>
   </div>
   <div class="wp-features-grid">
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('lms')">
       <div class="wp-feature-icon">📚</div>
       <h3>Learning Management System</h3>
       <p>Complete LMS with courses, lessons, quizzes, certificates, and student progress tracking.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('ecommerce')">
       <div class="wp-feature-icon">🛒</div>
       <h3>eCommerce Ready</h3>
       <p>Full shopping experience with cart, checkout, orders, inventory, and payment processing.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('analytics')">
       <div class="wp-feature-icon">📊</div>
       <h3>Advanced Analytics</h3>
       <p>GDPR-compliant analytics with real-time tracking, pageviews, sessions, and conversion metrics.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('themes')">
       <div class="wp-feature-icon">🎨</div>
       <h3>Theme System</h3>
       <p>Handlebars-based themes with live customization, multiple layouts, and custom CSS support.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('plugins')">
       <div class="wp-feature-icon">🔌</div>
       <h3>Plugin Architecture</h3>
       <p>Extensible plugin system with lifecycle hooks, custom routes, and marketplace support.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('recommendations')">
       <div class="wp-feature-icon">🤖</div>
       <h3>AI Recommendations</h3>
       <p>Smart content recommendations with collaborative filtering, trending, and personalization.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('security')">
       <div class="wp-feature-icon">🔐</div>
       <h3>Enterprise Security</h3>
       <p>JWT auth, RBAC, rate limiting, IP blocking, CSRF protection, and security headers.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('email')">
       <div class="wp-feature-icon">📧</div>
       <h3>Email & Notifications</h3>
       <p>Transactional emails, push notifications, and real-time messaging built-in.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
-    <div class="wp-feature-card">
+    <div class="wp-feature-card" onclick="openFeatureModal('seo')">
       <div class="wp-feature-icon">🔍</div>
       <h3>SEO Optimized</h3>
       <p>Meta tags, sitemaps, schema markup, and search engine optimization tools.</p>
+      <span class="wp-feature-expand">Learn more →</span>
     </div>
   </div>
 </section>
@@ -933,6 +1118,399 @@
     Clone Repository
   </a>
 </section>
+
+<!-- Feature Modal Overlay -->
+<div class="feature-modal-overlay" id="featureModal">
+  <div class="feature-modal">
+    <button class="btn-back-home" onclick="closeFeatureModal()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Home
+    </button>
+    <div class="feature-modal-header">
+      <div class="feature-modal-icon" id="modalIcon"></div>
+      <div class="feature-modal-title">
+        <h2 id="modalTitle"></h2>
+        <p id="modalSubtitle"></p>
+      </div>
+    </div>
+    <div class="feature-modal-content" id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+var featureData = {
+  lms: {
+    icon: '📚',
+    title: 'Learning Management System',
+    subtitle: 'Complete course creation and student management platform',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>WordPress Node includes a full-featured Learning Management System that rivals dedicated platforms like Teachable, Thinkific, or LearnDash. Create, sell, and manage online courses with ease.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Course Builder</strong> - Drag-and-drop course creation with modules, lessons, and sections</li>
+        <li><strong>Video Hosting</strong> - Support for self-hosted videos, YouTube, Vimeo, and Wistia</li>
+        <li><strong>Quizzes & Assessments</strong> - Multiple choice, true/false, essay questions with auto-grading</li>
+        <li><strong>Certificates</strong> - Customizable PDF certificates with dynamic fields</li>
+        <li><strong>Progress Tracking</strong> - Real-time student progress with completion percentages</li>
+        <li><strong>Drip Content</strong> - Schedule lesson releases over time</li>
+        <li><strong>Prerequisites</strong> - Require course/lesson completion before advancing</li>
+        <li><strong>Discussion Forums</strong> - Per-lesson discussion threads for student engagement</li>
+      </ul>
+
+      <h3>🔌 API Endpoints</h3>
+      <pre><code>GET  /api/courses              # List all courses
+POST /api/courses              # Create a course
+GET  /api/courses/:id          # Get course details
+POST /api/courses/:id/enroll   # Enroll in a course
+GET  /api/learning/my-courses  # Get enrolled courses
+POST /api/learning/progress    # Update lesson progress</code></pre>
+
+      <h3>💡 Use Cases</h3>
+      <ul>
+        <li>Online course platforms and academies</li>
+        <li>Corporate training and onboarding</li>
+        <li>Membership sites with educational content</li>
+        <li>Certification programs</li>
+      </ul>
+    `
+  },
+  ecommerce: {
+    icon: '🛒',
+    title: 'eCommerce Ready',
+    subtitle: 'Full-featured online store with payment processing',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>Built-in eCommerce functionality that handles everything from product management to order fulfillment. No need for WooCommerce or external plugins.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Product Management</strong> - Physical, digital, and subscription products</li>
+        <li><strong>Inventory Tracking</strong> - Stock levels, low stock alerts, backorders</li>
+        <li><strong>Shopping Cart</strong> - Persistent cart with guest checkout support</li>
+        <li><strong>Checkout Flow</strong> - Multi-step checkout with address validation</li>
+        <li><strong>Payment Gateways</strong> - Stripe, PayPal, and custom gateway support</li>
+        <li><strong>Order Management</strong> - Order status, tracking, refunds, and notes</li>
+        <li><strong>Coupons & Discounts</strong> - Percentage, fixed, and free shipping coupons</li>
+        <li><strong>Tax Calculation</strong> - Automatic tax rates by region</li>
+      </ul>
+
+      <h3>🔌 API Endpoints</h3>
+      <pre><code>GET  /api/products           # List products
+POST /api/cart/add           # Add to cart
+GET  /api/cart               # Get cart contents
+POST /api/checkout           # Process checkout
+GET  /api/orders             # List orders
+GET  /api/orders/:id         # Order details</code></pre>
+
+      <h3>💡 Use Cases</h3>
+      <ul>
+        <li>Online stores and marketplaces</li>
+        <li>Digital product sales (ebooks, software)</li>
+        <li>Subscription boxes and memberships</li>
+        <li>Course + product bundles</li>
+      </ul>
+    `
+  },
+  analytics: {
+    icon: '📊',
+    title: 'Advanced Analytics',
+    subtitle: 'GDPR-compliant tracking and insights dashboard',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>Privacy-first analytics that gives you deep insights into your audience without relying on third-party services like Google Analytics. All data stays on your server.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Pageview Tracking</strong> - Real-time pageview and session tracking</li>
+        <li><strong>Visitor Analytics</strong> - Unique visitors, returning visitors, bounce rate</li>
+        <li><strong>Traffic Sources</strong> - Referrers, UTM parameters, campaign tracking</li>
+        <li><strong>Geographic Data</strong> - Country, city, and region breakdown</li>
+        <li><strong>Device Analytics</strong> - Browser, OS, and device type stats</li>
+        <li><strong>Event Tracking</strong> - Custom events for buttons, forms, downloads</li>
+        <li><strong>GDPR Compliance</strong> - IP anonymization, cookie consent, data retention</li>
+        <li><strong>Real-time Dashboard</strong> - Live visitor count and activity feed</li>
+      </ul>
+
+      <h3>🔌 API Endpoints</h3>
+      <pre><code>POST /api/analytics/track     # Track pageview/event
+GET  /api/analytics/stats     # Get analytics summary
+GET  /api/analytics/realtime  # Real-time visitors
+GET  /api/analytics/pages     # Top pages report
+GET  /api/analytics/sources   # Traffic sources</code></pre>
+
+      <h3>💡 Privacy Features</h3>
+      <ul>
+        <li>No cookies required for basic tracking</li>
+        <li>IP addresses anonymized by default</li>
+        <li>Configurable data retention periods</li>
+        <li>GDPR consent banner integration</li>
+      </ul>
+    `
+  },
+  themes: {
+    icon: '🎨',
+    title: 'Theme System',
+    subtitle: 'Handlebars-based theming with live customization',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>A powerful theming system that lets you create beautiful, responsive websites without touching the backend. Themes use Handlebars templates with full access to site data.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Handlebars Templates</strong> - Clean, logic-less templates with helpers</li>
+        <li><strong>Theme Customizer</strong> - Live preview of colors, fonts, and layouts</li>
+        <li><strong>Multiple Layouts</strong> - Different layouts for pages, posts, products</li>
+        <li><strong>Partial System</strong> - Reusable header, footer, sidebar components</li>
+        <li><strong>Custom CSS</strong> - Add custom styles without editing theme files</li>
+        <li><strong>Theme Presets</strong> - One-click theme style presets</li>
+        <li><strong>Export/Import</strong> - Share theme customizations</li>
+        <li><strong>Child Themes</strong> - Extend themes without modifying originals</li>
+      </ul>
+
+      <h3>📁 Theme Structure</h3>
+      <pre><code>themes/my-theme/
+├── theme.json          # Theme metadata
+├── templates/
+│   ├── home.hbs        # Homepage template
+│   ├── single.hbs      # Single post template
+│   ├── page.hbs        # Page template
+│   ├── header.hbs      # Header partial
+│   └── footer.hbs      # Footer partial
+└── assets/
+    ├── css/
+    └── js/</code></pre>
+
+      <h3>💡 Template Helpers</h3>
+      <ul>
+        <li><code>{{formatDate date}}</code> - Format dates</li>
+        <li><code>{{excerpt content 150}}</code> - Truncate text</li>
+        <li><code>{{#if user}}</code> - Conditional rendering</li>
+        <li><code>{{#each posts}}</code> - Loop through data</li>
+      </ul>
+    `
+  },
+  plugins: {
+    icon: '🔌',
+    title: 'Plugin Architecture',
+    subtitle: 'Extend functionality with modular plugins',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>A robust plugin system that lets you extend WordPress Node without modifying core code. Plugins can add routes, hooks, admin pages, and more.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Lifecycle Hooks</strong> - onInstall, onActivate, onDeactivate, onUninstall</li>
+        <li><strong>Custom Routes</strong> - Add API endpoints and public routes</li>
+        <li><strong>Admin Pages</strong> - Create custom admin panel sections</li>
+        <li><strong>Database Access</strong> - Full Prisma client access</li>
+        <li><strong>Event System</strong> - Subscribe to and emit custom events</li>
+        <li><strong>Settings API</strong> - Store and retrieve plugin settings</li>
+        <li><strong>Asset Loading</strong> - Include CSS/JS in themes</li>
+        <li><strong>Marketplace</strong> - Browse and install community plugins</li>
+      </ul>
+
+      <h3>📁 Plugin Structure</h3>
+      <pre><code>plugins/my-plugin/
+├── plugin.json         # Plugin metadata
+├── index.ts            # Main entry point
+├── routes/             # Custom routes
+├── services/           # Business logic
+└── assets/             # Static files</code></pre>
+
+      <h3>🔌 Plugin API</h3>
+      <pre><code>// plugin.json
+{
+  "name": "My Plugin",
+  "version": "1.0.0",
+  "hooks": ["onActivate", "onDeactivate"],
+  "routes": ["/api/my-plugin/*"]
+}
+
+// index.ts
+export function onActivate(context) {
+  console.log('Plugin activated!');
+}</code></pre>
+    `
+  },
+  recommendations: {
+    icon: '🤖',
+    title: 'AI Recommendations',
+    subtitle: 'Smart content suggestions powered by machine learning',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>Intelligent recommendation engine that suggests relevant content, products, and courses to users based on their behavior and preferences.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Collaborative Filtering</strong> - "Users who liked X also liked Y"</li>
+        <li><strong>Content-Based</strong> - Recommendations based on item attributes</li>
+        <li><strong>Trending Content</strong> - Popular items based on recent activity</li>
+        <li><strong>Personalization</strong> - User-specific recommendations</li>
+        <li><strong>Similar Items</strong> - Find related posts, products, courses</li>
+        <li><strong>Recently Viewed</strong> - Track and display browsing history</li>
+        <li><strong>A/B Testing</strong> - Test different recommendation strategies</li>
+        <li><strong>Analytics</strong> - Track recommendation performance</li>
+      </ul>
+
+      <h3>🔌 API Endpoints</h3>
+      <pre><code>GET /api/recommendations/posts      # Recommended posts
+GET /api/recommendations/products   # Recommended products
+GET /api/recommendations/courses    # Recommended courses
+GET /api/recommendations/similar/:id # Similar items
+GET /api/recommendations/trending   # Trending content</code></pre>
+
+      <h3>💡 Configuration</h3>
+      <ul>
+        <li>Adjustable algorithm weights</li>
+        <li>Content type filtering</li>
+        <li>Freshness decay settings</li>
+        <li>Minimum interaction thresholds</li>
+      </ul>
+    `
+  },
+  security: {
+    icon: '🔐',
+    title: 'Enterprise Security',
+    subtitle: 'Bank-grade security features built-in',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>Comprehensive security features that protect your site from common attacks and ensure compliance with security best practices.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>JWT Authentication</strong> - Secure token-based auth with refresh tokens</li>
+        <li><strong>Two-Factor Auth</strong> - TOTP-based 2FA with authenticator apps</li>
+        <li><strong>Role-Based Access</strong> - Granular permissions (Admin, Editor, Author, User)</li>
+        <li><strong>Rate Limiting</strong> - Protect against brute force and DDoS</li>
+        <li><strong>IP Blocking</strong> - Block malicious IPs automatically</li>
+        <li><strong>CSRF Protection</strong> - Token-based form protection</li>
+        <li><strong>Security Headers</strong> - CSP, HSTS, X-Frame-Options, etc.</li>
+        <li><strong>Audit Logging</strong> - Track all admin actions</li>
+      </ul>
+
+      <h3>🔒 Security Headers</h3>
+      <pre><code>Content-Security-Policy: default-src 'self'
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Strict-Transport-Security: max-age=31536000
+X-XSS-Protection: 1; mode=block</code></pre>
+
+      <h3>💡 Best Practices</h3>
+      <ul>
+        <li>Passwords hashed with bcrypt (12 rounds)</li>
+        <li>Sensitive data encrypted at rest</li>
+        <li>SQL injection prevention via Prisma</li>
+        <li>XSS prevention with output encoding</li>
+      </ul>
+    `
+  },
+  email: {
+    icon: '📧',
+    title: 'Email & Notifications',
+    subtitle: 'Transactional emails and real-time notifications',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>Built-in email system for transactional emails, newsletters, and real-time notifications. Supports multiple email providers and templates.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Email Templates</strong> - Handlebars-based email templates</li>
+        <li><strong>SMTP Support</strong> - Works with any SMTP provider</li>
+        <li><strong>Provider Integration</strong> - SendGrid, Mailgun, AWS SES, Postmark</li>
+        <li><strong>Queue System</strong> - Background email processing with Bull</li>
+        <li><strong>Email Tracking</strong> - Open and click tracking</li>
+        <li><strong>Push Notifications</strong> - Web push notification support</li>
+        <li><strong>In-App Notifications</strong> - Real-time notification center</li>
+        <li><strong>Notification Preferences</strong> - User-configurable settings</li>
+      </ul>
+
+      <h3>📧 Email Types</h3>
+      <pre><code>- Welcome email (on registration)
+- Password reset
+- Order confirmation
+- Shipping notification
+- Course enrollment
+- Certificate issued
+- Comment notifications
+- Newsletter campaigns</code></pre>
+
+      <h3>💡 Configuration</h3>
+      <ul>
+        <li>SMTP or API-based sending</li>
+        <li>HTML and plain text versions</li>
+        <li>Attachment support</li>
+        <li>Retry logic for failed sends</li>
+      </ul>
+    `
+  },
+  seo: {
+    icon: '🔍',
+    title: 'SEO Optimized',
+    subtitle: 'Search engine optimization tools built-in',
+    content: `
+      <h3>📖 Overview</h3>
+      <p>Comprehensive SEO tools that help your content rank higher in search engines. No need for Yoast or other SEO plugins.</p>
+
+      <h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Meta Tags</strong> - Custom title, description, keywords per page</li>
+        <li><strong>Open Graph</strong> - Facebook and social media meta tags</li>
+        <li><strong>Twitter Cards</strong> - Rich Twitter preview cards</li>
+        <li><strong>XML Sitemap</strong> - Auto-generated sitemap.xml</li>
+        <li><strong>Robots.txt</strong> - Configurable robots.txt</li>
+        <li><strong>Schema Markup</strong> - JSON-LD structured data</li>
+        <li><strong>Canonical URLs</strong> - Prevent duplicate content issues</li>
+        <li><strong>Breadcrumbs</strong> - SEO-friendly navigation</li>
+      </ul>
+
+      <h3>📊 Schema Types</h3>
+      <pre><code>- Article (blog posts)
+- Product (ecommerce)
+- Course (LMS)
+- Organization
+- BreadcrumbList
+- FAQPage
+- HowTo</code></pre>
+
+      <h3>💡 Best Practices</h3>
+      <ul>
+        <li>Clean, semantic URLs</li>
+        <li>Automatic image alt text</li>
+        <li>Mobile-first responsive design</li>
+        <li>Fast page load times</li>
+        <li>Core Web Vitals optimized</li>
+      </ul>
+    `
+  }
+};
+
+function openFeatureModal(featureId) {
+  var feature = featureData[featureId];
+  if (!feature) return;
+
+  document.getElementById('modalIcon').textContent = feature.icon;
+  document.getElementById('modalTitle').textContent = feature.title;
+  document.getElementById('modalSubtitle').textContent = feature.subtitle;
+  document.getElementById('modalContent').innerHTML = feature.content;
+  document.getElementById('featureModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFeatureModal() {
+  document.getElementById('featureModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('featureModal').addEventListener('click', function(e) {
+  if (e.target === this) closeFeatureModal();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeFeatureModal();
+});
+</script>
 
 {{> footer}}
 

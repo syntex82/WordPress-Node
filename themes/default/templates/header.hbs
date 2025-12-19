@@ -13,39 +13,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #334155;
+      color: #e2e8f0;
       line-height: 1.6;
       background: #0f172a;
     }
-
     header {
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 1000;
     }
-
     .header-content {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 1rem 40px;
+      padding: 0.75rem 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
     .logo {
       display: flex;
       align-items: center;
@@ -55,76 +47,226 @@
       color: white;
       text-decoration: none;
     }
-
     .logo-icon {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
-      border-radius: 8px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
       font-size: 0.85rem;
     }
-
     .logo span {
       background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-
-    nav ul {
+    .nav-main {
       display: flex;
       list-style: none;
-      gap: 2rem;
+      gap: 0.25rem;
       align-items: center;
     }
-
-    nav a {
+    .nav-main a {
       color: rgba(255, 255, 255, 0.7);
       text-decoration: none;
       font-weight: 500;
-      font-size: 0.95rem;
-      transition: color 0.3s ease;
-    }
-
-    nav a:hover {
-      color: #10b981;
-    }
-
-    .nav-cta {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white !important;
-      padding: 10px 20px;
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
       border-radius: 8px;
-      font-weight: 600;
-      display: inline-flex;
+      transition: all 0.2s ease;
+    }
+    .nav-main a:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .nav-right {
+      display: flex;
       align-items: center;
       gap: 0.5rem;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-      transition: all 0.3s ease;
     }
-
-    .nav-cta:hover {
+    .nav-icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .nav-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .cart-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 0 0.5rem;
+    }
+    .nav-auth-btn {
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .nav-auth-btn.login {
+      color: rgba(255, 255, 255, 0.9);
+      background: transparent;
+    }
+    .nav-auth-btn.login:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .nav-auth-btn.register {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .nav-auth-btn.register:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-      color: white !important;
     }
-
-    @media (max-width: 768px) {
-      .header-content {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem 20px;
-      }
-
-      nav ul {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 1rem;
-      }
+    .user-menu {
+      position: relative;
+    }
+    .user-menu-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.4rem 0.75rem 0.4rem 0.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: white;
+    }
+    .user-menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #6366f1 0%, #10b981 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .user-name {
+      font-weight: 500;
+      font-size: 0.9rem;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 220px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      overflow: hidden;
+    }
+    .user-menu:hover .user-dropdown {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .dropdown-header {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .dropdown-header strong {
+      display: block;
+      color: white;
+      margin-bottom: 0.25rem;
+    }
+    .dropdown-header span {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .dropdown-links {
+      padding: 0.5rem 0;
+    }
+    .dropdown-links a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    .dropdown-links a:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+    .dropdown-links a.admin {
+      color: #10b981;
+    }
+    .dropdown-links a.logout {
+      color: #f87171;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+    }
+    .mobile-menu-btn {
+      display: none;
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    @media (max-width: 900px) {
+      .nav-main { display: none; }
+      .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+    }
+    @media (max-width: 600px) {
+      .header-content { padding: 0.75rem 20px; }
+      .user-name { display: none; }
     }
   </style>
 </head>
@@ -135,21 +277,66 @@
         <div class="logo-icon">WP</div>
         WordPress <span>Node</span>
       </a>
-      <nav>
-        <ul>
-          <li><a href="#features">Features</a></li>
-          <li><a href="https://github.com/syntex82/WordPress-Node#readme" target="_blank">Docs</a></li>
-          <li><a href="https://github.com/syntex82/WordPress-Node/issues" target="_blank">Support</a></li>
-          <li>
-            <a href="https://github.com/syntex82/WordPress-Node" target="_blank" class="nav-cta">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-              GitHub
-            </a>
-          </li>
-        </ul>
-      </nav>
+
+      <ul class="nav-main">
+        <li><a href="/#features">Features</a></li>
+        <li><a href="/courses">Courses</a></li>
+        <li><a href="/shop">Shop</a></li>
+        <li><a href="/blog">Blog</a></li>
+        <li><a href="https://github.com/syntex82/WordPress-Node#readme" target="_blank">Docs</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <a href="/cart" class="nav-icon-btn" title="Cart">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cartCount" style="display:none">0</span>
+        </a>
+
+        <div class="nav-divider"></div>
+
+        {{#if user}}
+        <div class="user-menu">
+          <div class="user-menu-toggle">
+            <div class="user-avatar">{{substring user.name 0 1}}</div>
+            <span class="user-name">{{user.name}}</span>
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          </div>
+          <div class="user-dropdown">
+            <div class="dropdown-header">
+              <strong>{{user.name}}</strong>
+              <span>{{user.email}}</span>
+            </div>
+            <div class="dropdown-links">
+              <a href="/my-account"><span>👤</span> My Account</a>
+              <a href="/my-courses"><span>📚</span> My Courses</a>
+              <a href="/admin" class="admin"><span>⚙️</span> Admin Panel</a>
+              <a href="/logout" class="logout"><span>🚪</span> Sign Out</a>
+            </div>
+          </div>
+        </div>
+        {{else}}
+        <a href="/login" class="nav-auth-btn login">Sign In</a>
+        <a href="/register" class="nav-auth-btn register">Get Started</a>
+        {{/if}}
+
+        <button class="mobile-menu-btn">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main style="padding-top: 70px;">
+  <main style="padding-top: 60px;">
+
+<script>
+// Update cart count from localStorage
+(function() {
+  try {
+    var cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    var count = cart.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
+    var el = document.getElementById('cartCount');
+    if (el && count > 0) { el.textContent = count; el.style.display = 'flex'; }
+  } catch(e) {}
+})();
+</script>
 
