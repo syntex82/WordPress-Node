@@ -129,6 +129,91 @@ export const themesApi = {
   generate: (config: ThemeDesignConfig) => api.post('/themes/generate', config),
 };
 
+// Theme Marketplace API
+export interface MarketplaceTheme {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  longDescription: string | null;
+  version: string;
+  author: string;
+  authorEmail: string | null;
+  authorUrl: string | null;
+  thumbnailUrl: string | null;
+  screenshotUrls: string[] | null;
+  downloadUrl: string | null;
+  demoUrl: string | null;
+  repositoryUrl: string | null;
+  fileSize: number | null;
+  category: string;
+  tags: string[] | null;
+  features: string[] | null;
+  price: number;
+  isPremium: boolean;
+  downloads: number;
+  rating: number;
+  ratingCount: number;
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  isFeatured: boolean;
+  submittedBy?: { id: string; name: string; avatar: string | null };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MarketplaceQuery {
+  category?: string;
+  search?: string;
+  status?: string;
+  sortBy?: 'downloads' | 'rating' | 'newest' | 'name';
+  page?: number;
+  limit?: number;
+}
+
+export const marketplaceApi = {
+  // Public endpoints
+  getThemes: (query?: MarketplaceQuery) =>
+    api.get<{ themes: MarketplaceTheme[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      '/marketplace/themes',
+      { params: query }
+    ),
+  getFeatured: (limit = 6) =>
+    api.get<MarketplaceTheme[]>('/marketplace/featured', { params: { limit } }),
+  getStats: () =>
+    api.get<{ total: number; approved: number; pending: number; featured: number; totalDownloads: number }>('/marketplace/stats'),
+  getCategories: () =>
+    api.get<{ category: string; count: number }[]>('/marketplace/categories'),
+  getTheme: (id: string) =>
+    api.get<MarketplaceTheme>(`/marketplace/themes/${id}`),
+  getThemeBySlug: (slug: string) =>
+    api.get<MarketplaceTheme>(`/marketplace/themes/slug/${slug}`),
+
+  // Authenticated endpoints
+  submitTheme: (data: FormData) =>
+    api.post<MarketplaceTheme>('/marketplace/submit', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  installTheme: (id: string) =>
+    api.post(`/marketplace/themes/${id}/install`),
+  rateTheme: (id: string, rating: number, review?: string) =>
+    api.post(`/marketplace/themes/${id}/rate`, { rating, review }),
+
+  // Admin endpoints
+  getAdminThemes: (query?: MarketplaceQuery & { status?: string }) =>
+    api.get<{ themes: MarketplaceTheme[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      '/marketplace/admin/themes',
+      { params: query }
+    ),
+  approveTheme: (id: string) =>
+    api.post(`/marketplace/admin/themes/${id}/approve`),
+  rejectTheme: (id: string, reason: string) =>
+    api.post(`/marketplace/admin/themes/${id}/reject`, { reason }),
+  setFeatured: (id: string, featured: boolean, order?: number) =>
+    api.post(`/marketplace/admin/themes/${id}/feature`, { featured, order }),
+  deleteTheme: (id: string) =>
+    api.delete(`/marketplace/admin/themes/${id}`),
+};
+
 // Custom Themes API (for Theme Designer)
 export interface CustomThemeSettings {
   colors: {

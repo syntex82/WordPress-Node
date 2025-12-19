@@ -18,6 +18,8 @@ import { AiThemeGeneratorService } from './ai-theme-generator.service';
 import { CustomizationRendererService } from './customization-renderer.service';
 import { ThemeCustomizationService } from './theme-customization.service';
 import { ThemeCustomizationController } from './theme-customization.controller';
+import { MarketplaceService } from './marketplace.service';
+import { MarketplaceController } from './marketplace.controller';
 import { ContentModule } from '../content/content.module';
 import { SettingsModule } from '../settings/settings.module';
 import { MenusModule } from '../menus/menus.module';
@@ -46,8 +48,15 @@ import { MenusModule } from '../menus/menus.module';
     AiThemeGeneratorService,
     CustomizationRendererService,
     ThemeCustomizationService,
+    MarketplaceService,
   ],
-  controllers: [ThemesController, ThemeEditorController, CustomThemesController, ThemeCustomizationController],
+  controllers: [
+    ThemesController,
+    ThemeEditorController,
+    CustomThemesController,
+    ThemeCustomizationController,
+    MarketplaceController,
+  ],
   exports: [
     ThemesService,
     ThemeRendererService,
@@ -56,6 +65,7 @@ import { MenusModule } from '../menus/menus.module';
     AiThemeGeneratorService,
     CustomizationRendererService,
     ThemeCustomizationService,
+    MarketplaceService,
   ],
 })
 export class ThemesModule {}

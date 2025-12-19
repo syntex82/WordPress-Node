@@ -95,6 +95,11 @@ model User {
   // Email System
   emailTemplatesCreated EmailTemplate[] @relation("EmailTemplateCreator")
   emailsReceived        EmailLog[]      @relation("EmailRecipient")
+
+  // Marketplace
+  submittedThemes       MarketplaceTheme[] @relation("MarketplaceThemeSubmitter")
+  approvedThemes        MarketplaceTheme[] @relation("MarketplaceThemeApprover")
+  themeRatings          MarketplaceThemeRating[]
 }
 
 // Follow relationship for users
@@ -304,6 +309,94 @@ model CustomTheme {
 
   @@index([isActive])
   @@index([createdById])
+}
+
+// MarketplaceTheme model - themes submitted to the marketplace
+model MarketplaceTheme {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  longDescription String?  @db.Text
+  version         String
+  author          String
+  authorEmail     String?
+  authorUrl       String?
+
+  // Theme package
+  thumbnailUrl    String?  // Preview image URL
+  screenshotUrls  Json?    // Array of additional screenshot URLs
+  downloadUrl     String?  // URL to download the theme ZIP
+  demoUrl         String?  // Live demo URL
+  repositoryUrl   String?  // GitHub/GitLab repository URL
+  fileSize        Int?     // Size in bytes
+
+  // Categorization
+  category        String   @default("blog") // blog, business, portfolio, ecommerce, magazine, etc.
+  tags            Json?    // Array of tags
+  features        Json?    // Array of feature strings
+
+  // Pricing
+  price           Float    @default(0)
+  isPremium       Boolean  @default(false)
+
+  // Stats & Ratings
+  downloads       Int      @default(0)
+  rating          Float    @default(0)
+  ratingCount     Int      @default(0)
+
+  // Approval workflow
+  status          String   @default("pending") // pending, approved, rejected, suspended
+  submittedById   String?
+  submittedBy     User?    @relation("MarketplaceThemeSubmitter", fields: [submittedById], references: [id], onDelete: SetNull)
+  approvedById    String?
+  approvedBy      User?    @relation("MarketplaceThemeApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  // Featured/Promoted
+  isFeatured      Boolean  @default(false)
+  featuredOrder   Int?
+
+  // Compatibility
+  minVersion      String?  // Minimum CMS version required
+  maxVersion      String?  // Maximum CMS version supported
+
+  // Metadata
+  changelog       String?  @db.Text
+  documentation   String?  @db.Text
+  supportUrl      String?
+  licenseType     String?  @default("GPL-2.0")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  ratings         MarketplaceThemeRating[]
+
+  @@index([status])
+  @@index([category])
+  @@index([isFeatured])
+  @@index([downloads])
+  @@index([rating])
+  @@index([submittedById])
+}
+
+// MarketplaceThemeRating model - user ratings for marketplace themes
+model MarketplaceThemeRating {
+  id        String   @id @default(uuid())
+  themeId   String
+  theme     MarketplaceTheme @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int      // 1-5 stars
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([themeId, userId])
+  @@index([themeId])
+  @@index([userId])
 }
 
 // PageCustomization model - per-page theme customization
