@@ -582,6 +582,25 @@ npm run dev
 
 > 💡 **Tip:** The script automatically installs Chocolatey if not already installed. Make sure to run PowerShell as Administrator.
 
+#### 📝 Environment Configuration File Location
+
+The setup script automatically creates a `.env` file in your project root directory with all the necessary configuration:
+
+```
+c:\Users\<YourUsername>\OneDrive\Desktop\wordpress\.env
+```
+
+**To modify the admin password or email after setup:**
+1. Open the `.env` file in your project root
+2. Find the lines:
+   ```env
+   ADMIN_EMAIL=admin@starter.dev
+   ADMIN_PASSWORD=Admin123!
+   ```
+3. Edit these values as needed
+4. Save the file
+5. Restart the application with `npm run dev`
+
 <br />
 
 ---
