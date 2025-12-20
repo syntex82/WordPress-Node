@@ -28,13 +28,7 @@ export class ProjectsController {
     return this.projectsService.create(req.user.id, dto);
   }
 
-  /**
-   * Get project by ID
-   */
-  @Get(':id')
-  async findById(@Request() req, @Param('id') id: string) {
-    return this.projectsService.findById(id, req.user.id, req.user.role === 'ADMIN');
-  }
+  // NOTE: Static routes (my/*, admin/*) MUST come before :id routes
 
   /**
    * List my projects as client
@@ -68,6 +62,26 @@ export class ProjectsController {
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 10,
     });
+  }
+
+  // ============ ADMIN ENDPOINTS ============
+
+  /**
+   * Get project statistics (admin)
+   */
+  @Get('admin/statistics')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async getStatistics() {
+    return this.projectsService.getStatistics();
+  }
+
+  /**
+   * Get project by ID - MUST be after all static routes (my/*, admin/*)
+   */
+  @Get(':id')
+  async findById(@Request() req, @Param('id') id: string) {
+    return this.projectsService.findById(id, req.user.id, req.user.role === 'ADMIN');
   }
 
   /**
@@ -148,18 +162,6 @@ export class ProjectsController {
     const project = await this.projectsService.findById(id, req.user.id, false);
     const initiatorType = project.clientId === req.user.id ? 'client' : 'developer';
     return this.paymentsService.createDispute(id, req.user.id, initiatorType, body.reason, body.description);
-  }
-
-  // ============ ADMIN ENDPOINTS ============
-
-  /**
-   * Get project statistics (admin)
-   */
-  @Get('admin/statistics')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  async getStatistics() {
-    return this.projectsService.getStatistics();
   }
 
   /**

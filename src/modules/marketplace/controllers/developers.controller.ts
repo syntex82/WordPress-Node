@@ -86,14 +86,6 @@ export class DevelopersController {
   }
 
   /**
-   * Get developer by ID
-   */
-  @Get(':id')
-  async findById(@Param('id') id: string) {
-    return this.developersService.findById(id);
-  }
-
-  /**
    * Match developers for requirements
    */
   @Post('match')
@@ -108,6 +100,7 @@ export class DevelopersController {
   }
 
   // ============ ADMIN ENDPOINTS ============
+  // NOTE: Admin routes MUST come before :id routes to avoid matching issues
 
   /**
    * List all developers (admin - all statuses)
@@ -149,6 +142,14 @@ export class DevelopersController {
   @Roles('ADMIN')
   async approve(@Param('id') id: string) {
     return this.developersService.approve(id);
+  }
+
+  /**
+   * Get developer by ID - MUST be after all admin/* routes
+   */
+  @Get(':id')
+  async findById(@Param('id') id: string) {
+    return this.developersService.findById(id);
   }
 
   /**

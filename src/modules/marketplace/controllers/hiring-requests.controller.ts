@@ -28,13 +28,7 @@ export class HiringRequestsController {
     return this.hiringRequestsService.create(req.user.id, dto);
   }
 
-  /**
-   * Get hiring request by ID
-   */
-  @Get(':id')
-  async findById(@Request() req, @Param('id') id: string) {
-    return this.hiringRequestsService.findById(id, req.user.id, req.user.role === 'ADMIN');
-  }
+  // NOTE: Static routes (my/*, admin/*) MUST come before :id routes
 
   /**
    * List my hiring requests as client
@@ -68,6 +62,35 @@ export class HiringRequestsController {
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 10,
     });
+  }
+
+  // ============ ADMIN ENDPOINTS ============
+
+  /**
+   * List all hiring requests (admin)
+   */
+  @Get('admin/all')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async adminFindAll(
+    @Query('status') status?: HiringRequestStatus,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    // For admin, we need a different approach - list all
+    return this.hiringRequestsService.findForUser('', 'client', {
+      status,
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 20,
+    });
+  }
+
+  /**
+   * Get hiring request by ID - MUST be after all static routes (my/*, admin/*)
+   */
+  @Get(':id')
+  async findById(@Request() req, @Param('id') id: string) {
+    return this.hiringRequestsService.findById(id, req.user.id, req.user.role === 'ADMIN');
   }
 
   /**
@@ -125,27 +148,6 @@ export class HiringRequestsController {
       return { error: 'Only the client can create a project' };
     }
     return this.projectsService.createFromHiringRequest(id);
-  }
-
-  // ============ ADMIN ENDPOINTS ============
-
-  /**
-   * List all hiring requests (admin)
-   */
-  @Get('admin/all')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  async adminFindAll(
-    @Query('status') status?: HiringRequestStatus,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    // For admin, we need a different approach - list all
-    return this.hiringRequestsService.findForUser('', 'client', {
-      status,
-      page: page ? parseInt(page) : 1,
-      limit: limit ? parseInt(limit) : 20,
-    });
   }
 }
 
