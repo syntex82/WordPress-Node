@@ -8,6 +8,19 @@ import { PrismaService } from '../../../database/prisma.service';
 import { CreateDeveloperDto, UpdateDeveloperDto, DeveloperStatus, DeveloperCategory } from '../dto';
 import { Prisma } from '@prisma/client';
 
+// User selection for developer queries - includes comprehensive user data
+const USER_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  avatar: true,
+  role: true,
+  createdAt: true,
+  accountLockedUntil: true,
+  lastLoginAt: true,
+  username: true,
+};
+
 @Injectable()
 export class DevelopersService {
   constructor(private prisma: PrismaService) {}
@@ -53,7 +66,7 @@ export class DevelopersService {
         linkedinUrl: dto.linkedinUrl,
         status: 'PENDING',
       },
-      include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+      include: { user: { select: USER_SELECT } },
     });
   }
 
@@ -74,7 +87,7 @@ export class DevelopersService {
         education: dto.education ? JSON.parse(JSON.stringify(dto.education)) : undefined,
         certifications: dto.certifications ? JSON.parse(JSON.stringify(dto.certifications)) : undefined,
       },
-      include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+      include: { user: { select: USER_SELECT } },
     });
   }
 
@@ -85,7 +98,7 @@ export class DevelopersService {
     const developer = await this.prisma.developer.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, email: true, avatar: true } },
+        user: { select: USER_SELECT },
         reviews: { where: { isApproved: true }, orderBy: { createdAt: 'desc' }, take: 10 },
       },
     });
@@ -115,7 +128,7 @@ export class DevelopersService {
   async findByUserId(userId: string) {
     return this.prisma.developer.findUnique({
       where: { userId },
-      include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+      include: { user: { select: USER_SELECT } },
     });
   }
 
@@ -168,7 +181,7 @@ export class DevelopersService {
     const [developers, total] = await Promise.all([
       this.prisma.developer.findMany({
         where, orderBy, skip: (page - 1) * limit, take: limit,
-        include: { user: { select: { id: true, name: true, avatar: true } } },
+        include: { user: { select: USER_SELECT } },
       }),
       this.prisma.developer.count({ where }),
     ]);
@@ -250,7 +263,7 @@ export class DevelopersService {
         where: { status: 'ACTIVE' },
         orderBy: { rating: 'desc' },
         take: 5,
-        include: { user: { select: { name: true, avatar: true } } },
+        include: { user: { select: USER_SELECT } },
       }),
     ]);
 
@@ -298,7 +311,7 @@ export class DevelopersService {
       where,
       orderBy: [{ rating: 'desc' }, { projectsCompleted: 'desc' }],
       take: limit,
-      include: { user: { select: { id: true, name: true, avatar: true } } },
+      include: { user: { select: USER_SELECT } },
     });
 
     // Calculate match score

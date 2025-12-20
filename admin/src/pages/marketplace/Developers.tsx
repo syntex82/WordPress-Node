@@ -8,7 +8,8 @@ import { Link } from 'react-router-dom';
 import {
   FiUsers, FiSearch, FiX, FiEye, FiCheckCircle,
   FiXCircle, FiSlash, FiRefreshCw, FiStar, FiBarChart2,
-  FiChevronLeft, FiChevronRight
+  FiChevronLeft, FiChevronRight, FiUser, FiShield, FiCalendar,
+  FiLock, FiExternalLink
 } from 'react-icons/fi';
 import api from '../../services/api';
 import Tooltip from '../../components/Tooltip';
@@ -29,8 +30,25 @@ interface Developer {
   isVerified: boolean;
   isFeatured: boolean;
   createdAt: string;
-  user: { name: string; email: string; avatar?: string };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    role: string;
+    createdAt: string;
+    accountLockedUntil?: string;
+    lastLoginAt?: string;
+    username?: string;
+  };
 }
+
+const roleColors: Record<string, string> = {
+  ADMIN: 'bg-red-500/20 text-red-400',
+  EDITOR: 'bg-purple-500/20 text-purple-400',
+  AUTHOR: 'bg-blue-500/20 text-blue-400',
+  SUBSCRIBER: 'bg-slate-500/20 text-slate-400',
+};
 
 const statusColors: Record<string, string> = {
   PENDING: 'bg-amber-500/20 text-amber-400',
@@ -207,6 +225,7 @@ export default function Developers() {
             <thead className="bg-slate-700/30 border-b border-slate-700/50">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Developer</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">User Account</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Category</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Status</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">Rating</th>
@@ -215,30 +234,75 @@ export default function Developers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/50">
-              {developers.map(dev => (
+              {developers.map(dev => {
+                const isAccountLocked = dev.user.accountLockedUntil && new Date(dev.user.accountLockedUntil) > new Date();
+                return (
                 <tr key={dev.id} className="hover:bg-slate-700/30 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={dev.user.avatar || '/images/default-avatar.png'}
-                        alt={dev.displayName}
-                        className="w-10 h-10 rounded-full border border-slate-600 object-cover"
-                      />
+                      <div className="relative">
+                        <img
+                          src={dev.user.avatar || '/images/default-avatar.png'}
+                          alt={dev.displayName}
+                          className="w-10 h-10 rounded-full border border-slate-600 object-cover"
+                        />
+                        {isAccountLocked && (
+                          <div className="absolute -bottom-1 -right-1 p-0.5 bg-slate-900 rounded-full">
+                            <FiLock className="text-red-400" size={12} />
+                          </div>
+                        )}
+                      </div>
                       <div>
                         <p className="font-medium text-white flex items-center gap-2">
                           {dev.displayName}
                           {dev.isVerified && (
-                            <span className="text-blue-400" title="Verified">
+                            <span className="text-blue-400" title="Verified Developer">
                               <FiCheckCircle size={14} />
                             </span>
                           )}
                           {dev.isFeatured && (
-                            <span className="text-amber-400" title="Featured">
+                            <span className="text-amber-400" title="Featured Developer">
                               <FiStar size={14} />
                             </span>
                           )}
                         </p>
-                        <p className="text-sm text-slate-500">{dev.user.email}</p>
+                        <p className="text-xs text-slate-500 truncate max-w-[180px]">{dev.headline || 'No headline'}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <FiUser className="text-slate-500" size={12} />
+                        <span className="text-sm text-white">{dev.user.name}</span>
+                        <Link
+                          to={`/users/${dev.user.id}`}
+                          className="text-blue-400 hover:text-blue-300"
+                          title="View User Profile"
+                        >
+                          <FiExternalLink size={12} />
+                        </Link>
+                      </div>
+                      <p className="text-xs text-slate-500">{dev.user.email}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${roleColors[dev.user.role] || roleColors.SUBSCRIBER}`}>
+                          <FiShield className="inline mr-1" size={10} />
+                          {dev.user.role}
+                        </span>
+                        {isAccountLocked ? (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/20 text-red-400">
+                            <FiLock className="inline mr-1" size={10} />
+                            LOCKED
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/20 text-emerald-400">
+                            ACTIVE
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] text-slate-500">
+                        <FiCalendar size={10} />
+                        Joined {new Date(dev.user.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   </td>
@@ -314,7 +378,8 @@ export default function Developers() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         )}

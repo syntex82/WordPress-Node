@@ -3,16 +3,18 @@
  * Form for users to apply as developers
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FiUser, FiCode, FiDollarSign, FiLink, FiSend,
-  FiAlertCircle, FiHelpCircle, FiGithub, FiLinkedin, FiGlobe
+  FiAlertCircle, FiHelpCircle, FiGithub, FiLinkedin, FiGlobe,
+  FiShield, FiMail, FiInfo
 } from 'react-icons/fi';
 import api from '../../services/api';
 import Tooltip from '../../components/Tooltip';
 import { MARKETPLACE_TOOLTIPS } from '../../config/tooltips';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../stores/authStore';
 
 const categories = [
   { value: 'FRONTEND', label: 'Frontend Developer' },
@@ -29,7 +31,10 @@ const categories = [
 
 export default function DeveloperApplication() {
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const [existingProfile, setExistingProfile] = useState<any>(null);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
     displayName: '',
@@ -47,6 +52,30 @@ export default function DeveloperApplication() {
     linkedinUrl: '',
     applicationNote: '',
   });
+
+  // Check if user already has a developer profile
+  useEffect(() => {
+    const checkExistingProfile = async () => {
+      try {
+        const { data } = await api.get('/marketplace/developers/me');
+        if (data) {
+          setExistingProfile(data);
+        }
+      } catch {
+        // No existing profile - that's fine
+      } finally {
+        setCheckingProfile(false);
+      }
+    };
+    checkExistingProfile();
+  }, []);
+
+  // Pre-fill display name from user's name
+  useEffect(() => {
+    if (user?.name && !form.displayName) {
+      setForm(prev => ({ ...prev, displayName: user.name }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,11 +119,84 @@ export default function DeveloperApplication() {
         </Tooltip>
       </div>
 
+      {/* Loading State */}
+      {checkingProfile && (
+        <div className="bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700/50 p-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-700 border-t-blue-500 mx-auto"></div>
+          <p className="text-slate-400 mt-4">Checking your profile...</p>
+        </div>
+      )}
+
+      {/* Existing Profile Message */}
+      {!checkingProfile && existingProfile && (
+        <div className="bg-amber-500/10 border border-amber-500/30 p-6 rounded-2xl">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-amber-500/20 rounded-xl">
+              <FiInfo className="text-amber-400" size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">You Already Have a Developer Profile</h3>
+              <p className="text-slate-400 mt-1">
+                Your developer application is currently <span className={`font-medium ${existingProfile.status === 'ACTIVE' ? 'text-emerald-400' : existingProfile.status === 'PENDING' ? 'text-amber-400' : 'text-red-400'}`}>{existingProfile.status}</span>.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/marketplace/my-profile')}
+                className="mt-4 bg-amber-500/20 text-amber-400 px-4 py-2 rounded-lg hover:bg-amber-500/30 transition-colors"
+              >
+                View My Developer Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Error Message */}
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl flex items-center gap-3">
           <FiAlertCircle size={20} />
           <span>{error}</span>
+        </div>
+      )}
+
+      {/* Show form only if no existing profile */}
+      {!checkingProfile && !existingProfile && (
+      <>
+      {/* User Account Info */}
+      {user && (
+        <div className="bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700/50 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-emerald-500/20 rounded-lg">
+              <FiShield className="text-emerald-400" size={20} />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Your User Account</h2>
+              <p className="text-sm text-slate-400">This developer profile will be linked to your account</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-xl">
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-14 h-14 rounded-full border-2 border-slate-600 object-cover"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full border-2 border-slate-600 bg-slate-700 flex items-center justify-center">
+                <FiUser className="text-slate-400" size={24} />
+              </div>
+            )}
+            <div className="flex-1">
+              <p className="font-medium text-white text-lg">{user.name}</p>
+              <div className="flex items-center gap-2 text-slate-400 text-sm">
+                <FiMail size={14} />
+                <span>{user.email}</span>
+              </div>
+              <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-500/20 text-blue-400">
+                {user.role}
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -355,6 +457,8 @@ export default function DeveloperApplication() {
           )}
         </button>
       </form>
+      </>
+      )}
     </div>
   );
 }
