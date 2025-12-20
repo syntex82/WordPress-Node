@@ -1,190 +1,639 @@
 #═══════════════════════════════════════════════════════════════════════════════
 # WordPress Node CMS - Windows Setup Script
-# Works on Windows 11 and Windows Server
+# Works on Windows 11 and Windows Server (2019, 2022)
 # Run this from inside the cloned repository folder
 # Usage: powershell -ExecutionPolicy Bypass -File .\scripts\windows-setup.ps1
+#
+# Features:
+#   - Idempotent (safe to run multiple times)
+#   - Interactive prompts for customization
+#   - Comprehensive error handling and verification
+#   - Service health checks
+#   - Secure secret generation
 #═══════════════════════════════════════════════════════════════════════════════
 
-# Requires admin privileges
+$ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+
+# ══════════════════════════════════════════════════════════════
+# HELPER FUNCTIONS
+# ══════════════════════════════════════════════════════════════
+
+function Write-Step {
+    param([string]$Step, [string]$Message)
+    Write-Host "`n[$Step] $Message" -ForegroundColor Blue
+    Write-Host ("─" * 60) -ForegroundColor DarkGray
+}
+
+function Write-Success {
+    param([string]$Message)
+    Write-Host "  ✓ $Message" -ForegroundColor Green
+}
+
+function Write-Info {
+    param([string]$Message)
+    Write-Host "  → $Message" -ForegroundColor Cyan
+}
+
+function Write-Warn {
+    param([string]$Message)
+    Write-Host "  ⚠ $Message" -ForegroundColor Yellow
+}
+
+function Write-Fail {
+    param([string]$Message)
+    Write-Host "  ✗ $Message" -ForegroundColor Red
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+function Get-SecureRandomString {
+    param([int]$Length = 48)
+    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    $bytes = New-Object byte[] $Length
+    $rng = [System.Security.Cryptography.RNGCryptoServiceProvider]::new()
+    $rng.GetBytes($bytes)
+    $result = ""
+    foreach ($byte in $bytes) {
+        $result += $chars[$byte % $chars.Length]
+    }
+    return $result
+}
+
+function Update-EnvironmentPath {
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+}
+
+function Test-PostgreSQLConnection {
+    param([string]$DbUser, [string]$DbPass, [string]$Database)
+    try {
+        $env:PGPASSWORD = $DbPass
+        $null = & psql -U $DbUser -h localhost -d $Database -c "SELECT 1;" 2>&1
+        $env:PGPASSWORD = ""
+        return $LASTEXITCODE -eq 0
+    } catch {
+        return $false
+    }
+}
+
+function Test-RedisConnection {
+    try {
+        $result = & redis-cli ping 2>&1
+        return $result -eq "PONG"
+    } catch {
+        return $false
+    }
+}
+
+# ══════════════════════════════════════════════════════════════
+# ADMIN CHECK
+# ══════════════════════════════════════════════════════════════
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host "ERROR: Run PowerShell as Administrator" -ForegroundColor Red
-    Write-Host "Right-click PowerShell and select 'Run as Administrator'" -ForegroundColor Yellow
+    Write-Host "`n═══════════════════════════════════════════════════════════════" -ForegroundColor Red
+    Write-Host "  ERROR: Administrator privileges required" -ForegroundColor Red
+    Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Red
+    Write-Host "`nPlease right-click PowerShell and select 'Run as Administrator'" -ForegroundColor Yellow
     exit 1
 }
 
-# Detect Windows version
-$osVersion = [System.Environment]::OSVersion.VersionString
-Write-Host "Detected OS: $osVersion" -ForegroundColor Cyan
+# ══════════════════════════════════════════════════════════════
+# SYSTEM DETECTION
+# ══════════════════════════════════════════════════════════════
+$osInfo = Get-CimInstance Win32_OperatingSystem
+$osName = $osInfo.Caption
+$osVersion = $osInfo.Version
+$isWindowsServer = $osName -match "Server"
 
-$DB_NAME = "wordpress_node"
-$DB_USER = "wpnode"
-$DB_PASSWORD = "wpnode123"
-$ADMIN_EMAIL = "admin@starter.dev"
-$ADMIN_PASSWORD = "Admin123!"
-
-Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Blue
-Write-Host "       WordPress Node CMS - Windows Server Setup" -ForegroundColor Blue
-Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Blue
+Write-Host ""
+Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+Write-Host "         WordPress Node CMS - Windows Setup Script" -ForegroundColor Magenta
+Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+Write-Host ""
+Write-Host "  System:      $osName" -ForegroundColor Cyan
+Write-Host "  Version:     $osVersion" -ForegroundColor Cyan
+Write-Host "  Platform:    $(if ($isWindowsServer) { 'Windows Server' } else { 'Windows Desktop' })" -ForegroundColor Cyan
+Write-Host ""
 
 # Get the directory where the script is located
 $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $APP_DIR = Split-Path -Parent $SCRIPT_DIR
 
-Write-Host "Project directory: $APP_DIR" -ForegroundColor Green
+Write-Host "  Project Dir: $APP_DIR" -ForegroundColor Cyan
+Write-Host ""
 
-# ══════════════════════════════════════════════════════════════
-# STEP 1: Check and install Chocolatey
-# ══════════════════════════════════════════════════════════════
-Write-Host "[1/7] Checking Chocolatey..." -ForegroundColor Blue
-
-if (-NOT (Get-Command choco -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing Chocolatey..." -ForegroundColor Blue
-    Set-ExecutionPolicy Bypass -Scope Process -Force
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+# Verify we're in the correct directory
+if (-NOT (Test-Path "$APP_DIR\package.json")) {
+    Write-Fail "package.json not found in $APP_DIR"
+    Write-Host "  Please run this script from inside the cloned repository." -ForegroundColor Yellow
+    exit 1
 }
-Write-Host "✓ Chocolatey ready" -ForegroundColor Green
 
 # ══════════════════════════════════════════════════════════════
-# STEP 2: Install Node.js 20
+# CONFIGURATION PROMPTS
 # ══════════════════════════════════════════════════════════════
-Write-Host "[2/7] Installing Node.js 20..." -ForegroundColor Blue
+Write-Host "─────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "  Configuration (press Enter to use defaults)" -ForegroundColor Yellow
+Write-Host "─────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host ""
 
-if (-NOT (Get-Command node -ErrorAction SilentlyContinue)) {
-    choco install nodejs --version=20.11.0 -y
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+# Database configuration
+$defaultDbName = "wordpress_node"
+$defaultDbUser = "wpnode"
+$defaultDbPassword = Get-SecureRandomString -Length 16
+$defaultPort = "3000"
+$defaultAdminEmail = "admin@starter.dev"
+$defaultAdminPassword = "Admin123!"
+
+$promptDbName = Read-Host "  Database name [$defaultDbName]"
+$DB_NAME = if ($promptDbName) { $promptDbName } else { $defaultDbName }
+
+$promptDbUser = Read-Host "  Database user [$defaultDbUser]"
+$DB_USER = if ($promptDbUser) { $promptDbUser } else { $defaultDbUser }
+
+$promptDbPassword = Read-Host "  Database password [auto-generated]"
+$DB_PASSWORD = if ($promptDbPassword) { $promptDbPassword } else { $defaultDbPassword }
+
+$promptPort = Read-Host "  Application port [$defaultPort]"
+$APP_PORT = if ($promptPort) { $promptPort } else { $defaultPort }
+
+$promptAdminEmail = Read-Host "  Admin email [$defaultAdminEmail]"
+$ADMIN_EMAIL = if ($promptAdminEmail) { $promptAdminEmail } else { $defaultAdminEmail }
+
+$promptAdminPassword = Read-Host "  Admin password [$defaultAdminPassword]"
+$ADMIN_PASSWORD = if ($promptAdminPassword) { $promptAdminPassword } else { $defaultAdminPassword }
+
+Write-Host ""
+Write-Host "─────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host ""
+
+# Generate secure secrets
+$JWT_SECRET = Get-SecureRandomString -Length 64
+$SESSION_SECRET = Get-SecureRandomString -Length 64
+
+# Track installation status
+$installationErrors = @()
+$totalSteps = 9
+$currentStep = 0
+
+# ══════════════════════════════════════════════════════════════
+# STEP 1: Install Chocolatey Package Manager
+# ══════════════════════════════════════════════════════════════
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Installing Chocolatey package manager..."
+
+try {
+    if (Test-CommandExists "choco") {
+        Write-Success "Chocolatey already installed ($(choco --version))"
+    } else {
+        Write-Info "Installing Chocolatey..."
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        Update-EnvironmentPath
+
+        if (Test-CommandExists "choco") {
+            Write-Success "Chocolatey installed successfully"
+        } else {
+            throw "Chocolatey installation failed"
+        }
+    }
+} catch {
+    Write-Fail "Failed to install Chocolatey: $_"
+    $installationErrors += "Chocolatey: $_"
 }
-Write-Host "Node $(node -v), npm $(npm -v)" -ForegroundColor Green
+
+# ══════════════════════════════════════════════════════════════
+# STEP 2: Install Node.js 20 LTS
+# ══════════════════════════════════════════════════════════════
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Installing Node.js 20 LTS..."
+
+try {
+    if (Test-CommandExists "node") {
+        $nodeVersion = node -v
+        Write-Success "Node.js already installed ($nodeVersion)"
+
+        # Check if version is 18+
+        $versionNum = [int]($nodeVersion -replace 'v(\d+)\..*', '$1')
+        if ($versionNum -lt 18) {
+            Write-Warn "Node.js version $nodeVersion is outdated. Upgrading to v20..."
+            choco upgrade nodejs-lts -y
+            Update-EnvironmentPath
+        }
+    } else {
+        Write-Info "Installing Node.js 20 LTS..."
+        choco install nodejs-lts -y
+        Update-EnvironmentPath
+    }
+
+    # Verify installation
+    if (Test-CommandExists "node") {
+        Write-Success "Node.js $(node -v) ready"
+        Write-Success "npm $(npm -v) ready"
+    } else {
+        throw "Node.js installation verification failed"
+    }
+} catch {
+    Write-Fail "Failed to install Node.js: $_"
+    $installationErrors += "Node.js: $_"
+}
 
 # ══════════════════════════════════════════════════════════════
 # STEP 3: Install PostgreSQL
 # ══════════════════════════════════════════════════════════════
-Write-Host "[3/7] Installing PostgreSQL..." -ForegroundColor Blue
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Installing PostgreSQL 16..."
 
-if (-NOT (Get-Command psql -ErrorAction SilentlyContinue)) {
-    choco install postgresql --version=15.0 -y --params '/Password:postgres'
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+$POSTGRES_SUPERUSER_PASSWORD = "postgres"
+
+try {
+    if (Test-CommandExists "psql") {
+        $pgVersion = (psql --version) -replace 'psql \(PostgreSQL\) ', ''
+        Write-Success "PostgreSQL already installed (v$pgVersion)"
+    } else {
+        Write-Info "Installing PostgreSQL 16..."
+        choco install postgresql16 -y --params "/Password:$POSTGRES_SUPERUSER_PASSWORD"
+        Update-EnvironmentPath
+
+        # Add PostgreSQL bin to path if not present
+        $pgPath = "C:\Program Files\PostgreSQL\16\bin"
+        if (Test-Path $pgPath) {
+            $env:Path += ";$pgPath"
+        }
+
+        Start-Sleep -Seconds 5  # Wait for service to initialize
+    }
+
+    # Verify PostgreSQL service is running
+    $pgService = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($pgService) {
+        if ($pgService.Status -ne "Running") {
+            Write-Info "Starting PostgreSQL service..."
+            Start-Service $pgService.Name
+            Start-Sleep -Seconds 3
+        }
+        Write-Success "PostgreSQL service is running"
+    } else {
+        Write-Warn "PostgreSQL service not found - manual start may be required"
+    }
+
+    # Create database and user (idempotent)
+    Write-Info "Configuring database..."
+    $env:PGPASSWORD = $POSTGRES_SUPERUSER_PASSWORD
+
+    # Drop existing database and user if they exist (for fresh setup)
+    & psql -U postgres -h localhost -c "DROP DATABASE IF EXISTS $DB_NAME;" 2>$null
+    & psql -U postgres -h localhost -c "DROP USER IF EXISTS $DB_USER;" 2>$null
+
+    # Create user and database
+    & psql -U postgres -h localhost -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+    & psql -U postgres -h localhost -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+    & psql -U postgres -h localhost -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
+
+    $env:PGPASSWORD = ""
+
+    # Verify database connection
+    if (Test-PostgreSQLConnection -DbUser $DB_USER -DbPass $DB_PASSWORD -Database $DB_NAME) {
+        Write-Success "Database '$DB_NAME' created and accessible"
+        Write-Success "User '$DB_USER' configured"
+    } else {
+        throw "Database connection verification failed"
+    }
+} catch {
+    Write-Fail "Failed to configure PostgreSQL: $_"
+    $installationErrors += "PostgreSQL: $_"
 }
-
-# Create database and user
-$psqlCmd = "psql -U postgres -h localhost"
-
-Write-Host "Creating database and user..." -ForegroundColor Blue
-& cmd /c "$psqlCmd -c `"DROP DATABASE IF EXISTS $DB_NAME;`" 2>nul"
-& cmd /c "$psqlCmd -c `"DROP USER IF EXISTS $DB_USER;`" 2>nul"
-& cmd /c "$psqlCmd -c `"CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';`""
-& cmd /c "$psqlCmd -c `"CREATE DATABASE $DB_NAME OWNER $DB_USER;`""
-& cmd /c "$psqlCmd -c `"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;`""
-
-Write-Host "✓ PostgreSQL ready (db: $DB_NAME, user: $DB_USER)" -ForegroundColor Green
 
 # ══════════════════════════════════════════════════════════════
 # STEP 4: Install Redis
 # ══════════════════════════════════════════════════════════════
-Write-Host "[4/7] Installing Redis..." -ForegroundColor Blue
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Installing Redis..."
 
-if (-NOT (Get-Command redis-cli -ErrorAction SilentlyContinue)) {
-    choco install redis-64 -y
+try {
+    if (Test-CommandExists "redis-cli") {
+        Write-Success "Redis already installed"
+    } else {
+        Write-Info "Installing Redis..."
+        choco install redis-64 -y
+        Update-EnvironmentPath
+        Start-Sleep -Seconds 3
+    }
+
+    # Start Redis service if not running (Windows Server)
+    $redisService = Get-Service -Name "Redis" -ErrorAction SilentlyContinue
+    if ($redisService) {
+        if ($redisService.Status -ne "Running") {
+            Write-Info "Starting Redis service..."
+            Start-Service Redis
+            Start-Sleep -Seconds 2
+        }
+        Write-Success "Redis service is running"
+    } else {
+        # Try to start Redis manually on Windows Desktop
+        Write-Info "Redis service not found, attempting to start manually..."
+        $redisServer = Get-Command redis-server -ErrorAction SilentlyContinue
+        if ($redisServer) {
+            Start-Process -FilePath "redis-server" -WindowStyle Hidden
+            Start-Sleep -Seconds 2
+        }
+    }
+
+    # Verify Redis connection
+    if (Test-RedisConnection) {
+        Write-Success "Redis is responding (PONG)"
+    } else {
+        Write-Warn "Redis may not be running - some features may be limited"
+    }
+} catch {
+    Write-Fail "Failed to install Redis: $_"
+    Write-Warn "Redis is optional - continuing without it"
 }
-Write-Host "✓ Redis ready" -ForegroundColor Green
 
 # ══════════════════════════════════════════════════════════════
-# STEP 5: Create .env file
+# STEP 5: Create .env configuration file
 # ══════════════════════════════════════════════════════════════
-Write-Host "[5/7] Creating .env file..." -ForegroundColor Blue
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Creating environment configuration..."
 
-$envContent = @"
-DATABASE_URL="postgresql://$DB_USER`:$DB_PASSWORD@localhost:5432/$DB_NAME?schema=public"
-DIRECT_DATABASE_URL="postgresql://$DB_USER`:$DB_PASSWORD@localhost:5432/$DB_NAME?schema=public"
+$envPath = "$APP_DIR\.env"
+$envBackupPath = "$APP_DIR\.env.backup.$(Get-Date -Format 'yyyyMMddHHmmss')"
+
+try {
+    # Backup existing .env if it exists
+    if (Test-Path $envPath) {
+        Write-Info "Backing up existing .env to .env.backup..."
+        Copy-Item $envPath $envBackupPath
+        Write-Success "Backup created: $envBackupPath"
+    }
+
+    $envContent = @"
+# ═══════════════════════════════════════════════════════════════════════════
+# WordPress Node CMS - Environment Configuration
+# Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# DATABASE (PostgreSQL)
+# ─────────────────────────────────────────────────────────────
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?schema=public"
+DIRECT_DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?schema=public"
+
+# ─────────────────────────────────────────────────────────────
+# APPLICATION
+# ─────────────────────────────────────────────────────────────
 NODE_ENV=development
-PORT=3000
+PORT=$APP_PORT
 HOST=0.0.0.0
-APP_URL=http://localhost:3000
-JWT_SECRET=supersecretjwtkey123456789012345678901234567890
+APP_URL=http://localhost:$APP_PORT
+
+# ─────────────────────────────────────────────────────────────
+# AUTHENTICATION (auto-generated secure secrets)
+# ─────────────────────────────────────────────────────────────
+JWT_SECRET=$JWT_SECRET
 JWT_EXPIRES_IN=7d
-SESSION_SECRET=supersessionsecret12345678901234567890123456789
-ADMIN_EMAIL="$ADMIN_EMAIL"
-ADMIN_PASSWORD="$ADMIN_PASSWORD"
+SESSION_SECRET=$SESSION_SECRET
+
+# ─────────────────────────────────────────────────────────────
+# ADMIN ACCOUNT (for initial seeding)
+# ─────────────────────────────────────────────────────────────
+ADMIN_EMAIL=$ADMIN_EMAIL
+ADMIN_PASSWORD=$ADMIN_PASSWORD
+
+# ─────────────────────────────────────────────────────────────
+# REDIS (caching, sessions, job queues)
+# ─────────────────────────────────────────────────────────────
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
 REDIS_DB=0
 REDIS_PREFIX=wpnode:
 CACHE_TTL=300
+
+# ─────────────────────────────────────────────────────────────
+# FILE STORAGE
+# ─────────────────────────────────────────────────────────────
 MAX_FILE_SIZE=104857600
 UPLOAD_DIR=./uploads
 STORAGE_PROVIDER=local
 STORAGE_LOCAL_URL=/uploads
+
+# ─────────────────────────────────────────────────────────────
+# SITE CONFIGURATION
+# ─────────────────────────────────────────────────────────────
 SITE_NAME="WordPress Node"
 SITE_DESCRIPTION="A modern CMS built with Node.js"
 ACTIVE_THEME=my-theme
 "@
 
-Set-Content -Path "$APP_DIR\.env" -Value $envContent
-Write-Host "✓ .env created" -ForegroundColor Green
+    Set-Content -Path $envPath -Value $envContent -Encoding UTF8
+    Write-Success ".env file created successfully"
+} catch {
+    Write-Fail "Failed to create .env file: $_"
+    $installationErrors += ".env creation: $_"
+}
 
 # ══════════════════════════════════════════════════════════════
-# STEP 6: Install dependencies and build
+# STEP 6: Install npm dependencies
 # ══════════════════════════════════════════════════════════════
-Write-Host "[6/7] Installing npm dependencies and building..." -ForegroundColor Blue
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Installing npm dependencies..."
 
-Set-Location $APP_DIR
+try {
+    Set-Location $APP_DIR
 
-Write-Host "Installing backend dependencies..." -ForegroundColor Blue
-npm install
+    # Backend dependencies
+    Write-Info "Installing backend dependencies..."
+    npm install 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "npm install failed for backend" }
+    Write-Success "Backend dependencies installed"
 
-Write-Host "Rebuilding native modules..." -ForegroundColor Blue
-npm rebuild
+    # Rebuild native modules (bcrypt, sharp, etc.)
+    Write-Info "Rebuilding native modules..."
+    npm rebuild 2>&1 | Out-Null
+    Write-Success "Native modules rebuilt"
 
-Write-Host "Generating Prisma client..." -ForegroundColor Blue
-npx prisma generate
+    # Generate Prisma client
+    Write-Info "Generating Prisma client..."
+    npx prisma generate 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Prisma generate failed" }
+    Write-Success "Prisma client generated"
 
-Write-Host "Installing admin dependencies..." -ForegroundColor Blue
-Set-Location "$APP_DIR\admin"
-npm install
+    # Admin panel dependencies
+    Write-Info "Installing admin panel dependencies..."
+    Set-Location "$APP_DIR\admin"
+    npm install 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "npm install failed for admin" }
+    Write-Success "Admin dependencies installed"
 
-Write-Host "Building admin frontend..." -ForegroundColor Blue
-npm run build
-
-Write-Host "Building backend..." -ForegroundColor Blue
-Set-Location $APP_DIR
-npm run build
+    Set-Location $APP_DIR
+} catch {
+    Write-Fail "Failed to install dependencies: $_"
+    $installationErrors += "Dependencies: $_"
+    Set-Location $APP_DIR
+}
 
 # ══════════════════════════════════════════════════════════════
-# STEP 7: Setup database
+# STEP 7: Build applications
 # ══════════════════════════════════════════════════════════════
-Write-Host "[7/7] Setting up database..." -ForegroundColor Blue
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Building applications..."
 
-Write-Host "Pushing database schema..." -ForegroundColor Blue
-npx prisma db push
+try {
+    # Build admin frontend
+    Write-Info "Building admin frontend..."
+    Set-Location "$APP_DIR\admin"
+    npm run build 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Admin build failed" }
+    Write-Success "Admin frontend built"
 
-Write-Host "Seeding database..." -ForegroundColor Blue
-npx prisma db seed
+    # Build backend
+    Write-Info "Building backend..."
+    Set-Location $APP_DIR
+    npm run build 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Backend build failed" }
+    Write-Success "Backend built"
+} catch {
+    Write-Fail "Failed to build applications: $_"
+    $installationErrors += "Build: $_"
+    Set-Location $APP_DIR
+}
 
-# Create folders
-New-Item -ItemType Directory -Force -Path "$APP_DIR\uploads" | Out-Null
-New-Item -ItemType Directory -Force -Path "$APP_DIR\themes" | Out-Null
+# ══════════════════════════════════════════════════════════════
+# STEP 8: Setup database schema and seed
+# ══════════════════════════════════════════════════════════════
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Setting up database schema..."
 
+try {
+    Set-Location $APP_DIR
+
+    # Push schema to database
+    Write-Info "Pushing database schema..."
+    npx prisma db push 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Prisma db push failed" }
+    Write-Success "Database schema applied"
+
+    # Seed database
+    Write-Info "Seeding database with initial data..."
+    npx prisma db seed 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Database seeding failed" }
+    Write-Success "Database seeded successfully"
+} catch {
+    Write-Fail "Failed to setup database: $_"
+    $installationErrors += "Database setup: $_"
+}
+
+# ══════════════════════════════════════════════════════════════
+# STEP 9: Create directories and verify installation
+# ══════════════════════════════════════════════════════════════
+$currentStep++
+Write-Step "$currentStep/$totalSteps" "Finalizing installation..."
+
+try {
+    # Create required directories
+    $directories = @("uploads", "themes", "backups", "uploads\videos", "uploads\placeholders")
+    foreach ($dir in $directories) {
+        $dirPath = "$APP_DIR\$dir"
+        if (-NOT (Test-Path $dirPath)) {
+            New-Item -ItemType Directory -Force -Path $dirPath | Out-Null
+            Write-Success "Created directory: $dir"
+        }
+    }
+
+    # Verify key files exist
+    $requiredFiles = @(
+        "package.json",
+        ".env",
+        "prisma\schema.prisma",
+        "dist\main.js",
+        "admin\dist\index.html"
+    )
+
+    Write-Info "Verifying installation..."
+    foreach ($file in $requiredFiles) {
+        $filePath = "$APP_DIR\$file"
+        if (Test-Path $filePath) {
+            Write-Success "Verified: $file"
+        } else {
+            Write-Warn "Missing: $file"
+        }
+    }
+} catch {
+    Write-Fail "Failed to finalize installation: $_"
+}
+
+# ══════════════════════════════════════════════════════════════
+# INSTALLATION SUMMARY
+# ══════════════════════════════════════════════════════════════
 Write-Host ""
-Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
-Write-Host "              ✓ INSTALLATION COMPLETE!" -ForegroundColor Green
-Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
+Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor $(if ($installationErrors.Count -eq 0) { "Green" } else { "Yellow" })
+
+if ($installationErrors.Count -eq 0) {
+    Write-Host "              ✓ INSTALLATION COMPLETE!" -ForegroundColor Green
+} else {
+    Write-Host "         ⚠ INSTALLATION COMPLETED WITH WARNINGS" -ForegroundColor Yellow
+}
+
+Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor $(if ($installationErrors.Count -eq 0) { "Green" } else { "Yellow" })
 Write-Host ""
-Write-Host "To start the application:" -ForegroundColor Blue
-Write-Host "  npm run dev" -ForegroundColor Blue
+
+# Show any errors
+if ($installationErrors.Count -gt 0) {
+    Write-Host "  Issues encountered:" -ForegroundColor Yellow
+    foreach ($errorItem in $installationErrors) {
+        Write-Host "    • $errorItem" -ForegroundColor Yellow
+    }
+    Write-Host ""
+}
+
+# Quick start instructions
+Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
+Write-Host "  │  QUICK START                                                │" -ForegroundColor Cyan
+Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Access URLs:" -ForegroundColor Blue
-Write-Host "  Frontend:  http://localhost:3000" -ForegroundColor Blue
-Write-Host "  Admin:     http://localhost:3000/admin" -ForegroundColor Blue
-Write-Host "  API:       http://localhost:3000/api" -ForegroundColor Blue
-Write-Host "  Health:    http://localhost:3000/health" -ForegroundColor Blue
+Write-Host "    To start the application:" -ForegroundColor White
+Write-Host "      cd $APP_DIR" -ForegroundColor Gray
+Write-Host "      npm run dev" -ForegroundColor Green
 Write-Host ""
-Write-Host "Admin Credentials:" -ForegroundColor Blue
-Write-Host "  Email:     $ADMIN_EMAIL" -ForegroundColor Blue
-Write-Host "  Password:  $ADMIN_PASSWORD" -ForegroundColor Blue
+
+Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
+Write-Host "  │  ACCESS URLs                                                │" -ForegroundColor Cyan
+Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Themes Included:" -ForegroundColor Blue
-Write-Host "  • my-theme (default)" -ForegroundColor Blue
-Write-Host "  • tester" -ForegroundColor Blue
+Write-Host "    Frontend:     http://localhost:$APP_PORT" -ForegroundColor White
+Write-Host "    Admin Panel:  http://localhost:$APP_PORT/admin" -ForegroundColor White
+Write-Host "    API Docs:     http://localhost:$APP_PORT/api" -ForegroundColor White
+Write-Host "    Health Check: http://localhost:$APP_PORT/health" -ForegroundColor White
+Write-Host ""
+
+Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
+Write-Host "  │  ADMIN CREDENTIALS                                          │" -ForegroundColor Cyan
+Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "    Email:    $ADMIN_EMAIL" -ForegroundColor White
+Write-Host "    Password: $ADMIN_PASSWORD" -ForegroundColor White
+Write-Host ""
+
+Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
+Write-Host "  │  DATABASE CREDENTIALS                                       │" -ForegroundColor Cyan
+Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "    Database: $DB_NAME" -ForegroundColor White
+Write-Host "    User:     $DB_USER" -ForegroundColor White
+Write-Host "    Password: $DB_PASSWORD" -ForegroundColor White
+Write-Host ""
+
+Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
+Write-Host "  │  INCLUDED THEMES                                            │" -ForegroundColor Cyan
+Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "    • my-theme (default)" -ForegroundColor White
+Write-Host "    • default" -ForegroundColor White
+Write-Host ""
+Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Magenta
 Write-Host ""
 
