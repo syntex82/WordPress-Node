@@ -1,0 +1,184 @@
+{{> header}}
+
+<main class="item-detail">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/marketplace">Marketplace</a> / <a href="/marketplace/plugins">Plugins</a> / <span>{{plugin.name}}</span>
+    </nav>
+
+    <div class="detail-grid">
+      <!-- Main Content -->
+      <div class="detail-main">
+        <!-- Plugin Header -->
+        <div class="plugin-hero">
+          <div class="plugin-icon-large">
+            {{#if plugin.iconUrl}}
+            <img src="{{plugin.iconUrl}}" alt="{{plugin.name}}">
+            {{else}}
+            <span class="icon-placeholder">🔌</span>
+            {{/if}}
+          </div>
+          <div class="plugin-hero-info">
+            <h1>{{plugin.name}}</h1>
+            <p class="tagline">{{plugin.description}}</p>
+            <div class="hero-meta">
+              <span class="rating">⭐ {{plugin.rating}} ({{plugin.ratingCount}} reviews)</span>
+              <span class="installs">📦 {{plugin.activeInstalls}} active installations</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <section class="content-section">
+          <h2>Description</h2>
+          <div class="description-content">
+            {{#if plugin.longDescription}}
+            {{{plugin.longDescription}}}
+            {{else}}
+            <p>{{plugin.description}}</p>
+            {{/if}}
+          </div>
+        </section>
+
+        <!-- Features -->
+        {{#if plugin.features}}
+        <section class="content-section">
+          <h2>Features</h2>
+          <ul class="features-list">
+            {{#each plugin.features}}
+            <li>✅ {{this}}</li>
+            {{/each}}
+          </ul>
+        </section>
+        {{/if}}
+
+        <!-- Installation -->
+        <section class="content-section">
+          <h2>Installation</h2>
+          <ol class="install-steps">
+            <li>Download the plugin from the marketplace</li>
+            <li>Go to Admin → Plugins → Upload Plugin</li>
+            <li>Select the downloaded .zip file</li>
+            <li>Click "Install Now" and then "Activate"</li>
+          </ol>
+        </section>
+
+        <!-- Changelog -->
+        {{#if plugin.changelog}}
+        <section class="content-section">
+          <h2>Changelog</h2>
+          <div class="changelog">{{{plugin.changelog}}}</div>
+        </section>
+        {{/if}}
+
+        <!-- Reviews -->
+        {{#if plugin.ratings}}
+        <section class="content-section">
+          <h2>Reviews</h2>
+          <div class="reviews-list">
+            {{#each plugin.ratings}}
+            <div class="review">
+              <div class="review-header">
+                <span class="reviewer">{{this.user.name}}</span>
+                <span class="review-rating">{{#times this.rating}}⭐{{/times}}</span>
+                <span class="review-date">{{formatDate this.createdAt}}</span>
+              </div>
+              {{#if this.review}}<p class="review-text">{{this.review}}</p>{{/if}}
+            </div>
+            {{/each}}
+          </div>
+        </section>
+        {{/if}}
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="detail-sidebar">
+        <div class="sidebar-card">
+          {{#if plugin.demoUrl}}
+          <a href="{{plugin.demoUrl}}" target="_blank" class="btn btn-secondary">🔗 View Demo</a>
+          {{/if}}
+          
+          <div class="meta-list">
+            <div class="meta-item"><span>Version</span><strong>{{plugin.version}}</strong></div>
+            <div class="meta-item"><span>Downloads</span><strong>{{plugin.downloads}}</strong></div>
+            <div class="meta-item"><span>Active Installs</span><strong>{{plugin.activeInstalls}}</strong></div>
+            <div class="meta-item"><span>Category</span><strong>{{plugin.category}}</strong></div>
+            <div class="meta-item"><span>License</span><strong>{{plugin.licenseType}}</strong></div>
+            <div class="meta-item"><span>Last Updated</span><strong>{{formatDate plugin.updatedAt}}</strong></div>
+            {{#if plugin.minVersion}}<div class="meta-item"><span>Min CMS Version</span><strong>{{plugin.minVersion}}</strong></div>{{/if}}
+          </div>
+
+          <div class="author-info">
+            <h3>Author</h3>
+            <p class="author-name">{{plugin.author}}</p>
+            {{#if plugin.authorUrl}}<a href="{{plugin.authorUrl}}" target="_blank" class="author-link">Visit Website →</a>{{/if}}
+          </div>
+
+          {{#if plugin.tags}}
+          <div class="tags-section">
+            <h3>Tags</h3>
+            <div class="tags">
+              {{#each plugin.tags}}<span class="tag">{{this}}</span>{{/each}}
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if plugin.repositoryUrl}}
+          <a href="{{plugin.repositoryUrl}}" target="_blank" class="btn btn-outline">📂 View Source</a>
+          {{/if}}
+
+          {{#if plugin.documentationUrl}}
+          <a href="{{plugin.documentationUrl}}" target="_blank" class="btn btn-outline">📖 Documentation</a>
+          {{/if}}
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<style>
+.item-detail { padding: 2rem 0 4rem; }
+.breadcrumb { margin-bottom: 1.5rem; font-size: 0.9rem; }
+.breadcrumb a { color: var(--primary); text-decoration: none; }
+.detail-grid { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
+@media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
+.plugin-hero { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 2rem; padding: 2rem; background: var(--surface); border-radius: var(--border-radius); border: 1px solid var(--border); }
+.plugin-icon-large { width: 100px; height: 100px; background: var(--background); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.plugin-icon-large img { width: 80px; height: 80px; object-fit: contain; }
+.icon-placeholder { font-size: 3rem; }
+.plugin-hero-info h1 { margin: 0 0 0.5rem; font-size: 1.75rem; }
+.tagline { color: var(--text-muted); margin: 0 0 1rem; font-size: 1.1rem; }
+.hero-meta { display: flex; gap: 1.5rem; font-size: 0.95rem; color: var(--text-muted); }
+.content-section { margin-bottom: 2rem; padding: 1.5rem; background: var(--surface); border-radius: var(--border-radius); border: 1px solid var(--border); }
+.content-section h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+.description-content { line-height: 1.7; color: var(--text-muted); }
+.features-list { list-style: none; padding: 0; margin: 0; }
+.features-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.features-list li:last-child { border-bottom: none; }
+.install-steps { padding-left: 1.5rem; line-height: 2; color: var(--text-muted); }
+.reviews-list { display: flex; flex-direction: column; gap: 1rem; }
+.review { padding: 1rem; background: var(--background); border-radius: 8px; }
+.review-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+.reviewer { font-weight: 600; }
+.review-date { color: var(--text-muted); font-size: 0.85rem; margin-left: auto; }
+.review-text { margin: 0; color: var(--text-muted); }
+.sidebar-card { background: var(--surface); border-radius: var(--border-radius); padding: 1.5rem; border: 1px solid var(--border); position: sticky; top: 2rem; }
+.btn { display: block; width: 100%; padding: 0.75rem; text-align: center; border-radius: var(--border-radius); text-decoration: none; font-weight: 600; margin-bottom: 1rem; transition: all 0.2s; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn:hover { transform: translateY(-2px); }
+.meta-list { border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; }
+.meta-item { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.9rem; }
+.meta-item span { color: var(--text-muted); }
+.author-info, .tags-section { border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; }
+.author-info h3, .tags-section h3 { font-size: 0.9rem; color: var(--text-muted); margin: 0 0 0.5rem; }
+.author-name { margin: 0 0 0.25rem; font-weight: 600; }
+.author-link { color: var(--primary); font-size: 0.9rem; text-decoration: none; }
+.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tag { padding: 0.25rem 0.75rem; background: var(--background); border-radius: 20px; font-size: 0.8rem; }
+</style>
+
+{{> footer}}
+

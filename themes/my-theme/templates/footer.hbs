@@ -1,9 +1,53 @@
   </main>
   <footer class="site-footer">
     <div class="container">
-      <p>&copy; {{year}} {{site.name}}. All rights reserved.</p>
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h4>{{site.name}}</h4>
+          <p class="footer-desc">{{site.description}}</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/shop">Shop</a></li>
+            <li><a href="/courses">Courses</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Marketplace</h4>
+          <ul class="footer-links">
+            <li><a href="/marketplace">Browse All</a></li>
+            <li><a href="/marketplace/themes">Themes</a></li>
+            <li><a href="/marketplace/plugins">Plugins</a></li>
+            <li><a href="/marketplace/developer-guidelines">Developer Guidelines</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Developers</h4>
+          <ul class="footer-links">
+            <li><a href="/developer-marketplace">Hire a Developer</a></li>
+            <li><a href="/marketplace/developer-guidelines">Submit Theme/Plugin</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; {{year}} {{site.name}}. All rights reserved.</p>
+      </div>
     </div>
   </footer>
+  <style>
+    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; padding: 2rem 0; border-bottom: 1px solid var(--border); }
+    .footer-section h4 { margin: 0 0 1rem; font-size: 1rem; }
+    .footer-desc { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+    .footer-links { list-style: none; padding: 0; margin: 0; }
+    .footer-links li { margin-bottom: 0.5rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--primary); }
+    .footer-bottom { padding: 1.5rem 0 0; text-align: center; }
+    .footer-bottom p { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+  </style>
   <script src="/themes/my-theme/assets/js/main.js"></script>
   <!-- Analytics Tracking -->
   <script src="/api/plugins/analytics/tracker.js"></script>

@@ -804,6 +804,63 @@ If you ran `npx prisma db seed`, use these credentials:
 
 <br />
 
+### 🔓 Troubleshooting: Reset Admin Password & Unlock Account
+
+If you're locked out of the admin account or forgot your password, use these commands:
+
+#### Unlock Account (Remove Lockout)
+
+If you've been locked out due to too many failed login attempts:
+
+```bash
+# PowerShell (Windows)
+echo 'UPDATE "User" SET "failedLoginAttempts" = 0, "accountLockedUntil" = NULL WHERE email = $$admin@starter.dev$$;' | npx prisma db execute --stdin
+
+# Bash (Linux/Mac)
+echo 'UPDATE "User" SET "failedLoginAttempts" = 0, "accountLockedUntil" = NULL WHERE email = '\''admin@starter.dev'\'';' | npx prisma db execute --stdin
+```
+
+#### Reset Admin Password
+
+To reset the admin password to a new value:
+
+```bash
+# Step 1: Generate a new password hash
+npx ts-node -e "const bcrypt = require('bcrypt'); bcrypt.hash('YourNewPassword123!', 10).then(h => console.log(h));"
+
+# Step 2: Update the password in the database (replace HASH with the output from step 1)
+echo 'UPDATE "User" SET "password" = $$HASH$$, "failedLoginAttempts" = 0, "accountLockedUntil" = NULL WHERE email = $$admin@starter.dev$$;' | npx prisma db execute --stdin
+```
+
+**Example (reset to `Admin@Secure20024!`):**
+
+```bash
+# PowerShell (Windows) - One command to reset password and unlock
+echo 'UPDATE "User" SET "password" = $$$2b$10$O0AS5ZlFsDjhz7OUIMEjPOindSGdiZj9gRVpujYpKKQwpf0v8c9hq$$, "failedLoginAttempts" = 0, "accountLockedUntil" = NULL WHERE email = $$admin@starter.dev$$;' | npx prisma db execute --stdin
+```
+
+#### Change Admin Email
+
+To change the admin email address:
+
+```bash
+echo 'UPDATE "User" SET "email" = $$newemail@example.com$$ WHERE email = $$admin@starter.dev$$;' | npx prisma db execute --stdin
+```
+
+#### Complete Account Reset (Delete and Re-seed)
+
+To completely reset the admin account:
+
+```bash
+# Delete all users and re-run seed
+echo 'DELETE FROM "User";' | npx prisma db execute --stdin
+npx prisma db seed
+```
+
+> ⚠️ **Warning:** This deletes ALL users. Use with caution!
+
+<br />
+
 ---
 
 ## 📁 Project Structure

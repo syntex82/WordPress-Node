@@ -1,0 +1,177 @@
+{{> header}}
+
+<main class="marketplace-page">
+  <div class="container">
+    <!-- Hero Section -->
+    <section class="marketplace-hero">
+      <h1>🛒 Themes & Plugins Marketplace</h1>
+      <p>Discover premium themes and plugins to extend your WordPress Node CMS</p>
+      
+      <div class="marketplace-stats">
+        <div class="stat">
+          <span class="stat-value">{{stats.themes.approved}}</span>
+          <span class="stat-label">Themes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{stats.plugins.approved}}</span>
+          <span class="stat-label">Plugins</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{add stats.themes.totalDownloads stats.plugins.totalDownloads}}</span>
+          <span class="stat-label">Downloads</span>
+        </div>
+      </div>
+
+      <div class="marketplace-tabs">
+        <a href="/marketplace?tab=themes" class="tab {{#eq activeTab 'themes'}}active{{/eq}}">
+          🎨 Themes
+        </a>
+        <a href="/marketplace?tab=plugins" class="tab {{#eq activeTab 'plugins'}}active{{/eq}}">
+          🔌 Plugins
+        </a>
+      </div>
+    </section>
+
+    <!-- Quick Links -->
+    <section class="marketplace-actions">
+      <a href="/marketplace/themes" class="action-card">
+        <span class="icon">🎨</span>
+        <span>Browse All Themes</span>
+      </a>
+      <a href="/marketplace/plugins" class="action-card">
+        <span class="icon">🔌</span>
+        <span>Browse All Plugins</span>
+      </a>
+      <a href="/marketplace/developer-guidelines" class="action-card highlight">
+        <span class="icon">📋</span>
+        <span>Developer Guidelines</span>
+      </a>
+    </section>
+
+    {{#eq activeTab 'themes'}}
+    <!-- Featured Themes -->
+    <section class="featured-section">
+      <div class="section-header">
+        <h2>⭐ Featured Themes</h2>
+        <a href="/marketplace/themes" class="view-all">View All →</a>
+      </div>
+      
+      <div class="items-grid themes-grid">
+        {{#each featuredThemes}}
+        <a href="/marketplace/themes/{{this.slug}}" class="item-card theme-card">
+          <div class="item-thumbnail">
+            {{#if this.thumbnailUrl}}
+            <img src="{{this.thumbnailUrl}}" alt="{{this.name}}">
+            {{else}}
+            <div class="placeholder-thumb">🎨</div>
+            {{/if}}
+            {{#if this.isFeatured}}<span class="featured-badge">Featured</span>{{/if}}
+          </div>
+          <div class="item-info">
+            <h3>{{this.name}}</h3>
+            <p class="item-author">by {{this.author}}</p>
+            <p class="item-desc">{{truncate this.description 80}}</p>
+            <div class="item-meta">
+              <span class="rating">⭐ {{this.rating}}</span>
+              <span class="downloads">📥 {{this.downloads}}</span>
+            </div>
+          </div>
+        </a>
+        {{else}}
+        <p class="no-items">No featured themes yet.</p>
+        {{/each}}
+      </div>
+    </section>
+    {{/eq}}
+
+    {{#eq activeTab 'plugins'}}
+    <!-- Featured Plugins -->
+    <section class="featured-section">
+      <div class="section-header">
+        <h2>⭐ Featured Plugins</h2>
+        <a href="/marketplace/plugins" class="view-all">View All →</a>
+      </div>
+      
+      <div class="items-grid plugins-grid">
+        {{#each featuredPlugins}}
+        <a href="/marketplace/plugins/{{this.slug}}" class="item-card plugin-card">
+          <div class="item-icon">
+            {{#if this.iconUrl}}
+            <img src="{{this.iconUrl}}" alt="{{this.name}}">
+            {{else}}
+            <div class="placeholder-icon">🔌</div>
+            {{/if}}
+          </div>
+          <div class="item-info">
+            <h3>{{this.name}}</h3>
+            <p class="item-author">by {{this.author}}</p>
+            <p class="item-desc">{{truncate this.description 80}}</p>
+            <div class="item-meta">
+              <span class="rating">⭐ {{this.rating}}</span>
+              <span class="installs">📦 {{this.activeInstalls}} active</span>
+            </div>
+          </div>
+        </a>
+        {{else}}
+        <p class="no-items">No featured plugins yet.</p>
+        {{/each}}
+      </div>
+    </section>
+    {{/eq}}
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+      <h2>🚀 Are You a Developer?</h2>
+      <p>Submit your themes and plugins to the marketplace and reach thousands of users!</p>
+      <a href="/marketplace/developer-guidelines" class="cta-button">Read Developer Guidelines</a>
+    </section>
+  </div>
+</main>
+
+<style>
+.marketplace-page { padding: 2rem 0 4rem; }
+.marketplace-hero { text-align: center; margin-bottom: 3rem; }
+.marketplace-hero h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.marketplace-hero p { color: var(--text-muted); font-size: 1.1rem; }
+.marketplace-stats { display: flex; justify-content: center; gap: 3rem; margin: 2rem 0; }
+.stat { text-align: center; }
+.stat-value { display: block; font-size: 2rem; font-weight: 700; color: var(--primary); }
+.stat-label { color: var(--text-muted); font-size: 0.9rem; }
+.marketplace-tabs { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+.tab { padding: 0.75rem 2rem; border-radius: var(--border-radius); background: var(--surface); color: var(--text); text-decoration: none; transition: all 0.2s; }
+.tab:hover { background: var(--primary); color: white; }
+.tab.active { background: var(--primary); color: white; }
+.marketplace-actions { display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap; }
+.action-card { display: flex; align-items: center; gap: 0.5rem; padding: 1rem 1.5rem; background: var(--surface); border-radius: var(--border-radius); text-decoration: none; color: var(--text); transition: all 0.2s; border: 1px solid var(--border); }
+.action-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.action-card.highlight { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; }
+.action-card .icon { font-size: 1.5rem; }
+.featured-section { margin-bottom: 3rem; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.section-header h2 { margin: 0; }
+.view-all { color: var(--primary); text-decoration: none; }
+.items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+.item-card { background: var(--surface); border-radius: var(--border-radius); overflow: hidden; text-decoration: none; color: var(--text); transition: all 0.2s; border: 1px solid var(--border); }
+.item-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+.item-thumbnail { height: 160px; background: var(--background); display: flex; align-items: center; justify-content: center; position: relative; }
+.item-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+.placeholder-thumb { font-size: 3rem; }
+.featured-badge { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--accent); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
+.item-icon { width: 80px; height: 80px; margin: 1rem auto; background: var(--background); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+.item-icon img { width: 60px; height: 60px; object-fit: contain; }
+.placeholder-icon { font-size: 2rem; }
+.item-info { padding: 1rem; }
+.item-info h3 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.item-author { color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.5rem; }
+.item-desc { font-size: 0.9rem; color: var(--text-muted); margin: 0 0 0.75rem; line-height: 1.4; }
+.item-meta { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-muted); }
+.no-items { grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem; }
+.cta-section { text-align: center; padding: 3rem; background: linear-gradient(135deg, var(--surface), var(--background)); border-radius: var(--border-radius); border: 1px solid var(--border); }
+.cta-section h2 { margin: 0 0 0.5rem; }
+.cta-section p { color: var(--text-muted); margin-bottom: 1.5rem; }
+.cta-button { display: inline-block; padding: 0.75rem 2rem; background: var(--primary); color: white; border-radius: var(--border-radius); text-decoration: none; font-weight: 600; transition: all 0.2s; }
+.cta-button:hover { background: var(--secondary); transform: translateY(-2px); }
+</style>
+
+{{> footer}}
+

@@ -1,0 +1,144 @@
+{{> header}}
+
+<main class="marketplace-browse">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/marketplace">Marketplace</a> / <span>Plugins</span>
+    </nav>
+
+    <div class="browse-header">
+      <h1>🔌 Browse Plugins</h1>
+      <p>Extend your WordPress Node CMS with powerful plugins</p>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="filters-bar">
+      <form action="/marketplace/plugins" method="GET" class="search-form">
+        <input type="text" name="search" placeholder="Search plugins..." value="{{filters.search}}" class="search-input">
+        <button type="submit" class="search-btn">🔍</button>
+      </form>
+
+      <div class="filter-controls">
+        <select name="category" onchange="this.form.submit()" form="filter-form" class="filter-select">
+          <option value="">All Categories</option>
+          {{#each categories}}
+          <option value="{{this.category}}" {{#eq this.category ../filters.category}}selected{{/eq}}>
+            {{this.category}} ({{this.count}})
+          </option>
+          {{/each}}
+        </select>
+
+        <select name="sortBy" onchange="this.form.submit()" form="filter-form" class="filter-select">
+          <option value="downloads" {{#eq filters.sortBy 'downloads'}}selected{{/eq}}>Most Downloads</option>
+          <option value="activeInstalls" {{#eq filters.sortBy 'activeInstalls'}}selected{{/eq}}>Most Active</option>
+          <option value="rating" {{#eq filters.sortBy 'rating'}}selected{{/eq}}>Top Rated</option>
+          <option value="newest" {{#eq filters.sortBy 'newest'}}selected{{/eq}}>Newest</option>
+          <option value="name" {{#eq filters.sortBy 'name'}}selected{{/eq}}>Name A-Z</option>
+        </select>
+
+        <form id="filter-form" action="/marketplace/plugins" method="GET" style="display:none;">
+          <input type="hidden" name="search" value="{{filters.search}}">
+        </form>
+      </div>
+    </div>
+
+    <!-- Plugins Grid -->
+    <div class="items-grid plugins-grid">
+      {{#each plugins}}
+      <a href="/marketplace/plugins/{{this.slug}}" class="item-card plugin-card">
+        <div class="plugin-header">
+          <div class="plugin-icon">
+            {{#if this.iconUrl}}
+            <img src="{{this.iconUrl}}" alt="{{this.name}}">
+            {{else}}
+            <span class="icon-placeholder">🔌</span>
+            {{/if}}
+          </div>
+          <div class="plugin-title">
+            <h3>{{this.name}}</h3>
+            <p class="author">by {{this.author}}</p>
+          </div>
+          {{#if this.isFeatured}}<span class="featured-badge">⭐</span>{{/if}}
+        </div>
+        <p class="description">{{truncate this.description 120}}</p>
+        <div class="meta">
+          <span class="rating">⭐ {{this.rating}}</span>
+          <span class="installs">📦 {{this.activeInstalls}} active</span>
+          <span class="version">v{{this.version}}</span>
+        </div>
+        <div class="tags">
+          <span class="category-tag">{{this.category}}</span>
+          {{#if this.licenseType}}<span class="license-tag">{{this.licenseType}}</span>{{/if}}
+        </div>
+      </a>
+      {{else}}
+      <div class="no-items">
+        <p>No plugins found matching your criteria.</p>
+        <a href="/marketplace/plugins" class="reset-link">Clear filters</a>
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- Pagination -->
+    {{#if pagination}}
+    <div class="pagination">
+      {{#if pagination.hasPrev}}
+      <a href="/marketplace/plugins?page={{subtract pagination.page 1}}&search={{filters.search}}&category={{filters.category}}&sortBy={{filters.sortBy}}" class="page-link">← Previous</a>
+      {{/if}}
+      <span class="page-info">Page {{pagination.page}} of {{pagination.totalPages}}</span>
+      {{#if pagination.hasNext}}
+      <a href="/marketplace/plugins?page={{add pagination.page 1}}&search={{filters.search}}&category={{filters.category}}&sortBy={{filters.sortBy}}" class="page-link">Next →</a>
+      {{/if}}
+    </div>
+    {{/if}}
+
+    <!-- CTA -->
+    <div class="submit-cta">
+      <p>Have a plugin to share? <a href="/marketplace/developer-guidelines">Read our developer guidelines</a></p>
+    </div>
+  </div>
+</main>
+
+<style>
+.marketplace-browse { padding: 2rem 0 4rem; }
+.breadcrumb { margin-bottom: 1rem; font-size: 0.9rem; }
+.breadcrumb a { color: var(--primary); text-decoration: none; }
+.browse-header { margin-bottom: 2rem; }
+.browse-header h1 { margin: 0 0 0.5rem; }
+.browse-header p { color: var(--text-muted); margin: 0; }
+.filters-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; padding: 1rem; background: var(--surface); border-radius: var(--border-radius); border: 1px solid var(--border); }
+.search-form { display: flex; gap: 0.5rem; flex: 1; max-width: 400px; }
+.search-input { flex: 1; padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: var(--border-radius); background: var(--background); color: var(--text); }
+.search-btn { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; }
+.filter-controls { display: flex; gap: 0.5rem; }
+.filter-select { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: var(--border-radius); background: var(--background); color: var(--text); cursor: pointer; }
+.plugins-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.plugin-card { background: var(--surface); border-radius: var(--border-radius); padding: 1.25rem; text-decoration: none; color: var(--text); transition: all 0.2s; border: 1px solid var(--border); display: flex; flex-direction: column; }
+.plugin-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+.plugin-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.plugin-icon { width: 60px; height: 60px; background: var(--background); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.plugin-icon img { width: 48px; height: 48px; object-fit: contain; }
+.icon-placeholder { font-size: 1.75rem; }
+.plugin-title { flex: 1; min-width: 0; }
+.plugin-title h3 { margin: 0 0 0.25rem; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.author { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
+.featured-badge { font-size: 1.25rem; }
+.description { font-size: 0.9rem; color: var(--text-muted); margin: 0 0 1rem; line-height: 1.5; flex: 1; }
+.meta { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; flex-wrap: wrap; }
+.tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.category-tag, .license-tag { padding: 0.2rem 0.5rem; background: var(--background); border-radius: 4px; font-size: 0.75rem; }
+.category-tag { color: var(--primary); }
+.license-tag { color: var(--secondary); }
+.no-items { grid-column: 1/-1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--border-radius); }
+.reset-link { color: var(--primary); }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin: 2rem 0; }
+.page-link { padding: 0.5rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--border-radius); text-decoration: none; color: var(--text); transition: all 0.2s; }
+.page-link:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.page-info { color: var(--text-muted); }
+.submit-cta { text-align: center; padding: 2rem; background: var(--surface); border-radius: var(--border-radius); border: 1px solid var(--border); }
+.submit-cta a { color: var(--primary); }
+</style>
+
+{{> footer}}
+

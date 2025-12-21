@@ -13,6 +13,7 @@ import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { RecommendationsModule } from '../recommendations/recommendations.module';
 import { MarketplaceModule } from '../marketplace/marketplace.module';
+import { PluginsModule } from '../plugins/plugins.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MarketplaceModule } from '../marketplace/marketplace.module';
     AuthModule,
     forwardRef(() => RecommendationsModule),
     forwardRef(() => MarketplaceModule),
+    forwardRef(() => PluginsModule),
   ],
   controllers: [PublicController],
 })

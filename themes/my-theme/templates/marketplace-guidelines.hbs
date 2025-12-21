@@ -1,0 +1,540 @@
+{{> header}}
+
+<main class="guidelines-page">
+  <div class="container">
+    <!-- Hero -->
+    <section class="guidelines-hero">
+      <h1>📋 Developer Requirements & Guidelines</h1>
+      <p>Everything you need to know to submit themes and plugins to the WordPress Node Marketplace</p>
+    </section>
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+      <h2>Table of Contents</h2>
+      <ul>
+        <li><a href="#theme-requirements">🎨 Theme Submission Requirements</a></li>
+        <li><a href="#plugin-requirements">🔌 Plugin Submission Requirements</a></li>
+        <li><a href="#template-types">📄 Supported Template Types</a></li>
+        <li><a href="#plugin-categories">📦 Plugin Categories</a></li>
+        <li><a href="#code-quality">✅ Code Quality Standards</a></li>
+        <li><a href="#security">🔒 Security Requirements</a></li>
+        <li><a href="#review-process">📝 Review & Approval Process</a></li>
+        <li><a href="#policies">📜 Policies & Guidelines</a></li>
+      </ul>
+    </nav>
+
+    <!-- Theme Requirements -->
+    <section id="theme-requirements" class="content-section">
+      <h2>🎨 Theme Submission Requirements</h2>
+      
+      <h3>Required File Structure</h3>
+      <div class="code-block">
+<pre>your-theme/
+├── theme.json          # Required: Theme metadata
+├── index.html          # Required: Main template
+├── style.css           # Required: Main stylesheet
+├── templates/          # Required: Template directory
+│   ├── home.hbs        # Homepage template
+│   ├── page.hbs        # Single page template
+│   ├── single.hbs      # Single post template
+│   ├── archive.hbs     # Archive/listing template
+│   └── ...             # Additional templates
+├── partials/           # Recommended: Reusable components
+│   ├── header.hbs      # Site header
+│   ├── footer.hbs      # Site footer
+│   └── ...
+├── assets/             # Static assets
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── screenshot.png      # Required: 1200x900px preview
+└── README.md           # Recommended: Documentation</pre>
+      </div>
+
+      <h3>theme.json Specification</h3>
+      <div class="code-block">
+<pre>{
+  "name": "Your Theme Name",
+  "version": "1.0.0",
+  "description": "A brief description of your theme",
+  "author": "Your Name",
+  "authorUrl": "https://yourwebsite.com",
+  "license": "MIT",
+  "tags": ["responsive", "blog", "portfolio"],
+  "category": "Business",
+  "minCmsVersion": "1.0.0",
+  "features": [
+    "Responsive Design",
+    "Dark Mode Support",
+    "Custom Widgets"
+  ],
+  "customization": {
+    "colors": {
+      "primary": "#3b82f6",
+      "secondary": "#8b5cf6"
+    },
+    "fonts": {
+      "heading": "Inter",
+      "body": "Open Sans"
+    }
+  }
+}</pre>
+      </div>
+
+      <h3>Mandatory Files</h3>
+      <table class="requirements-table">
+        <thead>
+          <tr><th>File</th><th>Purpose</th><th>Required</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>theme.json</code></td><td>Theme metadata, configuration, and customization options</td><td>✅ Yes</td></tr>
+          <tr><td><code>index.html</code></td><td>Fallback template when no specific template matches</td><td>✅ Yes</td></tr>
+          <tr><td><code>style.css</code></td><td>Main stylesheet with theme styles</td><td>✅ Yes</td></tr>
+          <tr><td><code>screenshot.png</code></td><td>Theme preview image (1200x900px recommended)</td><td>✅ Yes</td></tr>
+          <tr><td><code>templates/home.hbs</code></td><td>Homepage template</td><td>✅ Yes</td></tr>
+          <tr><td><code>templates/page.hbs</code></td><td>Single page template</td><td>✅ Yes</td></tr>
+          <tr><td><code>templates/single.hbs</code></td><td>Single post template</td><td>✅ Yes</td></tr>
+          <tr><td><code>partials/header.hbs</code></td><td>Site header partial</td><td>⚠️ Recommended</td></tr>
+          <tr><td><code>partials/footer.hbs</code></td><td>Site footer partial</td><td>⚠️ Recommended</td></tr>
+          <tr><td><code>README.md</code></td><td>Documentation and usage instructions</td><td>⚠️ Recommended</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Plugin Requirements -->
+    <section id="plugin-requirements" class="content-section">
+      <h2>🔌 Plugin Submission Requirements</h2>
+      
+      <h3>Required File Structure</h3>
+      <div class="code-block">
+<pre>your-plugin/
+├── plugin.json         # Required: Plugin metadata
+├── index.ts            # Required: Main entry point
+├── src/                # Source code directory
+│   ├── services/       # Business logic
+│   ├── controllers/    # API endpoints (if any)
+│   ├── hooks/          # Hook implementations
+│   └── utils/          # Utility functions
+├── assets/             # Static assets (if any)
+├── icon.png            # Required: 256x256px icon
+└── README.md           # Required: Documentation</pre>
+      </div>
+
+      <h3>plugin.json Specification</h3>
+      <div class="code-block">
+<pre>{
+  "name": "Your Plugin Name",
+  "slug": "your-plugin-name",
+  "version": "1.0.0",
+  "description": "What your plugin does",
+  "author": "Your Name",
+  "authorUrl": "https://yourwebsite.com",
+  "license": "MIT",
+  "category": "SEO",
+  "tags": ["seo", "optimization", "meta"],
+  "minCmsVersion": "1.0.0",
+  "hooks": ["content:beforeSave", "content:afterPublish"],
+  "permissions": ["content:read", "settings:write"],
+  "settings": {
+    "apiKey": {
+      "type": "string",
+      "label": "API Key",
+      "required": true
+    }
+  }
+}</pre>
+      </div>
+
+      <h3>Entry Point (index.ts)</h3>
+      <div class="code-block">
+<pre>import { Plugin, PluginContext } from '@wordpress-node/plugin-api';
+
+export default class YourPlugin implements Plugin {
+  name = 'Your Plugin Name';
+  version = '1.0.0';
+
+  async onActivate(context: PluginContext): Promise&lt;void&gt; {
+    console.log('Plugin activated!');
+  }
+
+  async onDeactivate(context: PluginContext): Promise&lt;void&gt; {
+    console.log('Plugin deactivated!');
+  }
+
+  registerHooks(context: PluginContext): void {
+    context.hooks.on('content:beforeSave', this.handleBeforeSave);
+  }
+
+  private handleBeforeSave = async (data: any) => {
+    return data;
+  };
+}</pre>
+      </div>
+    </section>
+
+    <!-- Template Types -->
+    <section id="template-types" class="content-section">
+      <h2>📄 Supported Template Types</h2>
+      <p>WordPress Node supports various template types for different content and pages:</p>
+
+      <div class="template-grid">
+        <div class="template-card">
+          <h4>🏠 home.hbs</h4>
+          <p><strong>Purpose:</strong> Homepage/front page of the site</p>
+          <p><strong>Use when:</strong> Displaying featured content, hero sections, and site introduction</p>
+          <p><strong>Context:</strong> Featured posts, products, recent content</p>
+        </div>
+        <div class="template-card">
+          <h4>📄 page.hbs</h4>
+          <p><strong>Purpose:</strong> Static pages (About, Contact, etc.)</p>
+          <p><strong>Use when:</strong> Rendering individual pages with custom content</p>
+          <p><strong>Context:</strong> Page title, content, featured image, meta</p>
+        </div>
+        <div class="template-card">
+          <h4>📝 single.hbs</h4>
+          <p><strong>Purpose:</strong> Individual blog posts</p>
+          <p><strong>Use when:</strong> Displaying a single blog post with full content</p>
+          <p><strong>Context:</strong> Post data, author, categories, tags, comments</p>
+        </div>
+        <div class="template-card">
+          <h4>📚 archive.hbs</h4>
+          <p><strong>Purpose:</strong> Post listings (blog index, category pages)</p>
+          <p><strong>Use when:</strong> Showing multiple posts in a list or grid</p>
+          <p><strong>Context:</strong> Posts array, pagination, category/tag info</p>
+        </div>
+        <div class="template-card">
+          <h4>🏷️ category.hbs</h4>
+          <p><strong>Purpose:</strong> Category archive pages</p>
+          <p><strong>Use when:</strong> Displaying posts from a specific category</p>
+          <p><strong>Context:</strong> Category info, filtered posts, pagination</p>
+        </div>
+        <div class="template-card">
+          <h4>🔖 tag.hbs</h4>
+          <p><strong>Purpose:</strong> Tag archive pages</p>
+          <p><strong>Use when:</strong> Displaying posts with a specific tag</p>
+          <p><strong>Context:</strong> Tag info, filtered posts, pagination</p>
+        </div>
+        <div class="template-card">
+          <h4>👤 author.hbs</h4>
+          <p><strong>Purpose:</strong> Author profile and posts</p>
+          <p><strong>Use when:</strong> Showing author bio and their posts</p>
+          <p><strong>Context:</strong> Author info, author's posts, pagination</p>
+        </div>
+        <div class="template-card">
+          <h4>🔍 search.hbs</h4>
+          <p><strong>Purpose:</strong> Search results page</p>
+          <p><strong>Use when:</strong> Displaying search results</p>
+          <p><strong>Context:</strong> Search query, results, pagination</p>
+        </div>
+        <div class="template-card">
+          <h4>🛒 shop.hbs</h4>
+          <p><strong>Purpose:</strong> E-commerce product listing</p>
+          <p><strong>Use when:</strong> Displaying products for sale</p>
+          <p><strong>Context:</strong> Products, categories, filters, cart</p>
+        </div>
+        <div class="template-card">
+          <h4>📦 single-product.hbs</h4>
+          <p><strong>Purpose:</strong> Individual product page</p>
+          <p><strong>Use when:</strong> Showing product details, pricing, add to cart</p>
+          <p><strong>Context:</strong> Product data, variants, reviews, related</p>
+        </div>
+        <div class="template-card">
+          <h4>🎓 courses.hbs</h4>
+          <p><strong>Purpose:</strong> LMS course listing</p>
+          <p><strong>Use when:</strong> Displaying available courses</p>
+          <p><strong>Context:</strong> Courses, categories, instructors</p>
+        </div>
+        <div class="template-card">
+          <h4>📖 single-course.hbs</h4>
+          <p><strong>Purpose:</strong> Individual course page</p>
+          <p><strong>Use when:</strong> Showing course details, curriculum, enrollment</p>
+          <p><strong>Context:</strong> Course data, lessons, instructor, reviews</p>
+        </div>
+        <div class="template-card">
+          <h4>❌ 404.hbs</h4>
+          <p><strong>Purpose:</strong> Page not found error</p>
+          <p><strong>Use when:</strong> Requested page doesn't exist</p>
+          <p><strong>Context:</strong> Minimal - just site info</p>
+        </div>
+        <div class="template-card">
+          <h4>⚠️ error.hbs</h4>
+          <p><strong>Purpose:</strong> General error page</p>
+          <p><strong>Use when:</strong> Server errors or other issues</p>
+          <p><strong>Context:</strong> Error message, status code</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plugin Categories -->
+    <section id="plugin-categories" class="content-section">
+      <h2>📦 Plugin Categories</h2>
+      <p>Choose the appropriate category for your plugin:</p>
+
+      <div class="category-grid">
+        <div class="category-card">
+          <h4>🔍 SEO</h4>
+          <p>Search engine optimization, meta tags, sitemaps, schema markup, analytics integration</p>
+        </div>
+        <div class="category-card">
+          <h4>🔒 Security</h4>
+          <p>Firewall, malware scanning, login protection, two-factor auth, security hardening</p>
+        </div>
+        <div class="category-card">
+          <h4>⚡ Performance</h4>
+          <p>Caching, image optimization, lazy loading, CDN integration, minification</p>
+        </div>
+        <div class="category-card">
+          <h4>📧 Email</h4>
+          <p>SMTP configuration, email templates, newsletters, transactional emails</p>
+        </div>
+        <div class="category-card">
+          <h4>📝 Content</h4>
+          <p>Custom post types, content blocks, page builders, media management</p>
+        </div>
+        <div class="category-card">
+          <h4>🛒 E-commerce</h4>
+          <p>Payment gateways, shipping, inventory, product management, checkout</p>
+        </div>
+        <div class="category-card">
+          <h4>📊 Analytics</h4>
+          <p>Visitor tracking, reports, dashboards, A/B testing, heatmaps</p>
+        </div>
+        <div class="category-card">
+          <h4>🔗 Integration</h4>
+          <p>Third-party APIs, CRM, social media, external services</p>
+        </div>
+        <div class="category-card">
+          <h4>👥 Social</h4>
+          <p>Social sharing, login, feeds, comments, community features</p>
+        </div>
+        <div class="category-card">
+          <h4>📋 Forms</h4>
+          <p>Contact forms, surveys, quizzes, form builders, submissions</p>
+        </div>
+        <div class="category-card">
+          <h4>🎨 Design</h4>
+          <p>Custom CSS, fonts, icons, animations, visual effects</p>
+        </div>
+        <div class="category-card">
+          <h4>🔧 Utility</h4>
+          <p>Backup, migration, maintenance mode, debugging, admin tools</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Code Quality -->
+    <section id="code-quality" class="content-section">
+      <h2>✅ Code Quality Standards</h2>
+
+      <h3>General Requirements</h3>
+      <ul class="checklist">
+        <li>✅ Use TypeScript for all plugin code</li>
+        <li>✅ Follow ESLint and Prettier configurations</li>
+        <li>✅ Include comprehensive error handling</li>
+        <li>✅ Write clean, readable, and documented code</li>
+        <li>✅ Use meaningful variable and function names</li>
+        <li>✅ Avoid hardcoded values - use configuration</li>
+        <li>✅ Include unit tests for critical functionality</li>
+        <li>✅ Ensure responsive design for themes</li>
+      </ul>
+
+      <h3>Performance Guidelines</h3>
+      <ul class="checklist">
+        <li>✅ Minimize HTTP requests</li>
+        <li>✅ Optimize images and assets</li>
+        <li>✅ Use lazy loading where appropriate</li>
+        <li>✅ Avoid blocking operations</li>
+        <li>✅ Cache expensive computations</li>
+        <li>✅ Use async/await properly</li>
+      </ul>
+
+      <h3>Accessibility (Themes)</h3>
+      <ul class="checklist">
+        <li>✅ Use semantic HTML elements</li>
+        <li>✅ Include proper ARIA labels</li>
+        <li>✅ Ensure keyboard navigation</li>
+        <li>✅ Maintain color contrast ratios</li>
+        <li>✅ Provide alt text for images</li>
+        <li>✅ Support screen readers</li>
+      </ul>
+    </section>
+
+    <!-- Security -->
+    <section id="security" class="content-section">
+      <h2>🔒 Security Requirements</h2>
+
+      <div class="warning-box">
+        <strong>⚠️ Important:</strong> All submissions are reviewed for security vulnerabilities.
+        Plugins with security issues will be rejected.
+      </div>
+
+      <h3>Required Security Practices</h3>
+      <ul class="checklist">
+        <li>✅ Sanitize all user inputs</li>
+        <li>✅ Use parameterized queries for database operations</li>
+        <li>✅ Validate and escape output</li>
+        <li>✅ Implement proper authentication checks</li>
+        <li>✅ Use CSRF protection for forms</li>
+        <li>✅ Never store sensitive data in plain text</li>
+        <li>✅ Follow the principle of least privilege</li>
+        <li>✅ Keep dependencies up to date</li>
+      </ul>
+
+      <h3>Prohibited Practices</h3>
+      <ul class="prohibited-list">
+        <li>❌ Executing arbitrary code from user input</li>
+        <li>❌ Storing passwords without hashing</li>
+        <li>❌ Using eval() or similar functions</li>
+        <li>❌ Hardcoding API keys or secrets</li>
+        <li>❌ Making requests to unauthorized external services</li>
+        <li>❌ Collecting user data without disclosure</li>
+      </ul>
+    </section>
+
+    <!-- Review Process -->
+    <section id="review-process" class="content-section">
+      <h2>📝 Review & Approval Process</h2>
+
+      <div class="process-steps">
+        <div class="step">
+          <span class="step-number">1</span>
+          <h4>Submit</h4>
+          <p>Upload your theme/plugin with all required files and documentation</p>
+        </div>
+        <div class="step">
+          <span class="step-number">2</span>
+          <h4>Automated Checks</h4>
+          <p>Our system validates file structure, metadata, and runs security scans</p>
+        </div>
+        <div class="step">
+          <span class="step-number">3</span>
+          <h4>Manual Review</h4>
+          <p>Our team reviews code quality, functionality, and user experience</p>
+        </div>
+        <div class="step">
+          <span class="step-number">4</span>
+          <h4>Feedback</h4>
+          <p>You'll receive approval or detailed feedback for improvements</p>
+        </div>
+        <div class="step">
+          <span class="step-number">5</span>
+          <h4>Published</h4>
+          <p>Once approved, your item goes live in the marketplace</p>
+        </div>
+      </div>
+
+      <h3>Review Timeline</h3>
+      <ul>
+        <li>Initial review: 3-5 business days</li>
+        <li>Resubmission review: 1-2 business days</li>
+        <li>Updates to existing items: 1-3 business days</li>
+      </ul>
+    </section>
+
+    <!-- Policies -->
+    <section id="policies" class="content-section">
+      <h2>📜 Policies & Guidelines</h2>
+
+      <h3>Pricing Guidelines</h3>
+      <ul>
+        <li><strong>Free items:</strong> Must be fully functional, not "lite" versions</li>
+        <li><strong>Paid items:</strong> Set your own price (platform takes 10% fee)</li>
+        <li><strong>Subscriptions:</strong> Annual or monthly billing supported</li>
+        <li><strong>Bundles:</strong> Offer discounts for multiple items</li>
+      </ul>
+
+      <h3>Update & Versioning Policy</h3>
+      <ul>
+        <li>Use semantic versioning (MAJOR.MINOR.PATCH)</li>
+        <li>Provide changelog for each update</li>
+        <li>Maintain backward compatibility when possible</li>
+        <li>Security updates should be released promptly</li>
+        <li>Abandoned items may be removed after 12 months of inactivity</li>
+      </ul>
+
+      <h3>Support Requirements</h3>
+      <ul>
+        <li>Respond to support requests within 48 hours</li>
+        <li>Provide documentation for installation and usage</li>
+        <li>Maintain a FAQ or knowledge base</li>
+        <li>Offer refunds for legitimate issues within 14 days</li>
+      </ul>
+
+      <h3>Refund & Dispute Policy</h3>
+      <ul>
+        <li>14-day refund window for paid items</li>
+        <li>Refunds granted for: non-functional items, misrepresented features</li>
+        <li>No refunds for: change of mind, incompatibility with custom code</li>
+        <li>Disputes are mediated by the platform team</li>
+      </ul>
+
+      <h3>Platform Fee Structure</h3>
+      <table class="fee-table">
+        <thead>
+          <tr><th>Item Type</th><th>Platform Fee</th><th>Developer Receives</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Free Items</td><td>$0</td><td>N/A</td></tr>
+          <tr><td>Paid Items</td><td>10%</td><td>90%</td></tr>
+          <tr><td>Subscriptions</td><td>10%</td><td>90%</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Payouts are processed monthly for balances over $50.</p>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <h2>🚀 Ready to Submit?</h2>
+      <p>Start building and submit your theme or plugin to reach thousands of users!</p>
+      <div class="cta-buttons">
+        <a href="/marketplace/themes" class="btn btn-primary">Browse Themes</a>
+        <a href="/marketplace/plugins" class="btn btn-primary">Browse Plugins</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<style>
+.guidelines-page { padding: 2rem 0 4rem; }
+.guidelines-hero { text-align: center; margin-bottom: 3rem; }
+.guidelines-hero h1 { font-size: 2.25rem; margin-bottom: 0.5rem; }
+.guidelines-hero p { color: var(--text-muted); font-size: 1.1rem; }
+.toc { background: var(--surface); padding: 1.5rem 2rem; border-radius: var(--border-radius); margin-bottom: 2rem; border: 1px solid var(--border); }
+.toc h2 { font-size: 1.1rem; margin: 0 0 1rem; }
+.toc ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.5rem; }
+.toc a { color: var(--primary); text-decoration: none; padding: 0.25rem 0; display: block; }
+.toc a:hover { text-decoration: underline; }
+.content-section { background: var(--surface); padding: 2rem; border-radius: var(--border-radius); margin-bottom: 2rem; border: 1px solid var(--border); }
+.content-section h2 { margin: 0 0 1.5rem; font-size: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border); }
+.content-section h3 { margin: 1.5rem 0 1rem; font-size: 1.15rem; color: var(--primary); }
+.content-section h4 { margin: 0 0 0.5rem; }
+.code-block { background: var(--background); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border); }
+.code-block pre { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.5; }
+.requirements-table, .fee-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.requirements-table th, .requirements-table td, .fee-table th, .fee-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+.requirements-table th, .fee-table th { background: var(--background); font-weight: 600; }
+.requirements-table code { background: var(--background); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.85rem; }
+.template-grid, .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.template-card, .category-card { background: var(--background); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); }
+.template-card h4, .category-card h4 { margin: 0 0 0.5rem; font-size: 1rem; }
+.template-card p, .category-card p { margin: 0.25rem 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
+.checklist, .prohibited-list { list-style: none; padding: 0; margin: 1rem 0; }
+.checklist li, .prohibited-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.warning-box { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+.process-steps { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }
+.step { flex: 1; min-width: 150px; text-align: center; padding: 1rem; background: var(--background); border-radius: 8px; }
+.step-number { display: inline-block; width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; line-height: 32px; font-weight: 700; margin-bottom: 0.5rem; }
+.step h4 { margin: 0.5rem 0 0.25rem; }
+.step p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+.note { font-size: 0.9rem; color: var(--text-muted); font-style: italic; }
+.cta-section { text-align: center; padding: 3rem; background: linear-gradient(135deg, var(--surface), var(--background)); border-radius: var(--border-radius); border: 1px solid var(--border); }
+.cta-section h2 { margin: 0 0 0.5rem; }
+.cta-section p { color: var(--text-muted); margin-bottom: 1.5rem; }
+.cta-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+.btn { padding: 0.75rem 2rem; border-radius: var(--border-radius); text-decoration: none; font-weight: 600; transition: all 0.2s; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--secondary); transform: translateY(-2px); }
+</style>
+
+{{> footer}}
+

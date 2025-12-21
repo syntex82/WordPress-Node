@@ -19,6 +19,8 @@ import { RecommendationsService } from '../recommendations/recommendations.servi
 import { RecommendationTrackingService } from '../recommendations/recommendation-tracking.service';
 import { PrismaService } from '../../database/prisma.service';
 import { DevelopersService } from '../marketplace/services/developers.service';
+import { MarketplaceService } from '../themes/marketplace.service';
+import { PluginMarketplaceService } from '../plugins/plugin-marketplace.service';
 import { PostStatus } from '@prisma/client';
 import { CourseLevel, CoursePriceType } from '../lms/dto/course.dto';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
@@ -42,6 +44,10 @@ export class PublicController {
     private prisma: PrismaService,
     @Inject(forwardRef(() => DevelopersService))
     private developersService: DevelopersService,
+    @Inject(forwardRef(() => MarketplaceService))
+    private themeMarketplaceService: MarketplaceService,
+    @Inject(forwardRef(() => PluginMarketplaceService))
+    private pluginMarketplaceService: PluginMarketplaceService,
   ) {}
 
   /**
@@ -798,6 +804,214 @@ export class PublicController {
     } catch (error) {
       console.error('Error rendering developer profile:', error);
       res.status(404).send('Developer not found');
+    }
+  }
+
+  // ============================================
+  // THEMES & PLUGINS MARKETPLACE ROUTES
+  // ============================================
+
+  /**
+   * Marketplace landing page - browse themes and plugins
+   * GET /marketplace
+   */
+  @Get('marketplace')
+  @UseGuards(OptionalJwtAuthGuard)
+  async marketplace(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('tab') tab?: string,
+  ) {
+    try {
+      const user = (req as any).user;
+      const activeTab = tab === 'plugins' ? 'plugins' : 'themes';
+
+      // Get featured themes and plugins
+      const [featuredThemes, featuredPlugins, themeStats, pluginStats] = await Promise.all([
+        this.themeMarketplaceService.getFeatured(6),
+        this.pluginMarketplaceService.getFeatured(6),
+        this.themeMarketplaceService.getStats(),
+        this.pluginMarketplaceService.getStats(),
+      ]);
+
+      const html = await this.themeRenderer.render('marketplace', {
+        title: 'Themes & Plugins Marketplace',
+        activeTab,
+        featuredThemes,
+        featuredPlugins,
+        stats: {
+          themes: themeStats,
+          plugins: pluginStats,
+        },
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering marketplace:', error);
+      res.status(500).send('Error loading marketplace');
+    }
+  }
+
+  /**
+   * Browse themes
+   * GET /marketplace/themes
+   */
+  @Get('marketplace/themes')
+  @UseGuards(OptionalJwtAuthGuard)
+  async marketplaceThemes(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('category') category?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('page') page?: string,
+  ) {
+    try {
+      const user = (req as any).user;
+
+      const [themes, categories] = await Promise.all([
+        this.themeMarketplaceService.findAll({
+          category,
+          search,
+          status: 'approved',
+          sortBy: (sortBy as any) || 'downloads',
+          page: page ? parseInt(page) : 1,
+          limit: 12,
+        }),
+        this.themeMarketplaceService.getCategories(),
+      ]);
+
+      const html = await this.themeRenderer.render('marketplace-themes', {
+        title: 'Browse Themes',
+        themes: themes.themes,
+        pagination: themes.pagination,
+        categories,
+        filters: { category, search, sortBy },
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering themes marketplace:', error);
+      res.status(500).send('Error loading themes');
+    }
+  }
+
+  /**
+   * Single theme detail page
+   * GET /marketplace/themes/:slug
+   */
+  @Get('marketplace/themes/:slug')
+  @UseGuards(OptionalJwtAuthGuard)
+  async marketplaceThemeDetail(
+    @Req() req: Request,
+    @Param('slug') slug: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const user = (req as any).user;
+      const theme = await this.themeMarketplaceService.findBySlug(slug);
+
+      const html = await this.themeRenderer.render('marketplace-theme-detail', {
+        title: theme.name,
+        theme,
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering theme detail:', error);
+      res.status(404).send('Theme not found');
+    }
+  }
+
+  /**
+   * Browse plugins
+   * GET /marketplace/plugins
+   */
+  @Get('marketplace/plugins')
+  @UseGuards(OptionalJwtAuthGuard)
+  async marketplacePlugins(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('category') category?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('page') page?: string,
+  ) {
+    try {
+      const user = (req as any).user;
+
+      const [plugins, categories] = await Promise.all([
+        this.pluginMarketplaceService.findAll({
+          category,
+          search,
+          status: 'approved',
+          sortBy: (sortBy as any) || 'downloads',
+          page: page ? parseInt(page) : 1,
+          limit: 12,
+        }),
+        this.pluginMarketplaceService.getCategories(),
+      ]);
+
+      const html = await this.themeRenderer.render('marketplace-plugins', {
+        title: 'Browse Plugins',
+        plugins: plugins.plugins,
+        pagination: plugins.pagination,
+        categories,
+        filters: { category, search, sortBy },
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering plugins marketplace:', error);
+      res.status(500).send('Error loading plugins');
+    }
+  }
+
+  /**
+   * Single plugin detail page
+   * GET /marketplace/plugins/:slug
+   */
+  @Get('marketplace/plugins/:slug')
+  @UseGuards(OptionalJwtAuthGuard)
+  async marketplacePluginDetail(
+    @Req() req: Request,
+    @Param('slug') slug: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const user = (req as any).user;
+      const plugin = await this.pluginMarketplaceService.findBySlug(slug);
+
+      const html = await this.themeRenderer.render('marketplace-plugin-detail', {
+        title: plugin.name,
+        plugin,
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering plugin detail:', error);
+      res.status(404).send('Plugin not found');
+    }
+  }
+
+  /**
+   * Developer requirements and guidelines page
+   * GET /marketplace/developer-guidelines
+   */
+  @Get('marketplace/developer-guidelines')
+  @UseGuards(OptionalJwtAuthGuard)
+  async developerGuidelines(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = (req as any).user;
+
+      const html = await this.themeRenderer.render('marketplace-guidelines', {
+        title: 'Developer Requirements & Guidelines',
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering developer guidelines:', error);
+      res.status(500).send('Error loading guidelines');
     }
   }
 
