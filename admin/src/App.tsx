@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import SetupWizard from './pages/SetupWizard';
 import Dashboard from './pages/Dashboard';
 import Posts from './pages/Posts';
 import PostEditor from './pages/PostEditor';
@@ -106,6 +107,7 @@ function App() {
       <BrowserRouter basename="/admin">
         <Routes>
           {/* ==================== PUBLIC ROUTES (No auth required) ==================== */}
+          <Route path="/setup" element={<SetupWizard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

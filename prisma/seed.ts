@@ -1,6 +1,15 @@
 /**
  * Database Seed Script
  * Creates initial data: admin user, sample content, settings, theme, and plugins
+ *
+ * PRODUCTION MODE:
+ * - Checks if setup is complete first
+ * - Skips admin creation if one already exists (use setup wizard instead)
+ * - Only seeds essential data like themes and plugins
+ *
+ * DEVELOPMENT MODE:
+ * - Requires ADMIN_PASSWORD in .env for local development
+ * - Creates admin user with specified credentials
  */
 
 import { PrismaClient, UserRole, PostStatus } from '@prisma/client';
@@ -50,59 +59,90 @@ function validatePasswordStrength(password: string): { valid: boolean; errors: s
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Validate ADMIN_PASSWORD environment variable
-  const adminPassword = process.env.ADMIN_PASSWORD;
-
-  if (!adminPassword) {
-    console.error('\n❌ SECURITY ERROR: ADMIN_PASSWORD environment variable is required!');
-    console.error('');
-    console.error('Please set a strong password in your .env file:');
-    console.error('  ADMIN_PASSWORD=YourSecurePassword123!');
-    console.error('');
-    console.error('Password requirements:');
-    console.error('  • Minimum 12 characters');
-    console.error('  • At least one uppercase letter (A-Z)');
-    console.error('  • At least one lowercase letter (a-z)');
-    console.error('  • At least one number (0-9)');
-    console.error('  • At least one special character (!@#$%^&*()_+-=[]{};\':"|,.<>/?`~)');
-    console.error('');
-    process.exit(1);
+  // Check if this is a production deployment (setup already completed)
+  let setupComplete = false;
+  try {
+    const status = await prisma.setupStatus.findFirst();
+    setupComplete = status?.setupComplete ?? false;
+  } catch {
+    // Table may not exist yet, that's fine
   }
 
-  const passwordValidation = validatePasswordStrength(adminPassword);
+  // Check if admin already exists
+  const existingAdmin = await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
 
-  if (!passwordValidation.valid) {
-    console.error('\n❌ SECURITY ERROR: ADMIN_PASSWORD does not meet security requirements!');
-    console.error('');
-    console.error('Issues found:');
-    passwordValidation.errors.forEach(error => {
-      console.error(`  • ${error}`);
-    });
-    console.error('');
-    console.error('Please update ADMIN_PASSWORD in your .env file to meet all requirements.');
-    console.error('');
-    process.exit(1);
+  // In production or if setup is complete, skip admin seeding
+  if (setupComplete) {
+    console.log('ℹ️  Setup already complete - skipping admin creation');
+    console.log('   Use the admin panel to manage users');
+  } else if (existingAdmin && !process.env.ADMIN_PASSWORD) {
+    // Admin exists but no password provided - skip password update
+    console.log('ℹ️  Admin user already exists - skipping admin creation');
+    console.log('   To reset password, use the "Forgot Password" feature or set ADMIN_PASSWORD in .env');
+  } else {
+    // Development mode or first-time setup with ADMIN_PASSWORD
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminPassword) {
+      console.log('\n⚠️  No ADMIN_PASSWORD set in .env');
+      console.log('');
+      console.log('For DEVELOPMENT: Set ADMIN_PASSWORD in your .env file:');
+      console.log('  ADMIN_PASSWORD=YourSecurePassword123!');
+      console.log('');
+      console.log('For PRODUCTION: Skip this and use the Setup Wizard at /setup');
+      console.log('');
+
+      if (!existingAdmin) {
+        console.log('❌ Cannot proceed: No admin exists and no ADMIN_PASSWORD provided');
+        console.log('   Either set ADMIN_PASSWORD or complete setup via the Setup Wizard');
+        process.exit(1);
+      }
+    } else {
+      const passwordValidation = validatePasswordStrength(adminPassword);
+
+      if (!passwordValidation.valid) {
+        console.error('\n❌ SECURITY ERROR: ADMIN_PASSWORD does not meet security requirements!');
+        console.error('');
+        console.error('Issues found:');
+        passwordValidation.errors.forEach(error => {
+          console.error(`  • ${error}`);
+        });
+        console.error('');
+        console.error('Please update ADMIN_PASSWORD in your .env file to meet all requirements.');
+        console.error('');
+        process.exit(1);
+      }
+
+      console.log('✅ Admin password validated - meets security requirements');
+
+      // Create or update admin user
+      const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
+      const admin = await prisma.user.upsert({
+        where: { email: process.env.ADMIN_EMAIL || 'admin@example.com' },
+        update: {
+          password: hashedAdminPassword,
+          role: UserRole.ADMIN,
+        },
+        create: {
+          email: process.env.ADMIN_EMAIL || 'admin@example.com',
+          name: 'Admin User',
+          password: hashedAdminPassword,
+          role: UserRole.ADMIN,
+          bio: 'System administrator',
+        },
+      });
+      console.log('✅ Admin user created/updated:', admin.email);
+    }
   }
 
-  console.log('✅ Admin password validated - meets security requirements');
-
-  // Create admin user
-  const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
-  const admin = await prisma.user.upsert({
-    where: { email: process.env.ADMIN_EMAIL || 'admin@example.com' },
-    update: {
-      password: hashedAdminPassword, // Update password if user exists
-      role: UserRole.ADMIN,
-    },
-    create: {
-      email: process.env.ADMIN_EMAIL || 'admin@example.com',
-      name: 'Admin User',
-      password: hashedAdminPassword,
-      role: UserRole.ADMIN,
-      bio: 'System administrator',
-    },
-  });
-  console.log('✅ Admin user created/updated:', admin.email);
+  // Get or create admin reference for sample content
+  const admin = await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
+  if (!admin) {
+    console.log('⚠️  No admin user found - skipping sample content creation');
+    console.log('   Complete setup via the Setup Wizard to create an admin');
+    return;
+  }
+  console.log('✅ Using admin user:', admin.email);
 
   // Create sample author
   const authorPassword = await bcrypt.hash('author123', 10);

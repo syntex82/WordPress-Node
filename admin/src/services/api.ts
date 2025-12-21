@@ -103,6 +103,54 @@ export const settingsApi = {
     api.post('/settings', { key, value, type, group }),
 };
 
+// System Configuration API (for production-ready settings)
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  password?: string;
+  fromEmail: string;
+  fromName: string;
+}
+
+export interface DomainConfig {
+  frontendUrl: string;
+  adminUrl: string;
+  supportEmail: string;
+  siteName: string;
+}
+
+export interface SetupStatus {
+  setupComplete: boolean;
+  adminCreated: boolean;
+  smtpConfigured: boolean;
+  domainConfigured: boolean;
+}
+
+export const systemConfigApi = {
+  // Email/SMTP configuration
+  getEmailConfig: () => api.get<SmtpConfig>('/system-config/email'),
+  saveEmailConfig: (config: SmtpConfig) => api.put('/system-config/email', config),
+  testEmail: (recipientEmail: string) => api.post('/system-config/email/test', { recipientEmail }),
+
+  // Domain configuration
+  getDomainConfig: () => api.get<DomainConfig>('/system-config/domain'),
+  saveDomainConfig: (config: DomainConfig) => api.put('/system-config/domain', config),
+
+  // Setup status
+  getSetupStatus: () => api.get<SetupStatus>('/system-config/setup-status'),
+};
+
+// Setup Wizard API (public, no auth required)
+export const setupWizardApi = {
+  getStatus: () => api.get<{ setupRequired: boolean; status: SetupStatus }>('/setup/status'),
+  createAdmin: (data: { email: string; name: string; password: string }) =>
+    api.post('/setup/admin', data),
+  configureSmtp: (config: SmtpConfig) => api.post('/setup/smtp', config),
+  complete: () => api.post('/setup/complete'),
+};
+
 // Themes API
 export const themesApi = {
   getAll: () => api.get('/themes'),

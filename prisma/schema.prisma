@@ -648,6 +648,34 @@ model Setting {
   @@index([group])
 }
 
+// SystemConfig model - encrypted system configuration stored in database
+// Used for SMTP settings, API keys, and other sensitive configuration
+model SystemConfig {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text  // Encrypted for sensitive fields
+  isEncrypted Boolean  @default(false)
+  group       String   // 'email', 'domain', 'security', etc.
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([group])
+}
+
+// SetupStatus model - tracks installation and setup progress
+model SetupStatus {
+  id            String   @id @default(uuid())
+  setupComplete Boolean  @default(false)
+  adminCreated  Boolean  @default(false)
+  smtpConfigured Boolean @default(false)
+  domainConfigured Boolean @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 // Session model - for admin session management
 model Session {
   id           String   @id @default(uuid())

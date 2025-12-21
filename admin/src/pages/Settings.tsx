@@ -1,18 +1,18 @@
 /**
  * Settings Page
- * Manage site settings, themes, and plugins
+ * Manage site settings, themes, plugins, email, and domain configuration
  * With comprehensive tooltips for user guidance
  */
 
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { settingsApi, themesApi, pluginsApi } from '../services/api';
+import { settingsApi, themesApi, pluginsApi, systemConfigApi, SmtpConfig, DomainConfig } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ThemeRequirements from '../components/ThemeRequirements';
 import ThemeShop from '../components/ThemeShop';
 import toast from 'react-hot-toast';
-import { FiCheck, FiRefreshCw, FiUpload, FiTrash2, FiInfo, FiShoppingBag, FiTool, FiPenTool, FiHelpCircle } from 'react-icons/fi';
+import { FiCheck, FiRefreshCw, FiUpload, FiTrash2, FiInfo, FiShoppingBag, FiTool, FiPenTool, FiHelpCircle, FiMail, FiGlobe, FiSend, FiEye, FiEyeOff } from 'react-icons/fi';
 import Tooltip from '../components/Tooltip';
 
 // Tooltip content for settings page
@@ -20,6 +20,8 @@ const SETTINGS_TOOLTIPS = {
   general: { title: 'General Settings', content: 'Configure your site name, description, and other basic settings.' },
   themes: { title: 'Themes', content: 'Install, activate, and customize themes to change your site\'s appearance.' },
   plugins: { title: 'Plugins', content: 'Extend your site\'s functionality with plugins.' },
+  email: { title: 'Email Settings', content: 'Configure SMTP settings for sending emails (password reset, notifications, etc.).' },
+  domain: { title: 'Domain Settings', content: 'Configure your site URLs and domain-related settings.' },
   uploadTheme: { title: 'Upload Theme', content: 'Upload a theme package (.zip) to install a new theme.' },
   activateTheme: { title: 'Activate Theme', content: 'Make this theme the active theme for your site.' },
   customizeTheme: { title: 'Customize Theme', content: 'Open the theme customizer to adjust colors, fonts, and layout.' },
@@ -37,7 +39,7 @@ export default function Settings() {
   const [plugins, setPlugins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'themes' | 'plugins'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'themes' | 'plugins' | 'email' | 'domain'>('general');
   const [showRequirements, setShowRequirements] = useState(false);
   const [showThemeShop, setShowThemeShop] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; themeId: string | null; themeName: string | null }>({
@@ -59,16 +61,42 @@ export default function Settings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pluginFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Email settings state
+  const [emailConfig, setEmailConfig] = useState<SmtpConfig>({
+    host: '',
+    port: 587,
+    secure: false,
+    user: '',
+    password: '',
+    fromEmail: '',
+    fromName: '',
+  });
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailTesting, setEmailTesting] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Domain settings state
+  const [domainConfig, setDomainConfig] = useState<DomainConfig>({
+    frontendUrl: '',
+    adminUrl: '',
+    supportEmail: '',
+    siteName: '',
+  });
+  const [domainSaving, setDomainSaving] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const [themesRes, pluginsRes, settingsRes] = await Promise.all([
+      const [themesRes, pluginsRes, settingsRes, emailRes, domainRes] = await Promise.all([
         themesApi.getAll(),
         pluginsApi.getAll(),
         settingsApi.getAll(),
+        systemConfigApi.getEmailConfig().catch(() => ({ data: null })),
+        systemConfigApi.getDomainConfig().catch(() => ({ data: null })),
       ]);
       setThemes(themesRes.data);
       setPlugins(pluginsRes.data);
@@ -81,6 +109,29 @@ export default function Settings() {
         siteName: siteName?.value || '',
         siteDescription: siteDesc?.value || '',
       });
+
+      // Load email config
+      if (emailRes.data) {
+        setEmailConfig({
+          host: emailRes.data.host || '',
+          port: emailRes.data.port || 587,
+          secure: emailRes.data.secure || false,
+          user: emailRes.data.user || '',
+          password: '', // Password is masked, don't show it
+          fromEmail: emailRes.data.fromEmail || '',
+          fromName: emailRes.data.fromName || '',
+        });
+      }
+
+      // Load domain config
+      if (domainRes.data) {
+        setDomainConfig({
+          frontendUrl: domainRes.data.frontendUrl || '',
+          adminUrl: domainRes.data.adminUrl || '',
+          supportEmail: domainRes.data.supportEmail || '',
+          siteName: domainRes.data.siteName || '',
+        });
+      }
     } catch (error) {
       toast.error('Failed to load settings');
     } finally {
@@ -97,6 +148,48 @@ export default function Settings() {
       toast.success('Settings saved successfully');
     } catch (error) {
       toast.error('Failed to save settings');
+    }
+  };
+
+  // Email settings handlers
+  const handleSaveEmailConfig = async () => {
+    setEmailSaving(true);
+    try {
+      await systemConfigApi.saveEmailConfig(emailConfig);
+      toast.success('Email settings saved successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save email settings');
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    if (!testEmailAddress) {
+      toast.error('Please enter a test email address');
+      return;
+    }
+    setEmailTesting(true);
+    try {
+      await systemConfigApi.testEmail(testEmailAddress);
+      toast.success(`Test email sent to ${testEmailAddress}`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to send test email');
+    } finally {
+      setEmailTesting(false);
+    }
+  };
+
+  // Domain settings handlers
+  const handleSaveDomainConfig = async () => {
+    setDomainSaving(true);
+    try {
+      await systemConfigApi.saveDomainConfig(domainConfig);
+      toast.success('Domain settings saved successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save domain settings');
+    } finally {
+      setDomainSaving(false);
     }
   };
 
@@ -242,21 +335,24 @@ export default function Settings() {
 
       {/* Tabs */}
       <div className="mb-6 border-b border-slate-700/50">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto">
           {[
-            { id: 'general', label: 'General', tooltip: SETTINGS_TOOLTIPS.general },
-            { id: 'themes', label: 'Themes', tooltip: SETTINGS_TOOLTIPS.themes },
-            { id: 'plugins', label: 'Plugins', tooltip: SETTINGS_TOOLTIPS.plugins },
+            { id: 'general', label: 'General', icon: null, tooltip: SETTINGS_TOOLTIPS.general },
+            { id: 'email', label: 'Email', icon: FiMail, tooltip: SETTINGS_TOOLTIPS.email },
+            { id: 'domain', label: 'Domain', icon: FiGlobe, tooltip: SETTINGS_TOOLTIPS.domain },
+            { id: 'themes', label: 'Themes', icon: null, tooltip: SETTINGS_TOOLTIPS.themes },
+            { id: 'plugins', label: 'Plugins', icon: null, tooltip: SETTINGS_TOOLTIPS.plugins },
           ].map((tab) => (
             <Tooltip key={tab.id} title={tab.tooltip.title} content={tab.tooltip.content} position="bottom">
               <button
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
                     : 'border-transparent text-slate-400 hover:text-white hover:border-slate-500'
                 }`}
               >
+                {tab.icon && <tab.icon size={16} />}
                 {tab.label}
               </button>
             </Tooltip>
@@ -594,6 +690,240 @@ export default function Settings() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Email Settings Tab */}
+      {activeTab === 'email' && (
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <FiMail className="text-blue-400" size={24} />
+            <h2 className="text-xl font-bold text-white">Email (SMTP) Settings</h2>
+          </div>
+          <p className="text-slate-400 mb-6">
+            Configure your SMTP server to enable email functionality (password reset, notifications, etc.).
+          </p>
+
+          <div className="space-y-6 max-w-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">SMTP Host</label>
+                <input
+                  type="text"
+                  value={emailConfig.host}
+                  onChange={(e) => setEmailConfig({ ...emailConfig, host: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="smtp.gmail.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">SMTP Port</label>
+                <input
+                  type="number"
+                  value={emailConfig.port}
+                  onChange={(e) => setEmailConfig({ ...emailConfig, port: parseInt(e.target.value) || 587 })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="587"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="smtpSecure"
+                checked={emailConfig.secure}
+                onChange={(e) => setEmailConfig({ ...emailConfig, secure: e.target.checked })}
+                className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500/50"
+              />
+              <label htmlFor="smtpSecure" className="text-sm text-slate-400">
+                Use SSL/TLS (check for port 465, uncheck for port 587 with STARTTLS)
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">SMTP Username</label>
+                <input
+                  type="text"
+                  value={emailConfig.user}
+                  onChange={(e) => setEmailConfig({ ...emailConfig, user: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="your-email@gmail.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">SMTP Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={emailConfig.password}
+                    onChange={(e) => setEmailConfig({ ...emailConfig, password: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Leave blank to keep existing password</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">From Email</label>
+                <input
+                  type="email"
+                  value={emailConfig.fromEmail}
+                  onChange={(e) => setEmailConfig({ ...emailConfig, fromEmail: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="noreply@yoursite.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">From Name</label>
+                <input
+                  type="text"
+                  value={emailConfig.fromName}
+                  onChange={(e) => setEmailConfig({ ...emailConfig, fromName: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="My Site"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-700/50">
+              <button
+                onClick={handleSaveEmailConfig}
+                disabled={emailSaving}
+                className="flex items-center px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+              >
+                {emailSaving ? (
+                  <>
+                    <FiRefreshCw className="mr-2 animate-spin" size={18} />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FiCheck className="mr-2" size={18} />
+                    Save Email Settings
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="email"
+                  value={testEmailAddress}
+                  onChange={(e) => setTestEmailAddress(e.target.value)}
+                  className="px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="test@example.com"
+                />
+                <button
+                  onClick={handleTestEmail}
+                  disabled={emailTesting || !testEmailAddress}
+                  className="flex items-center px-4 py-2.5 border border-emerald-500/50 text-emerald-400 rounded-lg hover:bg-emerald-500/10 transition-all disabled:opacity-50"
+                >
+                  {emailTesting ? (
+                    <>
+                      <FiRefreshCw className="mr-2 animate-spin" size={18} />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <FiSend className="mr-2" size={18} />
+                      Send Test Email
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Domain Settings Tab */}
+      {activeTab === 'domain' && (
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <FiGlobe className="text-purple-400" size={24} />
+            <h2 className="text-xl font-bold text-white">Domain Settings</h2>
+          </div>
+          <p className="text-slate-400 mb-6">
+            Configure your site URLs and domain-related settings. These are used in emails and other system communications.
+          </p>
+
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-2">Frontend URL</label>
+              <input
+                type="url"
+                value={domainConfig.frontendUrl}
+                onChange={(e) => setDomainConfig({ ...domainConfig, frontendUrl: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                placeholder="https://yoursite.com"
+              />
+              <p className="text-xs text-slate-500 mt-1">The public URL of your website (used in password reset links, etc.)</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-2">Admin Panel URL</label>
+              <input
+                type="url"
+                value={domainConfig.adminUrl}
+                onChange={(e) => setDomainConfig({ ...domainConfig, adminUrl: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                placeholder="https://yoursite.com/admin"
+              />
+              <p className="text-xs text-slate-500 mt-1">The URL of your admin panel</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">Site Name</label>
+                <input
+                  type="text"
+                  value={domainConfig.siteName}
+                  onChange={(e) => setDomainConfig({ ...domainConfig, siteName: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="My Awesome Site"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">Support Email</label>
+                <input
+                  type="email"
+                  value={domainConfig.supportEmail}
+                  onChange={(e) => setDomainConfig({ ...domainConfig, supportEmail: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  placeholder="support@yoursite.com"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleSaveDomainConfig}
+              disabled={domainSaving}
+              className="flex items-center px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:from-purple-500 hover:to-purple-400 shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50"
+            >
+              {domainSaving ? (
+                <>
+                  <FiRefreshCw className="mr-2 animate-spin" size={18} />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <FiCheck className="mr-2" size={18} />
+                  Save Domain Settings
+                </>
+              )}
+            </button>
           </div>
         </div>
       )}

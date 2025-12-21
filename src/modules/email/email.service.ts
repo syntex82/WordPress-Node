@@ -1,14 +1,16 @@
 /**
  * Email Service
  * Handles sending emails via SMTP/Nodemailer
+ * Uses database configuration with .env fallback for development
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import * as Handlebars from 'handlebars';
 import { PrismaService } from '../../database/prisma.service';
 import { EmailStatus } from '@prisma/client';
+import { SystemConfigService, SmtpConfig } from '../settings/system-config.service';
 
 export interface EmailOptions {
   to: string;
@@ -31,42 +33,67 @@ export interface SendResult {
 }
 
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
-  private defaultFrom: string;
-  private defaultFromName: string;
+  private transporter: nodemailer.Transporter | null = null;
+  private defaultFrom: string = '';
+  private defaultFromName: string = 'WordPress Node CMS';
+  private smtpConfig: SmtpConfig | null = null;
 
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
-  ) {
-    this.initializeTransporter();
+    private systemConfig: SystemConfigService,
+  ) {}
+
+  async onModuleInit() {
+    await this.initializeTransporter();
   }
 
-  private initializeTransporter() {
-    const host = this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com');
-    const port = this.configService.get<number>('SMTP_PORT', 587);
-    const secure = this.configService.get<boolean>('SMTP_SECURE', false);
-    const user = this.configService.get<string>('SMTP_USER', '');
-    const pass = this.configService.get<string>('SMTP_PASS', '');
+  /**
+   * Initialize or reinitialize the SMTP transporter
+   */
+  async initializeTransporter(): Promise<void> {
+    try {
+      // Try to get config from database first
+      this.smtpConfig = await this.systemConfig.getSmtpConfig();
+    } catch {
+      // Database not ready yet, use env config
+      this.smtpConfig = {
+        host: this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com'),
+        port: parseInt(this.configService.get<string>('SMTP_PORT', '587'), 10),
+        secure: this.configService.get<string>('SMTP_SECURE', 'false') === 'true',
+        user: this.configService.get<string>('SMTP_USER', ''),
+        pass: this.configService.get<string>('SMTP_PASS', ''),
+        fromEmail: this.configService.get<string>('SMTP_FROM', ''),
+        fromName: this.configService.get<string>('SMTP_FROM_NAME', 'WordPress Node CMS'),
+      };
+    }
 
-    this.defaultFrom = this.configService.get<string>('SMTP_FROM', user);
-    this.defaultFromName = this.configService.get<string>('SMTP_FROM_NAME', 'WordPress Node CMS');
+    this.defaultFrom = this.smtpConfig.fromEmail || this.smtpConfig.user;
+    this.defaultFromName = this.smtpConfig.fromName;
 
-    if (!user || !pass) {
+    if (!this.smtpConfig.user || !this.smtpConfig.pass) {
       this.logger.warn('SMTP credentials not configured. Email sending will fail.');
+      this.transporter = null;
       return;
     }
 
     this.transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: { user, pass },
+      host: this.smtpConfig.host,
+      port: this.smtpConfig.port,
+      secure: this.smtpConfig.secure,
+      auth: { user: this.smtpConfig.user, pass: this.smtpConfig.pass },
     });
 
-    this.logger.log(`Email transporter initialized: ${host}:${port}`);
+    this.logger.log(`Email transporter initialized: ${this.smtpConfig.host}:${this.smtpConfig.port}`);
+  }
+
+  /**
+   * Reload SMTP configuration from database
+   */
+  async reloadConfig(): Promise<void> {
+    await this.initializeTransporter();
   }
 
   /**
@@ -147,6 +174,34 @@ export class EmailService {
   renderTemplate(template: string, variables: Record<string, any>): string {
     const compiled = Handlebars.compile(template);
     return compiled(variables);
+  }
+
+  /**
+   * Get site context for email templates (uses database config with env fallback)
+   */
+  async getSiteContext(): Promise<{
+    site: { name: string; logo?: string; address?: string };
+    year: number;
+    loginUrl: string;
+    supportEmail: string;
+    helpUrl: string;
+    frontendUrl: string;
+    adminUrl: string;
+  }> {
+    const domainConfig = await this.systemConfig.getDomainConfig();
+    return {
+      site: {
+        name: domainConfig.siteName || 'WordPress Node CMS',
+        logo: undefined, // Can be extended to support logo from config
+        address: undefined, // Can be extended to support address from config
+      },
+      year: new Date().getFullYear(),
+      loginUrl: `${domainConfig.adminUrl}/login`,
+      supportEmail: domainConfig.supportEmail || 'support@example.com',
+      helpUrl: `${domainConfig.frontendUrl}/help`,
+      frontendUrl: domainConfig.frontendUrl,
+      adminUrl: domainConfig.adminUrl,
+    };
   }
 
   /**

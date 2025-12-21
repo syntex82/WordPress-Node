@@ -1562,6 +1562,150 @@ npm run dev
 
 ---
 
+## 🚀 Production Deployment
+
+This section covers deploying WordPress Node CMS to a production environment.
+
+<br />
+
+### 🧙 Setup Wizard (First-Time Installation)
+
+When deploying to production for the first time, WordPress Node CMS includes a **Setup Wizard** that guides you through initial configuration:
+
+1. **Access the Setup Wizard**: Navigate to `https://yourdomain.com/admin/setup`
+2. **Create Admin Account**: Set up your administrator account with a secure password
+3. **Configure Email (Optional)**: Set up SMTP settings for email delivery
+4. **Complete Setup**: Finalize installation and start using your CMS
+
+> 💡 **Note:** The Setup Wizard only runs on fresh installations. It automatically detects if setup has been completed.
+
+<br />
+
+### ⚙️ Admin Settings Panel
+
+After setup, administrators can configure system settings through the admin panel:
+
+| Setting | Location | Description |
+|---------|----------|-------------|
+| **Email Settings** | Settings → Email | Configure SMTP server, credentials, and test email delivery |
+| **Domain Settings** | Settings → Domain | Set frontend URL, admin URL, site name, and support email |
+| **General Settings** | Settings → General | Theme selection, site title, and basic configuration |
+
+> 🔒 **Security:** All sensitive settings (like SMTP passwords) are encrypted with AES-256-GCM before storage in the database.
+
+<br />
+
+### 🔐 Production Environment Variables
+
+For production deployments, these environment variables are **required**:
+
+```env
+# Required for production
+NODE_ENV=production
+DATABASE_URL="postgresql://user:password@host:5432/database?schema=public"
+
+# Security - MUST use secure values (generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+JWT_SECRET=<secure-random-64-char-string>
+ENCRYPTION_KEY=<secure-random-32-char-string>
+SESSION_SECRET=<secure-random-64-char-string>
+
+# Optional - Can be configured via admin panel instead
+SMTP_HOST=smtp.provider.com
+SMTP_PORT=587
+SMTP_USER=your-email@domain.com
+SMTP_PASS=your-smtp-password
+FRONTEND_URL=https://yourdomain.com
+ADMIN_URL=https://yourdomain.com/admin
+```
+
+| Variable | Required | Description |
+|----------|:--------:|-------------|
+| `NODE_ENV` | ✅ | Set to `production` for production deployments |
+| `DATABASE_URL` | ✅ | PostgreSQL connection string |
+| `JWT_SECRET` | ✅ | 64+ character random string for JWT signing |
+| `ENCRYPTION_KEY` | ✅ | 32 character key for encrypting sensitive database fields |
+| `SESSION_SECRET` | ✅ | 64+ character random string for session encryption |
+
+> ⚠️ **Warning:** The application will refuse to start in production mode without proper security variables configured.
+
+<br />
+
+### 📋 Production Checklist
+
+Before going live, ensure you've completed these steps:
+
+- [ ] Set `NODE_ENV=production`
+- [ ] Configure secure `JWT_SECRET`, `ENCRYPTION_KEY`, and `SESSION_SECRET`
+- [ ] Run database migrations: `npx prisma migrate deploy`
+- [ ] Build the admin panel: `cd admin && npm run build`
+- [ ] Build the backend: `npm run build`
+- [ ] Configure SMTP (via `.env` or admin panel)
+- [ ] Set up SSL/HTTPS (via reverse proxy like Nginx)
+- [ ] Configure CORS origins if needed
+- [ ] Set up Redis for caching and session storage (recommended)
+- [ ] Configure backup strategy for database and uploads
+
+<br />
+
+### 🐳 Docker Deployment
+
+```bash
+# Clone and configure
+git clone https://github.com/syntex82/WordPress-Node.git
+cd WordPress-Node
+cp .env.example .env
+# Edit .env with production values
+
+# Build and run with Docker Compose
+docker-compose up -d --build
+
+# Run database migrations
+docker-compose exec app npx prisma migrate deploy
+
+# Access at http://localhost:3000
+```
+
+<br />
+
+### ☁️ Cloud Platform Deployment
+
+<details>
+<summary><strong>📦 Railway</strong></summary>
+
+1. Connect your GitHub repository
+2. Add environment variables in Railway dashboard
+3. Railway auto-detects and builds the Node.js app
+4. Add a PostgreSQL database from Railway's marketplace
+5. Set `DATABASE_URL` from Railway's provided connection string
+
+</details>
+
+<details>
+<summary><strong>📦 Render</strong></summary>
+
+1. Create a new Web Service from your GitHub repo
+2. Set build command: `npm install && cd admin && npm install && npm run build && cd .. && npm run build`
+3. Set start command: `npm run start:prod`
+4. Add environment variables in Render dashboard
+5. Add a PostgreSQL database from Render's marketplace
+
+</details>
+
+<details>
+<summary><strong>📦 DigitalOcean App Platform</strong></summary>
+
+1. Create a new App from GitHub repository
+2. Configure build and run commands
+3. Add a managed PostgreSQL database
+4. Configure environment variables
+5. Set up custom domain and SSL
+
+</details>
+
+<br />
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! Here's how you can help:

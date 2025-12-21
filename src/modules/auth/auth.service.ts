@@ -327,10 +327,10 @@ export class AuthService {
       },
     });
 
-    // Build reset URL
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
-    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
-    const supportUrl = this.configService.get<string>('SUPPORT_URL', `${frontendUrl}/contact`);
+    // Build reset URL using dynamic site context from database
+    const siteContext = await this.emailService.getSiteContext();
+    const resetUrl = `${siteContext.adminUrl}/reset-password?token=${resetToken}`;
+    const supportUrl = `mailto:${siteContext.supportEmail}`;
 
     // Get email template
     const emailHtml = getPasswordResetTemplate({

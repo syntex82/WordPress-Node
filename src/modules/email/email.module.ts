@@ -6,6 +6,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../../database/prisma.module';
+import { SettingsModule } from '../settings/settings.module';
 import { EmailService } from './email.service';
 import { EmailTemplatesService } from './email-templates.service';
 import { EmailLogsService } from './email-logs.service';
@@ -14,7 +15,7 @@ import { EmailTemplatesSeederService } from './email-templates-seeder.service';
 import { EmailController } from './email.controller';
 
 @Module({
-  imports: [ConfigModule, PrismaModule],
+  imports: [ConfigModule, PrismaModule, SettingsModule],
   controllers: [EmailController],
   providers: [
     EmailService,

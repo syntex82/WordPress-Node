@@ -15,8 +15,73 @@ import * as compression from 'compression';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
+/**
+ * Validate required environment variables
+ * Returns warnings for missing optional variables
+ */
+function validateEnvironment(logger: Logger): void {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  // Required in all environments
+  const requiredVars = ['DATABASE_URL'];
+  const missingRequired: string[] = [];
+
+  for (const envVar of requiredVars) {
+    if (!process.env[envVar]) {
+      missingRequired.push(envVar);
+    }
+  }
+
+  if (missingRequired.length > 0) {
+    logger.error(`Missing required environment variables: ${missingRequired.join(', ')}`);
+    logger.error('Please configure these variables in your .env file or environment');
+    process.exit(1);
+  }
+
+  // Required in production
+  if (isProduction) {
+    const productionRequired = ['JWT_SECRET', 'ENCRYPTION_KEY', 'SESSION_SECRET'];
+    const missingProduction: string[] = [];
+
+    for (const envVar of productionRequired) {
+      if (!process.env[envVar] || process.env[envVar] === 'default-secret' ||
+          process.env[envVar] === 'default-secret-change-in-production') {
+        missingProduction.push(envVar);
+      }
+    }
+
+    if (missingProduction.length > 0) {
+      logger.error(`Production requires secure values for: ${missingProduction.join(', ')}`);
+      logger.error('Generate secure secrets with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+      process.exit(1);
+    }
+  }
+
+  // Warnings for optional but recommended variables
+  const recommendedVars = [
+    { name: 'JWT_SECRET', default: 'your-super-secret-jwt-key' },
+    { name: 'ENCRYPTION_KEY', default: 'default-encryption-key-32chars!!' },
+    { name: 'SESSION_SECRET', default: 'default-secret-change-in-production' },
+  ];
+
+  for (const { name, default: defaultVal } of recommendedVars) {
+    if (!process.env[name] || process.env[name] === defaultVal) {
+      logger.warn(`⚠️ ${name} is using default value - configure a secure value for production`);
+    }
+  }
+
+  // SMTP configuration check
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+    logger.warn('⚠️ SMTP not configured in .env - email features will be limited until configured via admin panel');
+  }
+}
+
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
+
+  // Validate environment before starting
+  validateEnvironment(logger);
+
   const isProduction = process.env.NODE_ENV === 'production';
   const instanceId = process.env.INSTANCE_ID || `instance-${process.pid}`;
 
