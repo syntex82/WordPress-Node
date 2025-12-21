@@ -86,6 +86,7 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 |---------|-------------|
 | **Role-Based Access Control** | Four granular user roles: **Admin**, **Editor**, **Author**, **Viewer** |
 | **JWT Authentication** | Secure stateless API authentication with JSON Web Tokens |
+| **Password Reset** | Secure email-based password reset with expiring tokens (1 hour) |
 | **User Profiles** | Rich user profiles with avatars, bios, social links, and activity tracking |
 | **Direct Messaging** | Real-time private messaging system between users |
 | **Session Management** | Secure session handling with automatic expiration |
@@ -1345,6 +1346,75 @@ cd admin && npx tsc --noEmit  # Type check admin panel
 
 ---
 
+## 🚀 Quick Start Commands
+
+Copy and paste these commands to get up and running quickly:
+
+### 🪟 Windows (PowerShell as Administrator)
+
+```powershell
+# Clone and setup (one-liner)
+git clone https://github.com/syntex82/WordPress-Node.git; cd WordPress-Node; powershell -ExecutionPolicy Bypass -File .\scripts\windows-setup.ps1
+
+# After setup completes, start the app
+npm run dev
+```
+
+### 🐧 Ubuntu/Linux
+
+```bash
+# Clone and setup (one-liner)
+git clone https://github.com/syntex82/WordPress-Node.git && cd WordPress-Node && chmod +x scripts/ubuntu-setup.sh && sudo bash scripts/ubuntu-setup.sh
+
+# After setup completes, start the app
+cd ~/wordpress-node && npm run dev
+```
+
+### 🔧 Manual Quick Setup (Any OS)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/syntex82/WordPress-Node.git
+cd WordPress-Node
+
+# 2. Copy environment file
+cp .env.example .env
+# Edit .env with your DATABASE_URL and secrets
+
+# 3. Install dependencies
+npm install
+cd admin && npm install && cd ..
+
+# 4. Setup database (generate client + push schema + seed data)
+npm run db:setup
+
+# 5. Build the admin panel
+cd admin && npm run build && cd ..
+
+# 6. Start the application
+npm run dev
+```
+
+### 🔑 Default Login Credentials
+
+```
+📧 Email:    admin@starter.dev
+🔑 Password: Admin123!
+```
+
+### 📍 Access URLs
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | http://localhost:3000 |
+| **Admin Panel** | http://localhost:3000/admin |
+| **API** | http://localhost:3000/api |
+| **Health Check** | http://localhost:3000/health |
+
+<br />
+
+---
+
 ## 🔧 Troubleshooting
 
 Having issues? Check these common problems and solutions:
@@ -1441,6 +1511,24 @@ Having issues? Check these common problems and solutions:
 | **Check spam folder** | Emails may be in recipient's spam/junk folder |
 
 <br />
+
+### ❌ Setup Script Issues
+
+**Problem:** The Windows or Ubuntu setup script fails or gets stuck.
+
+**Solutions:**
+
+| Issue | Solution |
+|-------|----------|
+| **Script permission denied (Linux)** | Run: `chmod +x scripts/ubuntu-setup.sh && sudo bash scripts/ubuntu-setup.sh` |
+| **PowerShell execution policy (Windows)** | Run as Admin: `powershell -ExecutionPolicy Bypass -File .\scripts\windows-setup.ps1` |
+| **PostgreSQL won't start** | Check if service is running: `sudo service postgresql status` (Linux) or `Get-Service postgresql*` (Windows) |
+| **PostgreSQL password rejected** | Default superuser password is `postgres`. Reset with: `sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'newpassword';"` |
+| **Redis connection failed** | Redis is optional. The app works without it. Start Redis: `sudo service redis-server start` (Linux) or `redis-server` (Windows) |
+| **npm install fails** | Clear npm cache: `npm cache clean --force` then retry `npm install` |
+| **Prisma generate fails** | Ensure DATABASE_URL is correct in `.env`, then run `npx prisma generate` |
+| **Database seed fails** | Check database connection: `npx prisma db push` first, then `npx prisma db seed` |
+| **Port 3000 already in use** | Kill the process: `npx kill-port 3000` or change PORT in `.env` |
 
 <br />
 
