@@ -7,7 +7,8 @@ import { useState, useEffect } from 'react';
 import {
   FiDownload, FiRefreshCw, FiCheck, FiX, FiAlertTriangle,
   FiLoader, FiArrowUp, FiClock, FiRotateCcw, FiCheckCircle,
-  FiAlertCircle, FiServer, FiPackage, FiDatabase, FiGitBranch
+  FiAlertCircle, FiServer, FiPackage, FiDatabase, FiGitBranch,
+  FiGitPullRequest, FiTerminal
 } from 'react-icons/fi';
 import { updatesApi, UpdateStatus, UpdateHistoryItem } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,6 +19,10 @@ export default function Updates() {
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [pullingLatest, setPullingLatest] = useState(false);
+  const [pullLogs, setPullLogs] = useState<string[]>([]);
+  const [showPullModal, setShowPullModal] = useState(false);
+  const [showLogsModal, setShowLogsModal] = useState(false);
   const [compatibility, setCompatibility] = useState<any>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -94,6 +99,25 @@ export default function Updates() {
     }
   };
 
+  const handlePullLatest = async () => {
+    setShowPullModal(false);
+    setPullingLatest(true);
+    setPullLogs(['Starting update...']);
+
+    try {
+      const res = await updatesApi.pullLatest();
+      setPullLogs(res.data.logs);
+      setShowLogsModal(true);
+      await fetchStatus();
+      await fetchHistory();
+    } catch (err: any) {
+      const errorLogs = err.response?.data?.logs || [`Error: ${err.response?.data?.message || err.message}`];
+      setPullLogs(errorLogs);
+      setShowLogsModal(true);
+    }
+    setPullingLatest(false);
+  };
+
   const getStatusIcon = (s: string) => {
     switch (s) {
       case 'COMPLETED': return <FiCheckCircle className="text-emerald-400" />;
@@ -135,14 +159,25 @@ export default function Updates() {
           </h1>
           <p className="text-slate-400 mt-1">Manage CMS updates and version control</p>
         </div>
-        <button
-          onClick={handleCheckUpdates}
-          disabled={checking}
-          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
-        >
-          {checking ? <FiLoader className="animate-spin" /> : <FiRefreshCw />}
-          Check for Updates
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowPullModal(true)}
+            disabled={pullingLatest || updating || status?.updateInProgress}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+            title="Pull latest code from GitHub main branch"
+          >
+            {pullingLatest ? <FiLoader className="animate-spin" /> : <FiGitPullRequest />}
+            Pull Latest
+          </button>
+          <button
+            onClick={handleCheckUpdates}
+            disabled={checking || pullingLatest}
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+          >
+            {checking ? <FiLoader className="animate-spin" /> : <FiRefreshCw />}
+            Check for Releases
+          </button>
+        </div>
       </div>
 
       {/* Current Version Card */}
@@ -177,7 +212,7 @@ export default function Updates() {
         </div>
 
         {/* Update Progress */}
-        {status?.updateInProgress && status.currentProgress && (
+        {(status?.updateInProgress || pullingLatest) && status?.currentProgress && (
           <div className="mt-6 p-4 bg-slate-900/50 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-slate-300">{status.currentProgress.message}</span>
@@ -185,14 +220,24 @@ export default function Updates() {
             </div>
             <div className="w-full bg-slate-700 rounded-full h-2">
               <div
-                className="bg-violet-500 h-2 rounded-full transition-all duration-300"
+                className={`h-2 rounded-full transition-all duration-300 ${pullingLatest ? 'bg-blue-500' : 'bg-violet-500'}`}
                 style={{ width: `${status.currentProgress.progress}%` }}
               />
             </div>
           </div>
         )}
 
-        {!status?.updateAvailable && !status?.updateInProgress && (
+        {/* Pulling Latest Indicator */}
+        {pullingLatest && !status?.currentProgress && (
+          <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <FiLoader className="animate-spin text-blue-400" size={20} />
+              <span className="text-blue-400">Pulling latest changes and rebuilding... This may take a few minutes.</span>
+            </div>
+          </div>
+        )}
+
+        {!status?.updateAvailable && !status?.updateInProgress && !pullingLatest && (
           <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center gap-2">
             <FiCheckCircle className="text-emerald-400" />
             <span className="text-emerald-400">You are running the latest version</span>
@@ -329,6 +374,117 @@ export default function Updates() {
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
               >
                 <FiArrowUp /> Apply Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pull Latest Confirmation Modal */}
+      {showPullModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <FiGitPullRequest className="text-blue-400" />
+                Pull Latest from GitHub
+              </h3>
+              <button onClick={() => setShowPullModal(false)} className="text-slate-400 hover:text-white">
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-2">
+                <FiAlertTriangle className="text-blue-400 mt-0.5" />
+                <div>
+                  <p className="text-blue-400 font-medium">Development Update</p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    This will pull the latest code from the main branch. Use this for quick bug fixes and development updates.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
+              <p className="text-slate-300 text-sm">This update will:</p>
+              <ul className="text-sm text-slate-400 mt-2 space-y-1">
+                <li className="flex items-center gap-2"><FiCheck className="text-emerald-400" /> Create a backup before updating</li>
+                <li className="flex items-center gap-2"><FiGitPullRequest className="text-emerald-400" /> Pull latest code from GitHub</li>
+                <li className="flex items-center gap-2"><FiPackage className="text-emerald-400" /> Install dependencies</li>
+                <li className="flex items-center gap-2"><FiPackage className="text-emerald-400" /> Rebuild admin panel & backend</li>
+                <li className="flex items-center gap-2"><FiDatabase className="text-emerald-400" /> Apply database migrations</li>
+              </ul>
+            </div>
+
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-4">
+              <p className="text-amber-400 text-sm flex items-center gap-2">
+                <FiAlertTriangle />
+                Server restart required after update completes
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowPullModal(false)}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePullLatest}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+              >
+                <FiGitPullRequest /> Pull & Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Logs Modal */}
+      {showLogsModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-2xl p-6 max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <FiTerminal className="text-blue-400" />
+                Update Log
+              </h3>
+              <button onClick={() => setShowLogsModal(false)} className="text-slate-400 hover:text-white">
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="bg-slate-900 rounded-lg p-4 font-mono text-sm overflow-auto flex-1">
+              {pullLogs.map((log, i) => (
+                <div
+                  key={i}
+                  className={`${
+                    log.startsWith('✓') ? 'text-emerald-400' :
+                    log.startsWith('✗') ? 'text-red-400' :
+                    log.includes('Warning') ? 'text-amber-400' :
+                    log.includes('═') || log.includes('Complete') ? 'text-green-400 font-bold' :
+                    'text-slate-300'
+                  }`}
+                >
+                  {log || '\u00A0'}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => setShowLogsModal(false)}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-2"
+              >
+                <FiRefreshCw /> Reload Page
               </button>
             </div>
           </div>

@@ -109,7 +109,7 @@ export class UpdatesController {
   async getVersionInfo() {
     const currentVersion = this.versionService.getCurrentVersion();
     const versionHistory = await this.versionService.getVersionHistory();
-    
+
     return {
       currentVersion,
       versionHistory,
@@ -117,6 +117,16 @@ export class UpdatesController {
       platform: process.platform,
       arch: process.arch,
     };
+  }
+
+  /**
+   * Pull latest changes from GitHub main branch
+   * This performs a git pull and rebuild for quick updates
+   * POST /api/updates/pull-latest
+   */
+  @Post('pull-latest')
+  async pullLatest(@Request() req: any) {
+    return this.updatesService.pullLatest(req.user?.id);
   }
 }
 

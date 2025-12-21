@@ -1675,4 +1675,13 @@ export const updatesApi = {
 
   // Rollback an update
   rollback: (updateHistoryId: string) => api.post(`/updates/rollback/${updateHistoryId}`),
+
+  // Pull latest from GitHub main branch (quick updates)
+  pullLatest: () => api.post<{
+    success: boolean;
+    message: string;
+    fromVersion: string;
+    toVersion: string;
+    logs: string[];
+  }>('/updates/pull-latest'),
 };

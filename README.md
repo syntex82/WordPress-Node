@@ -221,14 +221,14 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 
 | Feature | Description |
 |---------|-------------|
-| **Version Management** | Semantic versioning with automatic comparison against latest releases |
-| **Update Notifications** | Check for updates from GitHub releases with compatibility info |
+| **Pull Latest** | One-click update from GitHub main branch for quick fixes (Admin Panel → Updates → Pull Latest) |
+| **Check for Releases** | Check for official GitHub releases with compatibility info |
 | **One-Click Updates** | Download, extract, and apply updates with progress tracking |
 | **Pre-Update Backups** | Automatic backup creation before applying updates |
 | **Database Migrations** | Automatic Prisma migration execution during updates |
 | **Rollback Capability** | Revert to previous version if an update fails |
 | **Update History** | Track all update attempts with status, errors, and timestamps |
-| **Compatibility Checks** | Verify Node.js version and dependencies before updating |
+| **Update Logs** | Real-time logs showing git pull, npm install, build, and migration output |
 
 <br />
 
@@ -1546,6 +1546,7 @@ Authorization: Bearer <token>
 | `GET` | `/api/updates/compatibility/:version` | Check compatibility for a version |
 | `POST` | `/api/updates/download` | Download an update |
 | `POST` | `/api/updates/apply` | Apply downloaded update |
+| `POST` | `/api/updates/pull-latest` | Pull latest from GitHub main branch and rebuild |
 | `POST` | `/api/updates/rollback/:id` | Rollback to previous version |
 | `GET` | `/api/updates/version` | Get current version info |
 

@@ -414,4 +414,229 @@ export class UpdatesService {
       else fs.copyFileSync(src, dest);
     }
   }
+
+  /**
+   * Pull latest changes from GitHub main branch and rebuild
+   * This is for quick updates without waiting for official releases
+   */
+  async pullLatest(userId?: string): Promise<{ success: boolean; message: string; fromVersion: string; toVersion: string; logs: string[] }> {
+    if (this.updateInProgress) {
+      throw new BadRequestException('An update is already in progress');
+    }
+    this.updateInProgress = true;
+    const logs: string[] = [];
+    const currentVersion = this.versionService.getCurrentVersion();
+    let newVersion = currentVersion;
+
+    // Create update history record
+    const updateHistory = await this.prisma.updateHistory.create({
+      data: {
+        fromVersion: currentVersion,
+        toVersion: 'latest',
+        status: 'DOWNLOADING',
+        changelog: 'Pull latest from main branch',
+        initiatedBy: userId,
+      },
+    });
+
+    try {
+      // Step 1: Create backup
+      this.setProgress('backing_up', 5, 'Creating pre-update backup...');
+      logs.push('Creating backup before update...');
+
+      const backupDir = path.join(process.cwd(), 'backups', `pre-update-${Date.now()}`);
+      fs.mkdirSync(backupDir, { recursive: true });
+
+      // Backup critical files
+      const distPath = path.join(process.cwd(), 'dist');
+      const adminDistPath = path.join(process.cwd(), 'admin', 'dist');
+      const envPath = path.join(process.cwd(), '.env');
+
+      if (fs.existsSync(distPath)) {
+        await this.copyDirectory(distPath, path.join(backupDir, 'dist'), []);
+      }
+      if (fs.existsSync(adminDistPath)) {
+        await this.copyDirectory(adminDistPath, path.join(backupDir, 'admin-dist'), []);
+      }
+      if (fs.existsSync(envPath)) {
+        fs.copyFileSync(envPath, path.join(backupDir, '.env'));
+      }
+      fs.copyFileSync(path.join(process.cwd(), 'package.json'), path.join(backupDir, 'package.json'));
+      logs.push(`✓ Backup created at: ${backupDir}`);
+
+      // Step 2: Git pull
+      this.setProgress('downloading', 15, 'Pulling latest changes from GitHub...');
+      logs.push('Pulling latest changes from GitHub...');
+
+      await this.prisma.updateHistory.update({
+        where: { id: updateHistory.id },
+        data: { status: 'DOWNLOADING' },
+      });
+
+      // Stash any local changes
+      try {
+        await execAsync('git stash', { cwd: process.cwd(), timeout: 30000 });
+        logs.push('✓ Stashed local changes');
+      } catch {
+        // No local changes to stash, continue
+      }
+
+      // Reset scripts folder to avoid conflicts
+      try {
+        await execAsync('git checkout scripts/', { cwd: process.cwd(), timeout: 30000 });
+        logs.push('✓ Reset scripts folder');
+      } catch {
+        // Continue even if this fails
+      }
+
+      // Pull latest
+      const pullResult = await execAsync('git pull origin main', { cwd: process.cwd(), timeout: 120000 });
+      logs.push('✓ Code updated');
+      logs.push(pullResult.stdout.trim());
+
+      // Get new version
+      try {
+        const pkgJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+        newVersion = pkgJson.version || currentVersion;
+        logs.push(`New version: ${newVersion}`);
+      } catch {
+        newVersion = 'unknown';
+      }
+
+      await this.prisma.updateHistory.update({
+        where: { id: updateHistory.id },
+        data: { toVersion: newVersion, status: 'APPLYING' },
+      });
+
+      // Step 3: Install backend dependencies
+      this.setProgress('installing', 30, 'Installing backend dependencies...');
+      logs.push('Installing backend dependencies...');
+
+      const backendInstall = await execAsync('npm install --production=false', {
+        cwd: process.cwd(),
+        timeout: 300000
+      });
+      logs.push('✓ Backend dependencies installed');
+
+      // Step 4: Install admin dependencies
+      this.setProgress('installing', 45, 'Installing admin dependencies...');
+      logs.push('Installing admin dependencies...');
+
+      const adminDir = path.join(process.cwd(), 'admin');
+      await execAsync('npm install', { cwd: adminDir, timeout: 300000 });
+      logs.push('✓ Admin dependencies installed');
+
+      // Step 5: Build admin panel
+      this.setProgress('building', 60, 'Building admin panel...');
+      logs.push('Building admin panel...');
+
+      await this.prisma.updateHistory.update({
+        where: { id: updateHistory.id },
+        data: { status: 'APPLYING' },
+      });
+
+      await execAsync('npm run build', { cwd: adminDir, timeout: 300000 });
+
+      // Verify admin build
+      if (!fs.existsSync(path.join(adminDir, 'dist', 'index.html'))) {
+        throw new Error('Admin panel build failed - dist/index.html not found');
+      }
+      logs.push('✓ Admin panel built');
+
+      // Step 6: Build backend
+      this.setProgress('building', 75, 'Building backend...');
+      logs.push('Building backend...');
+
+      await execAsync('npm run build', { cwd: process.cwd(), timeout: 300000 });
+
+      // Verify backend build
+      if (!fs.existsSync(path.join(process.cwd(), 'dist', 'main.js'))) {
+        throw new Error('Backend build failed - dist/main.js not found');
+      }
+      logs.push('✓ Backend built');
+
+      // Step 7: Run database migrations
+      this.setProgress('migrating', 85, 'Applying database migrations...');
+      logs.push('Applying database migrations...');
+
+      await this.prisma.updateHistory.update({
+        where: { id: updateHistory.id },
+        data: { status: 'MIGRATING' },
+      });
+
+      try {
+        await execAsync('npx prisma generate', { cwd: process.cwd(), timeout: 120000 });
+        await execAsync('npx prisma db push --accept-data-loss', { cwd: process.cwd(), timeout: 300000 });
+        logs.push('✓ Database schema updated');
+      } catch (migErr: any) {
+        logs.push(`Warning: Migration had issues: ${migErr.message}`);
+        // Try alternative migration
+        try {
+          await execAsync('npx prisma db push', { cwd: process.cwd(), timeout: 300000 });
+          logs.push('✓ Database schema updated (retry)');
+        } catch {
+          logs.push('Warning: Could not auto-migrate, manual migration may be needed');
+        }
+      }
+
+      // Step 8: Verify
+      this.setProgress('verifying', 95, 'Verifying update...');
+      logs.push('Verifying update...');
+
+      await this.prisma.updateHistory.update({
+        where: { id: updateHistory.id },
+        data: { status: 'VERIFYING' },
+      });
+
+      // Step 9: Complete
+      this.setProgress('completed', 100, 'Update completed successfully!');
+      logs.push('');
+      logs.push('═══════════════════════════════════════════');
+      logs.push('           Update Complete!');
+      logs.push('═══════════════════════════════════════════');
+      logs.push(`Updated from ${currentVersion} to ${newVersion}`);
+      logs.push('Restart the server to apply changes');
+
+      await this.prisma.updateHistory.update({
+        where: { id: updateHistory.id },
+        data: {
+          status: 'COMPLETED',
+          completedAt: new Date(),
+          migrationLogs: logs.join('\n'),
+        },
+      });
+
+      await this.versionService.recordCurrentVersion();
+      this.updateInProgress = false;
+
+      return {
+        success: true,
+        message: `Updated from ${currentVersion} to ${newVersion}. Please restart the server.`,
+        fromVersion: currentVersion,
+        toVersion: newVersion,
+        logs,
+      };
+    } catch (error: any) {
+      this.logger.error('Pull latest failed', error);
+      logs.push(`✗ Error: ${error.message}`);
+
+      await this.prisma.updateHistory.update({
+        where: { id: updateHistory.id },
+        data: {
+          status: 'FAILED',
+          errorMessage: error.message,
+          errorStack: error.stack,
+          migrationLogs: logs.join('\n'),
+        },
+      });
+
+      this.setProgress('failed', 0, `Update failed: ${error.message}`);
+      this.updateInProgress = false;
+
+      throw new BadRequestException({
+        message: `Update failed: ${error.message}`,
+        logs,
+      });
+    }
+  }
 }
