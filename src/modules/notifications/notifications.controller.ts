@@ -18,7 +18,7 @@ import { NotificationsService, NotificationQueryDto } from './notifications.serv
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { NotificationType } from '@prisma/client';
 
-@Controller('notifications')
+@Controller('api/notifications')
 @UseGuards(JwtAuthGuard)
 export class NotificationsController {
   constructor(private notificationsService: NotificationsService) {}
