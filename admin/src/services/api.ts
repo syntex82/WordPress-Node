@@ -1535,6 +1535,8 @@ export const backupsApi = {
   databaseBackup: () => api.post('/backups/database'),
   delete: (id: string) => api.delete(`/backups/${id}`),
   getDownloadUrl: (id: string) => `/api/backups/${id}/download`,
+  restore: (id: string, options?: { restoreDatabase?: boolean; restoreMedia?: boolean; restoreThemes?: boolean; restorePlugins?: boolean }) =>
+    api.post(`/backups/${id}/restore`, options || {}),
 };
 
 // Recommendations API
@@ -1605,4 +1607,72 @@ export const recommendationsApi = {
   // Preview recommendations
   previewRecommendations: (contentType: string, contentId: string, limit?: number) =>
     api.get(`/recommendations/${contentType}s/${contentId}`, { params: { limit } }),
+};
+
+// Updates API
+export interface UpdateStatus {
+  currentVersion: string;
+  latestVersion: string;
+  updateAvailable: boolean;
+  versionInfo?: {
+    version: string;
+    releaseDate: string;
+    changelog: string;
+    releaseNotes: string;
+    downloadUrl: string;
+    checksum: string;
+    fileSize: number;
+    breakingChanges: boolean;
+    requiresManualSteps: boolean;
+  };
+  pendingMigrations: string[];
+  updateInProgress: boolean;
+  currentProgress: {
+    stage: string;
+    progress: number;
+    message: string;
+  };
+}
+
+export interface UpdateHistoryItem {
+  id: string;
+  fromVersion: string;
+  toVersion: string;
+  status: string;
+  startedAt: string;
+  completedAt?: string;
+  changelog?: string;
+  errorMessage?: string;
+  rolledBack: boolean;
+  backup?: { id: string; name: string };
+  initiatedByUser?: { id: string; name: string; email: string };
+}
+
+export const updatesApi = {
+  // Get current update status
+  getStatus: () => api.get<UpdateStatus>('/updates/status'),
+
+  // Check for updates
+  checkForUpdates: () => api.get('/updates/check'),
+
+  // Get available updates
+  getAvailableUpdates: () => api.get('/updates/available'),
+
+  // Get update history
+  getHistory: (limit?: number) => api.get<UpdateHistoryItem[]>('/updates/history', { params: { limit } }),
+
+  // Get version info
+  getVersionInfo: () => api.get('/updates/version'),
+
+  // Check compatibility for a version
+  checkCompatibility: (version: string) => api.get(`/updates/compatibility/${version}`),
+
+  // Download an update
+  downloadUpdate: (version: string) => api.post('/updates/download', { version }),
+
+  // Apply an update
+  applyUpdate: (version: string) => api.post('/updates/apply', { version }),
+
+  // Rollback an update
+  rollback: (updateHistoryId: string) => api.post(`/updates/rollback/${updateHistoryId}`),
 };

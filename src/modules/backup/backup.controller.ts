@@ -142,5 +142,29 @@ export class BackupController {
       includesPlugins: false,
     }, req.user.id);
   }
+
+  /**
+   * Restore from a backup
+   * POST /api/backups/:id/restore
+   */
+  @Post(':id/restore')
+  async restore(
+    @Param('id') id: string,
+    @Body() options: {
+      restoreDatabase?: boolean;
+      restoreMedia?: boolean;
+      restoreThemes?: boolean;
+      restorePlugins?: boolean;
+    },
+  ) {
+    const backup = await this.backupService.findOne(id);
+    if (!backup) {
+      throw new NotFoundException('Backup not found');
+    }
+    if (backup.status !== 'COMPLETED') {
+      throw new ForbiddenException('Cannot restore from incomplete backup');
+    }
+    return this.backupService.restore(id, options);
+  }
 }
 

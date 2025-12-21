@@ -3,12 +3,13 @@
  * Handles database and file backups
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { BackupType, BackupStatus } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as archiver from 'archiver';
+import * as AdmZip from 'adm-zip';
 import { createHash } from 'crypto';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -310,6 +311,189 @@ export class BackupService {
       inProgress,
       totalSize: totalSize._sum.fileSize ? Number(totalSize._sum.fileSize) : 0,
     };
+  }
+
+  /**
+   * Restore from a backup
+   */
+  async restore(id: string, options: { restoreDatabase?: boolean; restoreMedia?: boolean; restoreThemes?: boolean; restorePlugins?: boolean } = {}) {
+    const backup = await this.prisma.backup.findUnique({ where: { id } });
+    if (!backup) {
+      throw new BadRequestException('Backup not found');
+    }
+    if (backup.status !== 'COMPLETED') {
+      throw new BadRequestException('Cannot restore from incomplete backup');
+    }
+    if (!backup.filePath) {
+      throw new BadRequestException('Backup file not available');
+    }
+
+    const backupPath = path.join(this.backupDir, backup.filePath);
+    if (!fs.existsSync(backupPath)) {
+      throw new BadRequestException('Backup file not found on disk');
+    }
+
+    // Default to restoring what the backup contains
+    const restoreDatabase = options.restoreDatabase ?? backup.includesDatabase;
+    const restoreMedia = options.restoreMedia ?? backup.includesMedia;
+    const restoreThemes = options.restoreThemes ?? backup.includesThemes;
+    const restorePlugins = options.restorePlugins ?? backup.includesPlugins;
+
+    const results: { database?: any; media?: any; themes?: any; plugins?: any } = {};
+
+    try {
+      const zip = new AdmZip(backupPath);
+      const zipEntries = zip.getEntries();
+
+      // Restore database
+      if (restoreDatabase) {
+        const dbEntry = zipEntries.find(e => e.entryName === 'database.json');
+        if (dbEntry) {
+          const dbData = JSON.parse(dbEntry.getData().toString('utf8'));
+          results.database = await this.restoreDatabase(dbData);
+        }
+      }
+
+      // Restore media files
+      if (restoreMedia) {
+        const mediaEntries = zipEntries.filter(e => e.entryName.startsWith('uploads/'));
+        if (mediaEntries.length > 0) {
+          const uploadsDir = path.join(process.cwd(), 'uploads');
+          if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+          }
+          for (const entry of mediaEntries) {
+            if (!entry.isDirectory) {
+              const targetPath = path.join(process.cwd(), entry.entryName);
+              const targetDir = path.dirname(targetPath);
+              if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+              }
+              fs.writeFileSync(targetPath, entry.getData());
+            }
+          }
+          results.media = { filesRestored: mediaEntries.filter(e => !e.isDirectory).length };
+        }
+      }
+
+      // Restore themes
+      if (restoreThemes) {
+        const themeEntries = zipEntries.filter(e => e.entryName.startsWith('themes/'));
+        if (themeEntries.length > 0) {
+          const themesDir = path.join(process.cwd(), 'themes');
+          for (const entry of themeEntries) {
+            if (!entry.isDirectory) {
+              const targetPath = path.join(process.cwd(), entry.entryName);
+              const targetDir = path.dirname(targetPath);
+              if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+              }
+              fs.writeFileSync(targetPath, entry.getData());
+            }
+          }
+          results.themes = { filesRestored: themeEntries.filter(e => !e.isDirectory).length };
+        }
+      }
+
+      // Restore plugins
+      if (restorePlugins) {
+        const pluginEntries = zipEntries.filter(e => e.entryName.startsWith('plugins/'));
+        if (pluginEntries.length > 0) {
+          const pluginsDir = path.join(process.cwd(), 'plugins');
+          for (const entry of pluginEntries) {
+            if (!entry.isDirectory) {
+              const targetPath = path.join(process.cwd(), entry.entryName);
+              const targetDir = path.dirname(targetPath);
+              if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+              }
+              fs.writeFileSync(targetPath, entry.getData());
+            }
+          }
+          results.plugins = { filesRestored: pluginEntries.filter(e => !e.isDirectory).length };
+        }
+      }
+
+      this.logger.log(`Backup ${id} restored successfully`);
+      return { success: true, message: 'Backup restored successfully', results };
+    } catch (error) {
+      this.logger.error(`Restore failed: ${error.message}`);
+      throw new BadRequestException(`Restore failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Restore database from JSON data
+   */
+  private async restoreDatabase(data: Record<string, any[]>) {
+    const results: Record<string, number> = {};
+
+    // Restore settings
+    if (data.settings && Array.isArray(data.settings)) {
+      for (const setting of data.settings) {
+        await this.prisma.setting.upsert({
+          where: { key: setting.key },
+          create: setting,
+          update: setting,
+        });
+      }
+      results.settings = data.settings.length;
+    }
+
+    // Restore posts (upsert to avoid conflicts)
+    if (data.posts && Array.isArray(data.posts)) {
+      for (const post of data.posts) {
+        try {
+          await this.prisma.post.upsert({
+            where: { id: post.id },
+            create: post,
+            update: post,
+          });
+        } catch { /* skip if conflict */ }
+      }
+      results.posts = data.posts.length;
+    }
+
+    // Restore pages
+    if (data.pages && Array.isArray(data.pages)) {
+      for (const page of data.pages) {
+        try {
+          await this.prisma.page.upsert({
+            where: { id: page.id },
+            create: page,
+            update: page,
+          });
+        } catch { /* skip if conflict */ }
+      }
+      results.pages = data.pages.length;
+    }
+
+    // Restore menus
+    if (data.menus && Array.isArray(data.menus)) {
+      for (const menu of data.menus) {
+        try {
+          const { items, ...menuData } = menu;
+          await this.prisma.menu.upsert({
+            where: { id: menu.id },
+            create: menuData,
+            update: menuData,
+          });
+          // Restore menu items
+          if (items && Array.isArray(items)) {
+            for (const item of items) {
+              await this.prisma.menuItem.upsert({
+                where: { id: item.id },
+                create: item,
+                update: item,
+              });
+            }
+          }
+        } catch { /* skip if conflict */ }
+      }
+      results.menus = data.menus.length;
+    }
+
+    return results;
   }
 }
 

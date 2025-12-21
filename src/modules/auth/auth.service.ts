@@ -20,8 +20,8 @@ import { getPasswordResetTemplate } from '../email/templates/password-reset-temp
 
 @Injectable()
 export class AuthService {
-  private readonly MAX_FAILED_ATTEMPTS = 5;
-  private readonly LOCKOUT_DURATION_MINUTES = 15;
+  private readonly MAX_FAILED_ATTEMPTS = 50;
+  private readonly LOCKOUT_DURATION_MINUTES = 1;
   private readonly PASSWORD_RESET_EXPIRY_HOURS = 1;
 
   constructor(

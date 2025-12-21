@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   const user = await prisma.user.update({
-    where: { email: 'admin@example.com' },
+    where: { email: 'admin@starter.dev' },
     data: { 
       failedLoginAttempts: 0, 
       accountLockedUntil: null 

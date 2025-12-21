@@ -125,6 +125,9 @@ model User {
   clientHiringRequests  HiringRequest[] @relation("ClientHiringRequests")
   clientProjects        Project[] @relation("ClientProjects")
   developerReviews      DeveloperReview[] @relation("ReviewerDeveloperReviews")
+
+  // System Updates
+  initiatedUpdates      UpdateHistory[]
 }
 
 // Follow relationship for users
@@ -1981,6 +1984,9 @@ model Backup {
   completedAt  DateTime?
   createdAt    DateTime  @default(now())
 
+  // Relation to update history
+  updateHistories UpdateHistory[]
+
   @@index([status])
   @@index([type])
   @@index([createdAt])
@@ -2654,4 +2660,97 @@ model MarketplaceSettings {
   description           String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+// =============================================
+// SYSTEM UPDATE MODELS
+// =============================================
+
+// UpdateHistory - tracks all system updates
+model UpdateHistory {
+  id              String       @id @default(uuid())
+  fromVersion     String       // Version before update
+  toVersion       String       // Version after update
+  status          UpdateStatus @default(PENDING)
+  startedAt       DateTime     @default(now())
+  completedAt     DateTime?
+
+  // Update details
+  changelog       String?      @db.Text
+  releaseNotes    String?      @db.Text
+  downloadUrl     String?
+  checksum        String?      // SHA256 checksum for verification
+  fileSize        BigInt?
+
+  // Backup reference
+  backupId        String?      // Pre-update backup ID
+  backup          Backup?      @relation(fields: [backupId], references: [id])
+
+  // Migration tracking
+  migrationsRun   String[]     // List of migrations applied
+  migrationLogs   String?      @db.Text
+
+  // Error tracking
+  errorMessage    String?      @db.Text
+  errorStack      String?      @db.Text
+
+  // Who initiated the update
+  initiatedBy     String?
+  initiatedByUser User?        @relation(fields: [initiatedBy], references: [id])
+
+  // Rollback info
+  rolledBack      Boolean      @default(false)
+  rollbackAt      DateTime?
+  rollbackReason  String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([status])
+  @@index([startedAt])
+  @@index([fromVersion, toVersion])
+}
+
+enum UpdateStatus {
+  PENDING
+  DOWNLOADING
+  DOWNLOADED
+  BACKING_UP
+  APPLYING
+  MIGRATING
+  VERIFYING
+  COMPLETED
+  FAILED
+  ROLLED_BACK
+}
+
+// SystemVersion - tracks current and available versions
+model SystemVersion {
+  id              String   @id @default(uuid())
+  version         String   @unique
+  isCurrentVersion Boolean @default(false)
+  installedAt     DateTime?
+
+  // Version metadata
+  releaseDate     DateTime?
+  changelog       String?  @db.Text
+  releaseNotes    String?  @db.Text
+  minNodeVersion  String?  // Minimum Node.js version required
+  minNpmVersion   String?  // Minimum npm version required
+
+  // Compatibility
+  breakingChanges Boolean  @default(false)
+  requiresManualSteps Boolean @default(false)
+  manualStepsDescription String? @db.Text
+
+  // Download info (for available versions)
+  downloadUrl     String?
+  checksum        String?
+  fileSize        BigInt?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isCurrentVersion])
+  @@index([version])
 }

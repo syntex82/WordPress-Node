@@ -217,6 +217,34 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 
 <br />
 
+### 🔄 Auto-Update System
+
+| Feature | Description |
+|---------|-------------|
+| **Version Management** | Semantic versioning with automatic comparison against latest releases |
+| **Update Notifications** | Check for updates from GitHub releases with compatibility info |
+| **One-Click Updates** | Download, extract, and apply updates with progress tracking |
+| **Pre-Update Backups** | Automatic backup creation before applying updates |
+| **Database Migrations** | Automatic Prisma migration execution during updates |
+| **Rollback Capability** | Revert to previous version if an update fails |
+| **Update History** | Track all update attempts with status, errors, and timestamps |
+| **Compatibility Checks** | Verify Node.js version and dependencies before updating |
+
+<br />
+
+### 💾 Backup & Restore
+
+| Feature | Description |
+|---------|-------------|
+| **Full Backups** | Create complete backups of database, media, themes, and plugins |
+| **Selective Restore** | Choose what to restore: database, media, themes, or plugins |
+| **Backup History** | View and manage all backup files with size and timestamp |
+| **Download Backups** | Download backup ZIP files for off-site storage |
+| **Quick Backups** | One-click backup creation from admin panel |
+| **Database-Only Backups** | Create lightweight database-only backups |
+
+<br />
+
 ### ⚙️ Admin Configuration & Setup
 
 | Feature | Description |
@@ -1475,6 +1503,38 @@ Authorization: Bearer <token>
 | `POST` | `/api/marketplace/projects/:id/review` | Submit review |
 | `GET` | `/api/marketplace/payments/transactions` | Transaction history |
 | `POST` | `/api/marketplace/payments/payout` | Request payout |
+
+<br />
+
+### 🔄 Updates API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/updates/status` | Get current update status |
+| `GET` | `/api/updates/check` | Check for available updates |
+| `GET` | `/api/updates/available` | Get available update details |
+| `GET` | `/api/updates/history` | Get update history |
+| `GET` | `/api/updates/compatibility/:version` | Check compatibility for a version |
+| `POST` | `/api/updates/download` | Download an update |
+| `POST` | `/api/updates/apply` | Apply downloaded update |
+| `POST` | `/api/updates/rollback/:id` | Rollback to previous version |
+| `GET` | `/api/updates/version` | Get current version info |
+
+<br />
+
+### 💾 Backups API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/backups` | List all backups |
+| `GET` | `/api/backups/:id` | Get backup details |
+| `POST` | `/api/backups` | Create full backup |
+| `POST` | `/api/backups/quick` | Create quick backup |
+| `POST` | `/api/backups/database` | Create database-only backup |
+| `GET` | `/api/backups/:id/download` | Download backup file |
+| `POST` | `/api/backups/:id/restore` | Restore from backup |
+| `DELETE` | `/api/backups/:id` | Delete backup |
+| `GET` | `/api/backups/stats` | Get backup statistics |
 
 <br />
 

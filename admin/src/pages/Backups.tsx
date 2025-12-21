@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import {
   FiDatabase, FiDownload, FiTrash2, FiPlus, FiRefreshCw, FiCheck,
   FiX, FiClock, FiLoader, FiHardDrive, FiImage, FiPackage, FiLayout,
-  FiAlertCircle, FiCheckCircle, FiArchive
+  FiAlertCircle, FiCheckCircle, FiArchive, FiRotateCcw
 } from 'react-icons/fi';
 import { backupsApi, Backup } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
@@ -17,7 +17,16 @@ export default function Backups() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [selectedBackup, setSelectedBackup] = useState<Backup | null>(null);
+  const [restoreOptions, setRestoreOptions] = useState({
+    restoreDatabase: true,
+    restoreMedia: true,
+    restoreThemes: true,
+    restorePlugins: true,
+  });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -94,6 +103,31 @@ export default function Backups() {
       fetchBackups();
       fetchStats();
     } catch { /* ignore */ }
+  };
+
+  const openRestoreModal = (backup: Backup) => {
+    setSelectedBackup(backup);
+    setRestoreOptions({
+      restoreDatabase: backup.includesDatabase,
+      restoreMedia: backup.includesMedia,
+      restoreThemes: backup.includesThemes,
+      restorePlugins: backup.includesPlugins,
+    });
+    setShowRestoreModal(true);
+  };
+
+  const handleRestore = async () => {
+    if (!selectedBackup) return;
+    setRestoring(true);
+    try {
+      await backupsApi.restore(selectedBackup.id, restoreOptions);
+      alert('Backup restored successfully! You may need to refresh the page to see changes.');
+      setShowRestoreModal(false);
+      setSelectedBackup(null);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to restore backup');
+    }
+    setRestoring(false);
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -259,13 +293,22 @@ export default function Backups() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       {backup.status === 'COMPLETED' && backup.filePath && (
-                        <a
-                          href={backupsApi.getDownloadUrl(backup.id)}
-                          className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
-                          title="Download"
-                        >
-                          <FiDownload size={16} />
-                        </a>
+                        <>
+                          <button
+                            onClick={() => openRestoreModal(backup)}
+                            className="p-2 text-slate-400 hover:text-violet-400 transition-colors"
+                            title="Restore"
+                          >
+                            <FiRotateCcw size={16} />
+                          </button>
+                          <a
+                            href={backupsApi.getDownloadUrl(backup.id)}
+                            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
+                            title="Download"
+                          >
+                            <FiDownload size={16} />
+                          </a>
+                        </>
                       )}
                       <button
                         onClick={() => handleDelete(backup.id)}
@@ -378,6 +421,100 @@ export default function Backups() {
               >
                 {creating ? <FiLoader className="animate-spin" size={16} /> : <FiPlus size={16} />}
                 Create Backup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Restore Backup Modal */}
+      {showRestoreModal && selectedBackup && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <FiRotateCcw className="text-violet-400" />
+                Restore Backup
+              </h3>
+              <button onClick={() => { setShowRestoreModal(false); setSelectedBackup(null); }} className="text-slate-400 hover:text-white">
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <FiAlertCircle className="text-amber-400 mt-0.5" size={20} />
+                <div>
+                  <p className="text-amber-400 font-medium">Warning</p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Restoring a backup will overwrite existing data. This action cannot be undone.
+                    Make sure you have a current backup before proceeding.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-slate-300 mb-2">Restoring from:</p>
+              <div className="bg-slate-700/50 rounded-lg p-3">
+                <p className="text-white font-medium">{selectedBackup.name}</p>
+                <p className="text-sm text-slate-400">
+                  Created {formatDistanceToNow(new Date(selectedBackup.createdAt), { addSuffix: true })}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-slate-300 mb-2">Select what to restore:</label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'restoreDatabase', label: 'Database', icon: FiDatabase, available: selectedBackup.includesDatabase },
+                  { key: 'restoreMedia', label: 'Media Files', icon: FiImage, available: selectedBackup.includesMedia },
+                  { key: 'restoreThemes', label: 'Themes', icon: FiLayout, available: selectedBackup.includesThemes },
+                  { key: 'restorePlugins', label: 'Plugins', icon: FiPackage, available: selectedBackup.includesPlugins },
+                ].map((item) => (
+                  <label
+                    key={item.key}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      !item.available
+                        ? 'bg-slate-800/50 border-slate-700 text-slate-600 cursor-not-allowed'
+                        : restoreOptions[item.key as keyof typeof restoreOptions]
+                          ? 'bg-violet-500/20 border-violet-500/50 text-white'
+                          : 'bg-slate-700/50 border-slate-600 text-slate-400'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={item.available && restoreOptions[item.key as keyof typeof restoreOptions]}
+                      disabled={!item.available}
+                      onChange={(e) => setRestoreOptions({ ...restoreOptions, [item.key]: e.target.checked })}
+                      className="sr-only"
+                    />
+                    <item.icon size={18} />
+                    <span>{item.label}</span>
+                    {item.available && restoreOptions[item.key as keyof typeof restoreOptions] && (
+                      <FiCheck className="ml-auto text-violet-400" />
+                    )}
+                    {!item.available && <span className="ml-auto text-xs text-slate-600">N/A</span>}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => { setShowRestoreModal(false); setSelectedBackup(null); }}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRestore}
+                disabled={restoring || (!restoreOptions.restoreDatabase && !restoreOptions.restoreMedia && !restoreOptions.restoreThemes && !restoreOptions.restorePlugins)}
+                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+              >
+                {restoring ? <FiLoader className="animate-spin" size={16} /> : <FiRotateCcw size={16} />}
+                Restore Backup
               </button>
             </div>
           </div>

@@ -76,6 +76,8 @@ import EmailLogs from './pages/email/EmailLogs';
 import EmailTemplateDesigner from './pages/email/EmailTemplateDesigner';
 // Recommendations
 import Recommendations from './pages/Recommendations';
+// Updates
+import Updates from './pages/Updates';
 // Developer Marketplace
 import {
   MarketplaceDashboard,
@@ -211,6 +213,9 @@ function App() {
 
                 {/* Backups */}
                 <Route path="backups" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Backups /></ProtectedRoute>} />
+
+                {/* Updates */}
+                <Route path="updates" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Updates /></ProtectedRoute>} />
 
                 {/* Settings */}
                 <Route path="settings" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Settings /></ProtectedRoute>} />
