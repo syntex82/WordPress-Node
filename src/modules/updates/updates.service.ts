@@ -563,12 +563,17 @@ export class UpdatesService {
         logs.push('✓ Removed package-lock.json');
       }
 
-      // Install dependencies including dev dependencies
-      await execAsync('npm install', { cwd: adminDir, timeout: 300000 });
-
-      // Ensure vite is installed (sometimes npm install doesn't properly install it)
-      await execAsync('npm install vite --save-dev', { cwd: adminDir, timeout: 60000 });
+      // Install dependencies including dev dependencies (force include dev deps even in production)
+      await execAsync('npm install --include=dev', { cwd: adminDir, timeout: 300000, env: { ...process.env, NODE_ENV: 'development' } });
       logs.push('✓ Admin dependencies installed');
+
+      // Verify vite is installed before attempting build
+      const viteCheck = path.join(adminDir, 'node_modules', 'vite');
+      if (!fs.existsSync(viteCheck)) {
+        logs.push('⚠ Vite not found, installing explicitly...');
+        await execAsync('npm install vite @vitejs/plugin-react --save-dev', { cwd: adminDir, timeout: 120000, env: { ...process.env, NODE_ENV: 'development' } });
+        logs.push('✓ Vite installed');
+      }
 
       // Step 5: Build admin panel
       this.setProgress('building', 60, 'Building admin panel...');
