@@ -10,8 +10,8 @@
 #
 # Usage:
 #   1. SSH into your VPS: ssh root@your-vps-ip
-#   2. Clone repo: git clone https://github.com/syntex82/WordPress-Node.git /var/www/wpnode
-#   3. Run: cd /var/www/wpnode && chmod +x scripts/hostinger-vps-setup.sh
+#   2. Clone repo: git clone https://github.com/syntex82/WordPress-Node.git /var/www/WordPress-Node
+#   3. Run: cd /var/www/WordPress-Node && chmod +x scripts/hostinger-vps-setup.sh
 #   4. Execute: ./scripts/hostinger-vps-setup.sh
 #═══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ set -e
 # CONFIGURATION
 # ══════════════════════════════════════════════════════════════
 DOMAIN="wordpressnode.co.uk"
-APP_DIR="/var/www/wpnode"
+APP_DIR="/var/www/WordPress-Node"
 APP_USER="wpnode"
 APP_PORT="3000"
 NODE_VERSION="20"
@@ -407,7 +407,7 @@ server {
 
     # Static uploads with caching
     location /uploads {
-        alias /var/www/wpnode/uploads;
+        alias /var/www/WordPress-Node/uploads;
         expires 1y;
         add_header Cache-Control "public, immutable";
         access_log off;
@@ -415,7 +415,7 @@ server {
 
     # Admin panel (SPA)
     location /admin {
-        alias /var/www/wpnode/admin/dist;
+        alias /var/www/WordPress-Node/admin/dist;
         try_files $uri $uri/ /admin/index.html;
         expires 1d;
         add_header Cache-Control "public";
@@ -423,7 +423,7 @@ server {
 
     # Theme assets
     location /themes {
-        alias /var/www/wpnode/themes;
+        alias /var/www/WordPress-Node/themes;
         expires 1d;
         add_header Cache-Control "public";
     }
@@ -486,7 +486,7 @@ module.exports = {
   apps: [{
     name: 'wpnode',
     script: 'dist/main.js',
-    cwd: '/var/www/wpnode',
+    cwd: '/var/www/WordPress-Node',
     instances: 'max',
     exec_mode: 'cluster',
     autorestart: true,
