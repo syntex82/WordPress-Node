@@ -261,6 +261,61 @@ async function bootstrap() {
     logger.warn('⚠️ Could not register plugin routes:', error);
   }
 
+  // Built-in PWA routes (fallback if plugin not activated)
+  const expressApp = app.getHttpAdapter().getInstance();
+
+  // Manifest.json
+  expressApp.get('/manifest.json', (req, res) => {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.json({
+      name: 'WordPress Node',
+      short_name: 'WP Node',
+      description: 'Modern WordPress Node CMS',
+      start_url: '/',
+      display: 'standalone',
+      orientation: 'any',
+      theme_color: '#4f46e5',
+      background_color: '#1e293b',
+      icons: [
+        { src: `${baseUrl}/pwa/icons/icon-192x192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+        { src: `${baseUrl}/pwa/icons/icon-512x512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+      ],
+    });
+  });
+
+  // Service Worker
+  expressApp.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.send(`
+      const CACHE = 'wp-node-v1';
+      self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/', '/offline'])).then(() => self.skipWaiting())));
+      self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+      self.addEventListener('fetch', e => {
+        if (e.request.method !== 'GET' || e.request.url.includes('/api/') || e.request.url.includes('/socket.io')) return;
+        e.respondWith(fetch(e.request).catch(() => caches.match(e.request).then(c => c || caches.match('/offline'))));
+      });
+    `);
+  });
+
+  // Offline page
+  expressApp.get('/offline', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline</title><style>body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1e293b;font-family:system-ui;color:#f1f5f9;text-align:center}h1{margin-bottom:1rem}button{background:#4f46e5;color:white;border:none;padding:.75rem 1.5rem;border-radius:8px;cursor:pointer}</style></head><body><div><h1>You're Offline</h1><p>Check your connection and try again.</p><br><button onclick="location.reload()">Retry</button></div></body></html>`);
+  });
+
+  // PWA Icons (SVG fallback)
+  expressApp.get('/pwa/icons/:filename', (req, res) => {
+    const match = req.params.filename.match(/(\d+)/);
+    const size = match ? parseInt(match[1]) : 192;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#4f46e5" rx="${Math.round(size * 0.15)}"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="white" font-family="system-ui" font-weight="bold" font-size="${Math.round(size * 0.4)}">WN</text></svg>`;
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(svg);
+  });
+
+  logger.log('✅ Built-in PWA routes registered');
+
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     logger.log(`Received ${signal}, starting graceful shutdown...`);
