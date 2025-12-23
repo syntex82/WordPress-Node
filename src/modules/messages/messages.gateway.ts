@@ -83,35 +83,40 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     const user = this.socketUsers.get(client.id);
     if (!user) return { error: 'Unauthorized' };
 
-    const message = await this.messagesService.sendMessage(
-      data.conversationId,
-      user.id,
-      data.content,
-      data.media,
-    );
+    try {
+      const message = await this.messagesService.sendMessage(
+        data.conversationId,
+        user.id,
+        data.content,
+        data.media,
+      );
 
-    // Get conversation to find recipient
-    const conversation = await this.prisma.conversation.findUnique({
-      where: { id: data.conversationId },
-    });
+      // Get conversation to find recipient
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { id: data.conversationId },
+      });
 
-    if (conversation) {
-      const recipientId =
-        conversation.participant1Id === user.id
-          ? conversation.participant2Id
-          : conversation.participant1Id;
+      if (conversation) {
+        const recipientId =
+          conversation.participant1Id === user.id
+            ? conversation.participant2Id
+            : conversation.participant1Id;
 
-      // Send to sender
-      client.emit('dm:message:new', message);
+        // Send to sender
+        client.emit('dm:message:new', message);
 
-      // Send to recipient if online
-      const recipientSocketId = this.userSockets.get(recipientId);
-      if (recipientSocketId) {
-        this.server.to(recipientSocketId).emit('dm:message:new', message);
+        // Send to recipient if online
+        const recipientSocketId = this.userSockets.get(recipientId);
+        if (recipientSocketId) {
+          this.server.to(recipientSocketId).emit('dm:message:new', message);
+        }
       }
-    }
 
-    return { success: true, message };
+      return { success: true, message };
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return { error: error.message || 'Failed to send message' };
+    }
   }
 
   @SubscribeMessage('dm:typing:start')

@@ -207,44 +207,49 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const { groupId, content, media } = data;
 
-    // Verify user is a member and not banned
-    const membership = await this.prisma.groupMember.findUnique({
-      where: {
-        groupId_userId: {
-          groupId,
-          userId: user.id,
-        },
-      },
-    });
-
-    if (!membership || membership.isBanned) {
-      return { error: 'You are not allowed to send messages in this group' };
-    }
-
-    // Save message to database with media
-    const message = await this.prisma.groupMessage.create({
-      data: {
-        groupId,
-        senderId: user.id,
-        content,
-        media: media && media.length > 0 ? media : [],
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
+    try {
+      // Verify user is a member and not banned
+      const membership = await this.prisma.groupMember.findUnique({
+        where: {
+          groupId_userId: {
+            groupId,
+            userId: user.id,
           },
         },
-      },
-    });
+      });
 
-    // Broadcast message to all group members
-    this.server.to(`group:${groupId}`).emit('group:message:new', message);
+      if (!membership || membership.isBanned) {
+        return { error: 'You are not allowed to send messages in this group' };
+      }
 
-    return { success: true, message };
+      // Save message to database with media
+      const message = await this.prisma.groupMessage.create({
+        data: {
+          groupId,
+          senderId: user.id,
+          content,
+          media: media && media.length > 0 ? media : [],
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+
+      // Broadcast message to all group members
+      this.server.to(`group:${groupId}`).emit('group:message:new', message);
+
+      return { success: true, message };
+    } catch (error) {
+      console.error('Error sending group message:', error);
+      return { error: error.message || 'Failed to send message' };
+    }
   }
 
   /**

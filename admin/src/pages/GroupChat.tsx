@@ -233,12 +233,27 @@ export default function GroupChat() {
 
     try {
       if (socket && socketConnected) {
-        socket.emit('group:message:send', {
-          groupId: id,
-          content: messageContent,
-          media: mediaToSend.length > 0 ? mediaToSend : undefined,
-        });
-        toast.success('Message sent');
+        // Use callback acknowledgement to confirm message was sent
+        socket.emit(
+          'group:message:send',
+          {
+            groupId: id,
+            content: messageContent,
+            media: mediaToSend.length > 0 ? mediaToSend : undefined,
+          },
+          (response: { success?: boolean; error?: string }) => {
+            if (response?.error) {
+              toast.error(response.error);
+              setNewMessage(messageContent);
+              setPendingMedia(mediaToSend);
+            } else if (response?.success) {
+              toast.success('Message sent');
+            }
+            setSending(false);
+            inputRef.current?.focus();
+          },
+        );
+        return; // Let the callback handle the rest
       } else {
         toast.error('Not connected to chat. Please refresh the page.');
         setNewMessage(messageContent);

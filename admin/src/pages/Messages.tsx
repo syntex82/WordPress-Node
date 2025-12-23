@@ -217,11 +217,28 @@ export default function Messages() {
     try {
       // Try WebSocket first if connected
       if (socket && socketConnected) {
-        socket.emit('dm:send', {
-          conversationId: activeConversation.id,
-          content: messageContent,
-          media: mediaToSend.length > 0 ? mediaToSend : undefined,
-        });
+        // Use callback acknowledgement to confirm message was sent
+        socket.emit(
+          'dm:send',
+          {
+            conversationId: activeConversation.id,
+            content: messageContent,
+            media: mediaToSend.length > 0 ? mediaToSend : undefined,
+          },
+          (response: { success?: boolean; error?: string; message?: Message }) => {
+            if (response?.error) {
+              toast.error(response.error);
+              setNewMessage(messageContent);
+              setPendingMedia(mediaToSend);
+            } else if (response?.success) {
+              toast.success('Message sent');
+              scrollToBottom();
+            }
+            setSending(false);
+            inputRef.current?.focus();
+          },
+        );
+        return; // Let the callback handle the rest
       } else {
         // Fallback to HTTP API
         const res = await messagesApi.sendMessage(activeConversation.id, messageContent, mediaToSend.length > 0 ? mediaToSend : undefined);
@@ -232,8 +249,8 @@ export default function Messages() {
         });
         loadConversations();
         scrollToBottom();
+        toast.success('Message sent');
       }
-      toast.success('Message sent');
     } catch (error) {
       toast.error('Failed to send message. Please try again.');
       setNewMessage(messageContent); // Restore message on failure
