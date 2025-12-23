@@ -473,8 +473,10 @@
   }
   .wp-auth-forms {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
   }
   .wp-auth-card {
     background: rgba(30, 41, 59, 0.8);
@@ -777,6 +779,10 @@
     }
     .wp-auth-forms {
       grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    .wp-auth-card {
+      padding: 1.75rem;
     }
     .wp-features {
       padding: 60px 20px;
@@ -876,6 +882,21 @@
     }
     .wp-access-card h3 {
       font-size: 1.25rem;
+    }
+    .wp-auth-forms {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    .wp-auth-card {
+      padding: 1.5rem;
+    }
+    .wp-auth-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .wp-input {
+      padding: 0.875rem 1rem;
+      font-size: 16px; /* Prevents iOS zoom on focus */
     }
   }
 </style>
