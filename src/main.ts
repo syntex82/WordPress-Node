@@ -228,6 +228,7 @@ async function bootstrap() {
     join(process.cwd(), 'uploads'),
     join(process.cwd(), 'uploads', 'messages'),
     join(process.cwd(), 'uploads', 'media'),
+    join(process.cwd(), 'uploads', 'groups'),
   ];
   for (const dir of uploadDirs) {
     if (!existsSync(dir)) {
@@ -292,8 +293,8 @@ async function bootstrap() {
       theme_color: '#4f46e5',
       background_color: '#1e293b',
       icons: [
-        { src: `${baseUrl}/pwa/icons/icon-192x192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-        { src: `${baseUrl}/pwa/icons/icon-512x512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+        { src: `${baseUrl}/pwa/icons/icon-192.svg`, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+        { src: `${baseUrl}/pwa/icons/icon-512.svg`, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
       ],
     });
   });
