@@ -1,28 +1,61 @@
 /**
  * Stripe Payment Service
  * Handles Stripe payment integration
+ * Reads configuration from database first, falls back to environment variables
  */
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../database/prisma.service';
+import { SystemConfigService } from '../../settings/system-config.service';
 import Stripe from 'stripe';
 
 @Injectable()
-export class StripeService {
-  private stripe: Stripe;
+export class StripeService implements OnModuleInit {
+  private stripe: Stripe | null = null;
+  private readonly logger = new Logger(StripeService.name);
 
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-  ) {
-    const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
-    console.log(
-      'Stripe secret key configured:',
-      secretKey ? `${secretKey.substring(0, 10)}...` : 'NOT SET',
-    );
-    if (secretKey) {
-      this.stripe = new Stripe(secretKey);
+    private systemConfig: SystemConfigService,
+  ) {}
+
+  async onModuleInit() {
+    await this.initializeStripe();
+  }
+
+  /**
+   * Initialize Stripe with configuration from DB or env
+   */
+  private async initializeStripe(): Promise<void> {
+    try {
+      const config = await this.systemConfig.getStripeConfig();
+      const secretKey = config.secretKey;
+
+      if (secretKey) {
+        this.stripe = new Stripe(secretKey);
+        this.logger.log(`Stripe initialized: ${secretKey.substring(0, 10)}... (${config.isLiveMode ? 'LIVE' : 'TEST'} mode)`);
+      } else {
+        this.logger.warn('Stripe secret key not configured');
+      }
+    } catch (error) {
+      // Database not ready yet, try env fallback
+      const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
+      if (secretKey) {
+        this.stripe = new Stripe(secretKey);
+        this.logger.log(`Stripe initialized from env: ${secretKey.substring(0, 10)}...`);
+      } else {
+        this.logger.warn('Stripe not configured (no DB or env config)');
+      }
     }
+  }
+
+  /**
+   * Reload Stripe configuration (call after settings change)
+   */
+  async reloadConfig(): Promise<void> {
+    this.stripe = null;
+    await this.initializeStripe();
   }
 
   // Create payment intent for order
@@ -101,7 +134,15 @@ export class StripeService {
       throw new BadRequestException('Stripe is not configured');
     }
 
-    const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
+    // Get webhook secret from DB first, then env fallback
+    let webhookSecret: string;
+    try {
+      const config = await this.systemConfig.getStripeConfig();
+      webhookSecret = config.webhookSecret;
+    } catch {
+      webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET') || '';
+    }
+
     if (!webhookSecret) {
       throw new BadRequestException('Webhook secret not configured');
     }
@@ -258,7 +299,17 @@ export class StripeService {
   }
 
   // Get Stripe publishable key for frontend
-  getPublishableKey() {
-    return this.configService.get<string>('STRIPE_PUBLISHABLE_KEY');
+  async getPublishableKey(): Promise<string> {
+    try {
+      const config = await this.systemConfig.getStripeConfig();
+      return config.publishableKey;
+    } catch {
+      return this.configService.get<string>('STRIPE_PUBLISHABLE_KEY') || '';
+    }
+  }
+
+  // Check if Stripe is configured
+  isConfigured(): boolean {
+    return this.stripe !== null;
   }
 }

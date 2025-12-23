@@ -6,13 +6,13 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { settingsApi, themesApi, pluginsApi, systemConfigApi, SmtpConfig, DomainConfig } from '../services/api';
+import { settingsApi, themesApi, pluginsApi, systemConfigApi, SmtpConfig, DomainConfig, PaymentConfig } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ThemeRequirements from '../components/ThemeRequirements';
 import ThemeShop from '../components/ThemeShop';
 import toast from 'react-hot-toast';
-import { FiCheck, FiRefreshCw, FiUpload, FiTrash2, FiInfo, FiShoppingBag, FiTool, FiPenTool, FiHelpCircle, FiMail, FiGlobe, FiSend, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiCheck, FiRefreshCw, FiUpload, FiTrash2, FiInfo, FiShoppingBag, FiTool, FiPenTool, FiHelpCircle, FiMail, FiGlobe, FiSend, FiEye, FiEyeOff, FiCreditCard, FiZap } from 'react-icons/fi';
 import Tooltip from '../components/Tooltip';
 
 // Tooltip content for settings page
@@ -22,6 +22,7 @@ const SETTINGS_TOOLTIPS = {
   plugins: { title: 'Plugins', content: 'Extend your site\'s functionality with plugins.' },
   email: { title: 'Email Settings', content: 'Configure SMTP settings for sending emails (password reset, notifications, etc.).' },
   domain: { title: 'Domain Settings', content: 'Configure your site URLs and domain-related settings.' },
+  payment: { title: 'Payment Settings', content: 'Configure Stripe API keys for accepting payments.' },
   uploadTheme: { title: 'Upload Theme', content: 'Upload a theme package (.zip) to install a new theme.' },
   activateTheme: { title: 'Activate Theme', content: 'Make this theme the active theme for your site.' },
   customizeTheme: { title: 'Customize Theme', content: 'Open the theme customizer to adjust colors, fonts, and layout.' },
@@ -39,7 +40,7 @@ export default function Settings() {
   const [plugins, setPlugins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'themes' | 'plugins' | 'email' | 'domain'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'themes' | 'plugins' | 'email' | 'domain' | 'payment'>('general');
   const [showRequirements, setShowRequirements] = useState(false);
   const [showThemeShop, setShowThemeShop] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; themeId: string | null; themeName: string | null }>({
@@ -85,18 +86,38 @@ export default function Settings() {
   });
   const [domainSaving, setDomainSaving] = useState(false);
 
+  // Payment settings state
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>({
+    publishableKey: '',
+    secretKey: '',
+    webhookSecret: '',
+    isLiveMode: false,
+    isConfigured: false,
+    provider: 'stripe',
+  });
+  const [paymentInput, setPaymentInput] = useState({
+    publishableKey: '',
+    secretKey: '',
+    webhookSecret: '',
+  });
+  const [paymentSaving, setPaymentSaving] = useState(false);
+  const [paymentTesting, setPaymentTesting] = useState(false);
+  const [showSecretKey, setShowSecretKey] = useState(false);
+  const [showWebhookSecret, setShowWebhookSecret] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const [themesRes, pluginsRes, settingsRes, emailRes, domainRes] = await Promise.all([
+      const [themesRes, pluginsRes, settingsRes, emailRes, domainRes, paymentRes] = await Promise.all([
         themesApi.getAll(),
         pluginsApi.getAll(),
         settingsApi.getAll(),
         systemConfigApi.getEmailConfig().catch(() => ({ data: null })),
         systemConfigApi.getDomainConfig().catch(() => ({ data: null })),
+        systemConfigApi.getPaymentConfig().catch(() => ({ data: null })),
       ]);
       setThemes(themesRes.data);
       setPlugins(pluginsRes.data);
@@ -131,6 +152,11 @@ export default function Settings() {
           supportEmail: domainRes.data.supportEmail || '',
           siteName: domainRes.data.siteName || '',
         });
+      }
+
+      // Load payment config
+      if (paymentRes.data) {
+        setPaymentConfig(paymentRes.data);
       }
     } catch (error) {
       toast.error('Failed to load settings');
@@ -190,6 +216,43 @@ export default function Settings() {
       toast.error(error.response?.data?.message || 'Failed to save domain settings');
     } finally {
       setDomainSaving(false);
+    }
+  };
+
+  // Payment settings handlers
+  const handleSavePaymentConfig = async () => {
+    // Validate at least one field is being updated
+    if (!paymentInput.publishableKey && !paymentInput.secretKey && !paymentInput.webhookSecret) {
+      toast.error('Please enter at least one API key to update');
+      return;
+    }
+
+    setPaymentSaving(true);
+    try {
+      await systemConfigApi.savePaymentConfig(paymentInput);
+      toast.success('Payment settings saved successfully');
+      // Clear input fields and refresh config
+      setPaymentInput({ publishableKey: '', secretKey: '', webhookSecret: '' });
+      const paymentRes = await systemConfigApi.getPaymentConfig();
+      if (paymentRes.data) {
+        setPaymentConfig(paymentRes.data);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save payment settings');
+    } finally {
+      setPaymentSaving(false);
+    }
+  };
+
+  const handleTestPaymentConnection = async () => {
+    setPaymentTesting(true);
+    try {
+      const result = await systemConfigApi.testPaymentConnection();
+      toast.success(result.data.message || 'Stripe connection successful');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to connect to Stripe');
+    } finally {
+      setPaymentTesting(false);
     }
   };
 
@@ -338,6 +401,7 @@ export default function Settings() {
         <nav className="-mb-px flex space-x-8 overflow-x-auto">
           {[
             { id: 'general', label: 'General', icon: null, tooltip: SETTINGS_TOOLTIPS.general },
+            { id: 'payment', label: 'Payment', icon: FiCreditCard, tooltip: SETTINGS_TOOLTIPS.payment },
             { id: 'email', label: 'Email', icon: FiMail, tooltip: SETTINGS_TOOLTIPS.email },
             { id: 'domain', label: 'Domain', icon: FiGlobe, tooltip: SETTINGS_TOOLTIPS.domain },
             { id: 'themes', label: 'Themes', icon: null, tooltip: SETTINGS_TOOLTIPS.themes },
@@ -924,6 +988,158 @@ export default function Settings() {
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Settings Tab */}
+      {activeTab === 'payment' && (
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <FiCreditCard className="text-emerald-400" size={24} />
+              <h2 className="text-xl font-bold text-white">Payment Settings (Stripe)</h2>
+            </div>
+            {paymentConfig.isConfigured && (
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+                paymentConfig.isLiveMode
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'bg-amber-500/20 text-amber-400'
+              }`}>
+                <FiZap size={14} />
+                {paymentConfig.isLiveMode ? 'LIVE MODE' : 'TEST MODE'}
+              </div>
+            )}
+          </div>
+
+          {/* Current Configuration Status */}
+          <div className={`p-4 rounded-lg mb-6 ${
+            paymentConfig.isConfigured
+              ? 'bg-emerald-500/10 border border-emerald-500/30'
+              : 'bg-amber-500/10 border border-amber-500/30'
+          }`}>
+            <div className="flex items-center gap-2 mb-2">
+              <FiInfo size={16} className={paymentConfig.isConfigured ? 'text-emerald-400' : 'text-amber-400'} />
+              <span className={`font-medium ${paymentConfig.isConfigured ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {paymentConfig.isConfigured ? 'Stripe is configured' : 'Stripe is not configured'}
+              </span>
+            </div>
+            {paymentConfig.isConfigured && (
+              <div className="text-sm text-slate-400 space-y-1">
+                <p><strong>Publishable Key:</strong> {paymentConfig.publishableKey || 'Not set'}</p>
+                <p><strong>Secret Key:</strong> {paymentConfig.secretKey || 'Not set'}</p>
+                <p><strong>Webhook Secret:</strong> {paymentConfig.webhookSecret || 'Not set'}</p>
+              </div>
+            )}
+          </div>
+
+          <p className="text-slate-400 mb-6">
+            Enter your Stripe API keys below. Get your keys from the{' '}
+            <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+              Stripe Dashboard
+            </a>.
+          </p>
+
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-2">Publishable Key</label>
+              <input
+                type="text"
+                value={paymentInput.publishableKey}
+                onChange={(e) => setPaymentInput({ ...paymentInput, publishableKey: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 font-mono text-sm"
+                placeholder="pk_test_... or pk_live_..."
+              />
+              <p className="text-xs text-slate-500 mt-1">Starts with pk_test_ (test mode) or pk_live_ (live mode)</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-2">Secret Key</label>
+              <div className="relative">
+                <input
+                  type={showSecretKey ? 'text' : 'password'}
+                  value={paymentInput.secretKey}
+                  onChange={(e) => setPaymentInput({ ...paymentInput, secretKey: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 font-mono text-sm pr-10"
+                  placeholder="sk_test_... or sk_live_..."
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSecretKey(!showSecretKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  {showSecretKey ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Starts with sk_test_ (test mode) or sk_live_ (live mode)</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-2">Webhook Secret</label>
+              <div className="relative">
+                <input
+                  type={showWebhookSecret ? 'text' : 'password'}
+                  value={paymentInput.webhookSecret}
+                  onChange={(e) => setPaymentInput({ ...paymentInput, webhookSecret: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 font-mono text-sm pr-10"
+                  placeholder="whsec_..."
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowWebhookSecret(!showWebhookSecret)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  {showWebhookSecret ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Get this from{' '}
+                <a href="https://dashboard.stripe.com/webhooks" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                  Stripe Webhooks
+                </a>
+                {' '}after creating a webhook endpoint
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-700/50">
+              <button
+                onClick={handleSavePaymentConfig}
+                disabled={paymentSaving}
+                className="flex items-center px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+              >
+                {paymentSaving ? (
+                  <>
+                    <FiRefreshCw className="mr-2 animate-spin" size={18} />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FiCheck className="mr-2" size={18} />
+                    Save Payment Settings
+                  </>
+                )}
+              </button>
+
+              {paymentConfig.isConfigured && (
+                <button
+                  onClick={handleTestPaymentConnection}
+                  disabled={paymentTesting}
+                  className="flex items-center px-4 py-2.5 border border-blue-500/50 text-blue-400 rounded-lg hover:bg-blue-500/10 transition-all disabled:opacity-50"
+                >
+                  {paymentTesting ? (
+                    <>
+                      <FiRefreshCw className="mr-2 animate-spin" size={18} />
+                      Testing...
+                    </>
+                  ) : (
+                    <>
+                      <FiZap className="mr-2" size={18} />
+                      Test Connection
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

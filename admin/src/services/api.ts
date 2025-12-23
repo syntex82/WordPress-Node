@@ -128,6 +128,28 @@ export interface SetupStatus {
   domainConfigured: boolean;
 }
 
+export interface PaymentConfig {
+  publishableKey: string;
+  secretKey: string;
+  webhookSecret: string;
+  isLiveMode: boolean;
+  isConfigured: boolean;
+  provider: string;
+}
+
+export interface PaymentConfigInput {
+  publishableKey?: string;
+  secretKey?: string;
+  webhookSecret?: string;
+}
+
+export interface PaymentTestResult {
+  success: boolean;
+  message: string;
+  accountId?: string;
+  isLiveMode?: boolean;
+}
+
 export const systemConfigApi = {
   // Email/SMTP configuration
   getEmailConfig: () => api.get<SmtpConfig>('/system-config/email'),
@@ -137,6 +159,11 @@ export const systemConfigApi = {
   // Domain configuration
   getDomainConfig: () => api.get<DomainConfig>('/system-config/domain'),
   saveDomainConfig: (config: DomainConfig) => api.put('/system-config/domain', config),
+
+  // Payment/Stripe configuration
+  getPaymentConfig: () => api.get<PaymentConfig>('/system-config/payment'),
+  savePaymentConfig: (config: PaymentConfigInput) => api.put('/system-config/payment', config),
+  testPaymentConnection: () => api.post<PaymentTestResult>('/system-config/payment/test'),
 
   // Setup status
   getSetupStatus: () => api.get<SetupStatus>('/system-config/setup-status'),

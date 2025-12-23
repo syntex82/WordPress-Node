@@ -5,7 +5,8 @@
  */
 
 import { Controller, Get, Post, Put, Body, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
-import { SystemConfigService, SmtpConfig, DomainConfig, MarketplaceConfig } from './system-config.service';
+import { SystemConfigService, SmtpConfig, DomainConfig, MarketplaceConfig, StripeConfig } from './system-config.service';
+import Stripe from 'stripe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -157,6 +158,96 @@ export class SystemConfigController {
     }
     await this.systemConfig.saveMarketplaceConfig(config);
     return { success: true, message: 'Marketplace settings saved successfully' };
+  }
+
+  /**
+   * Get Stripe/Payment configuration (keys masked)
+   * GET /api/system-config/payment
+   */
+  @Get('payment')
+  async getPaymentConfig() {
+    const config = await this.systemConfig.getStripeConfig();
+
+    // Mask sensitive keys - show only last 4 characters
+    const maskKey = (key: string) => {
+      if (!key || key.length < 8) return key ? '****' : '';
+      return `${key.substring(0, 7)}...${key.slice(-4)}`;
+    };
+
+    return {
+      publishableKey: maskKey(config.publishableKey),
+      secretKey: maskKey(config.secretKey),
+      webhookSecret: maskKey(config.webhookSecret),
+      isLiveMode: config.isLiveMode,
+      isConfigured: config.isConfigured,
+      provider: 'stripe',
+    };
+  }
+
+  /**
+   * Save Stripe/Payment configuration
+   * PUT /api/system-config/payment
+   */
+  @Put('payment')
+  async savePaymentConfig(@Body() body: { publishableKey?: string; secretKey?: string; webhookSecret?: string }) {
+    // Validate key formats if provided
+    if (body.publishableKey && !body.publishableKey.startsWith('pk_')) {
+      throw new HttpException('Invalid publishable key format. Must start with pk_test_ or pk_live_', HttpStatus.BAD_REQUEST);
+    }
+    if (body.secretKey && !body.secretKey.startsWith('sk_')) {
+      throw new HttpException('Invalid secret key format. Must start with sk_test_ or sk_live_', HttpStatus.BAD_REQUEST);
+    }
+    if (body.webhookSecret && !body.webhookSecret.startsWith('whsec_')) {
+      throw new HttpException('Invalid webhook secret format. Must start with whsec_', HttpStatus.BAD_REQUEST);
+    }
+
+    // Check for mode mismatch (mixing test and live keys)
+    if (body.publishableKey && body.secretKey) {
+      const pubIsLive = body.publishableKey.startsWith('pk_live_');
+      const secIsLive = body.secretKey.startsWith('sk_live_');
+      if (pubIsLive !== secIsLive) {
+        throw new HttpException('Key mode mismatch: Cannot mix test and live keys', HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    await this.systemConfig.saveStripeConfig({
+      publishableKey: body.publishableKey || '',
+      secretKey: body.secretKey || '',
+      webhookSecret: body.webhookSecret || '',
+    });
+
+    return { success: true, message: 'Payment settings saved successfully' };
+  }
+
+  /**
+   * Test Stripe connection
+   * POST /api/system-config/payment/test
+   */
+  @Post('payment/test')
+  async testPaymentConfig() {
+    const config = await this.systemConfig.getStripeConfig();
+
+    if (!config.secretKey) {
+      throw new HttpException('Stripe secret key is not configured', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      // Create a Stripe instance and test the connection
+      const stripe = new Stripe(config.secretKey);
+
+      // Try to retrieve account info to verify the key works
+      const account = await stripe.accounts.retrieve();
+
+      return {
+        success: true,
+        message: 'Stripe connection successful',
+        accountId: account.id,
+        isLiveMode: config.isLiveMode,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(`Stripe connection failed: ${message}`, HttpStatus.BAD_REQUEST);
+    }
   }
 }
 

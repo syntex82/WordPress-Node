@@ -34,8 +34,16 @@ export interface MarketplaceConfig {
   enabled: boolean;
 }
 
+export interface StripeConfig {
+  publishableKey: string;
+  secretKey: string;
+  webhookSecret: string;
+  isLiveMode: boolean;
+  isConfigured: boolean;
+}
+
 // Keys that should be encrypted
-const ENCRYPTED_KEYS = ['smtp_pass', 'api_key', 'webhook_secret'];
+const ENCRYPTED_KEYS = ['smtp_pass', 'api_key', 'webhook_secret', 'stripe_secret_key', 'stripe_webhook_secret'];
 
 @Injectable()
 export class SystemConfigService implements OnModuleInit {
@@ -217,6 +225,42 @@ export class SystemConfigService implements OnModuleInit {
    */
   async getPlatformFeePercent(): Promise<number> {
     return parseFloat(await this.get('marketplace_fee_percent', '10'));
+  }
+
+  /**
+   * Get Stripe configuration
+   */
+  async getStripeConfig(): Promise<StripeConfig> {
+    const publishableKey = await this.get('stripe_publishable_key', this.configService.get('STRIPE_PUBLISHABLE_KEY', ''));
+    const secretKey = await this.get('stripe_secret_key', this.configService.get('STRIPE_SECRET_KEY', ''));
+    const webhookSecret = await this.get('stripe_webhook_secret', this.configService.get('STRIPE_WEBHOOK_SECRET', ''));
+
+    // Determine if live mode based on key prefix
+    const isLiveMode = publishableKey.startsWith('pk_live_') || secretKey.startsWith('sk_live_');
+    const isConfigured = !!(publishableKey && secretKey);
+
+    return {
+      publishableKey,
+      secretKey,
+      webhookSecret,
+      isLiveMode,
+      isConfigured,
+    };
+  }
+
+  /**
+   * Save Stripe configuration
+   */
+  async saveStripeConfig(config: { publishableKey: string; secretKey: string; webhookSecret: string }): Promise<void> {
+    if (config.publishableKey) {
+      await this.set('stripe_publishable_key', config.publishableKey, 'payment', 'Stripe publishable key');
+    }
+    if (config.secretKey) {
+      await this.set('stripe_secret_key', config.secretKey, 'payment', 'Stripe secret key (encrypted)');
+    }
+    if (config.webhookSecret) {
+      await this.set('stripe_webhook_secret', config.webhookSecret, 'payment', 'Stripe webhook secret (encrypted)');
+    }
   }
 
   /**
