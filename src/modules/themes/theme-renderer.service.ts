@@ -8,8 +8,13 @@ import { ThemesService } from './themes.service';
 import { SettingsService } from '../settings/settings.service';
 import { MenusService } from '../menus/menus.service';
 import { CustomizationRendererService } from './customization-renderer.service';
+import { parseUserAgent, getDeviceClasses, DeviceInfo } from '../../utils/device-detection';
 import * as Handlebars from 'handlebars';
 import * as fs from 'fs/promises';
+
+export interface RenderOptions {
+  userAgent?: string;
+}
 
 @Injectable()
 export class ThemeRendererService {
@@ -132,6 +137,7 @@ export class ThemeRendererService {
     template: string,
     data: any,
     user?: { id: string; role: string } | null,
+    options?: RenderOptions,
   ): Promise<string> {
     try {
       const activeTheme = await this.themesService.getActiveTheme();
@@ -165,6 +171,10 @@ export class ThemeRendererService {
       // Check if user can customize (ADMIN or EDITOR)
       const canCustomize = user && (user.role === 'ADMIN' || user.role === 'EDITOR');
 
+      // Parse device info from user agent
+      const device: DeviceInfo = parseUserAgent(options?.userAgent);
+      const deviceClasses = getDeviceClasses(device);
+
       // Merge data with site settings and menus
       const renderData = {
         ...data,
@@ -175,6 +185,9 @@ export class ThemeRendererService {
           header: headerMenu,
           footer: footerMenu,
         },
+        // Device detection info for responsive templates
+        device,
+        deviceClasses,
         // User info for templates (header user menu, etc.)
         // Use provided user parameter, or fall back to data.user if passed in data
         user: user

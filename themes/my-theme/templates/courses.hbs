@@ -41,9 +41,29 @@
   .empty-state .icon { font-size: 4rem; margin-bottom: 1rem; }
 
   @media (max-width: 768px) {
-    .courses-filters { flex-direction: column; align-items: stretch; }
-    .search-box { max-width: none; }
-    .courses-grid { grid-template-columns: 1fr; }
+    .courses-filters { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+    .search-box { max-width: none; min-width: auto; }
+    .courses-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .courses-header h1 { font-size: 1.75rem; }
+    .filter-btn { flex: 1; text-align: center; justify-content: center; min-height: 44px; }
+    .courses-filters > .filter-btn { display: inline-flex; }
+  }
+
+  @media (max-width: 480px) {
+    .courses-section { padding: 2rem 0; }
+    .courses-header { margin-bottom: 1.5rem; }
+    .courses-header h1 { font-size: 1.5rem; }
+    .courses-header p { font-size: 0.9rem; }
+    .filter-btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
+    .search-input { padding: 0.75rem 1rem 0.75rem 2.5rem; font-size: 16px; }
+    .course-card { border-radius: 12px; }
+    .course-content { padding: 1rem; }
+    .course-title { font-size: 1rem; }
+    .course-description { font-size: 0.85rem; -webkit-line-clamp: 2; }
+    .course-meta { font-size: 0.75rem; gap: 0.75rem; }
+    .enroll-btn { padding: 0.75rem 1rem; min-height: 44px; }
+    .empty-state { padding: 3rem 1.5rem; }
+    .empty-state .icon { font-size: 3rem; }
   }
 </style>
 

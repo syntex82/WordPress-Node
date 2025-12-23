@@ -41,8 +41,28 @@
   #emptyState p, #notLoggedIn p { color: var(--color-text-muted); margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto; }
 
   @media (max-width: 768px) {
-    .page-header { flex-direction: column; align-items: flex-start; }
-    #coursesGrid { grid-template-columns: 1fr; }
+    .page-header { flex-direction: column; align-items: stretch; text-align: center; }
+    .page-header h1 { font-size: 1.5rem; }
+    .page-header .btn { width: 100%; justify-content: center; }
+    #courseFilters { justify-content: center; }
+    .filter-btn { flex: 1; min-width: 100px; text-align: center; justify-content: center; }
+    #coursesGrid { grid-template-columns: 1fr; gap: 1rem; }
+    .course-card { border-radius: 12px; }
+    .course-image { height: 160px; }
+    .course-content { padding: 1rem; }
+    .course-title { font-size: 1rem; }
+    .btn-full { padding: 0.75rem 1rem; min-height: 44px; }
+  }
+
+  @media (max-width: 480px) {
+    .my-courses-section { padding: 2rem 0; }
+    .page-header h1 { font-size: 1.35rem; }
+    #courseFilters { gap: 0.5rem; }
+    .filter-btn { padding: 0.5rem 1rem; font-size: 0.85rem; min-height: 44px; }
+    .progress-header { font-size: 0.8rem; }
+    .course-lessons { font-size: 0.8rem; }
+    #emptyState, #notLoggedIn { padding: 3rem 1.5rem; }
+    #emptyState .icon, #notLoggedIn .icon { font-size: 3rem; }
   }
 </style>
 

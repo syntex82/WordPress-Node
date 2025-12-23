@@ -1,12 +1,13 @@
 /**
  * LMS Learning Player - Course learning interface
  * Enhanced with video progress tracking and external video support
+ * Mobile-responsive with collapsible sidebar
  */
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { lmsApi } from '../../services/api';
 import toast from 'react-hot-toast';
-import { FiCheck, FiPlay, FiChevronLeft, FiChevronRight, FiAward, FiBookOpen, FiFileText } from 'react-icons/fi';
+import { FiCheck, FiPlay, FiChevronLeft, FiChevronRight, FiAward, FiBookOpen, FiFileText, FiMenu, FiX } from 'react-icons/fi';
 
 interface LessonProgress {
   id: string;
@@ -36,6 +37,7 @@ export default function LearningPlayer() {
   const [currentLesson, setCurrentLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const lastProgressUpdate = useRef(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     loadCourseData();
@@ -173,10 +175,36 @@ export default function LearningPlayer() {
   if (!course) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">Course not found</div>;
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen bg-slate-900 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <div className="lg:hidden flex items-center justify-between p-4 bg-slate-800 border-b border-slate-700/50">
+        <Link to={`/lms/course/${course.slug}`} className="text-blue-400 text-sm hover:text-blue-300 transition-colors">← Back</Link>
+        <h2 className="font-bold text-sm text-white truncate flex-1 mx-4 text-center">{course.title}</h2>
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="p-2 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition-colors"
+          aria-label="Toggle lessons menu"
+        >
+          {sidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+        </button>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-80 bg-slate-800 border-r border-slate-700/50 flex flex-col">
-        <div className="p-4 border-b border-slate-700/50">
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-80 max-w-[85vw] bg-slate-800 border-r border-slate-700/50 flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-4 border-b border-slate-700/50 hidden lg:block">
           <Link to={`/lms/course/${course.slug}`} className="text-blue-400 text-sm hover:text-blue-300 transition-colors">← Back to Course</Link>
           <h2 className="font-bold text-lg mt-2 text-white">{course.title}</h2>
           <div className="mt-2">
@@ -189,6 +217,16 @@ export default function LearningPlayer() {
             </div>
           </div>
         </div>
+        {/* Mobile Progress Bar */}
+        <div className="p-4 border-b border-slate-700/50 lg:hidden">
+          <div className="flex justify-between text-sm text-slate-400 mb-1">
+            <span>Progress</span>
+            <span>{progress?.percentComplete || 0}%</span>
+          </div>
+          <div className="w-full bg-slate-700 rounded-full h-2">
+            <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${progress?.percentComplete || 0}%` }} />
+          </div>
+        </div>
         <nav className="flex-1 overflow-y-auto">
           {/* Lessons */}
           <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-700/50">
@@ -197,8 +235,8 @@ export default function LearningPlayer() {
           {course.lessons?.map((lesson: any, index: number) => (
             <button
               key={lesson.id}
-              onClick={() => loadLesson(lesson.id)}
-              className={`w-full text-left px-4 py-3 border-b border-slate-700/50 flex items-center gap-3 hover:bg-slate-700/50 transition-colors ${
+              onClick={() => { loadLesson(lesson.id); setSidebarOpen(false); }}
+              className={`w-full text-left px-4 py-3 border-b border-slate-700/50 flex items-center gap-3 hover:bg-slate-700/50 transition-colors min-h-[48px] ${
                 currentLesson?.id === lesson.id ? 'bg-blue-500/10 border-l-4 border-l-blue-500' : ''
               }`}
             >
@@ -247,11 +285,11 @@ export default function LearningPlayer() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         {currentLesson ? (
-          <div className="max-w-4xl mx-auto p-8">
+          <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
             {/* Lesson Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <span className={`p-2 rounded-xl ${
+                <span className={`p-2 rounded-xl flex-shrink-0 ${
                   currentLesson.type === 'VIDEO' ? 'bg-purple-500/20 text-purple-400' :
                   currentLesson.type === 'QUIZ' ? 'bg-orange-500/20 text-orange-400' :
                   'bg-blue-500/20 text-blue-400'
@@ -259,15 +297,15 @@ export default function LearningPlayer() {
                   {currentLesson.type === 'VIDEO' ? <FiPlay /> :
                    currentLesson.type === 'QUIZ' ? <FiFileText /> : <FiBookOpen />}
                 </span>
-                <div>
-                  <h1 className="text-2xl font-bold text-white">{currentLesson.title}</h1>
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{currentLesson.title}</h1>
                   <p className="text-sm text-slate-400">
                     Lesson {getCurrentLessonIndex() + 1} of {course.lessons?.length || 0}
                   </p>
                 </div>
               </div>
               {isLessonComplete(currentLesson.id) && (
-                <span className="flex items-center gap-1 text-green-400 bg-green-500/20 px-3 py-1 rounded-full">
+                <span className="flex items-center gap-1 text-green-400 bg-green-500/20 px-3 py-1 rounded-full text-sm self-start sm:self-auto">
                   <FiCheck /> Completed
                 </span>
               )}
@@ -303,38 +341,42 @@ export default function LearningPlayer() {
             )}
 
             {/* Actions */}
-            <div className="flex justify-between items-center bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-4">
-              <button
-                onClick={goToPrevLesson}
-                disabled={getCurrentLessonIndex() <= 0}
-                className="flex items-center gap-2 px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <FiChevronLeft /> Previous
-              </button>
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-4">
+              {/* Navigation Row (Mobile: full width) */}
+              <div className="flex justify-between sm:contents gap-2">
+                <button
+                  onClick={goToPrevLesson}
+                  disabled={getCurrentLessonIndex() <= 0}
+                  className="flex items-center justify-center gap-2 px-4 py-3 sm:py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[48px] flex-1 sm:flex-initial"
+                >
+                  <FiChevronLeft /> <span className="hidden sm:inline">Previous</span>
+                </button>
 
-              <div className="flex items-center gap-4">
+                <button
+                  onClick={goToNextLesson}
+                  disabled={getCurrentLessonIndex() >= (course.lessons?.length || 0) - 1}
+                  className="flex items-center justify-center gap-2 px-4 py-3 sm:py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[48px] flex-1 sm:flex-initial sm:order-last"
+                >
+                  <span className="hidden sm:inline">Next</span> <FiChevronRight />
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 {!isLessonComplete(currentLesson.id) && (
                   <button onClick={handleMarkComplete}
-                    className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-2 rounded-xl hover:from-green-700 hover:to-green-600 transition-colors shadow-lg shadow-green-500/20">
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-3 sm:py-2 rounded-xl hover:from-green-700 hover:to-green-600 transition-colors shadow-lg shadow-green-500/20 min-h-[48px]">
                     <FiCheck /> Mark Complete
                   </button>
                 )}
 
                 {progress?.isComplete && course.certificateEnabled && (
                   <Link to={`/lms/certificate/${courseId}`}
-                    className="flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white px-6 py-2 rounded-xl hover:from-yellow-700 hover:to-yellow-600 transition-colors shadow-lg shadow-yellow-500/20">
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white px-6 py-3 sm:py-2 rounded-xl hover:from-yellow-700 hover:to-yellow-600 transition-colors shadow-lg shadow-yellow-500/20 min-h-[48px]">
                     <FiAward /> Get Certificate
                   </Link>
                 )}
               </div>
-
-              <button
-                onClick={goToNextLesson}
-                disabled={getCurrentLessonIndex() >= (course.lessons?.length || 0) - 1}
-                className="flex items-center gap-2 px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next <FiChevronRight />
-              </button>
             </div>
           </div>
         ) : (

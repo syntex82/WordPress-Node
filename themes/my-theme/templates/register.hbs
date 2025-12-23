@@ -27,6 +27,19 @@
   .benefits { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; padding: 1rem; background: var(--color-background); border-radius: var(--border-radius-sm); }
   .benefit { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--color-text-muted); }
   .benefit .check { color: var(--color-success); }
+
+  @media (max-width: 480px) {
+    .auth-section { padding: 1.5rem 1rem; min-height: calc(100vh - 60px); }
+    .auth-card { padding: 1.5rem; border-radius: 16px; }
+    .auth-header .icon { font-size: 2.5rem; }
+    .auth-header h1 { font-size: 1.5rem; }
+    .auth-header p { font-size: 0.9rem; }
+    .form-input { padding: 0.875rem 1rem; font-size: 16px; }
+    .submit-btn { padding: 0.875rem; min-height: 48px; }
+    .benefits { padding: 0.875rem; }
+    .benefit { font-size: 0.85rem; }
+    .auth-footer { margin-top: 1.25rem; padding-top: 1.25rem; }
+  }
 </style>
 
 <section class="auth-section">

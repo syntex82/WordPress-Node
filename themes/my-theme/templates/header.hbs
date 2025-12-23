@@ -2,15 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>{{#if post}}{{post.title}} - {{/if}}{{#if page}}{{page.title}} - {{/if}}{{site.name}}</title>
   <meta name="description" content="{{#if post}}{{post.excerpt}}{{else}}{{site.description}}{{/if}}">
+  <meta name="theme-color" content="#6366F1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/themes/my-theme/assets/css/style.css">
+  <script>
+    // Client-side device detection (runs immediately to prevent FOUC)
+    (function() {
+      var b = document.documentElement;
+      var ua = navigator.userAgent.toLowerCase();
+      var isTablet = /ipad|tablet|playbook|silk/.test(ua) || (ua.includes('android') && !ua.includes('mobile'));
+      var isMobile = !isTablet && /mobile|android|iphone|ipod|blackberry|windows phone/.test(ua);
+      var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      b.classList.add(isTablet ? 'device-tablet' : isMobile ? 'device-mobile' : 'device-desktop');
+      b.classList.add(isTouch ? 'touch-device' : 'no-touch');
+    })();
+  </script>
 </head>
-<body>
+<body class="{{deviceClasses}}">
   <nav class="navbar">
     <div class="container">
       <div class="nav-wrapper">
@@ -51,8 +64,94 @@
           <a href="/login" class="nav-link nav-auth-link">Sign In</a>
           <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
           {{/if}}
+          <!-- Mobile Menu Toggle -->
+          <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+            <span class="hamburger"></span>
+          </button>
         </div>
       </div>
     </div>
   </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <!-- Mobile Navigation Menu -->
+  <nav class="mobile-nav-menu" id="mobileNavMenu">
+    <div class="mobile-nav-header">
+      <a href="/" class="logo">{{site.name}}</a>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="mobile-nav-links">
+      {{#if menus.header}}
+        {{#each menus.header.items}}
+          <a href="{{this.url}}" class="mobile-nav-link" target="{{this.target}}">{{this.label}}</a>
+        {{/each}}
+      {{else}}
+        <a href="/" class="mobile-nav-link">🏠 Home</a>
+        <a href="/shop" class="mobile-nav-link">🛍️ Shop</a>
+        <a href="/courses" class="mobile-nav-link">📚 Courses</a>
+        <a href="/blog" class="mobile-nav-link">📝 Blog</a>
+        <a href="/marketplace" class="mobile-nav-link">🏪 Marketplace</a>
+      {{/if}}
+      <div class="mobile-nav-divider"></div>
+      {{#if user}}
+        <a href="/my-account" class="mobile-nav-link">👤 My Account</a>
+        <a href="/my-courses" class="mobile-nav-link">📖 My Courses</a>
+        <a href="/orders" class="mobile-nav-link">📦 Orders</a>
+        <a href="/cart" class="mobile-nav-link">🛒 Cart</a>
+        <div class="mobile-nav-divider"></div>
+        <a href="#" class="mobile-nav-link" id="mobileLogoutBtn">🚪 Sign Out</a>
+      {{else}}
+        <a href="/login" class="mobile-nav-link">🔐 Sign In</a>
+        <a href="/register" class="mobile-nav-link">✨ Get Started</a>
+      {{/if}}
+    </div>
+  </nav>
+
+  <script>
+  (function() {
+    var toggle = document.getElementById('mobileMenuToggle');
+    var overlay = document.getElementById('mobileMenuOverlay');
+    var menu = document.getElementById('mobileNavMenu');
+    var close = document.getElementById('mobileNavClose');
+
+    function openMenu() {
+      toggle.classList.add('active');
+      overlay.classList.add('active');
+      menu.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      toggle.classList.remove('active');
+      overlay.classList.remove('active');
+      menu.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    if (toggle) toggle.addEventListener('click', openMenu);
+    if (overlay) overlay.addEventListener('click', closeMenu);
+    if (close) close.addEventListener('click', closeMenu);
+
+    // Close menu on link click
+    var links = menu ? menu.querySelectorAll('.mobile-nav-link') : [];
+    links.forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (!this.id || this.id !== 'mobileLogoutBtn') closeMenu();
+      });
+    });
+
+    // Mobile logout
+    var mobileLogout = document.getElementById('mobileLogoutBtn');
+    if (mobileLogout) {
+      mobileLogout.addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      });
+    }
+  })();
+  </script>
   <main class="main-content">
