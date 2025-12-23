@@ -1,0 +1,25 @@
+{
+  "name": "WordPress Node",
+  "short_name": "WP Node",
+  "description": "Modern WordPress Node CMS",
+  "start_url": "/admin/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#4f46e5",
+  "background_color": "#1e293b",
+  "icons": [
+    {
+      "src": "/pwa/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

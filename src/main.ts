@@ -223,14 +223,15 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
-  // Ensure required upload directories exist
-  const uploadDirs = [
+  // Ensure required directories exist
+  const requiredDirs = [
     join(process.cwd(), 'uploads'),
     join(process.cwd(), 'uploads', 'messages'),
     join(process.cwd(), 'uploads', 'media'),
     join(process.cwd(), 'uploads', 'groups'),
+    join(process.cwd(), 'public'),
   ];
-  for (const dir of uploadDirs) {
+  for (const dir of requiredDirs) {
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
       logger.log(`📁 Created directory: ${dir}`);
@@ -239,6 +240,12 @@ async function bootstrap() {
 
   // Serve static files with caching headers
   const staticOptions = isProduction ? { maxAge: '1y', etag: true, lastModified: true } : {};
+
+  // Serve public folder at root (for PWA files: manifest.json, sw.js, offline.html)
+  app.useStaticAssets(join(process.cwd(), 'public'), {
+    ...staticOptions,
+    maxAge: '1d', // PWA files should refresh more often
+  });
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
