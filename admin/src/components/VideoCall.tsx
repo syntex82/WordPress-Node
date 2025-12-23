@@ -237,10 +237,13 @@ export default function VideoCall({
 
   // Start call on mount (for outgoing calls)
   useEffect(() => {
-    if (!isIncoming) {
-      socket?.emit('call:initiate', { targetUserId: remoteUser.id, conversationId });
+    if (!isIncoming && socket) {
+      // Notify the other user and immediately start the WebRTC connection
+      socket.emit('call:initiate', { targetUserId: remoteUser.id, conversationId });
+      // Auto-start the call (get camera and send offer)
+      startCall();
     }
-  }, [isIncoming, socket, remoteUser.id, conversationId]);
+  }, [isIncoming, socket, remoteUser.id, conversationId, startCall]);
 
   // Cleanup on unmount
   useEffect(() => {
