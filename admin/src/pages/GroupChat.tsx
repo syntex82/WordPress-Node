@@ -86,10 +86,12 @@ export default function GroupChat() {
   const [members, setMembers] = useState<Member[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const [showMembers, setShowMembers] = useState(true);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
   const [searchMembers, setSearchMembers] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,13 +109,31 @@ export default function GroupChat() {
     if (group?.isMember && token) {
       // Use current origin for WebSocket connection (works in both dev and production)
       const wsUrl = `${window.location.protocol}//${window.location.host}/groups`;
-      const newSocket = io(wsUrl, { auth: { token }, transports: ['websocket', 'polling'], path: '/socket.io' });
+      const newSocket = io(wsUrl, {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+        path: '/socket.io',
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
 
       newSocket.on('connect', () => {
         console.log('Connected to groups gateway');
+        setSocketConnected(true);
         newSocket.emit('group:join', { groupId: id }, (response: any) => {
           if (response.onlineUsers) setOnlineUsers(response.onlineUsers);
         });
+      });
+
+      newSocket.on('disconnect', () => {
+        console.log('Disconnected from groups gateway');
+        setSocketConnected(false);
+      });
+
+      newSocket.on('connect_error', (error) => {
+        console.error('WebSocket connection error:', error.message);
+        setSocketConnected(false);
       });
 
       newSocket.on('group:message:new', (message: Message) => {
@@ -187,31 +207,57 @@ export default function GroupChat() {
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !socket) return;
-    socket.emit('group:message:send', { groupId: id, content: newMessage.trim() });
+    if (!newMessage.trim() || !id || sending) return;
+
+    const messageContent = newMessage.trim();
     setNewMessage('');
+    setSending(true);
     handleStopTyping();
-    inputRef.current?.focus();
+
+    try {
+      if (socket && socketConnected) {
+        socket.emit('group:message:send', { groupId: id, content: messageContent });
+      } else {
+        toast.error('Not connected to chat. Please refresh the page.');
+        setNewMessage(messageContent);
+      }
+    } catch (error) {
+      toast.error('Failed to send message. Please try again.');
+      setNewMessage(messageContent);
+    } finally {
+      setSending(false);
+      inputRef.current?.focus();
+    }
   };
 
   const handleTyping = () => {
-    if (!socket) return;
+    if (!socket || !socketConnected) return;
     socket.emit('group:typing:start', { groupId: id });
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => handleStopTyping(), 2000);
   };
 
   const handleStopTyping = () => {
-    if (!socket) return;
+    if (!socket || !socketConnected) return;
     socket.emit('group:typing:stop', { groupId: id });
   };
 
-  const handleDeleteMessage = (messageId: string) => {
-    if (!socket) return;
-    if (confirm('Delete this message?')) {
-      socket.emit('group:message:delete', { groupId: id, messageId });
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!id) return;
+    if (!confirm('Delete this message?')) return;
+
+    try {
+      if (socket && socketConnected) {
+        socket.emit('group:message:delete', { groupId: id, messageId });
+      } else {
+        await groupsApi.deleteMessage(id, messageId);
+        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      }
+      toast.success('Message deleted');
+    } catch (error) {
+      toast.error('Failed to delete message');
     }
   };
 
@@ -327,7 +373,13 @@ export default function GroupChat() {
                 <FiHash size={20} />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-white">{group.name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-bold text-lg text-white">{group.name}</h2>
+                  <div className={`px-2 py-0.5 rounded-lg text-xs inline-flex items-center gap-1 ${socketConnected ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${socketConnected ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'}`}></div>
+                    {socketConnected ? 'Live' : 'Connecting...'}
+                  </div>
+                </div>
                 <p className="text-sm text-slate-400">{onlineCount} online · {members.length} members</p>
               </div>
             </div>
@@ -428,9 +480,13 @@ export default function GroupChat() {
         <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-4">
           <div className="flex items-center gap-3 bg-slate-700/50 rounded-2xl px-4 py-2 border border-slate-600/50">
             <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-              placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" />
-            <button type="submit" disabled={!newMessage.trim()} className={`p-3 rounded-xl transition-all ${newMessage.trim() ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
-              <FiSend size={18} />
+              placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" disabled={sending} />
+            <button type="submit" disabled={!newMessage.trim() || sending} className={`p-3 rounded-xl transition-all ${newMessage.trim() && !sending ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
+              {sending ? (
+                <div className="w-[18px] h-[18px] border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <FiSend size={18} />
+              )}
             </button>
           </div>
         </form>

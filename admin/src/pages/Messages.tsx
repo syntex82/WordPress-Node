@@ -59,7 +59,9 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [sending, setSending] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
@@ -77,9 +79,30 @@ export default function Messages() {
     if (token) {
       // Use current origin for WebSocket connection (works in both dev and production)
       const wsUrl = `${window.location.protocol}//${window.location.host}/messages`;
-      const newSocket = io(wsUrl, { auth: { token }, transports: ['websocket', 'polling'], path: '/socket.io' });
+      const newSocket = io(wsUrl, {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+        path: '/socket.io',
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
 
-      newSocket.on('connect', () => console.log('Connected to messages gateway'));
+      newSocket.on('connect', () => {
+        console.log('Connected to messages gateway');
+        setSocketConnected(true);
+      });
+
+      newSocket.on('disconnect', () => {
+        console.log('Disconnected from messages gateway');
+        setSocketConnected(false);
+      });
+
+      newSocket.on('connect_error', (error) => {
+        console.error('WebSocket connection error:', error.message);
+        setSocketConnected(false);
+      });
+
       newSocket.on('user:online', (data: { userId: string }) => setOnlineUsers((prev) => [...new Set([...prev, data.userId])]));
       newSocket.on('user:offline', (data: { userId: string }) => setOnlineUsers((prev) => prev.filter((id) => id !== data.userId)));
 
@@ -143,31 +166,67 @@ export default function Messages() {
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !socket || !activeConversation) return;
-    socket.emit('dm:send', { conversationId: activeConversation.id, content: newMessage.trim() });
+    if (!newMessage.trim() || !activeConversation || sending) return;
+
+    const messageContent = newMessage.trim();
     setNewMessage('');
+    setSending(true);
     handleStopTyping();
-    inputRef.current?.focus();
+
+    try {
+      // Try WebSocket first if connected
+      if (socket && socketConnected) {
+        socket.emit('dm:send', { conversationId: activeConversation.id, content: messageContent });
+      } else {
+        // Fallback to HTTP API
+        const res = await messagesApi.sendMessage(activeConversation.id, messageContent);
+        // Add message to local state since WebSocket isn't connected
+        setMessages((prev) => {
+          if (prev.find((m) => m.id === res.data.id)) return prev;
+          return [...prev, res.data];
+        });
+        loadConversations();
+        scrollToBottom();
+      }
+      toast.success('Message sent');
+    } catch (error) {
+      toast.error('Failed to send message. Please try again.');
+      setNewMessage(messageContent); // Restore message on failure
+    } finally {
+      setSending(false);
+      inputRef.current?.focus();
+    }
   };
 
   const handleTyping = () => {
-    if (!socket || !activeConversation) return;
+    if (!socket || !socketConnected || !activeConversation) return;
     socket.emit('dm:typing:start', { conversationId: activeConversation.id });
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(handleStopTyping, 2000);
   };
 
   const handleStopTyping = () => {
-    if (!socket || !activeConversation) return;
+    if (!socket || !socketConnected || !activeConversation) return;
     socket.emit('dm:typing:stop', { conversationId: activeConversation.id });
   };
 
-  const handleDeleteMessage = (messageId: string) => {
-    if (!socket || !activeConversation) return;
-    if (confirm('Delete this message?')) {
-      socket.emit('dm:delete', { messageId, conversationId: activeConversation.id });
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!activeConversation) return;
+    if (!confirm('Delete this message?')) return;
+
+    try {
+      if (socket && socketConnected) {
+        socket.emit('dm:delete', { messageId, conversationId: activeConversation.id });
+      } else {
+        // HTTP fallback for delete
+        await messagesApi.deleteMessage(activeConversation.id, messageId);
+        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      }
+      toast.success('Message deleted');
+    } catch (error) {
+      toast.error('Failed to delete message');
     }
   };
 
@@ -232,11 +291,17 @@ export default function Messages() {
               <FiPlus size={20} />
             </button>
           </div>
-          {totalUnread > 0 && (
-            <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white text-sm inline-flex items-center gap-2">
-              <FiMessageSquare size={14} /> {totalUnread} unread message{totalUnread > 1 ? 's' : ''}
+          <div className="flex items-center gap-2">
+            {totalUnread > 0 && (
+              <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white text-sm inline-flex items-center gap-2">
+                <FiMessageSquare size={14} /> {totalUnread} unread message{totalUnread > 1 ? 's' : ''}
+              </div>
+            )}
+            <div className={`px-2 py-1 rounded-lg text-xs inline-flex items-center gap-1 ${socketConnected ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+              <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'}`}></div>
+              {socketConnected ? 'Live' : 'Connecting...'}
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -389,9 +454,13 @@ export default function Messages() {
             <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-4">
               <div className="flex items-center gap-3 bg-slate-700/50 rounded-2xl px-4 py-2 border border-slate-600/50">
                 <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-                  placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" />
-                <button type="submit" disabled={!newMessage.trim()} className={`p-3 rounded-xl transition-all ${newMessage.trim() ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
-                  <FiSend size={18} />
+                  placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" disabled={sending} />
+                <button type="submit" disabled={!newMessage.trim() || sending} className={`p-3 rounded-xl transition-all ${newMessage.trim() && !sending ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
+                  {sending ? (
+                    <div className="w-[18px] h-[18px] border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <FiSend size={18} />
+                  )}
                 </button>
               </div>
             </form>

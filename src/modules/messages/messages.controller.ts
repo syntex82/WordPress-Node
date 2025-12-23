@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { MessagesGateway } from './messages.gateway';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -81,5 +81,17 @@ export class MessagesController {
   @Get('online-users')
   async getOnlineUsers() {
     return { users: this.messagesGateway.getOnlineUsers() };
+  }
+
+  /**
+   * Delete a message (HTTP fallback, prefer WebSocket)
+   */
+  @Delete('conversations/:conversationId/messages/:messageId')
+  async deleteMessage(
+    @Request() req,
+    @Param('conversationId') conversationId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return this.messagesService.deleteMessage(conversationId, messageId, req.user.id);
   }
 }

@@ -1391,6 +1391,8 @@ export const messagesApi = {
     api.get(`/messages/conversations/${conversationId}/messages`, { params: { cursor, limit } }),
   sendMessage: (conversationId: string, content: string) =>
     api.post(`/messages/conversations/${conversationId}/messages`, { content }),
+  deleteMessage: (conversationId: string, messageId: string) =>
+    api.delete(`/messages/conversations/${conversationId}/messages/${messageId}`),
   markAsRead: (conversationId: string) => api.post(`/messages/conversations/${conversationId}/read`),
   getUnreadCount: () => api.get('/messages/unread-count'),
   getOnlineUsers: () => api.get('/messages/online-users'),

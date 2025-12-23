@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -162,5 +162,39 @@ export class MessagesService {
         isRead: false,
       },
     });
+  }
+
+  /**
+   * Delete a message
+   */
+  async deleteMessage(conversationId: string, messageId: string, userId: string) {
+    // Verify conversation exists and user is a participant
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        OR: [{ participant1Id: userId }, { participant2Id: userId }],
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    // Verify message exists and user is the sender
+    const message = await this.prisma.directMessage.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('You can only delete your own messages');
+    }
+
+    await this.prisma.directMessage.delete({ where: { id: messageId } });
+
+    return { success: true, messageId };
   }
 }
