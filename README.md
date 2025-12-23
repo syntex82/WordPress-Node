@@ -2168,6 +2168,213 @@ npm run dev
 
 <br />
 
+### 🖥️ VPS/Server Troubleshooting Commands
+
+Essential commands for managing and troubleshooting your WordPress Node CMS on a production VPS.
+
+<br />
+
+#### 🔐 Reset 2FA for a User
+
+If a user is locked out due to 2FA issues, reset it with this command:
+
+```bash
+cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.user.update({ where: { email: 'user@example.com' }, data: { twoFactorEnabled: false, twoFactorSecret: null, recoveryCodes: [] } }).then(u => console.log('✓ 2FA disabled for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
+```
+
+> 💡 Replace `user@example.com` with the actual user's email address.
+
+<br />
+
+#### 🔓 Unlock User Account
+
+If a user is locked out due to too many failed login attempts:
+
+```bash
+cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.user.update({ where: { email: 'user@example.com' }, data: { failedLoginAttempts: 0, accountLockedUntil: null } }).then(u => console.log('✓ Account unlocked for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
+```
+
+<br />
+
+#### 🔑 Reset User Password
+
+```bash
+cd /var/www/WordPress-Node && node -e "const bcrypt = require('bcrypt'); const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); bcrypt.hash('NewPassword123!', 10).then(hash => p.user.update({ where: { email: 'user@example.com' }, data: { password: hash } })).then(u => console.log('✓ Password reset for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
+```
+
+> ⚠️ Replace `NewPassword123!` with a strong password.
+
+<br />
+
+#### 📁 Fix Permission Issues
+
+If you get `EACCES: permission denied` errors (backup creation, file uploads, etc.):
+
+```bash
+# Check current ownership
+ls -la /var/www/WordPress-Node
+
+# Check what user the app is running as
+ps aux | grep node
+
+# Fix ownership (replace 'wpnode' with your app user)
+sudo chown -R wpnode:wpnode /var/www/WordPress-Node
+
+# Or fix specific directories only
+sudo chown -R wpnode:wpnode /var/www/WordPress-Node/backups
+sudo chown -R wpnode:wpnode /var/www/WordPress-Node/uploads
+sudo chown -R wpnode:wpnode /var/www/WordPress-Node/updates
+```
+
+<br />
+
+#### 🔄 PM2 Management Commands
+
+```bash
+# Check app status
+pm2 status
+
+# View logs (live)
+pm2 logs wordpress-node
+
+# View last 100 lines of logs
+pm2 logs wordpress-node --lines 100
+
+# Restart the app
+pm2 restart wordpress-node
+
+# Reload with zero-downtime
+pm2 reload wordpress-node
+
+# Stop the app
+pm2 stop wordpress-node
+
+# Start the app
+pm2 start wordpress-node
+
+# Delete and re-add the app
+pm2 delete wordpress-node
+pm2 start ecosystem.config.js
+
+# Save PM2 configuration (persists across reboots)
+pm2 save
+
+# Monitor CPU/Memory in real-time
+pm2 monit
+```
+
+<br />
+
+#### 🗄️ Database Commands
+
+```bash
+# Open Prisma Studio (database GUI)
+cd /var/www/WordPress-Node && npx prisma studio --browser none --hostname 0.0.0.0
+# Then access via http://your-vps-ip:5555 (close immediately after use!)
+
+# Run database migrations
+cd /var/www/WordPress-Node && npx prisma migrate deploy
+
+# Reset database (WARNING: destroys all data)
+cd /var/www/WordPress-Node && npx prisma migrate reset --force
+
+# Check database connection
+cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.\$connect().then(() => console.log('✓ Database connected')).catch(console.error).finally(() => p.\$disconnect());"
+
+# PostgreSQL direct access
+sudo -u postgres psql -d wordpress_node
+```
+
+<br />
+
+#### 🌐 Nginx Commands
+
+```bash
+# Test nginx configuration
+sudo nginx -t
+
+# Reload nginx (apply config changes)
+sudo systemctl reload nginx
+
+# Restart nginx
+sudo systemctl restart nginx
+
+# Check nginx status
+sudo systemctl status nginx
+
+# View nginx error logs
+sudo tail -f /var/log/nginx/error.log
+
+# View nginx access logs
+sudo tail -f /var/log/nginx/access.log
+```
+
+<br />
+
+#### 🔥 Service Status Checks
+
+```bash
+# Check all services at once
+echo "=== NGINX ===" && sudo systemctl status nginx --no-pager
+echo "=== POSTGRESQL ===" && sudo systemctl status postgresql --no-pager
+echo "=== REDIS ===" && sudo systemctl status redis-server --no-pager
+echo "=== PM2 ===" && pm2 status
+
+# Check if app is responding
+curl -s http://localhost:3000/health | jq .
+
+# Check listening ports
+sudo netstat -tlnp | grep -E '3000|5432|6379|80|443'
+```
+
+<br />
+
+#### 🔄 Manual Update Commands
+
+```bash
+cd /var/www/WordPress-Node
+
+# Pull latest changes
+git pull origin main
+
+# Install dependencies
+npm install
+cd admin && npm install && cd ..
+
+# Build
+npm run build
+cd admin && npm run build && cd ..
+
+# Run migrations
+npx prisma migrate deploy
+
+# Restart app
+pm2 restart wordpress-node
+```
+
+<br />
+
+#### 📊 System Monitoring
+
+```bash
+# Check disk space
+df -h
+
+# Check memory usage
+free -m
+
+# Check CPU and process info
+htop  # or 'top' if htop not installed
+
+# Check app memory usage
+pm2 monit
+
+# View system logs
+sudo journalctl -f
+```
+
+<br />
+
 ---
 
 ## 🚀 Production Deployment
