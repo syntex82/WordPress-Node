@@ -56,5 +56,35 @@
       WPAnalytics.init({ apiUrl: '/api/analytics' });
     }
   </script>
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+          console.log('PWA: Service Worker registered', reg.scope);
+        }).catch(function(err) {
+          console.log('PWA: Service Worker registration failed', err);
+        });
+      });
+    }
+    // PWA Install Prompt
+    var deferredPrompt;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Show install button if you have one
+      var installBtn = document.getElementById('pwa-install-btn');
+      if (installBtn) installBtn.style.display = 'block';
+    });
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(result) {
+          console.log('PWA Install:', result.outcome);
+          deferredPrompt = null;
+        });
+      }
+    }
+  </script>
 </body>
 </html>

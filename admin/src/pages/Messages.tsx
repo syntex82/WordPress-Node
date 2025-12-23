@@ -4,17 +4,26 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2, FiVideo, FiPaperclip, FiPhone } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 import { messagesApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+import VideoCall from '../components/VideoCall';
 
 interface User {
   id: string;
   name: string;
   email: string;
   avatar: string | null;
+}
+
+interface MediaAttachment {
+  url: string;
+  type: 'image' | 'video';
+  filename: string;
+  size: number;
+  mimeType: string;
 }
 
 interface Message {
@@ -24,6 +33,7 @@ interface Message {
   senderId: string;
   isRead: boolean;
   sender: User;
+  media?: MediaAttachment[];
 }
 
 interface Conversation {
@@ -67,8 +77,14 @@ export default function Messages() {
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchUsers, setSearchUsers] = useState('');
   const [userResults, setUserResults] = useState<User[]>([]);
+  const [pendingMedia, setPendingMedia] = useState<MediaAttachment[]>([]);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [lightboxMedia, setLightboxMedia] = useState<MediaAttachment | null>(null);
+  const [showVideoCall, setShowVideoCall] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<{ callerId: string; callerName: string; callerAvatar: string | null; conversationId: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -127,6 +143,27 @@ export default function Messages() {
         setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
       });
 
+      // Video call events
+      newSocket.on('call:incoming', (data: { callerId: string; callerName: string; callerAvatar: string | null; conversationId: string }) => {
+        setIncomingCall(data);
+        toast('Incoming video call from ' + data.callerName, { icon: '📞', duration: 10000 });
+      });
+
+      newSocket.on('call:accepted', () => {
+        toast.success('Call accepted');
+      });
+
+      newSocket.on('call:rejected', (data: { reason: string }) => {
+        toast.error(data.reason || 'Call declined');
+        setShowVideoCall(false);
+      });
+
+      newSocket.on('call:ended', () => {
+        toast('Call ended', { icon: '📞' });
+        setShowVideoCall(false);
+        setIncomingCall(null);
+      });
+
       setSocket(newSocket);
       return () => { newSocket.disconnect(); };
     }
@@ -168,20 +205,26 @@ export default function Messages() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeConversation || sending) return;
+    if ((!newMessage.trim() && pendingMedia.length === 0) || !activeConversation || sending) return;
 
     const messageContent = newMessage.trim();
+    const mediaToSend = [...pendingMedia];
     setNewMessage('');
+    setPendingMedia([]);
     setSending(true);
     handleStopTyping();
 
     try {
       // Try WebSocket first if connected
       if (socket && socketConnected) {
-        socket.emit('dm:send', { conversationId: activeConversation.id, content: messageContent });
+        socket.emit('dm:send', {
+          conversationId: activeConversation.id,
+          content: messageContent,
+          media: mediaToSend.length > 0 ? mediaToSend : undefined,
+        });
       } else {
         // Fallback to HTTP API
-        const res = await messagesApi.sendMessage(activeConversation.id, messageContent);
+        const res = await messagesApi.sendMessage(activeConversation.id, messageContent, mediaToSend.length > 0 ? mediaToSend : undefined);
         // Add message to local state since WebSocket isn't connected
         setMessages((prev) => {
           if (prev.find((m) => m.id === res.data.id)) return prev;
@@ -194,10 +237,44 @@ export default function Messages() {
     } catch (error) {
       toast.error('Failed to send message. Please try again.');
       setNewMessage(messageContent); // Restore message on failure
+      setPendingMedia(mediaToSend); // Restore media on failure
     } finally {
       setSending(false);
       inputRef.current?.focus();
     }
+  };
+
+  // Handle file selection for media upload
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingMedia(true);
+    const formData = new FormData();
+    Array.from(files).forEach((file) => formData.append('files', file));
+
+    try {
+      const res = await messagesApi.uploadMedia(formData);
+      setPendingMedia((prev) => [...prev, ...res.data.media]);
+      toast.success(`${files.length} file(s) ready to send`);
+    } catch (error) {
+      toast.error('Failed to upload media');
+    } finally {
+      setUploadingMedia(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Remove pending media
+  const removePendingMedia = (index: number) => {
+    setPendingMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const handleTyping = () => {
@@ -365,19 +442,30 @@ export default function Messages() {
         ) : (
           <>
             {/* Chat Header */}
-            <div className="bg-slate-800/50 backdrop-blur border-b border-slate-700/50 px-6 py-4 flex items-center gap-4">
-              <div className="relative">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(activeConversation.otherUser.name)} flex items-center justify-center text-white font-bold shadow-md`}>
-                  {activeConversation.otherUser.avatar ? <img src={activeConversation.otherUser.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : activeConversation.otherUser.name.charAt(0).toUpperCase()}
+            <div className="bg-slate-800/50 backdrop-blur border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(activeConversation.otherUser.name)} flex items-center justify-center text-white font-bold shadow-md`}>
+                    {activeConversation.otherUser.avatar ? <img src={activeConversation.otherUser.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : activeConversation.otherUser.name.charAt(0).toUpperCase()}
+                  </div>
+                  {onlineUsers.includes(activeConversation.otherUser.id) && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                  )}
                 </div>
-                {onlineUsers.includes(activeConversation.otherUser.id) && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
-                )}
+                <div>
+                  <h2 className="font-bold text-lg text-white">{activeConversation.otherUser.name}</h2>
+                  <p className="text-sm text-slate-400">{onlineUsers.includes(activeConversation.otherUser.id) ? <span className="text-green-400">● Online</span> : 'Offline'}</p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-bold text-lg text-white">{activeConversation.otherUser.name}</h2>
-                <p className="text-sm text-slate-400">{onlineUsers.includes(activeConversation.otherUser.id) ? <span className="text-green-400">● Online</span> : 'Offline'}</p>
-              </div>
+              {/* Video Call Button */}
+              <button
+                onClick={() => setShowVideoCall(true)}
+                disabled={!socketConnected || !onlineUsers.includes(activeConversation.otherUser.id)}
+                className={`p-3 rounded-xl transition-all ${socketConnected && onlineUsers.includes(activeConversation.otherUser.id) ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/20' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+                title={!onlineUsers.includes(activeConversation.otherUser.id) ? 'User is offline' : 'Start video call'}
+              >
+                <FiPhone size={20} />
+              </button>
             </div>
 
             {/* Messages Area */}
@@ -408,7 +496,21 @@ export default function Messages() {
                               )}
                               <div className="max-w-[65%] relative">
                                 <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-md' : 'bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-md'}`}>
-                                  <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
+                                  {/* Media Attachments */}
+                                  {message.media && message.media.length > 0 && (
+                                    <div className={`flex flex-wrap gap-2 ${message.content ? 'mb-2' : ''}`}>
+                                      {(message.media as MediaAttachment[]).map((media, idx) => (
+                                        <div key={idx} className="cursor-pointer" onClick={() => setLightboxMedia(media)}>
+                                          {media.type === 'image' ? (
+                                            <img src={media.url} alt={media.filename} className="max-w-[200px] max-h-[200px] rounded-lg object-cover hover:opacity-90 transition-opacity" />
+                                          ) : (
+                                            <video src={media.url} className="max-w-[200px] max-h-[200px] rounded-lg" controls />
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {message.content && <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>}
                                 </div>
                                 <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                                   <span className="text-[11px] text-slate-500">{formatTime(message.createdAt)}</span>
@@ -452,10 +554,39 @@ export default function Messages() {
 
             {/* Message Input */}
             <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-4">
+              {/* Pending Media Preview */}
+              {pendingMedia.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {pendingMedia.map((media, idx) => (
+                    <div key={idx} className="relative group">
+                      {media.type === 'image' ? (
+                        <img src={media.url} alt={media.filename} className="w-16 h-16 object-cover rounded-lg border border-slate-600" />
+                      ) : (
+                        <div className="w-16 h-16 bg-slate-700 rounded-lg border border-slate-600 flex items-center justify-center">
+                          <FiVideo className="text-slate-400" size={24} />
+                        </div>
+                      )}
+                      <button type="button" onClick={() => removePendingMedia(idx)} className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <FiX size={12} />
+                      </button>
+                      <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[10px] text-white text-center truncate px-1 rounded-b-lg">{formatFileSize(media.size)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center gap-3 bg-slate-700/50 rounded-2xl px-4 py-2 border border-slate-600/50">
+                {/* File Upload Button */}
+                <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple onChange={handleFileSelect} className="hidden" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia} className="p-2 text-slate-400 hover:text-indigo-400 transition-colors" title="Attach media">
+                  {uploadingMedia ? (
+                    <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <FiPaperclip size={20} />
+                  )}
+                </button>
                 <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
                   placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" disabled={sending} />
-                <button type="submit" disabled={!newMessage.trim() || sending} className={`p-3 rounded-xl transition-all ${newMessage.trim() && !sending ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
+                <button type="submit" disabled={(!newMessage.trim() && pendingMedia.length === 0) || sending} className={`p-3 rounded-xl transition-all ${(newMessage.trim() || pendingMedia.length > 0) && !sending ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
                   {sending ? (
                     <div className="w-[18px] h-[18px] border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
                   ) : (
@@ -499,6 +630,83 @@ export default function Messages() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Media Lightbox */}
+      {lightboxMedia && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setLightboxMedia(null)}>
+          <button onClick={() => setLightboxMedia(null)} className="absolute top-4 right-4 p-2 text-white hover:bg-white/20 rounded-lg z-10">
+            <FiX size={24} />
+          </button>
+          <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            {lightboxMedia.type === 'image' ? (
+              <img src={lightboxMedia.url} alt={lightboxMedia.filename} className="max-w-full max-h-[90vh] object-contain rounded-lg" />
+            ) : (
+              <video src={lightboxMedia.url} className="max-w-full max-h-[90vh] rounded-lg" controls autoPlay />
+            )}
+            <p className="text-center text-white/70 mt-2 text-sm">{lightboxMedia.filename}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Video Call - Outgoing */}
+      {showVideoCall && activeConversation && user && (
+        <VideoCall
+          socket={socket}
+          currentUser={{ id: user.id, name: user.name || '', avatar: null }}
+          remoteUser={activeConversation.otherUser}
+          conversationId={activeConversation.id}
+          isIncoming={false}
+          onClose={() => setShowVideoCall(false)}
+        />
+      )}
+
+      {/* Incoming Call Modal */}
+      {incomingCall && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700/50 p-8 text-center max-w-sm w-full">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center animate-pulse">
+              <FiPhone className="text-white" size={32} />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">Incoming Video Call</h2>
+            <p className="text-slate-400 mb-6">{incomingCall.callerName} is calling...</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  socket?.emit('call:reject', { callerId: incomingCall.callerId });
+                  setIncomingCall(null);
+                }}
+                className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center gap-2"
+              >
+                <FiX size={20} /> Decline
+              </button>
+              <button
+                onClick={() => {
+                  setShowVideoCall(true);
+                  setIncomingCall(null);
+                  // Find the conversation for this caller
+                  const conv = conversations.find(c => c.otherUser.id === incomingCall.callerId);
+                  if (conv) setActiveConversation(conv);
+                }}
+                className="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2"
+              >
+                <FiPhone size={20} /> Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Call - Incoming (after accepting) */}
+      {showVideoCall && incomingCall && user && (
+        <VideoCall
+          socket={socket}
+          currentUser={{ id: user.id, name: user.name || '', avatar: null }}
+          remoteUser={{ id: incomingCall.callerId, name: incomingCall.callerName, avatar: incomingCall.callerAvatar }}
+          conversationId={incomingCall.conversationId}
+          isIncoming={true}
+          onClose={() => { setShowVideoCall(false); setIncomingCall(null); }}
+        />
       )}
     </div>
   );

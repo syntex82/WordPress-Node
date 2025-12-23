@@ -73,7 +73,12 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage('dm:send')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { conversationId: string; content: string },
+    @MessageBody()
+    data: {
+      conversationId: string;
+      content: string;
+      media?: Array<{ url: string; type: 'image' | 'video'; filename: string; size: number; mimeType: string }>;
+    },
   ) {
     const user = this.socketUsers.get(client.id);
     if (!user) return { error: 'Unauthorized' };
@@ -82,6 +87,7 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
       data.conversationId,
       user.id,
       data.content,
+      data.media,
     );
 
     // Get conversation to find recipient
@@ -235,6 +241,147 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
           conversationId: data.conversationId,
         });
       }
+    }
+
+    return { success: true };
+  }
+
+  // ==================== VIDEO CALL SIGNALING ====================
+
+  @SubscribeMessage('call:initiate')
+  async handleCallInitiate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetUserId: string; conversationId: string },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const targetSocketId = this.userSockets.get(data.targetUserId);
+    if (!targetSocketId) {
+      client.emit('call:error', { message: 'User is offline' });
+      return { error: 'User is offline' };
+    }
+
+    // Send call request to target user
+    this.server.to(targetSocketId).emit('call:incoming', {
+      callerId: user.id,
+      callerName: user.name,
+      callerAvatar: user.avatar,
+      conversationId: data.conversationId,
+    });
+
+    return { success: true };
+  }
+
+  @SubscribeMessage('call:accept')
+  async handleCallAccept(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { callerId: string; conversationId: string },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const callerSocketId = this.userSockets.get(data.callerId);
+    if (callerSocketId) {
+      this.server.to(callerSocketId).emit('call:accepted', {
+        acceptedBy: user.id,
+        acceptedByName: user.name,
+        conversationId: data.conversationId,
+      });
+    }
+
+    return { success: true };
+  }
+
+  @SubscribeMessage('call:reject')
+  async handleCallReject(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { callerId: string; reason?: string },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const callerSocketId = this.userSockets.get(data.callerId);
+    if (callerSocketId) {
+      this.server.to(callerSocketId).emit('call:rejected', {
+        rejectedBy: user.id,
+        reason: data.reason || 'Call declined',
+      });
+    }
+
+    return { success: true };
+  }
+
+  @SubscribeMessage('call:end')
+  async handleCallEnd(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetUserId: string },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const targetSocketId = this.userSockets.get(data.targetUserId);
+    if (targetSocketId) {
+      this.server.to(targetSocketId).emit('call:ended', {
+        endedBy: user.id,
+      });
+    }
+
+    return { success: true };
+  }
+
+  @SubscribeMessage('call:offer')
+  async handleCallOffer(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetUserId: string; offer: RTCSessionDescriptionInit },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const targetSocketId = this.userSockets.get(data.targetUserId);
+    if (targetSocketId) {
+      this.server.to(targetSocketId).emit('call:offer', {
+        callerId: user.id,
+        offer: data.offer,
+      });
+    }
+
+    return { success: true };
+  }
+
+  @SubscribeMessage('call:answer')
+  async handleCallAnswer(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetUserId: string; answer: RTCSessionDescriptionInit },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const targetSocketId = this.userSockets.get(data.targetUserId);
+    if (targetSocketId) {
+      this.server.to(targetSocketId).emit('call:answer', {
+        answererId: user.id,
+        answer: data.answer,
+      });
+    }
+
+    return { success: true };
+  }
+
+  @SubscribeMessage('call:ice-candidate')
+  async handleIceCandidate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetUserId: string; candidate: RTCIceCandidateInit },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const targetSocketId = this.userSockets.get(data.targetUserId);
+    if (targetSocketId) {
+      this.server.to(targetSocketId).emit('call:ice-candidate', {
+        fromUserId: user.id,
+        candidate: data.candidate,
+      });
     }
 
     return { success: true };

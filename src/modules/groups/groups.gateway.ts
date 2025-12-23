@@ -187,12 +187,17 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
-   * Send a message to the group
+   * Send a message to the group with optional media
    */
   @SubscribeMessage('group:message:send')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { groupId: string; content: string },
+    @MessageBody()
+    data: {
+      groupId: string;
+      content: string;
+      media?: Array<{ url: string; type: 'image' | 'video'; filename: string; size: number; mimeType: string }>;
+    },
   ) {
     const user = this.socketUsers.get(client.id);
 
@@ -200,7 +205,7 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { error: 'Unauthorized' };
     }
 
-    const { groupId, content } = data;
+    const { groupId, content, media } = data;
 
     // Verify user is a member and not banned
     const membership = await this.prisma.groupMember.findUnique({
@@ -216,12 +221,13 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { error: 'You are not allowed to send messages in this group' };
     }
 
-    // Save message to database
+    // Save message to database with media
     const message = await this.prisma.groupMessage.create({
       data: {
         groupId,
         senderId: user.id,
         content,
+        media: media && media.length > 0 ? media : [],
       },
       include: {
         sender: {

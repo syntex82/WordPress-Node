@@ -1,0 +1,36 @@
+{
+  "name": "PWA Plugin",
+  "version": "1.0.0",
+  "author": "WordPress Node",
+  "description": "Progressive Web App plugin that enables offline access, push notifications, and native app-like installation for your WordPress Node site",
+  "entry": "index.js",
+  "hooks": ["onActivate", "onDeactivate", "registerRoutes"],
+  "features": [
+    "Web App Manifest generation",
+    "Service Worker with offline caching",
+    "Push notification support",
+    "App installation prompt",
+    "Offline page fallback",
+    "Asset caching strategies",
+    "Background sync support",
+    "Customizable theme colors",
+    "Icon generation support"
+  ],
+  "settings": {
+    "appName": "WordPress Node",
+    "shortName": "WP Node",
+    "description": "Modern WordPress Node CMS",
+    "themeColor": "#4f46e5",
+    "backgroundColor": "#1e293b",
+    "display": "standalone",
+    "orientation": "any",
+    "startUrl": "/",
+    "offlineEnabled": true,
+    "pushNotifications": false,
+    "cacheStrategy": "networkFirst"
+  },
+  "requirements": {
+    "minVersion": "1.0.0"
+  }
+}
+

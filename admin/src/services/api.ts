@@ -1384,18 +1384,31 @@ export const profileApi = {
 };
 
 // Direct Messages API
+// Media attachment interface for messages
+interface MediaAttachment {
+  url: string;
+  type: 'image' | 'video';
+  filename: string;
+  size: number;
+  mimeType: string;
+}
+
 export const messagesApi = {
   getConversations: () => api.get('/messages/conversations'),
   startConversation: (userId: string) => api.post('/messages/conversations', { userId }),
   getMessages: (conversationId: string, cursor?: string, limit?: number) =>
     api.get(`/messages/conversations/${conversationId}/messages`, { params: { cursor, limit } }),
-  sendMessage: (conversationId: string, content: string) =>
-    api.post(`/messages/conversations/${conversationId}/messages`, { content }),
+  sendMessage: (conversationId: string, content: string, media?: MediaAttachment[]) =>
+    api.post(`/messages/conversations/${conversationId}/messages`, { content, media }),
   deleteMessage: (conversationId: string, messageId: string) =>
     api.delete(`/messages/conversations/${conversationId}/messages/${messageId}`),
   markAsRead: (conversationId: string) => api.post(`/messages/conversations/${conversationId}/read`),
   getUnreadCount: () => api.get('/messages/unread-count'),
   getOnlineUsers: () => api.get('/messages/online-users'),
+  uploadMedia: (formData: FormData) =>
+    api.post('/messages/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };
 
 // Email API

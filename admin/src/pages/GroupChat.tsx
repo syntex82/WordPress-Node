@@ -5,16 +5,25 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiSend, FiArrowLeft, FiUsers, FiLogOut, FiSearch, FiCheck, FiShield, FiStar, FiHash, FiMessageSquare, FiTrash2 } from 'react-icons/fi';
+import { FiSend, FiArrowLeft, FiUsers, FiLogOut, FiSearch, FiCheck, FiShield, FiStar, FiHash, FiMessageSquare, FiTrash2, FiPaperclip, FiVideo, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
-import { groupsApi } from '../services/api';
+import { groupsApi, messagesApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+
+interface MediaAttachment {
+  url: string;
+  type: 'image' | 'video';
+  filename: string;
+  size: number;
+  mimeType: string;
+}
 
 interface Message {
   id: string;
   content: string;
   createdAt: string;
+  media?: MediaAttachment[];
   sender: {
     id: string;
     name: string;
@@ -93,8 +102,12 @@ export default function GroupChat() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const [searchMembers, setSearchMembers] = useState('');
+  const [pendingMedia, setPendingMedia] = useState<MediaAttachment[]>([]);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [lightboxMedia, setLightboxMedia] = useState<MediaAttachment | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -209,27 +222,69 @@ export default function GroupChat() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !id || sending) return;
+    if ((!newMessage.trim() && pendingMedia.length === 0) || !id || sending) return;
 
     const messageContent = newMessage.trim();
+    const mediaToSend = [...pendingMedia];
     setNewMessage('');
+    setPendingMedia([]);
     setSending(true);
     handleStopTyping();
 
     try {
       if (socket && socketConnected) {
-        socket.emit('group:message:send', { groupId: id, content: messageContent });
+        socket.emit('group:message:send', {
+          groupId: id,
+          content: messageContent,
+          media: mediaToSend.length > 0 ? mediaToSend : undefined,
+        });
+        toast.success('Message sent');
       } else {
         toast.error('Not connected to chat. Please refresh the page.');
         setNewMessage(messageContent);
+        setPendingMedia(mediaToSend);
       }
     } catch (error) {
       toast.error('Failed to send message. Please try again.');
       setNewMessage(messageContent);
+      setPendingMedia(mediaToSend);
     } finally {
       setSending(false);
       inputRef.current?.focus();
     }
+  };
+
+  // Handle file selection for media upload
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingMedia(true);
+    const formData = new FormData();
+    Array.from(files).forEach((file) => formData.append('files', file));
+
+    try {
+      const res = await messagesApi.uploadMedia(formData);
+      setPendingMedia((prev) => [...prev, ...res.data.media]);
+      toast.success(`${files.length} file(s) ready to send`);
+    } catch (error) {
+      toast.error('Failed to upload media');
+    } finally {
+      setUploadingMedia(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Remove pending media
+  const removePendingMedia = (index: number) => {
+    setPendingMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const handleTyping = () => {
@@ -434,7 +489,21 @@ export default function GroupChat() {
                           <div className={`max-w-[65%] ${isOwn ? 'items-end' : 'items-start'}`}>
                             {!isOwn && showAvatar && <p className="text-xs font-medium text-slate-400 mb-1 ml-1">{message.sender.name}</p>}
                             <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-br-md' : 'bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-md'}`}>
-                              <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
+                              {/* Media Attachments */}
+                              {message.media && message.media.length > 0 && (
+                                <div className={`flex flex-wrap gap-2 ${message.content ? 'mb-2' : ''}`}>
+                                  {(message.media as MediaAttachment[]).map((media, idx) => (
+                                    <div key={idx} className="cursor-pointer" onClick={() => setLightboxMedia(media)}>
+                                      {media.type === 'image' ? (
+                                        <img src={media.url} alt={media.filename} className="max-w-[200px] max-h-[200px] rounded-lg object-cover hover:opacity-90 transition-opacity" />
+                                      ) : (
+                                        <video src={media.url} className="max-w-[200px] max-h-[200px] rounded-lg" controls />
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {message.content && <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>}
                             </div>
                             <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                               <span className="text-[11px] text-slate-500">{formatTime(message.createdAt)}</span>
@@ -478,10 +547,39 @@ export default function GroupChat() {
 
         {/* Message Input */}
         <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-4">
+          {/* Pending Media Preview */}
+          {pendingMedia.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {pendingMedia.map((media, idx) => (
+                <div key={idx} className="relative group">
+                  {media.type === 'image' ? (
+                    <img src={media.url} alt={media.filename} className="w-16 h-16 object-cover rounded-lg border border-slate-600" />
+                  ) : (
+                    <div className="w-16 h-16 bg-slate-700 rounded-lg border border-slate-600 flex items-center justify-center">
+                      <FiVideo className="text-slate-400" size={24} />
+                    </div>
+                  )}
+                  <button type="button" onClick={() => removePendingMedia(idx)} className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                    <FiX size={12} />
+                  </button>
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[10px] text-white text-center truncate px-1 rounded-b-lg">{formatFileSize(media.size)}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex items-center gap-3 bg-slate-700/50 rounded-2xl px-4 py-2 border border-slate-600/50">
+            {/* File Upload Button */}
+            <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple onChange={handleFileSelect} className="hidden" />
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia} className="p-2 text-slate-400 hover:text-indigo-400 transition-colors" title="Attach media">
+              {uploadingMedia ? (
+                <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <FiPaperclip size={20} />
+              )}
+            </button>
             <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
               placeholder="Type your message..." className="flex-1 bg-transparent py-2 text-white placeholder-slate-500 focus:outline-none text-[15px]" disabled={sending} />
-            <button type="submit" disabled={!newMessage.trim() || sending} className={`p-3 rounded-xl transition-all ${newMessage.trim() && !sending ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
+            <button type="submit" disabled={(!newMessage.trim() && pendingMedia.length === 0) || sending} className={`p-3 rounded-xl transition-all ${(newMessage.trim() || pendingMedia.length > 0) && !sending ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg' : 'bg-slate-600 text-slate-400'}`}>
               {sending ? (
                 <div className="w-[18px] h-[18px] border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
               ) : (
@@ -553,6 +651,23 @@ export default function GroupChat() {
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Media Lightbox */}
+      {lightboxMedia && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setLightboxMedia(null)}>
+          <button onClick={() => setLightboxMedia(null)} className="absolute top-4 right-4 p-2 text-white hover:bg-white/20 rounded-lg z-10">
+            <FiX size={24} />
+          </button>
+          <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            {lightboxMedia.type === 'image' ? (
+              <img src={lightboxMedia.url} alt={lightboxMedia.filename} className="max-w-full max-h-[90vh] object-contain rounded-lg" />
+            ) : (
+              <video src={lightboxMedia.url} className="max-w-full max-h-[90vh] rounded-lg" controls autoPlay />
+            )}
+            <p className="text-center text-white/70 mt-2 text-sm">{lightboxMedia.filename}</p>
           </div>
         </div>
       )}

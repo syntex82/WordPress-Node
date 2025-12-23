@@ -26,11 +26,30 @@ export interface PluginHooks {
 @Injectable()
 export class PluginLoaderService implements OnModuleInit {
   private loadedPlugins: Map<string, PluginHooks> = new Map();
+  private expressApp: any = null;
 
   constructor(private pluginsService: PluginsService) {}
 
   async onModuleInit() {
     await this.loadActivePlugins();
+  }
+
+  /**
+   * Set the Express app instance for plugin route registration
+   */
+  setExpressApp(app: any) {
+    this.expressApp = app;
+    // Register routes for already loaded plugins
+    for (const [slug, plugin] of this.loadedPlugins.entries()) {
+      if (plugin.registerRoutes && this.expressApp) {
+        try {
+          plugin.registerRoutes(this.expressApp);
+          console.log(`✅ Plugin routes registered: ${slug}`);
+        } catch (error) {
+          console.error(`Error registering routes for plugin ${slug}:`, error);
+        }
+      }
+    }
   }
 
   /**
@@ -74,6 +93,16 @@ export class PluginLoaderService implements OnModuleInit {
       // Call onActivate hook if it exists
       if (pluginInstance.onActivate) {
         await pluginInstance.onActivate();
+      }
+
+      // Register routes if Express app is available
+      if (pluginInstance.registerRoutes && this.expressApp) {
+        try {
+          pluginInstance.registerRoutes(this.expressApp);
+          console.log(`✅ Plugin routes registered: ${slug}`);
+        } catch (error) {
+          console.error(`Error registering routes for plugin ${slug}:`, error);
+        }
       }
 
       console.log(`✅ Plugin loaded: ${slug}`);

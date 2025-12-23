@@ -251,6 +251,16 @@ async function bootstrap() {
   app.setBaseViewsDir(join(process.cwd(), 'themes'));
   app.setViewEngine('hbs');
 
+  // Register plugin routes with Express app
+  try {
+    const { PluginLoaderService } = await import('./modules/plugins/plugin-loader.service');
+    const pluginLoader = app.get(PluginLoaderService);
+    pluginLoader.setExpressApp(app.getHttpAdapter().getInstance());
+    logger.log('✅ Plugin routes registered with Express');
+  } catch (error) {
+    logger.warn('⚠️ Could not register plugin routes:', error);
+  }
+
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     logger.log(`Received ${signal}, starting graceful shutdown...`);

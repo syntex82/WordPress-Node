@@ -967,6 +967,10 @@ model DirectMessage {
   readAt         DateTime?
   createdAt      DateTime  @default(now())
 
+  // Media attachments (JSON array of media objects)
+  // Each object: { url: string, type: 'image' | 'video', filename: string, size: number, mimeType: string }
+  media          Json?     @default("[]")
+
   // Relations
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User         @relation("DirectMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
@@ -1040,6 +1044,10 @@ model GroupMessage {
   senderId  String
   content   String   @db.Text
   createdAt DateTime @default(now())
+
+  // Media attachments (JSON array of media objects)
+  // Each object: { url: string, type: 'image' | 'video', filename: string, size: number, mimeType: string }
+  media     Json?    @default("[]")
 
   // Relations
   group  Group @relation(fields: [groupId], references: [id], onDelete: Cascade)

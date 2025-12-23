@@ -1,7 +1,59 @@
-import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+  UseInterceptors,
+  UploadedFiles,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import { MessagesService } from './messages.service';
 import { MessagesGateway } from './messages.gateway';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+// Media type interface
+interface MediaAttachment {
+  url: string;
+  type: 'image' | 'video';
+  filename: string;
+  size: number;
+  mimeType: string;
+}
+
+// Multer storage configuration for message media
+const messageMediaStorage = diskStorage({
+  destination: join(process.cwd(), 'uploads', 'messages'),
+  filename: (req, file, cb) => {
+    const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
+    cb(null, uniqueName);
+  },
+});
+
+// File filter for images and videos
+const mediaFileFilter = (req: any, file: Express.Multer.File, cb: any) => {
+  const allowedMimes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+  ];
+  if (allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only images and videos are allowed.'), false);
+  }
+};
 
 @Controller('api/messages')
 @UseGuards(JwtAuthGuard)
@@ -46,15 +98,37 @@ export class MessagesController {
   }
 
   /**
-   * Send a message (HTTP fallback, prefer WebSocket)
+   * Send a message with optional media (HTTP fallback, prefer WebSocket)
    */
   @Post('conversations/:id/messages')
   async sendMessage(
     @Request() req,
     @Param('id') conversationId: string,
-    @Body() body: { content: string },
+    @Body() body: { content: string; media?: MediaAttachment[] },
   ) {
-    return this.messagesService.sendMessage(conversationId, req.user.id, body.content);
+    return this.messagesService.sendMessage(conversationId, req.user.id, body.content, body.media);
+  }
+
+  /**
+   * Upload media files for messages
+   */
+  @Post('upload')
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: messageMediaStorage,
+      fileFilter: mediaFileFilter,
+      limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max per file
+    }),
+  )
+  async uploadMedia(@UploadedFiles() files: Express.Multer.File[]) {
+    const media: MediaAttachment[] = files.map((file) => ({
+      url: `/uploads/messages/${file.filename}`,
+      type: file.mimetype.startsWith('video/') ? 'video' : 'image',
+      filename: file.originalname,
+      size: file.size,
+      mimeType: file.mimetype,
+    }));
+    return { media };
   }
 
   /**

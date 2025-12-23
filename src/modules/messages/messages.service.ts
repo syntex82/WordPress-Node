@@ -109,9 +109,14 @@ export class MessagesService {
   }
 
   /**
-   * Send a message
+   * Send a message with optional media attachments
    */
-  async sendMessage(conversationId: string, senderId: string, content: string) {
+  async sendMessage(
+    conversationId: string,
+    senderId: string,
+    content: string,
+    media?: Array<{ url: string; type: 'image' | 'video'; filename: string; size: number; mimeType: string }>,
+  ) {
     const conversation = await this.prisma.conversation.findFirst({
       where: {
         id: conversationId,
@@ -124,7 +129,12 @@ export class MessagesService {
     }
 
     const message = await this.prisma.directMessage.create({
-      data: { conversationId, senderId, content },
+      data: {
+        conversationId,
+        senderId,
+        content,
+        media: media && media.length > 0 ? media : [],
+      },
       include: { sender: { select: { id: true, name: true, email: true, avatar: true } } },
     });
 
