@@ -43,12 +43,22 @@ export class SystemConfigController {
    * PUT /api/system-config/email
    */
   @Put('email')
-  async saveEmailConfig(@Body() config: SmtpConfig) {
+  async saveEmailConfig(@Body() config: SmtpConfig & { password?: string }) {
+    // Support both 'pass' and 'password' field names from frontend
+    const pass = config.pass || config.password;
+
     // Validate required fields
-    if (!config.host || !config.user || !config.pass) {
-      throw new HttpException('Host, user, and password are required', HttpStatus.BAD_REQUEST);
+    if (!config.host || !config.user) {
+      throw new HttpException('Host and user are required', HttpStatus.BAD_REQUEST);
     }
-    await this.systemConfig.saveSmtpConfig(config);
+
+    // Build the config to save, only including password if provided
+    const configToSave: SmtpConfig = {
+      ...config,
+      pass: pass || '',
+    };
+
+    await this.systemConfig.saveSmtpConfig(configToSave);
     return { success: true, message: 'Email settings saved successfully' };
   }
 

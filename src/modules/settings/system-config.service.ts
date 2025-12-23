@@ -169,9 +169,14 @@ export class SystemConfigService implements OnModuleInit {
     await this.set('smtp_port', config.port.toString(), 'email', 'SMTP server port');
     await this.set('smtp_secure', config.secure.toString(), 'email', 'Use TLS/SSL');
     await this.set('smtp_user', config.user, 'email', 'SMTP username');
-    await this.set('smtp_pass', config.pass, 'email', 'SMTP password (encrypted)');
-    await this.set('smtp_from', config.fromEmail, 'email', 'Default from email');
-    await this.set('smtp_from_name', config.fromName, 'email', 'Default from name');
+
+    // Only update password if provided (not empty) - allows keeping existing password
+    if (config.pass) {
+      await this.set('smtp_pass', config.pass, 'email', 'SMTP password (encrypted)');
+    }
+
+    await this.set('smtp_from', config.fromEmail || config.user, 'email', 'Default from email');
+    await this.set('smtp_from_name', config.fromName || 'WordPress Node CMS', 'email', 'Default from name');
   }
 
   /**
