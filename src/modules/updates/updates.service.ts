@@ -240,10 +240,18 @@ export class UpdatesService {
       }
 
       this.setProgress('installing', 75, 'Installing dependencies...');
-      await execAsync('npm install --production', { cwd: process.cwd(), timeout: 300000 });
+      await execAsync('npm install --production --quiet --no-progress', {
+        cwd: process.cwd(),
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+      });
 
       this.setProgress('building', 85, 'Building application...');
-      await execAsync('npm run build', { cwd: process.cwd(), timeout: 300000 });
+      await execAsync('npm run build', {
+        cwd: process.cwd(),
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+      });
 
       this.setProgress('verifying', 95, 'Verifying update...');
       await this.prisma.updateHistory.update({
@@ -305,10 +313,18 @@ export class UpdatesService {
       }
 
       this.setProgress('rolling_back', 80, 'Reinstalling dependencies...');
-      await execAsync('npm install --production', { cwd: process.cwd(), timeout: 300000 });
+      await execAsync('npm install --production --quiet --no-progress', {
+        cwd: process.cwd(),
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+      });
 
       this.setProgress('rolling_back', 90, 'Rebuilding...');
-      await execAsync('npm run build', { cwd: process.cwd(), timeout: 300000 });
+      await execAsync('npm run build', {
+        cwd: process.cwd(),
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+      });
 
       await this.prisma.updateHistory.update({
         where: { id: updateHistoryId },
@@ -539,9 +555,10 @@ export class UpdatesService {
       this.setProgress('installing', 30, 'Installing backend dependencies...');
       logs.push('Installing backend dependencies...');
 
-      const backendInstall = await execAsync('npm install --production=false', {
+      const backendInstall = await execAsync('npm install --production=false --quiet --no-progress', {
         cwd: process.cwd(),
-        timeout: 300000
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
       });
       logs.push('✓ Backend dependencies installed');
 
@@ -564,14 +581,24 @@ export class UpdatesService {
       }
 
       // Install dependencies including dev dependencies (force include dev deps even in production)
-      await execAsync('npm install --include=dev', { cwd: adminDir, timeout: 300000, env: { ...process.env, NODE_ENV: 'development' } });
+      await execAsync('npm install --include=dev --quiet --no-progress', {
+        cwd: adminDir,
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+        env: { ...process.env, NODE_ENV: 'development' }
+      });
       logs.push('✓ Admin dependencies installed');
 
       // Verify vite is installed before attempting build
       const viteCheck = path.join(adminDir, 'node_modules', 'vite');
       if (!fs.existsSync(viteCheck)) {
         logs.push('⚠ Vite not found, installing explicitly...');
-        await execAsync('npm install vite @vitejs/plugin-react --save-dev', { cwd: adminDir, timeout: 120000, env: { ...process.env, NODE_ENV: 'development' } });
+        await execAsync('npm install vite @vitejs/plugin-react --save-dev --quiet', {
+          cwd: adminDir,
+          timeout: 120000,
+          maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+          env: { ...process.env, NODE_ENV: 'development' }
+        });
         logs.push('✓ Vite installed');
       }
 
@@ -584,7 +611,11 @@ export class UpdatesService {
         data: { status: 'APPLYING' },
       });
 
-      await execAsync('npm run build', { cwd: adminDir, timeout: 300000 });
+      await execAsync('npm run build', {
+        cwd: adminDir,
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+      });
 
       // Verify admin build
       if (!fs.existsSync(path.join(adminDir, 'dist', 'index.html'))) {
@@ -596,7 +627,11 @@ export class UpdatesService {
       this.setProgress('building', 75, 'Building backend...');
       logs.push('Building backend...');
 
-      await execAsync('npm run build', { cwd: process.cwd(), timeout: 300000 });
+      await execAsync('npm run build', {
+        cwd: process.cwd(),
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+      });
 
       // Verify backend build
       if (!fs.existsSync(path.join(process.cwd(), 'dist', 'main.js'))) {
