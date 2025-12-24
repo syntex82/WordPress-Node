@@ -241,7 +241,7 @@ export default function Dashboard() {
       {/* Pro Tip */}
       <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-3 sm:p-4 flex items-start sm:items-center gap-3 border border-slate-700/50">
         <div className="p-1.5 sm:p-2 bg-amber-500/20 rounded-lg flex-shrink-0">
-          <FiClock className="text-amber-400" size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <FiClock className="text-amber-400 w-4 h-4 sm:w-[18px] sm:h-[18px]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-white text-sm sm:text-base">Pro Tip</p>
