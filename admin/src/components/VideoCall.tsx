@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FiPhone, FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiX, FiMaximize2, FiMinimize2 } from 'react-icons/fi';
+import { FiPhone, FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiX, FiMaximize2, FiMinimize2, FiRefreshCw } from 'react-icons/fi';
 import { Socket } from 'socket.io-client';
 
 interface User {
@@ -46,6 +46,7 @@ export default function VideoCall({
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [currentFacingMode, setCurrentFacingMode] = useState<'user' | 'environment'>('user');
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -61,9 +62,12 @@ export default function VideoCall({
   };
 
   // Initialize local media stream
-  const initLocalStream = useCallback(async () => {
+  const initLocalStream = useCallback(async (facingMode: 'user' | 'environment' = 'user') => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+        audio: true
+      });
       localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
@@ -181,6 +185,48 @@ export default function VideoCall({
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoOff(!videoTrack.enabled);
       }
+    }
+  };
+
+  // Switch camera (front/back)
+  const switchCamera = async () => {
+    if (!localStreamRef.current || !peerConnectionRef.current) return;
+
+    const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+    try {
+      // Stop current video track
+      const oldVideoTrack = localStreamRef.current.getVideoTracks()[0];
+      if (oldVideoTrack) {
+        oldVideoTrack.stop();
+      }
+
+      // Get new stream with different camera
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newFacingMode },
+        audio: false // Don't replace audio
+      });
+
+      const newVideoTrack = newStream.getVideoTracks()[0];
+
+      // Replace video track in local stream
+      localStreamRef.current.removeTrack(oldVideoTrack);
+      localStreamRef.current.addTrack(newVideoTrack);
+
+      // Update local video element
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current;
+      }
+
+      // Replace track in peer connection
+      const sender = peerConnectionRef.current.getSenders().find(s => s.track?.kind === 'video');
+      if (sender) {
+        await sender.replaceTrack(newVideoTrack);
+      }
+
+      setCurrentFacingMode(newFacingMode);
+    } catch (error) {
+      console.error('Failed to switch camera:', error);
     }
   };
 
@@ -314,13 +360,16 @@ export default function VideoCall({
           </>
         ) : (
           <>
-            <button onClick={toggleMute} className={`p-4 rounded-full transition-colors ${isMuted ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}>
+            <button onClick={toggleMute} className={`p-4 rounded-full transition-colors ${isMuted ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`} title={isMuted ? 'Unmute' : 'Mute'}>
               {isMuted ? <FiMicOff size={24} /> : <FiMic size={24} />}
             </button>
-            <button onClick={toggleVideo} className={`p-4 rounded-full transition-colors ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}>
+            <button onClick={toggleVideo} className={`p-4 rounded-full transition-colors ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`} title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}>
               {isVideoOff ? <FiVideoOff size={24} /> : <FiVideo size={24} />}
             </button>
-            <button onClick={endCall} className="p-4 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors">
+            <button onClick={switchCamera} className="p-4 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors" title="Switch camera">
+              <FiRefreshCw size={24} />
+            </button>
+            <button onClick={endCall} className="p-4 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors" title="End call">
               <FiPhoneOff size={24} />
             </button>
           </>
