@@ -51,7 +51,7 @@ rm -rf node_modules || true
 
 # Reinstall dependencies
 echo "Reinstalling dependencies..."
-npm install
+npm install --quiet --no-progress 2>&1 | tail -n 20
 
 echo -e "${GREEN}✓ Vite cache fixed successfully!${NC}"
 echo ""

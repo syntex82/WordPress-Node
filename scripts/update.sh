@@ -56,7 +56,7 @@ echo -e "${YELLOW}New version: ${NEW_VERSION}${NC}"
 
 # Install backend dependencies
 echo -e "${BLUE}[3/6]${NC} Installing backend dependencies..."
-if npm install --production=false; then
+if npm install --production=false --quiet --no-progress 2>&1 | tail -n 20; then
     echo -e "${GREEN}✓ Backend dependencies installed${NC}"
 else
     echo -e "${RED}✗ Failed to install backend dependencies${NC}"
@@ -78,7 +78,7 @@ echo "Clearing Vite cache..."
 rm -rf node_modules/.vite 2>/dev/null || true
 rm -rf .vite 2>/dev/null || true
 
-if npm install; then
+if npm install --quiet --no-progress 2>&1 | tail -n 20; then
     echo -e "${GREEN}✓ Admin dependencies installed${NC}"
 else
     echo -e "${RED}✗ Failed to install admin dependencies${NC}"
@@ -92,7 +92,7 @@ echo -e "${BLUE}[5/6]${NC} Building admin panel..."
 # Clear build cache
 rm -rf dist 2>/dev/null || true
 
-if npm run build; then
+if npm run build 2>&1 | grep -E "(built|error|warning)" | tail -n 10; then
     if [ -f "dist/index.html" ]; then
         echo -e "${GREEN}✓ Admin panel built${NC}"
     else
@@ -107,7 +107,7 @@ fi
 # Build backend
 cd "$APP_DIR"
 echo -e "${BLUE}[6/6]${NC} Building backend..."
-if npm run build; then
+if npm run build 2>&1 | grep -E "(Compiled|error|warning)" | tail -n 10; then
     if [ -f "dist/main.js" ]; then
         echo -e "${GREEN}✓ Backend built${NC}"
     else
