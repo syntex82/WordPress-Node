@@ -145,19 +145,20 @@ export class GroupsService {
    * Create a new group
    */
   async create(createGroupDto: CreateGroupDto, userId: string) {
-    // Check if slug is already taken
-    const existing = await this.prisma.group.findUnique({
-      where: { slug: createGroupDto.slug },
-    });
+    // Check if slug is already taken and auto-increment if needed
+    let slug = createGroupDto.slug;
+    let counter = 1;
 
-    if (existing) {
-      throw new BadRequestException('A group with this slug already exists');
+    while (await this.prisma.group.findUnique({ where: { slug } })) {
+      slug = `${createGroupDto.slug}-${counter}`;
+      counter++;
     }
 
     // Create group and add creator as owner member
     const group = await this.prisma.group.create({
       data: {
         ...createGroupDto,
+        slug, // Use the unique slug
         ownerId: userId,
         members: {
           create: {
