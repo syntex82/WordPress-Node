@@ -121,7 +121,7 @@ export class QueueModule {
                 host: redisHost,
                 port: redisPort,
                 password: redisPassword || undefined,
-                maxRetriesPerRequest: 3,
+                maxRetriesPerRequest: null, // Required by BullMQ
               },
               defaultJobOptions: {
                 removeOnComplete: 100,

@@ -37,7 +37,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       this.client = new Redis({
         ...this.options,
-        maxRetriesPerRequest: 3,
+        maxRetriesPerRequest: null, // Required by BullMQ
         retryStrategy: (times) => {
           if (times > 3) {
             this.logger.warn('Redis connection failed after 3 attempts, giving up');
