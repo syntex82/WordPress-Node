@@ -48,6 +48,7 @@ export default function VideoCall({
   const [callDuration, setCallDuration] = useState(0);
   const [currentFacingMode, setCurrentFacingMode] = useState<'user' | 'environment'>('user');
   const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
+  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -116,13 +117,24 @@ export default function VideoCall({
     };
 
     pc.onconnectionstatechange = () => {
+      console.log('📞 Connection state changed:', pc.connectionState);
       if (pc.connectionState === 'connected') {
         setCallStatus('connected');
         callTimerRef.current = setInterval(() => {
           setCallDuration((prev) => prev + 1);
         }, 1000);
-      } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+      } else if (pc.connectionState === 'failed') {
+        // Only end on failed, not on temporary disconnected state
         endCall();
+      } else if (pc.connectionState === 'disconnected') {
+        // Give it a few seconds to recover before ending
+        console.log('⚠️ Connection disconnected, waiting for recovery...');
+        setTimeout(() => {
+          if (peerConnectionRef.current?.connectionState === 'disconnected') {
+            console.log('❌ Connection did not recover, ending call');
+            endCall();
+          }
+        }, 5000);
       }
     };
 
@@ -261,11 +273,44 @@ export default function VideoCall({
 
     const handleOffer = async (data: { callerId: string; offer: RTCSessionDescriptionInit }) => {
       if (data.callerId !== remoteUser.id) return;
+      console.log('📥 Received offer, local stream ready:', !!localStreamRef.current);
+
+      // Ensure we have local stream before creating peer connection
+      if (!localStreamRef.current) {
+        console.log('⚠️ No local stream yet, waiting...');
+        // Wait a bit for local stream to be ready
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
       const pc = createPeerConnection();
+
+      // If we have a local stream but tracks weren't added (race condition), add them now
+      if (localStreamRef.current && pc.getSenders().length === 0) {
+        console.log('📹 Adding local tracks to peer connection');
+        localStreamRef.current.getTracks().forEach((track) => {
+          pc.addTrack(track, localStreamRef.current!);
+        });
+      }
+
       await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+
+      // Process any pending ICE candidates
+      if (pendingIceCandidatesRef.current.length > 0) {
+        console.log('🧊 Processing', pendingIceCandidatesRef.current.length, 'pending ICE candidates');
+        for (const candidate of pendingIceCandidatesRef.current) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (e) {
+            console.error('Error adding pending ICE candidate:', e);
+          }
+        }
+        pendingIceCandidatesRef.current = [];
+      }
+
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       socket.emit('call:answer', { targetUserId: remoteUser.id, answer });
+      console.log('✅ Answer sent');
     };
 
     const handleAnswer = async (data: { answererId: string; answer: RTCSessionDescriptionInit }) => {
@@ -278,6 +323,19 @@ export default function VideoCall({
         if (signalingState === 'have-local-offer') {
           await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(data.answer));
           console.log('✅ Remote description set successfully');
+
+          // Process any pending ICE candidates
+          if (pendingIceCandidatesRef.current.length > 0) {
+            console.log('🧊 Processing', pendingIceCandidatesRef.current.length, 'pending ICE candidates');
+            for (const candidate of pendingIceCandidatesRef.current) {
+              try {
+                await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+              } catch (e) {
+                console.error('Error adding pending ICE candidate:', e);
+              }
+            }
+            pendingIceCandidatesRef.current = [];
+          }
         } else {
           console.warn('⚠️ Ignoring answer - wrong signaling state:', signalingState);
         }
@@ -294,7 +352,9 @@ export default function VideoCall({
           console.error('❌ Error adding ICE candidate:', error);
         }
       } else {
-        console.warn('⚠️ Cannot add ICE candidate - no remote description yet');
+        // Queue the ICE candidate for later
+        console.log('📦 Queuing ICE candidate - no remote description yet');
+        pendingIceCandidatesRef.current.push(data.candidate);
       }
     };
 
@@ -338,6 +398,7 @@ export default function VideoCall({
       if (callTimerRef.current) clearInterval(callTimerRef.current);
       if (localStreamRef.current) localStreamRef.current.getTracks().forEach((t) => t.stop());
       if (peerConnectionRef.current) peerConnectionRef.current.close();
+      pendingIceCandidatesRef.current = [];
     };
   }, []);
 
