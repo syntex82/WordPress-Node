@@ -47,6 +47,7 @@ export default function VideoCall({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [currentFacingMode, setCurrentFacingMode] = useState<'user' | 'environment'>('user');
+  const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -105,8 +106,10 @@ export default function VideoCall({
     };
 
     pc.ontrack = (event) => {
+      console.log('📹 Received remote track:', event.track.kind, event.streams[0]);
       if (remoteVideoRef.current && event.streams[0]) {
         remoteVideoRef.current.srcObject = event.streams[0];
+        setHasRemoteVideo(true);
         // Force remote video to play on mobile (iOS fix)
         remoteVideoRef.current.play().catch(e => console.log('Remote video autoplay prevented:', e));
       }
@@ -132,6 +135,7 @@ export default function VideoCall({
 
     peerConnectionRef.current = pc;
     return pc;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, remoteUser.id]);
 
   // Start outgoing call
@@ -349,18 +353,28 @@ export default function VideoCall({
       </div>
 
       {/* Video Container */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden bg-slate-900">
         {/* Remote Video - Full screen background */}
         <video
           ref={remoteVideoRef}
           autoPlay
           playsInline
-          className="w-full h-full object-cover"
-          style={{ transform: 'rotateY(0deg)' }} // Prevent mirroring
+          className="absolute inset-0 w-full h-full object-contain"
+          style={{ transform: 'rotateY(0deg)', backgroundColor: '#0f172a' }} // Prevent mirroring, add background
         />
 
+        {/* Placeholder when no remote video */}
+        {!hasRemoteVideo && callStatus === 'connected' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-4xl sm:text-5xl mb-4">
+              {remoteUser.avatar ? <img src={remoteUser.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : remoteUser.name.charAt(0).toUpperCase()}
+            </div>
+            <p className="text-white/70 text-sm sm:text-base">Waiting for video...</p>
+          </div>
+        )}
+
         {/* Local Video (Picture-in-Picture) - Mobile optimized */}
-        <div className="absolute bottom-20 sm:bottom-24 right-3 sm:right-4 w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-52 rounded-xl overflow-hidden shadow-2xl border-2 border-white/30">
+        <div className="absolute bottom-20 sm:bottom-24 right-3 sm:right-4 w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-52 rounded-xl overflow-hidden shadow-2xl border-2 border-white/30 bg-slate-800">
           <video
             ref={localVideoRef}
             autoPlay
