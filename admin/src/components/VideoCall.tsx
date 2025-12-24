@@ -64,13 +64,25 @@ export default function VideoCall({
   // Initialize local media stream
   const initLocalStream = useCallback(async (facingMode: 'user' | 'environment' = 'user') => {
     try {
+      // Enhanced mobile video constraints
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
-        audio: true
+        video: {
+          facingMode,
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 30, max: 30 }
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
       });
       localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
+        // Force video to play on mobile (iOS fix)
+        localVideoRef.current.play().catch(e => console.log('Local video autoplay prevented:', e));
       }
       return stream;
     } catch (error) {
@@ -95,6 +107,8 @@ export default function VideoCall({
     pc.ontrack = (event) => {
       if (remoteVideoRef.current && event.streams[0]) {
         remoteVideoRef.current.srcObject = event.streams[0];
+        // Force remote video to play on mobile (iOS fix)
+        remoteVideoRef.current.play().catch(e => console.log('Remote video autoplay prevented:', e));
       }
     };
 
@@ -201,9 +215,14 @@ export default function VideoCall({
         oldVideoTrack.stop();
       }
 
-      // Get new stream with different camera
+      // Get new stream with different camera (enhanced mobile constraints)
       const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: newFacingMode },
+        video: {
+          facingMode: newFacingMode,
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 30, max: 30 }
+        },
         audio: false // Don't replace audio
       });
 
@@ -216,6 +235,7 @@ export default function VideoCall({
       // Update local video element
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = localStreamRef.current;
+        localVideoRef.current.play().catch(e => console.log('Video play prevented:', e));
       }
 
       // Replace track in peer connection
@@ -227,6 +247,7 @@ export default function VideoCall({
       setCurrentFacingMode(newFacingMode);
     } catch (error) {
       console.error('Failed to switch camera:', error);
+      alert('Failed to switch camera. Make sure your device has multiple cameras.');
     }
   };
 
@@ -301,16 +322,16 @@ export default function VideoCall({
   }, []);
 
   return (
-    <div className={`fixed inset-0 bg-slate-900 z-50 flex flex-col ${isFullscreen ? '' : 'p-4'}`}>
+    <div className={`fixed inset-0 bg-slate-900 z-50 flex flex-col ${isFullscreen ? '' : 'safe-area-inset'}`}>
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/50 to-transparent">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+      <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex items-center justify-between z-10 bg-gradient-to-b from-black/70 to-transparent">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
             {remoteUser.avatar ? <img src={remoteUser.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : remoteUser.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="text-white font-semibold">{remoteUser.name}</p>
-            <p className="text-white/70 text-sm">
+            <p className="text-white font-semibold text-sm sm:text-base">{remoteUser.name}</p>
+            <p className="text-white/70 text-xs sm:text-sm">
               {callStatus === 'ringing' && (isIncoming ? 'Incoming call...' : 'Calling...')}
               {callStatus === 'connecting' && 'Connecting...'}
               {callStatus === 'connected' && formatDuration(callDuration)}
@@ -318,18 +339,36 @@ export default function VideoCall({
             </p>
           </div>
         </div>
-        <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-white hover:bg-white/20 rounded-lg">
+        <button
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          className="p-2 sm:p-3 text-white hover:bg-white/20 active:bg-white/30 rounded-lg touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+        >
           {isFullscreen ? <FiMinimize2 size={20} /> : <FiMaximize2 size={20} />}
         </button>
       </div>
 
       {/* Video Container */}
-      <div className="flex-1 relative">
-        {/* Remote Video */}
-        <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
-        {/* Local Video (Picture-in-Picture) */}
-        <div className="absolute bottom-24 right-4 w-40 h-28 rounded-xl overflow-hidden shadow-lg border-2 border-white/20">
-          <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+      <div className="flex-1 relative overflow-hidden">
+        {/* Remote Video - Full screen background */}
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
+          style={{ transform: 'rotateY(0deg)' }} // Prevent mirroring
+        />
+
+        {/* Local Video (Picture-in-Picture) - Mobile optimized */}
+        <div className="absolute bottom-20 sm:bottom-24 right-3 sm:right-4 w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-52 rounded-xl overflow-hidden shadow-2xl border-2 border-white/30">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+            style={{ transform: 'scaleX(-1)' }} // Mirror local video for natural preview
+          />
           {isVideoOff && (
             <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
               <FiVideoOff className="text-white/50" size={24} />
@@ -338,39 +377,75 @@ export default function VideoCall({
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 flex items-center justify-center gap-4 bg-gradient-to-t from-black/50 to-transparent">
+      {/* Controls - Mobile optimized with larger touch targets */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 pb-safe flex items-center justify-center gap-3 sm:gap-4 bg-gradient-to-t from-black/70 to-transparent">
         {callStatus === 'ringing' && isIncoming ? (
           <>
-            <button onClick={() => { socket?.emit('call:reject', { callerId: remoteUser.id }); onClose(); }} className="p-4 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors">
-              <FiPhoneOff size={24} />
+            <button
+              onClick={() => { socket?.emit('call:reject', { callerId: remoteUser.id }); onClose(); }}
+              className="p-4 sm:p-5 bg-red-500 rounded-full text-white hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg touch-manipulation min-w-[56px] min-h-[56px] sm:min-w-[64px] sm:min-h-[64px] flex items-center justify-center"
+              aria-label="Reject call"
+            >
+              <FiPhoneOff size={24} className="sm:w-7 sm:h-7" />
             </button>
-            <button onClick={acceptCall} className="p-4 bg-green-500 rounded-full text-white hover:bg-green-600 transition-colors">
-              <FiPhone size={24} />
+            <button
+              onClick={acceptCall}
+              className="p-4 sm:p-5 bg-green-500 rounded-full text-white hover:bg-green-600 active:bg-green-700 transition-colors shadow-lg touch-manipulation min-w-[56px] min-h-[56px] sm:min-w-[64px] sm:min-h-[64px] flex items-center justify-center"
+              aria-label="Accept call"
+            >
+              <FiPhone size={24} className="sm:w-7 sm:h-7" />
             </button>
           </>
         ) : callStatus === 'ringing' ? (
           <>
-            <button onClick={startCall} className="p-4 bg-green-500 rounded-full text-white hover:bg-green-600 transition-colors">
-              <FiPhone size={24} />
+            <button
+              onClick={startCall}
+              className="p-4 sm:p-5 bg-green-500 rounded-full text-white hover:bg-green-600 active:bg-green-700 transition-colors shadow-lg touch-manipulation min-w-[56px] min-h-[56px] sm:min-w-[64px] sm:min-h-[64px] flex items-center justify-center"
+              aria-label="Start call"
+            >
+              <FiPhone size={24} className="sm:w-7 sm:h-7" />
             </button>
-            <button onClick={onClose} className="p-4 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors">
-              <FiX size={24} />
+            <button
+              onClick={onClose}
+              className="p-4 sm:p-5 bg-red-500 rounded-full text-white hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg touch-manipulation min-w-[56px] min-h-[56px] sm:min-w-[64px] sm:min-h-[64px] flex items-center justify-center"
+              aria-label="Cancel call"
+            >
+              <FiX size={24} className="sm:w-7 sm:h-7" />
             </button>
           </>
         ) : (
           <>
-            <button onClick={toggleMute} className={`p-4 rounded-full transition-colors ${isMuted ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`} title={isMuted ? 'Unmute' : 'Mute'}>
-              {isMuted ? <FiMicOff size={24} /> : <FiMic size={24} />}
+            <button
+              onClick={toggleMute}
+              className={`p-3 sm:p-4 rounded-full transition-colors shadow-lg touch-manipulation min-w-[48px] min-h-[48px] sm:min-w-[56px] sm:min-h-[56px] flex items-center justify-center ${isMuted ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30 active:bg-white/40'}`}
+              title={isMuted ? 'Unmute' : 'Mute'}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? <FiMicOff size={20} className="sm:w-6 sm:h-6" /> : <FiMic size={20} className="sm:w-6 sm:h-6" />}
             </button>
-            <button onClick={toggleVideo} className={`p-4 rounded-full transition-colors ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`} title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}>
-              {isVideoOff ? <FiVideoOff size={24} /> : <FiVideo size={24} />}
+            <button
+              onClick={toggleVideo}
+              className={`p-3 sm:p-4 rounded-full transition-colors shadow-lg touch-manipulation min-w-[48px] min-h-[48px] sm:min-w-[56px] sm:min-h-[56px] flex items-center justify-center ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30 active:bg-white/40'}`}
+              title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
+              aria-label={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
+            >
+              {isVideoOff ? <FiVideoOff size={20} className="sm:w-6 sm:h-6" /> : <FiVideo size={20} className="sm:w-6 sm:h-6" />}
             </button>
-            <button onClick={switchCamera} className="p-4 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors" title="Switch camera">
-              <FiRefreshCw size={24} />
+            <button
+              onClick={switchCamera}
+              className="p-3 sm:p-4 rounded-full bg-white/20 text-white hover:bg-white/30 active:bg-white/40 transition-colors shadow-lg touch-manipulation min-w-[48px] min-h-[48px] sm:min-w-[56px] sm:min-h-[56px] flex items-center justify-center"
+              title="Switch camera"
+              aria-label="Switch camera"
+            >
+              <FiRefreshCw size={20} className="sm:w-6 sm:h-6" />
             </button>
-            <button onClick={endCall} className="p-4 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors" title="End call">
-              <FiPhoneOff size={24} />
+            <button
+              onClick={endCall}
+              className="p-4 sm:p-5 bg-red-500 rounded-full text-white hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg touch-manipulation min-w-[56px] min-h-[56px] sm:min-w-[64px] sm:min-h-[64px] flex items-center justify-center"
+              title="End call"
+              aria-label="End call"
+            >
+              <FiPhoneOff size={24} className="sm:w-7 sm:h-7" />
             </button>
           </>
         )}
