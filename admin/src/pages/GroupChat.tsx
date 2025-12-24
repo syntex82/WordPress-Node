@@ -8,7 +8,7 @@ import { useParams, Link } from 'react-router-dom';
 import { FiSend, FiArrowLeft, FiUsers, FiLogOut, FiSearch, FiCheck, FiShield, FiStar, FiHash, FiMessageSquare, FiTrash2, FiPaperclip, FiVideo, FiX, FiSmile } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
-import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
 import { groupsApi, messagesApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
@@ -634,7 +634,13 @@ export default function GroupChat() {
             {/* Emoji Picker Popup */}
             {showEmojiPicker && (
               <div ref={emojiPickerRef} className="absolute bottom-14 left-0 z-50">
-                <EmojiPicker theme={Theme.DARK} onEmojiClick={handleEmojiSelect} width={320} height={400} />
+                <EmojiPicker
+                  theme={Theme.DARK}
+                  onEmojiClick={handleEmojiSelect}
+                  width={320}
+                  height={400}
+                  emojiStyle={EmojiStyle.NATIVE}
+                />
               </div>
             )}
             <input ref={inputRef} type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
