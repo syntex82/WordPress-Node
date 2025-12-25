@@ -11,7 +11,7 @@ import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-rea
 import { messagesApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import VideoCall from '../components/VideoCall';
-import { requestNotificationPermission, checkNotificationPermission } from '../utils/permissions';
+import { requestNotificationPermission, checkNotificationPermission, checkMediaPermissionStatus, requestMediaPermissions, PermissionStatus } from '../utils/permissions';
 
 interface User {
   id: string;
@@ -88,19 +88,25 @@ export default function Messages() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<Conversation | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<string>('default');
+  const [mediaPermission, setMediaPermission] = useState<PermissionStatus>('prompt');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  // Request notification permission on mount
+  // Check permissions on mount
   useEffect(() => {
-    const checkPermission = () => {
-      const status = checkNotificationPermission();
-      setNotificationPermission(status);
+    const checkPermissions = async () => {
+      // Check notification permission
+      const notifStatus = checkNotificationPermission();
+      setNotificationPermission(notifStatus);
+
+      // Check media permissions
+      const mediaStatus = await checkMediaPermissionStatus();
+      setMediaPermission(mediaStatus);
     };
-    checkPermission();
+    checkPermissions();
   }, []);
 
   // Show browser notification for incoming calls
@@ -122,6 +128,21 @@ export default function Messages() {
       toast.success('Notifications enabled!');
     } else if (result === 'denied') {
       toast.error('Notifications blocked. Enable them in browser settings.');
+    }
+  };
+
+  const handleRequestMediaPermission = async () => {
+    const result = await requestMediaPermissions();
+    if (result.granted) {
+      setMediaPermission('granted');
+      toast.success('Camera & microphone enabled!');
+      // Stop the test stream
+      if (result.stream) {
+        result.stream.getTracks().forEach(t => t.stop());
+      }
+    } else {
+      setMediaPermission('denied');
+      toast.error(result.error || 'Permission denied. Enable in browser settings.');
     }
   };
 
@@ -493,6 +514,24 @@ export default function Messages() {
             </div>
           </div>
         </div>
+
+        {/* Camera/Microphone Permission Banner */}
+        {mediaPermission === 'prompt' && (
+          <div className="px-4 py-3 bg-indigo-500/10 border-b border-indigo-500/20">
+            <div className="flex items-center gap-3">
+              <FiVideo className="text-indigo-400 flex-shrink-0" size={18} />
+              <div className="flex-1">
+                <p className="text-indigo-200 text-sm">Enable camera & mic for video calls</p>
+              </div>
+              <button
+                onClick={handleRequestMediaPermission}
+                className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-sm rounded-lg transition-colors"
+              >
+                Enable
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Notification Permission Banner */}
         {notificationPermission === 'default' && (

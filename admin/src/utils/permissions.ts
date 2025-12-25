@@ -149,3 +149,24 @@ export function getPermissionInstructions(): string {
   return 'Click the lock/info icon in your browser address bar and allow camera/microphone access';
 }
 
+/**
+ * Check combined media permission status
+ * Returns the most restrictive status between camera and microphone
+ */
+export async function checkMediaPermissionStatus(): Promise<PermissionStatus> {
+  const camera = await checkCameraPermission();
+  const mic = await checkMicrophonePermission();
+
+  // If either is denied, return denied
+  if (camera === 'denied' || mic === 'denied') return 'denied';
+
+  // If either is unsupported, we can't check - return prompt to encourage trying
+  if (camera === 'unsupported' || mic === 'unsupported') return 'prompt';
+
+  // If either is prompt, return prompt
+  if (camera === 'prompt' || mic === 'prompt') return 'prompt';
+
+  // Both granted
+  return 'granted';
+}
+
