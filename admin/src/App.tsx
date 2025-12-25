@@ -82,6 +82,7 @@ import Updates from './pages/Updates';
 import {
   MarketplaceDashboard,
   Developers as MarketplaceDevelopers,
+  BrowseDevelopers,
   HiringRequests,
   Projects as MarketplaceProjects,
   DeveloperApplication,
@@ -166,6 +167,7 @@ function App() {
 
                 {/* Developer Marketplace */}
                 <Route path="dev-marketplace" element={<ProtectedRoute feature="marketplace"><MarketplaceDashboard /></ProtectedRoute>} />
+                <Route path="dev-marketplace/browse" element={<ProtectedRoute feature="marketplace"><BrowseDevelopers /></ProtectedRoute>} />
                 <Route path="dev-marketplace/developers" element={<ProtectedRoute feature="marketplace" requiredRole="ADMIN"><MarketplaceDevelopers /></ProtectedRoute>} />
                 <Route path="dev-marketplace/requests" element={<ProtectedRoute feature="marketplace"><HiringRequests /></ProtectedRoute>} />
                 <Route path="dev-marketplace/projects" element={<ProtectedRoute feature="marketplace"><MarketplaceProjects /></ProtectedRoute>} />

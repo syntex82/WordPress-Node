@@ -35,7 +35,7 @@ export default function PublicProfile() {
       ]);
       setProfile(profileRes.data);
       setStats(statsRes.data);
-      setActivities(activityRes.data.activities);
+      setActivities(activityRes.data?.activities || []);
 
       // Check if following
       if (currentUser) {
@@ -44,8 +44,10 @@ export default function PublicProfile() {
           setIsFollowing(followRes.data.isFollowing);
         } catch {}
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading profile:', error);
+      // Don't set profile to null for 403 (private profile) or 404 (not found)
+      // The UI already handles !profile case
     } finally {
       setLoading(false);
     }
@@ -76,24 +78,24 @@ export default function PublicProfile() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-slate-700 border-t-blue-500"></div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-96">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile Not Found</h2>
-        <p className="text-gray-600">This profile doesn't exist or is private.</p>
+      <div className="flex flex-col items-center justify-center min-h-96 px-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Profile Not Found</h2>
+        <p className="text-slate-400 text-sm sm:text-base text-center">This profile doesn't exist or is private.</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-0">
       {/* Cover Image */}
-      <div className="relative h-64 md:h-80 rounded-xl overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
+      <div className="relative h-40 sm:h-56 md:h-80 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
         {profile.coverImage && (
           <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover" />
         )}
@@ -101,53 +103,53 @@ export default function PublicProfile() {
       </div>
 
       {/* Profile Header */}
-      <div className="relative px-6 pb-6">
-        <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-20 md:-mt-24">
+      <div className="relative px-2 sm:px-6 pb-4 sm:pb-6">
+        <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-12 sm:-mt-20 md:-mt-24">
           {/* Avatar */}
-          <div className="w-36 h-36 md:w-44 md:h-44 rounded-2xl border-4 border-white bg-white shadow-xl overflow-hidden">
+          <div className="w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-xl sm:rounded-2xl border-3 sm:border-4 border-slate-800 bg-slate-800 shadow-xl overflow-hidden mx-auto md:mx-0">
             {profile.avatar ? (
               <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-5xl font-bold text-white">{profile.name.charAt(0)}</span>
+                <span className="text-3xl sm:text-5xl font-bold text-white">{profile.name.charAt(0)}</span>
               </div>
             )}
           </div>
 
           {/* Name & Actions */}
-          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
+          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 text-center md:text-left">
+            <div className="min-w-0">
+              <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-3">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent truncate">{profile.name}</h1>
                 {profile.role === 'ADMIN' && (
-                  <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Admin</span>
+                  <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-semibold rounded-full flex-shrink-0">Admin</span>
                 )}
               </div>
-              {profile.headline && <p className="text-lg text-gray-600 mt-1">{profile.headline}</p>}
-              <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+              {profile.headline && <p className="text-sm sm:text-base md:text-lg text-slate-400 mt-1 truncate">{profile.headline}</p>}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-slate-500">
                 {profile.location && (
-                  <span className="flex items-center gap-1"><FiMapPin className="w-4 h-4" /> {profile.location}</span>
+                  <span className="flex items-center gap-1"><FiMapPin className="w-3 h-3 sm:w-4 sm:h-4" /> {profile.location}</span>
                 )}
                 {profile.company && (
                   <span className="flex items-center gap-1">@ {profile.company}</span>
                 )}
-                <span className="flex items-center gap-1"><FiCalendar className="w-4 h-4" /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
+                <span className="flex items-center gap-1"><FiCalendar className="w-3 h-3 sm:w-4 sm:h-4" /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 justify-center md:justify-end">
               {isOwnProfile ? (
-                <Link to="/profile" className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                <Link to="/profile" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-blue-600 transition text-sm sm:text-base">
                   Edit Profile
                 </Link>
               ) : currentUser && (
                 <button
                   onClick={handleFollow}
                   disabled={followLoading}
-                  className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition disabled:opacity-50 ${
-                    isFollowing ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl transition disabled:opacity-50 text-sm sm:text-base ${
+                    isFollowing ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 border border-slate-600/50' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600'
                   }`}
                 >
-                  {isFollowing ? <><FiUserCheck className="w-4 h-4" /> Following</> : <><FiUserPlus className="w-4 h-4" /> Follow</>}
+                  {isFollowing ? <><FiUserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Following</> : <><FiUserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Follow</>}
                 </button>
               )}
             </div>
@@ -156,7 +158,7 @@ export default function PublicProfile() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 px-6 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 px-2 sm:px-6 mb-6 sm:mb-8">
         {[
           { label: 'Followers', value: profile.followersCount, icon: FiUsers, color: 'bg-blue-500' },
           { label: 'Following', value: profile.followingCount, icon: FiUsers, color: 'bg-green-500' },
@@ -164,34 +166,34 @@ export default function PublicProfile() {
           { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, color: 'bg-orange-500' },
           { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiAward, color: 'bg-pink-500' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
-              <stat.icon className="w-5 h-5 text-white" />
+          <div key={i} className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-700/50 hover:bg-slate-700/50 transition">
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 ${stat.color} rounded-lg flex items-center justify-center mb-2 sm:mb-3`}>
+              <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-            <div className="text-sm text-gray-500">{stat.label}</div>
+            <div className="text-lg sm:text-2xl font-bold text-white">{stat.value}</div>
+            <div className="text-xs sm:text-sm text-slate-400">{stat.label}</div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-6 pb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-6 pb-6 sm:pb-8">
         {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* About */}
           {profile.bio && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">About</h2>
-              <p className="text-gray-600 leading-relaxed">{profile.bio}</p>
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">About</h2>
+              <p className="text-slate-300 leading-relaxed text-sm sm:text-base">{profile.bio}</p>
             </div>
           )}
 
           {/* Skills */}
           {profile.skills && profile.skills.length > 0 && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
-              <div className="flex flex-wrap gap-2">
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Skills</h2>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {profile.skills.map((skill, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">{skill}</span>
+                  <span key={i} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-500/20 text-indigo-400 rounded-full text-xs sm:text-sm font-medium">{skill}</span>
                 ))}
               </div>
             </div>
@@ -199,15 +201,15 @@ export default function PublicProfile() {
 
           {/* Posts */}
           {profile.posts && profile.posts.length > 0 && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <FiBook className="w-5 h-5 text-indigo-600" /> Recent Posts
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Recent Posts
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {profile.posts.map(post => (
-                  <a key={post.id} href={`/post/${post.slug}`} className="group block p-4 bg-gray-50 rounded-lg hover:bg-indigo-50 transition">
-                    <h3 className="font-medium text-gray-900 group-hover:text-indigo-600 transition line-clamp-2">{post.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{new Date(post.createdAt).toLocaleDateString()}</p>
+                  <a key={post.id} href={`/post/${post.slug}`} className="group block p-3 sm:p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition">
+                    <h3 className="font-medium text-white group-hover:text-blue-400 transition line-clamp-2 text-sm sm:text-base">{post.title}</h3>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">{new Date(post.createdAt).toLocaleDateString()}</p>
                   </a>
                 ))}
               </div>
@@ -216,17 +218,17 @@ export default function PublicProfile() {
 
           {/* Courses */}
           {profile.instructedCourses && profile.instructedCourses.length > 0 && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <FiAward className="w-5 h-5 text-indigo-600" /> Courses
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                <FiAward className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Courses
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {profile.instructedCourses.map(course => (
-                  <a key={course.id} href={`/courses/${course.slug}`} className="group flex gap-4 p-4 bg-gray-50 rounded-lg hover:bg-indigo-50 transition">
-                    <div className="w-20 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex-shrink-0" />
-                    <div>
-                      <h3 className="font-medium text-gray-900 group-hover:text-indigo-600 transition">{course.title}</h3>
-                      <p className="text-sm text-gray-500 line-clamp-1">{course.shortDescription}</p>
+                  <a key={course.id} href={`/courses/${course.slug}`} className="group flex gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition">
+                    <div className="w-16 h-12 sm:w-20 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex-shrink-0" />
+                    <div className="min-w-0">
+                      <h3 className="font-medium text-white group-hover:text-blue-400 transition text-sm sm:text-base truncate">{course.title}</h3>
+                      <p className="text-xs sm:text-sm text-slate-500 line-clamp-1">{course.shortDescription}</p>
                     </div>
                   </a>
                 ))}
@@ -236,28 +238,28 @@ export default function PublicProfile() {
         </div>
 
         {/* Right Column */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Social Links */}
           {profile.socialLinks && Object.values(profile.socialLinks).some(v => v) && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Connect</h2>
-              <div className="flex flex-wrap gap-3">
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Connect</h2>
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 {profile.socialLinks.twitter && (
-                  <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-100 text-blue-500 rounded-lg hover:bg-blue-200 transition"><FiTwitter className="w-5 h-5" /></a>
+                  <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2 sm:p-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition"><FiTwitter className="w-4 h-4 sm:w-5 sm:h-5" /></a>
                 )}
                 {profile.socialLinks.linkedin && (
-                  <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"><FiLinkedin className="w-5 h-5" /></a>
+                  <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 sm:p-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition"><FiLinkedin className="w-4 h-4 sm:w-5 sm:h-5" /></a>
                 )}
                 {profile.socialLinks.github && (
-                  <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer" className="p-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"><FiGithub className="w-5 h-5" /></a>
+                  <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer" className="p-2 sm:p-3 bg-slate-600/50 text-slate-300 rounded-lg hover:bg-slate-600/70 transition"><FiGithub className="w-4 h-4 sm:w-5 sm:h-5" /></a>
                 )}
                 {profile.socialLinks.youtube && (
-                  <a href={profile.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"><FiYoutube className="w-5 h-5" /></a>
+                  <a href={profile.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-2 sm:p-3 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition"><FiYoutube className="w-4 h-4 sm:w-5 sm:h-5" /></a>
                 )}
               </div>
               {profile.website && (
-                <a href={profile.website} target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center gap-2 text-indigo-600 hover:underline">
-                  <FiExternalLink className="w-4 h-4" /> {profile.website}
+                <a href={profile.website} target="_blank" rel="noopener noreferrer" className="mt-3 sm:mt-4 flex items-center gap-2 text-blue-400 hover:text-blue-300 transition text-sm sm:text-base">
+                  <FiExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="truncate">{profile.website}</span>
                 </a>
               )}
             </div>
@@ -265,13 +267,13 @@ export default function PublicProfile() {
 
           {/* Badges */}
           {profile.badges && profile.badges.length > 0 && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Badges</h2>
-              <div className="grid grid-cols-3 gap-3">
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Badges</h2>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 {profile.badges.map(({ badge }, i) => (
-                  <div key={i} className="flex flex-col items-center p-3 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg" title={badge.description}>
-                    <span className="text-2xl">{badge.icon || '🏆'}</span>
-                    <span className="text-xs font-medium text-gray-700 mt-1 text-center">{badge.name}</span>
+                  <div key={i} className="flex flex-col items-center p-2 sm:p-3 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20" title={badge.description}>
+                    <span className="text-xl sm:text-2xl">{badge.icon || '🏆'}</span>
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-300 mt-1 text-center">{badge.name}</span>
                   </div>
                 ))}
               </div>
@@ -279,26 +281,26 @@ export default function PublicProfile() {
           )}
 
           {/* Activity */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiActivity className="w-5 h-5 text-indigo-600" /> Activity
+          <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+            <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+              <FiActivity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Activity
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {activities.slice(0, 5).map((activity, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    activity.type === 'post_published' ? 'bg-blue-100 text-blue-600' :
-                    activity.type === 'certificate_earned' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'
+                <div key={i} className="flex items-start gap-2 sm:gap-3">
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    activity.type === 'post_published' ? 'bg-blue-500/20 text-blue-400' :
+                    activity.type === 'certificate_earned' ? 'bg-green-500/20 text-green-400' : 'bg-purple-500/20 text-purple-400'
                   }`}>
-                    {activity.type === 'post_published' ? <FiBook className="w-4 h-4" /> : <FiAward className="w-4 h-4" />}
+                    {activity.type === 'post_published' ? <FiBook className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <FiAward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 truncate">{activity.title}</p>
-                    <p className="text-xs text-gray-500">{new Date(activity.date).toLocaleDateString()}</p>
+                    <p className="text-xs sm:text-sm text-slate-300 truncate">{activity.title}</p>
+                    <p className="text-[10px] sm:text-xs text-slate-500">{new Date(activity.date).toLocaleDateString()}</p>
                   </div>
                 </div>
               ))}
-              {activities.length === 0 && <p className="text-gray-500 text-sm">No recent activity</p>}
+              {activities.length === 0 && <p className="text-slate-500 text-xs sm:text-sm">No recent activity</p>}
             </div>
           </div>
         </div>

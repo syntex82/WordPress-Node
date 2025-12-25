@@ -130,8 +130,9 @@ export class ProfilesController {
    */
   @Get(':identifier')
   @UseGuards(OptionalJwtAuthGuard)
-  async getPublicProfile(@Param('identifier') identifier: string) {
-    return this.profilesService.getPublicProfile(identifier);
+  async getPublicProfile(@Request() req, @Param('identifier') identifier: string) {
+    const viewerId = req.user?.id;
+    return this.profilesService.getPublicProfile(identifier, viewerId);
   }
 
   /**
@@ -139,8 +140,10 @@ export class ProfilesController {
    * GET /api/profiles/:identifier/stats
    */
   @Get(':identifier/stats')
-  async getUserStats(@Param('identifier') identifier: string) {
-    const profile = await this.profilesService.getPublicProfile(identifier);
+  @UseGuards(OptionalJwtAuthGuard)
+  async getUserStats(@Request() req, @Param('identifier') identifier: string) {
+    const viewerId = req.user?.id;
+    const profile = await this.profilesService.getPublicProfile(identifier, viewerId);
     return this.profilesService.getStats(profile.id);
   }
 
@@ -149,12 +152,15 @@ export class ProfilesController {
    * GET /api/profiles/:identifier/activity
    */
   @Get(':identifier/activity')
+  @UseGuards(OptionalJwtAuthGuard)
   async getUserActivity(
+    @Request() req,
     @Param('identifier') identifier: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    const profile = await this.profilesService.getPublicProfile(identifier);
+    const viewerId = req.user?.id;
+    const profile = await this.profilesService.getPublicProfile(identifier, viewerId);
     return this.profilesService.getActivity(
       profile.id,
       parseInt(page || '1'),
@@ -169,7 +175,7 @@ export class ProfilesController {
   @Get(':identifier/following-status')
   @UseGuards(JwtAuthGuard)
   async getFollowingStatus(@Request() req, @Param('identifier') identifier: string) {
-    const profile = await this.profilesService.getPublicProfile(identifier);
+    const profile = await this.profilesService.getPublicProfile(identifier, req.user.id);
     return this.profilesService.isFollowing(req.user.id, profile.id);
   }
 
@@ -180,7 +186,7 @@ export class ProfilesController {
   @Post(':identifier/follow')
   @UseGuards(JwtAuthGuard)
   async followUser(@Request() req, @Param('identifier') identifier: string) {
-    const profile = await this.profilesService.getPublicProfile(identifier);
+    const profile = await this.profilesService.getPublicProfile(identifier, req.user.id);
     return this.profilesService.followUser(req.user.id, profile.id);
   }
 
@@ -191,7 +197,7 @@ export class ProfilesController {
   @Delete(':identifier/follow')
   @UseGuards(JwtAuthGuard)
   async unfollowUser(@Request() req, @Param('identifier') identifier: string) {
-    const profile = await this.profilesService.getPublicProfile(identifier);
+    const profile = await this.profilesService.getPublicProfile(identifier, req.user.id);
     return this.profilesService.unfollowUser(req.user.id, profile.id);
   }
 
@@ -200,12 +206,15 @@ export class ProfilesController {
    * GET /api/profiles/:identifier/followers
    */
   @Get(':identifier/followers')
+  @UseGuards(OptionalJwtAuthGuard)
   async getUserFollowers(
+    @Request() req,
     @Param('identifier') identifier: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    const profile = await this.profilesService.getPublicProfile(identifier);
+    const viewerId = req.user?.id;
+    const profile = await this.profilesService.getPublicProfile(identifier, viewerId);
     return this.profilesService.getFollowers(
       profile.id,
       parseInt(page || '1'),
@@ -218,12 +227,15 @@ export class ProfilesController {
    * GET /api/profiles/:identifier/following
    */
   @Get(':identifier/following')
+  @UseGuards(OptionalJwtAuthGuard)
   async getUserFollowing(
+    @Request() req,
     @Param('identifier') identifier: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    const profile = await this.profilesService.getPublicProfile(identifier);
+    const viewerId = req.user?.id;
+    const profile = await this.profilesService.getPublicProfile(identifier, viewerId);
     return this.profilesService.getFollowing(
       profile.id,
       parseInt(page || '1'),

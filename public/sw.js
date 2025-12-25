@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wp-node-v1';
+const CACHE_NAME = 'wp-node-v2';
 const OFFLINE_URL = '/offline.html';
 
 // Install - cache essential files
@@ -13,7 +13,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate - clean up old caches
+// Activate - clean up old caches (clear all previous versions)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {

@@ -69,8 +69,10 @@ export class ProfilesService {
 
   /**
    * Get public profile by username or ID
+   * @param identifier - Username or user ID
+   * @param viewerId - Optional ID of the viewing user (allows viewing own private profile)
    */
-  async getPublicProfile(identifier: string) {
+  async getPublicProfile(identifier: string, viewerId?: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [{ username: identifier }, { id: identifier }],
@@ -130,7 +132,9 @@ export class ProfilesService {
       throw new NotFoundException('User not found');
     }
 
-    if (!user.isPublic) {
+    // Allow viewing your own profile even if private
+    const isOwnProfile = viewerId && user.id === viewerId;
+    if (!user.isPublic && !isOwnProfile) {
       throw new ForbiddenException('This profile is private');
     }
 

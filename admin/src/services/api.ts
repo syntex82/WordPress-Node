@@ -1383,6 +1383,78 @@ export const profileApi = {
     api.get('/profiles/search', { params: { q: query, page, limit } }),
 };
 
+// Developer Marketplace types
+export interface DeveloperProfile {
+  id: string;
+  username?: string;
+  name: string;
+  avatar?: string;
+  headline?: string;
+  bio?: string;
+  location?: string;
+  skills: string[];
+  hourlyRate?: number;
+  availability?: 'available' | 'busy' | 'unavailable';
+  experienceLevel?: 'junior' | 'mid' | 'senior' | 'lead' | 'principal';
+  followersCount: number;
+  coursesCount: number;
+  certificatesCount: number;
+  rating?: number;
+  reviewsCount?: number;
+  completedProjects?: number;
+  socialLinks?: {
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+    website?: string;
+  };
+  createdAt: string;
+}
+
+export interface DeveloperMarketplaceQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  skills?: string[];
+  availability?: string;
+  experienceLevel?: string;
+  minRate?: number;
+  maxRate?: number;
+  location?: string;
+  sortBy?: 'rating' | 'experience' | 'rate' | 'projects' | 'newest';
+  sortOrder?: 'asc' | 'desc';
+}
+
+// Developer Marketplace API
+export const developerMarketplaceApi = {
+  // Browse developers
+  getDevelopers: (query?: DeveloperMarketplaceQuery) =>
+    api.get<{ developers: DeveloperProfile[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      '/developers',
+      { params: query }
+    ),
+
+  // Get featured developers
+  getFeatured: (limit = 6) =>
+    api.get<DeveloperProfile[]>('/developers/featured', { params: { limit } }),
+
+  // Get developer by ID or username
+  getDeveloper: (identifier: string) =>
+    api.get<DeveloperProfile>(`/developers/${identifier}`),
+
+  // Get available skills for filtering
+  getSkills: () =>
+    api.get<{ skill: string; count: number }[]>('/developers/skills'),
+
+  // Get marketplace stats
+  getStats: () =>
+    api.get<{ totalDevelopers: number; availableDevelopers: number; avgRating: number; topSkills: string[] }>('/developers/stats'),
+
+  // Contact developer (send inquiry)
+  contactDeveloper: (developerId: string, data: { subject: string; message: string; projectDetails?: string }) =>
+    api.post(`/developers/${developerId}/contact`, data),
+};
+
 // Direct Messages API
 // Media attachment interface for messages
 interface MediaAttachment {

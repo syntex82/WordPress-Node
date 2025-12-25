@@ -334,26 +334,26 @@ async function bootstrap() {
   const expressApp = app.getHttpAdapter().getInstance();
 
   // Helper function to generate PWA manifest
+  // Note: Camera/microphone permissions are handled via Permissions-Policy HTTP header
+  // and must be requested at runtime via navigator.mediaDevices.getUserMedia()
   const generateManifest = (req: any) => ({
     name: 'WordPress Node',
     short_name: 'WP Node',
-    description: 'Modern WordPress Node CMS',
+    description: 'Modern WordPress Node CMS with real-time features',
     start_url: '/admin/',
+    scope: '/',
     display: 'standalone',
     orientation: 'any',
     theme_color: '#4f46e5',
     background_color: '#1e293b',
+    categories: ['productivity', 'social', 'education'],
     icons: [
-      { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-      { src: '/api/pwa/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
+      { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'maskable' },
+      { src: '/api/pwa/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
+      { src: '/api/pwa/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
     ],
-    // Permissions for camera and microphone (for video calls)
-    permissions_policy: {
-      camera: ['self'],
-      microphone: ['self'],
-      geolocation: ['self'],
-      fullscreen: ['self'],
-    },
+    prefer_related_applications: false,
   });
 
   // Helper function to generate service worker code
