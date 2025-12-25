@@ -338,21 +338,21 @@ async function bootstrap() {
   // and must be requested at runtime via navigator.mediaDevices.getUserMedia()
   // The permissions_policy field is informational for Android WebView / TWA apps
   const generateManifest = (req: any) => ({
-    name: 'WordPress Node',
+    name: 'WP Node',
     short_name: 'WP Node',
-    description: 'Modern WordPress Node CMS with real-time messaging, video calling, and collaboration',
+    description: 'Modern CMS with real-time messaging, video calling, and collaboration',
     start_url: '/admin/',
     scope: '/',
     display: 'standalone',
     orientation: 'any',
-    theme_color: '#4f46e5',
-    background_color: '#1e293b',
+    theme_color: '#1a2332',
+    background_color: '#0f172a',
     categories: ['productivity', 'social', 'education', 'communication'],
     icons: [
       { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
-      { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'maskable' },
+      { src: '/api/pwa/icons/icon-192-maskable.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'maskable' },
       { src: '/api/pwa/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
-      { src: '/api/pwa/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
+      { src: '/api/pwa/icons/icon-512-maskable.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
     ],
     prefer_related_applications: false,
     // Permissions policy for Android WebView/TWA and supported browsers
@@ -423,22 +423,49 @@ self.addEventListener('fetch', e => {
     res.send(generateOfflinePage());
   });
 
-  // PWA Icons (SVG - under /api/pwa/ for nginx compatibility)
-  const generateIconSvg = (size: number) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#4f46e5" rx="${Math.round(size * 0.15)}"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="white" font-family="system-ui" font-weight="bold" font-size="${Math.round(size * 0.4)}">WN</text></svg>`;
-
+  // PWA Icons - serve from public/pwa/icons folder
   expressApp.get('/api/pwa/icons/:filename', (req, res) => {
-    const match = req.params.filename.match(/(\d+)/);
-    const size = match ? parseInt(match[1]) : 192;
-    res.setHeader('Content-Type', 'image/svg+xml');
-    res.send(generateIconSvg(size));
+    const filename = req.params.filename;
+    const iconPath = join(process.cwd(), 'public', 'pwa', 'icons', filename);
+    if (existsSync(iconPath)) {
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.sendFile(iconPath);
+    } else {
+      // Fallback to generated icon
+      const match = filename.match(/(\d+)/);
+      const size = match ? parseInt(match[1]) : 192;
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.send(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#1a2332" rx="${Math.round(size * 0.15)}"/><polygon points="${size/2},${size*0.15} ${size*0.78},${size*0.30} ${size*0.78},${size*0.70} ${size/2},${size*0.85} ${size*0.22},${size*0.70} ${size*0.22},${size*0.30}" fill="none" stroke="#2dd4bf" stroke-width="${Math.round(size*0.02)}"/><text x="50%" y="45%" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.15)}">WP</text><text x="50%" y="62%" dominant-baseline="central" text-anchor="middle" fill="#2dd4bf" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.10)}">NODE</text></svg>`);
+    }
   });
 
-  // Also serve at old path for backward compatibility
+  // Favicon
+  expressApp.get('/api/pwa/favicon.svg', (req, res) => {
+    const faviconPath = join(process.cwd(), 'public', 'favicon.svg');
+    if (existsSync(faviconPath)) {
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.sendFile(faviconPath);
+    } else {
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.send(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1a2332"/><polygon points="16,5 26,10 26,22 16,27 6,22 6,10" fill="none" stroke="#2dd4bf" stroke-width="1.5"/><text x="16" y="18" font-family="Arial" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">WP</text></svg>`);
+    }
+  });
+
+  // Also serve icons at old path for backward compatibility
   expressApp.get('/pwa/icons/:filename', (req, res) => {
-    const match = req.params.filename.match(/(\d+)/);
-    const size = match ? parseInt(match[1]) : 192;
-    res.setHeader('Content-Type', 'image/svg+xml');
-    res.send(generateIconSvg(size));
+    const filename = req.params.filename;
+    const iconPath = join(process.cwd(), 'public', 'pwa', 'icons', filename);
+    if (existsSync(iconPath)) {
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.sendFile(iconPath);
+    } else {
+      const match = filename.match(/(\d+)/);
+      const size = match ? parseInt(match[1]) : 192;
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.send(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#1a2332" rx="${Math.round(size * 0.15)}"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="#2dd4bf" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.3)}">WP</text></svg>`);
+    }
   });
 
   logger.log('✅ Built-in PWA routes registered');
