@@ -336,17 +336,18 @@ async function bootstrap() {
   // Helper function to generate PWA manifest
   // Note: Camera/microphone permissions are handled via Permissions-Policy HTTP header
   // and must be requested at runtime via navigator.mediaDevices.getUserMedia()
+  // The permissions_policy field is informational for Android WebView / TWA apps
   const generateManifest = (req: any) => ({
     name: 'WordPress Node',
     short_name: 'WP Node',
-    description: 'Modern WordPress Node CMS with real-time features',
+    description: 'Modern WordPress Node CMS with real-time messaging, video calling, and collaboration',
     start_url: '/admin/',
     scope: '/',
     display: 'standalone',
     orientation: 'any',
     theme_color: '#4f46e5',
     background_color: '#1e293b',
-    categories: ['productivity', 'social', 'education'],
+    categories: ['productivity', 'social', 'education', 'communication'],
     icons: [
       { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
       { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'maskable' },
@@ -354,6 +355,14 @@ async function bootstrap() {
       { src: '/api/pwa/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
     ],
     prefer_related_applications: false,
+    // Permissions policy for Android WebView/TWA and supported browsers
+    permissions_policy: {
+      camera: ['self'],
+      microphone: ['self'],
+      geolocation: ['self'],
+      fullscreen: ['self'],
+      'display-capture': ['self'],
+    },
   });
 
   // Helper function to generate service worker code

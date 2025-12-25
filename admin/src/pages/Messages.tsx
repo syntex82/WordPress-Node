@@ -4,14 +4,23 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2, FiVideo, FiPaperclip, FiPhone, FiSmile, FiBell, FiArrowLeft } from 'react-icons/fi';
+import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2, FiVideo, FiPaperclip, FiPhone, FiSmile, FiBell, FiArrowLeft, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
 import { messagesApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import VideoCall from '../components/VideoCall';
-import { requestNotificationPermission, checkNotificationPermission, checkMediaPermissionStatus, requestMediaPermissions, PermissionStatus } from '../utils/permissions';
+import {
+  requestNotificationPermission,
+  checkNotificationPermission,
+  checkMediaPermissionStatus,
+  requestMediaPermissions,
+  subscribeToPermissionChanges,
+  getPermissionInstructions,
+  clearPermissionCache,
+  PermissionStatus
+} from '../utils/permissions';
 
 interface User {
   id: string;
@@ -95,7 +104,7 @@ export default function Messages() {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  // Check permissions on mount
+  // Check permissions on mount and subscribe to changes
   useEffect(() => {
     const checkPermissions = async () => {
       // Check notification permission
@@ -107,6 +116,16 @@ export default function Messages() {
       setMediaPermission(mediaStatus);
     };
     checkPermissions();
+
+    // Subscribe to permission changes (works on Chrome/Edge)
+    const unsubscribe = subscribeToPermissionChanges((status) => {
+      console.log('Permission status changed:', status);
+      setMediaPermission(status);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   // Show browser notification for incoming calls
@@ -132,11 +151,12 @@ export default function Messages() {
   };
 
   const handleRequestMediaPermission = async () => {
+    // Clear any stale cache before requesting
+    clearPermissionCache();
+
     const result = await requestMediaPermissions();
     if (result.granted) {
       setMediaPermission('granted');
-      // Store in localStorage so we don't show banner again
-      localStorage.setItem('mediaPermissionGranted', 'true');
       toast.success('Camera & microphone enabled!');
       // Stop the test stream
       if (result.stream) {
@@ -144,7 +164,21 @@ export default function Messages() {
       }
     } else {
       setMediaPermission('denied');
-      toast.error(result.error || 'Permission denied. Enable in browser settings.');
+      // Show platform-specific instructions
+      const errorMsg = result.error || `Permission denied. ${getPermissionInstructions()}`;
+      toast.error(errorMsg, { duration: 6000 });
+    }
+  };
+
+  // Handler to retry permission check (for denied state)
+  const handleRetryMediaPermission = async () => {
+    clearPermissionCache();
+    const mediaStatus = await checkMediaPermissionStatus();
+    setMediaPermission(mediaStatus);
+    if (mediaStatus === 'granted') {
+      toast.success('Camera & microphone are now enabled!');
+    } else if (mediaStatus === 'prompt') {
+      toast('Click "Enable" to grant camera & microphone access');
     }
   };
 
@@ -161,18 +195,34 @@ export default function Messages() {
         transports: ['websocket', 'polling'],
         path: '/socket.io',
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: Infinity, // Keep trying to reconnect
         reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
       });
+
+      // Track if this is a reconnection
+      let isReconnection = false;
 
       newSocket.on('connect', () => {
-        console.log('Connected to messages gateway');
+        console.log('Connected to messages gateway', isReconnection ? '(reconnected)' : '');
         setSocketConnected(true);
+
+        // On reconnection, request the online users list again
+        if (isReconnection) {
+          newSocket.emit('users:request:list');
+        }
+        isReconnection = true;
       });
 
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from messages gateway');
+      newSocket.on('disconnect', (reason) => {
+        console.log('Disconnected from messages gateway:', reason);
         setSocketConnected(false);
+
+        // If server disconnected us, try to reconnect manually
+        if (reason === 'io server disconnect') {
+          newSocket.connect();
+        }
       });
 
       newSocket.on('connect_error', (error) => {
@@ -185,11 +235,13 @@ export default function Messages() {
         console.log('Received online users list:', data.users);
         setOnlineUsers(data.users);
       });
+
       // Listen for individual online/offline status updates
       newSocket.on('user:online', (data: { userId: string }) => {
         console.log('User came online:', data.userId);
         setOnlineUsers((prev) => [...new Set([...prev, data.userId])]);
       });
+
       newSocket.on('user:offline', (data: { userId: string }) => {
         console.log('User went offline:', data.userId);
         setOnlineUsers((prev) => prev.filter((id) => id !== data.userId));
@@ -530,7 +582,7 @@ export default function Messages() {
           </div>
         </div>
 
-        {/* Camera/Microphone Permission Banner */}
+        {/* Camera/Microphone Permission Banner - Prompt State */}
         {mediaPermission === 'prompt' && (
           <div className="px-4 py-3 bg-indigo-500/10 border-b border-indigo-500/20">
             <div className="flex items-center gap-3">
@@ -543,6 +595,25 @@ export default function Messages() {
                 className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-sm rounded-lg transition-colors"
               >
                 Enable
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Camera/Microphone Permission Banner - Denied State */}
+        {mediaPermission === 'denied' && (
+          <div className="px-4 py-3 bg-red-500/10 border-b border-red-500/20">
+            <div className="flex items-center gap-3">
+              <FiAlertCircle className="text-red-400 flex-shrink-0" size={18} />
+              <div className="flex-1">
+                <p className="text-red-200 text-sm">Camera/mic blocked - video calls disabled</p>
+                <p className="text-red-300/60 text-xs mt-0.5">{getPermissionInstructions()}</p>
+              </div>
+              <button
+                onClick={handleRetryMediaPermission}
+                className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-sm rounded-lg transition-colors flex items-center gap-1"
+              >
+                <FiRefreshCw size={14} /> Retry
               </button>
             </div>
           </div>

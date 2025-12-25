@@ -377,6 +377,31 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     return { success: true };
   }
 
+  /**
+   * Handle client request for online users list
+   * Useful for reconnection scenarios where the client needs to refresh the list
+   */
+  @SubscribeMessage('users:request:list')
+  handleRequestOnlineUsers(@ConnectedSocket() client: Socket) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+
+    const onlineUserIds = Array.from(this.userSockets.keys());
+    client.emit('users:online:list', { users: onlineUserIds });
+    console.log(`User ${user.name} requested online users list (${onlineUserIds.length} users online)`);
+    return { success: true, count: onlineUserIds.length };
+  }
+
+  /**
+   * Handle ping request from client to verify connection is alive
+   */
+  @SubscribeMessage('ping')
+  handlePing(@ConnectedSocket() client: Socket) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return { error: 'Unauthorized' };
+    return { pong: true, timestamp: Date.now() };
+  }
+
   // Get list of online users
   getOnlineUsers(): string[] {
     return Array.from(this.userSockets.keys());

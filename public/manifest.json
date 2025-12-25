@@ -1,14 +1,14 @@
 {
   "name": "WordPress Node",
   "short_name": "WP Node",
-  "description": "Modern WordPress Node CMS with real-time features",
+  "description": "Modern WordPress Node CMS with real-time messaging, video calling, and collaboration",
   "start_url": "/admin/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#4f46e5",
   "background_color": "#1e293b",
-  "categories": ["productivity", "social", "education"],
+  "categories": ["productivity", "social", "education", "communication"],
   "icons": [
     {
       "src": "/pwa/icons/icon-192.svg",
@@ -37,6 +37,13 @@
   ],
   "screenshots": [],
   "related_applications": [],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "permissions_policy": {
+    "camera": ["self"],
+    "microphone": ["self"],
+    "geolocation": ["self"],
+    "fullscreen": ["self"],
+    "display-capture": ["self"]
+  }
 }
 
