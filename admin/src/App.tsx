@@ -1,93 +1,112 @@
 /**
  * Main App Component
  * Handles routing and authentication state with role-based access control
+ * Uses React.lazy for code-splitting to reduce initial bundle size
  */
 
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
+import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Loading component for lazy-loaded routes
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p className="mt-4 text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
+
+// Auth pages (loaded eagerly as they're entry points)
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import SetupWizard from './pages/SetupWizard';
-import Dashboard from './pages/Dashboard';
-import Posts from './pages/Posts';
-import PostEditor from './pages/PostEditor';
-import Pages from './pages/Pages';
-import PageEditor from './pages/PageEditor';
-import Media from './pages/Media';
-import Users from './pages/Users';
-import Groups from './pages/Groups';
-import GroupChat from './pages/GroupChat';
-import ThemeBuilder from './pages/ThemeBuilder';
-import ThemeDesigner from './pages/ThemeDesigner';
-import MenuManager from './pages/MenuManager';
-import MarketplaceAdmin from './pages/MarketplaceAdmin';
-import Backups from './pages/Backups';
-import Security from './pages/Security';
-import Settings from './pages/Settings';
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
-// Shop admin pages
-import ShopProducts from './pages/shop/Products';
-import ShopProductEditor from './pages/shop/ProductEditor';
-import ShopOrders from './pages/shop/Orders';
-import ShopOrderDetail from './pages/shop/OrderDetail';
-import ShopCategories from './pages/shop/Categories';
-// Storefront pages (public)
-import StorefrontShop from './pages/storefront/Shop';
-import StorefrontProduct from './pages/storefront/ProductPage';
-import StorefrontCart from './pages/storefront/Cart';
-import StorefrontCheckout from './pages/storefront/Checkout';
-import StorefrontOrderSuccess from './pages/storefront/OrderSuccess';
-// LMS admin pages
-import LmsAdminDashboard from './pages/lms/AdminDashboard';
-import LmsCourses from './pages/lms/Courses';
-import LmsCourseEditor from './pages/lms/CourseEditor';
-import LmsCourseCategories from './pages/lms/CourseCategories';
-import LmsLessons from './pages/lms/Lessons';
-import LmsQuizzes from './pages/lms/Quizzes';
-import LmsQuizQuestions from './pages/lms/QuizQuestions';
-import LmsCurriculumBuilder from './pages/lms/CurriculumBuilder';
-// LMS student pages
-import LmsCourseCatalog from './pages/lms/CourseCatalog';
-import LmsCourseLanding from './pages/lms/CourseLanding';
-import LmsLearningPlayer from './pages/lms/LearningPlayer';
-import LmsStudentDashboard from './pages/lms/StudentDashboard';
-import LmsQuizPlayer from './pages/lms/QuizPlayer';
-import LmsCertificate from './pages/lms/Certificate';
-// Profile pages
-import MyProfile from './pages/profile/MyProfile';
-import PublicProfile from './pages/profile/PublicProfile';
-// Analytics
-import Analytics from './pages/Analytics';
-// SEO
-import Seo from './pages/Seo';
-// Messages
-import Messages from './pages/Messages';
-// Theme Customizer
-import ThemeCustomizer from './pages/ThemeCustomizer';
-import ThemeContentManager from './pages/ThemeContentManager';
-// Email
-import EmailTemplates from './pages/email/EmailTemplates';
-import EmailComposer from './pages/email/EmailComposer';
-import EmailLogs from './pages/email/EmailLogs';
-import EmailTemplateDesigner from './pages/email/EmailTemplateDesigner';
-// Recommendations
-import Recommendations from './pages/Recommendations';
-// Updates
-import Updates from './pages/Updates';
-// Developer Marketplace
-import {
-  MarketplaceDashboard,
-  Developers as MarketplaceDevelopers,
-  BrowseDevelopers,
-  HiringRequests,
-  Projects as MarketplaceProjects,
-  DeveloperApplication,
-  HireForm,
-} from './pages/marketplace';
+
+// Lazy-loaded pages - Core
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Posts = lazy(() => import('./pages/Posts'));
+const PostEditor = lazy(() => import('./pages/PostEditor'));
+const Pages = lazy(() => import('./pages/Pages'));
+const PageEditor = lazy(() => import('./pages/PageEditor'));
+const Media = lazy(() => import('./pages/Media'));
+const Users = lazy(() => import('./pages/Users'));
+const Groups = lazy(() => import('./pages/Groups'));
+const GroupChat = lazy(() => import('./pages/GroupChat'));
+const Messages = lazy(() => import('./pages/Messages'));
+
+// Lazy-loaded pages - Theme & Design
+const ThemeBuilder = lazy(() => import('./pages/ThemeBuilder'));
+const ThemeDesigner = lazy(() => import('./pages/ThemeDesigner'));
+const ThemeCustomizer = lazy(() => import('./pages/ThemeCustomizer'));
+const ThemeContentManager = lazy(() => import('./pages/ThemeContentManager'));
+const MenuManager = lazy(() => import('./pages/MenuManager'));
+const MarketplaceAdmin = lazy(() => import('./pages/MarketplaceAdmin'));
+
+// Lazy-loaded pages - Admin
+const Backups = lazy(() => import('./pages/Backups'));
+const Security = lazy(() => import('./pages/Security'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Seo = lazy(() => import('./pages/Seo'));
+const Recommendations = lazy(() => import('./pages/Recommendations'));
+const Updates = lazy(() => import('./pages/Updates'));
+
+// Lazy-loaded pages - Shop
+const ShopProducts = lazy(() => import('./pages/shop/Products'));
+const ShopProductEditor = lazy(() => import('./pages/shop/ProductEditor'));
+const ShopOrders = lazy(() => import('./pages/shop/Orders'));
+const ShopOrderDetail = lazy(() => import('./pages/shop/OrderDetail'));
+const ShopCategories = lazy(() => import('./pages/shop/Categories'));
+
+// Lazy-loaded pages - Storefront
+const StorefrontShop = lazy(() => import('./pages/storefront/Shop'));
+const StorefrontProduct = lazy(() => import('./pages/storefront/ProductPage'));
+const StorefrontCart = lazy(() => import('./pages/storefront/Cart'));
+const StorefrontCheckout = lazy(() => import('./pages/storefront/Checkout'));
+const StorefrontOrderSuccess = lazy(() => import('./pages/storefront/OrderSuccess'));
+
+// Lazy-loaded pages - LMS Admin
+const LmsAdminDashboard = lazy(() => import('./pages/lms/AdminDashboard'));
+const LmsCourses = lazy(() => import('./pages/lms/Courses'));
+const LmsCourseEditor = lazy(() => import('./pages/lms/CourseEditor'));
+const LmsCourseCategories = lazy(() => import('./pages/lms/CourseCategories'));
+const LmsLessons = lazy(() => import('./pages/lms/Lessons'));
+const LmsQuizzes = lazy(() => import('./pages/lms/Quizzes'));
+const LmsQuizQuestions = lazy(() => import('./pages/lms/QuizQuestions'));
+const LmsCurriculumBuilder = lazy(() => import('./pages/lms/CurriculumBuilder'));
+
+// Lazy-loaded pages - LMS Student
+const LmsCourseCatalog = lazy(() => import('./pages/lms/CourseCatalog'));
+const LmsCourseLanding = lazy(() => import('./pages/lms/CourseLanding'));
+const LmsLearningPlayer = lazy(() => import('./pages/lms/LearningPlayer'));
+const LmsStudentDashboard = lazy(() => import('./pages/lms/StudentDashboard'));
+const LmsQuizPlayer = lazy(() => import('./pages/lms/QuizPlayer'));
+const LmsCertificate = lazy(() => import('./pages/lms/Certificate'));
+
+// Lazy-loaded pages - Profile
+const MyProfile = lazy(() => import('./pages/profile/MyProfile'));
+const PublicProfile = lazy(() => import('./pages/profile/PublicProfile'));
+
+// Lazy-loaded pages - Email
+const EmailTemplates = lazy(() => import('./pages/email/EmailTemplates'));
+const EmailComposer = lazy(() => import('./pages/email/EmailComposer'));
+const EmailLogs = lazy(() => import('./pages/email/EmailLogs'));
+const EmailTemplateDesigner = lazy(() => import('./pages/email/EmailTemplateDesigner'));
+
+// Lazy-loaded pages - Developer Marketplace
+const MarketplaceDashboard = lazy(() => import('./pages/marketplace').then(m => ({ default: m.MarketplaceDashboard })));
+const MarketplaceDevelopers = lazy(() => import('./pages/marketplace').then(m => ({ default: m.Developers })));
+const BrowseDevelopers = lazy(() => import('./pages/marketplace').then(m => ({ default: m.BrowseDevelopers })));
+const HiringRequests = lazy(() => import('./pages/marketplace').then(m => ({ default: m.HiringRequests })));
+const MarketplaceProjects = lazy(() => import('./pages/marketplace').then(m => ({ default: m.Projects })));
+const DeveloperApplication = lazy(() => import('./pages/marketplace').then(m => ({ default: m.DeveloperApplication })));
+const HireForm = lazy(() => import('./pages/marketplace').then(m => ({ default: m.HireForm })));
 
 function App() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
@@ -108,16 +127,17 @@ function App() {
     <>
       <Toaster />
       <BrowserRouter basename="/admin">
-        <Routes>
-          {/* ==================== PUBLIC ROUTES (No auth required) ==================== */}
-          <Route path="/setup" element={<SetupWizard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* ==================== PUBLIC ROUTES (No auth required) ==================== */}
+            <Route path="/setup" element={<SetupWizard />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Public Profile */}
-          <Route path="/u/:identifier" element={<PublicProfile />} />
+            {/* Public Profile */}
+            <Route path="/u/:identifier" element={<PublicProfile />} />
 
           {/* ==================== AUTHENTICATED ROUTES ==================== */}
           {isAuthenticated ? (
@@ -246,7 +266,8 @@ function App() {
               <Route path="*" element={<Navigate to="/login" replace />} />
             </>
           )}
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </>
   );
