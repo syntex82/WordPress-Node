@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2, FiVideo, FiPaperclip, FiPhone, FiSmile, FiBell } from 'react-icons/fi';
+import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2, FiVideo, FiPaperclip, FiPhone, FiSmile, FiBell, FiArrowLeft } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
@@ -135,6 +135,8 @@ export default function Messages() {
     const result = await requestMediaPermissions();
     if (result.granted) {
       setMediaPermission('granted');
+      // Store in localStorage so we don't show banner again
+      localStorage.setItem('mediaPermissionGranted', 'true');
       toast.success('Camera & microphone enabled!');
       // Stop the test stream
       if (result.stream) {
@@ -214,12 +216,25 @@ export default function Messages() {
         setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
       });
 
-      // Video call events
+      // Video call events - use toast.dismiss and unique ID to prevent flood
       newSocket.on('call:incoming', (data: { callerId: string; callerName: string; callerAvatar: string | null; conversationId: string }) => {
-        setIncomingCall(data);
-        toast('Incoming video call from ' + data.callerName, { icon: '📞', duration: 10000 });
-        // Show browser notification
-        showCallNotification(data.callerName);
+        // Only show toast if not already showing an incoming call
+        setIncomingCall((prev) => {
+          if (prev?.callerId === data.callerId) {
+            // Already have incoming call from same person, ignore duplicate
+            return prev;
+          }
+          // Dismiss any existing call toasts and show new one
+          toast.dismiss('incoming-call');
+          toast('Incoming video call from ' + data.callerName, {
+            icon: '📞',
+            duration: 10000,
+            id: 'incoming-call' // Use unique ID to prevent duplicates
+          });
+          // Show browser notification
+          showCallNotification(data.callerName);
+          return data;
+        });
       });
 
       newSocket.on('call:accepted', () => {
@@ -493,8 +508,8 @@ export default function Messages() {
 
   return (
     <div className="flex h-screen bg-slate-900">
-      {/* Conversations Sidebar */}
-      <div className="w-80 bg-slate-800 border-r border-slate-700/50 flex flex-col">
+      {/* Conversations Sidebar - Full width on mobile when no active conversation */}
+      <div className={`${activeConversation ? 'hidden md:flex' : 'flex'} w-full md:w-80 bg-slate-800 border-r border-slate-700/50 flex-col`}>
         <div className="p-4 border-b border-slate-700/50 bg-gradient-to-r from-indigo-600 to-purple-600">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-white">Messages</h1>
@@ -602,8 +617,8 @@ export default function Messages() {
         </div>
       </div>
 
-      {/* Chat Panel */}
-      <div className="flex-1 flex flex-col">
+      {/* Chat Panel - Full width on mobile, hidden when no active conversation on mobile */}
+      <div className={`${activeConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
         {!activeConversation ? (
           <div className="flex-1 flex items-center justify-center bg-slate-900">
             <div className="text-center">
@@ -620,34 +635,41 @@ export default function Messages() {
         ) : (
           <>
             {/* Chat Header */}
-            <div className="bg-slate-800/50 backdrop-blur border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="bg-slate-800/50 backdrop-blur border-b border-slate-700/50 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3 md:gap-4">
+                {/* Back button on mobile */}
+                <button
+                  onClick={() => setActiveConversation(null)}
+                  className="md:hidden p-2 rounded-lg bg-slate-700/50 text-slate-300 hover:text-white transition-colors"
+                >
+                  <FiArrowLeft size={20} />
+                </button>
                 <div className="relative">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(activeConversation.otherUser.name)} flex items-center justify-center text-white font-bold shadow-md`}>
+                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br ${getAvatarColor(activeConversation.otherUser.name)} flex items-center justify-center text-white font-bold shadow-md`}>
                     {activeConversation.otherUser.avatar ? <img src={activeConversation.otherUser.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : activeConversation.otherUser.name.charAt(0).toUpperCase()}
                   </div>
                   {onlineUsers.includes(activeConversation.otherUser.id) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-4 md:h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
                   )}
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg text-white">{activeConversation.otherUser.name}</h2>
-                  <p className="text-sm text-slate-400">{onlineUsers.includes(activeConversation.otherUser.id) ? <span className="text-green-400">● Online</span> : 'Offline'}</p>
+                  <h2 className="font-bold text-base md:text-lg text-white">{activeConversation.otherUser.name}</h2>
+                  <p className="text-xs md:text-sm text-slate-400">{onlineUsers.includes(activeConversation.otherUser.id) ? <span className="text-green-400">● Online</span> : 'Offline'}</p>
                 </div>
               </div>
               {/* Video Call Button */}
               <button
                 onClick={() => setShowVideoCall(true)}
                 disabled={!socketConnected || !onlineUsers.includes(activeConversation.otherUser.id)}
-                className={`p-3 rounded-xl transition-all ${socketConnected && onlineUsers.includes(activeConversation.otherUser.id) ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/20' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+                className={`p-2.5 md:p-3 rounded-xl transition-all ${socketConnected && onlineUsers.includes(activeConversation.otherUser.id) ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/20' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
                 title={!onlineUsers.includes(activeConversation.otherUser.id) ? 'User is offline' : 'Start video call'}
               >
-                <FiPhone size={20} />
+                <FiPhone size={18} />
               </button>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-900">
+            <div className="flex-1 overflow-y-auto px-3 md:px-6 py-4 bg-slate-900">
               {loadingMessages ? (
                 <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-700 border-t-indigo-500"></div></div>
               ) : messages.length === 0 ? (
@@ -731,7 +753,7 @@ export default function Messages() {
             )}
 
             {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-4">
+            <form onSubmit={handleSendMessage} className="bg-slate-800/50 backdrop-blur border-t border-slate-700/50 p-3 md:p-4 pb-safe">
               {/* Pending Media Preview */}
               {pendingMedia.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">

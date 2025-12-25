@@ -154,6 +154,10 @@ export function getPermissionInstructions(): string {
  * Returns the most restrictive status between camera and microphone
  */
 export async function checkMediaPermissionStatus(): Promise<PermissionStatus> {
+  // Check localStorage first - if user already granted, don't show banner
+  const storedStatus = localStorage.getItem('mediaPermissionGranted');
+  if (storedStatus === 'true') return 'granted';
+
   const camera = await checkCameraPermission();
   const mic = await checkMicrophonePermission();
 
@@ -166,7 +170,8 @@ export async function checkMediaPermissionStatus(): Promise<PermissionStatus> {
   // If either is prompt, return prompt
   if (camera === 'prompt' || mic === 'prompt') return 'prompt';
 
-  // Both granted
+  // Both granted - store in localStorage
+  localStorage.setItem('mediaPermissionGranted', 'true');
   return 'granted';
 }
 
