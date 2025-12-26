@@ -4,11 +4,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { FiX, FiMaximize2, FiMinimize2, FiVideo } from 'react-icons/fi';
+import { useAuthStore } from '../stores/authStore';
+import { Socket } from 'socket.io-client';
 
 interface GroupVideoCallProps {
   groupId: string;
   groupName: string;
   userName: string;
+  socket: Socket | null;
   onClose: () => void;
 }
 
@@ -22,8 +25,10 @@ export default function GroupVideoCall({
   groupId,
   groupName,
   userName,
+  socket,
   onClose,
 }: GroupVideoCallProps) {
+  const { token } = useAuthStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,27 +42,37 @@ export default function GroupVideoCall({
       setIsLoading(true);
       setError(null);
 
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`/api/video/room/group/${groupId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
       });
 
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || 'Failed to create video room');
       }
 
       console.log('Group video room created:', data.room.roomUrl);
       setRoomUrl(data.room.roomUrl);
+
+      // Notify group members that video call started
+      if (socket?.connected) {
+        socket.emit('group:video:start', { groupId, roomUrl: data.room.roomUrl });
+      }
     } catch (err) {
       console.error('Failed to initialize group video room:', err);
       setError(err instanceof Error ? err.message : 'Failed to start video call');
     } finally {
       setIsLoading(false);
     }
-  }, [groupId]);
+  }, [groupId, token, socket]);
 
   useEffect(() => {
     initializeRoom();
@@ -115,6 +130,10 @@ export default function GroupVideoCall({
   const handleClose = () => {
     if (frameRef.current) {
       try { frameRef.current.leave(); } catch (e) { /* ignore */ }
+    }
+    // Notify group that user left the call
+    if (socket?.connected) {
+      socket.emit('group:video:end', { groupId });
     }
     onClose();
   };

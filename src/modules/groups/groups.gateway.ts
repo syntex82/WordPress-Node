@@ -386,4 +386,47 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitMemberLeft(groupId: string, userId: string) {
     this.server.to(`group:${groupId}`).emit('group:member:left', { userId });
   }
+
+  /**
+   * User started a video call in group
+   */
+  @SubscribeMessage('group:video:start')
+  async handleVideoStart(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { groupId: string; roomUrl: string },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return;
+
+    // Notify all group members that a video call is active
+    this.server.to(`group:${data.groupId}`).emit('group:video:started', {
+      groupId: data.groupId,
+      roomUrl: data.roomUrl,
+      startedBy: {
+        id: user.id,
+        name: user.name,
+      },
+    });
+
+    return { success: true };
+  }
+
+  /**
+   * User ended/left video call in group
+   */
+  @SubscribeMessage('group:video:end')
+  async handleVideoEnd(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { groupId: string },
+  ) {
+    const user = this.socketUsers.get(client.id);
+    if (!user) return;
+
+    this.server.to(`group:${data.groupId}`).emit('group:video:ended', {
+      groupId: data.groupId,
+      endedBy: user.id,
+    });
+
+    return { success: true };
+  }
 }

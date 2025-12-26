@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { FiX, FiMaximize2, FiMinimize2, FiPhone } from 'react-icons/fi';
+import { useAuthStore } from '../stores/authStore';
 
 interface User {
   id: string;
@@ -31,6 +32,7 @@ export default function MeteredVideoCall({
   conversationId,
   onClose,
 }: MeteredVideoCallProps) {
+  const { token } = useAuthStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +46,15 @@ export default function MeteredVideoCall({
       setIsLoading(true);
       setError(null);
 
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // Use the dedicated chat room endpoint
       const response = await fetch(`/api/video/room/chat/${conversationId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
       });
 
@@ -65,7 +72,7 @@ export default function MeteredVideoCall({
     } finally {
       setIsLoading(false);
     }
-  }, [conversationId]);
+  }, [conversationId, token]);
 
   // Load Metered SDK and initialize frame
   useEffect(() => {

@@ -109,6 +109,7 @@ export default function GroupChat() {
   const [lightboxMedia, setLightboxMedia] = useState<MediaAttachment | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showVideoCall, setShowVideoCall] = useState(false);
+  const [activeVideoCall, setActiveVideoCall] = useState<{ roomUrl: string; startedBy: { id: string; name: string } } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -189,6 +190,17 @@ export default function GroupChat() {
 
       newSocket.on('group:message:deleted', (data: { messageId: string }) => {
         setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
+      });
+
+      // Video call events
+      newSocket.on('group:video:started', (data: { groupId: string; roomUrl: string; startedBy: { id: string; name: string } }) => {
+        console.log('Video call started by:', data.startedBy.name);
+        setActiveVideoCall({ roomUrl: data.roomUrl, startedBy: data.startedBy });
+        toast.success(`${data.startedBy.name} started a video call`);
+      });
+
+      newSocket.on('group:video:ended', () => {
+        setActiveVideoCall(null);
       });
 
       setSocket(newSocket);
@@ -514,6 +526,28 @@ export default function GroupChat() {
           </div>
         </div>
 
+        {/* Active Video Call Banner */}
+        {activeVideoCall && !showVideoCall && (
+          <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="animate-pulse">
+                <FiVideo className="text-white" size={20} />
+              </div>
+              <span className="text-white font-medium">
+                {activeVideoCall.startedBy.id === user?.id
+                  ? 'You started a video call'
+                  : `${activeVideoCall.startedBy.name} started a video call`}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowVideoCall(true)}
+              className="px-4 py-1.5 bg-white text-green-700 font-semibold rounded-lg hover:bg-green-50 transition-colors"
+            >
+              Join Call
+            </button>
+          </div>
+        )}
+
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4 bg-slate-900">
           {loading ? (
@@ -764,7 +798,11 @@ export default function GroupChat() {
           groupId={group.id}
           groupName={group.name}
           userName={user.name || 'User'}
-          onClose={() => setShowVideoCall(false)}
+          socket={socket}
+          onClose={() => {
+            setShowVideoCall(false);
+            setActiveVideoCall(null);
+          }}
         />
       )}
     </div>
