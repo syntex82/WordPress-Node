@@ -49,9 +49,9 @@ lerna-debug.log*
 *.db
 *.db-journal
 
-# Prisma
-/prisma/migrations/*
-!/prisma/migrations/.gitkeep
+# Prisma - keep migrations in git for deployment
+# /prisma/migrations/*
+# !/prisma/migrations/.gitkeep
 
 
 # Backups
