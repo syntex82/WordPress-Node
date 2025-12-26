@@ -39,5 +39,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health/ping || exit 1
 
 # Start: run migrations then start app
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "echo 'Running migrations...' && npx prisma migrate deploy --schema=./prisma/schema.prisma && echo 'Migrations complete. Starting app...' && node dist/main.js"]
 
