@@ -104,9 +104,11 @@ export class VideoService {
         _id: data._id,
       };
     } catch (error: any) {
-      if (error.response?.status === 404) {
+      // Metered API returns 400 for "room not found", not 404
+      if (error.response?.status === 404 || error.response?.status === 400) {
         return null;
       }
+      this.logger.error('getRoom error:', error.response?.data || error.message);
       throw error;
     }
   }
