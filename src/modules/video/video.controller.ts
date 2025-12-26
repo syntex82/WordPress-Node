@@ -14,8 +14,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 interface CreateRoomDto {
   roomName?: string;
   privacy?: 'public' | 'private';
-  audioOnly?: boolean;
-  enableRecording?: boolean;
+  type?: 'chat' | 'group';
+  targetId?: string; // conversationId or groupId
 }
 
 @Controller('api/video')
@@ -24,26 +24,66 @@ export class VideoController {
   constructor(private readonly videoService: VideoService) {}
 
   /**
-   * Create a new video room for a call
+   * Create a video room for 1-to-1 chat
+   */
+  @Post('room/chat/:conversationId')
+  async createChatRoom(@Param('conversationId') conversationId: string, @Req() req: any) {
+    const roomName = `chat-${conversationId.substring(0, 8)}`;
+    const room = await this.videoService.createRoom({ roomName });
+    const embedInfo = this.videoService.getEmbedInfo(room.roomName);
+    const turnCredentials = await this.videoService.getTurnCredentials();
+
+    return {
+      success: true,
+      room: { ...room, ...embedInfo },
+      iceServers: turnCredentials,
+    };
+  }
+
+  /**
+   * Create a video room for group call
+   */
+  @Post('room/group/:groupId')
+  async createGroupRoom(@Param('groupId') groupId: string, @Req() req: any) {
+    const roomName = `group-${groupId.substring(0, 8)}`;
+    const room = await this.videoService.createRoom({ roomName });
+    const embedInfo = this.videoService.getEmbedInfo(room.roomName);
+    const turnCredentials = await this.videoService.getTurnCredentials();
+
+    return {
+      success: true,
+      room: { ...room, ...embedInfo },
+      iceServers: turnCredentials,
+    };
+  }
+
+  /**
+   * Create a new video room for a call (generic)
    */
   @Post('room')
   async createRoom(@Body() dto: CreateRoomDto, @Req() req: any) {
     const room = await this.videoService.createRoom({
       roomName: dto.roomName,
       privacy: dto.privacy,
-      audioOnly: dto.audioOnly,
-      enableRecording: dto.enableRecording,
     });
 
     const embedInfo = this.videoService.getEmbedInfo(room.roomName);
+    const turnCredentials = await this.videoService.getTurnCredentials();
 
     return {
       success: true,
-      room: {
-        ...room,
-        ...embedInfo,
-      },
+      room: { ...room, ...embedInfo },
+      iceServers: turnCredentials,
     };
+  }
+
+  /**
+   * Get TURN/ICE server credentials
+   */
+  @Get('turn-credentials')
+  async getTurnCredentials() {
+    const iceServers = await this.videoService.getTurnCredentials();
+    return { success: true, iceServers };
   }
 
   /**

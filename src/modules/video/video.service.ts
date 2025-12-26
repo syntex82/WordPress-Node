@@ -165,10 +165,50 @@ export class VideoService {
    */
   getEmbedInfo(roomName: string) {
     return {
-      roomUrl: `${this.meteredDomain}/${roomName}`,
+      roomUrl: `https://${this.meteredDomain}/${roomName}`,
       sdkUrl: 'https://cdn.metered.ca/sdk/frame/1.4.3/sdk-frame.min.js',
       domain: this.meteredDomain,
     };
+  }
+
+  /**
+   * Get TURN/ICE server credentials for WebRTC
+   */
+  async getTurnCredentials(): Promise<any[]> {
+    if (!this.meteredSecretKey) {
+      this.logger.warn('METERED_SECRET_KEY not configured, using fallback STUN');
+      return [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ];
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(
+          `https://${this.meteredDomain}/api/v1/turn/credentials?apiKey=${this.meteredSecretKey}`,
+        ),
+      );
+      this.logger.log('Retrieved TURN credentials from Metered');
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Failed to get TURN credentials:', error.response?.data || error.message);
+      // Return free STUN servers as fallback
+      return [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ];
+    }
+  }
+
+  /**
+   * Create room for a group video call
+   */
+  async createGroupRoom(groupId: string): Promise<MeteredRoom> {
+    return this.createRoom({
+      roomName: `group-${groupId.substring(0, 8)}`,
+      privacy: 'public',
+    });
   }
 
   private generateRoomName(): string {
