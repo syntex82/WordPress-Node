@@ -23,30 +23,41 @@ interface VideoCallProps {
 }
 
 // ICE servers for WebRTC - includes STUN and TURN for NAT traversal
-// For production, replace TURN credentials with your own from metered.ca, xirsys.com, or twilio
+// Using Metered.ca TURN server for reliable connections
 const iceServers: RTCConfiguration = {
   iceServers: [
     // STUN servers (free, for simple NAT traversal)
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
-    // Free TURN servers from Open Relay Project (for testing - replace with paid service in production)
+    // Metered STUN server
+    { urls: 'stun:wordpressnode.metered.live:80' },
+    // Metered TURN servers (UDP)
     {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
+      urls: 'turn:wordpressnode.metered.live:80',
+      username: 'wordpressnode',
+      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
     },
     {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
+      urls: 'turn:wordpressnode.metered.live:443',
+      username: 'wordpressnode',
+      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
+    },
+    // Metered TURN servers (TCP - for strict firewalls)
+    {
+      urls: 'turn:wordpressnode.metered.live:80?transport=tcp',
+      username: 'wordpressnode',
+      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
     },
     {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
+      urls: 'turn:wordpressnode.metered.live:443?transport=tcp',
+      username: 'wordpressnode',
+      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
+    },
+    // Metered TURNS (TLS - for maximum compatibility)
+    {
+      urls: 'turns:wordpressnode.metered.live:443',
+      username: 'wordpressnode',
+      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
     },
   ],
   iceCandidatePoolSize: 10,
