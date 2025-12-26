@@ -29,6 +29,9 @@ RUN npm run build
 # Stage 2: Production image
 FROM node:20-alpine AS production
 
+# Install OpenSSL 1.1 compatibility for Prisma
+RUN apk add --no-cache openssl1.1-compat
+
 WORKDIR /app
 
 # Install production dependencies only
