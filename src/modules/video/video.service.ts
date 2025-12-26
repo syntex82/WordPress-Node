@@ -41,7 +41,14 @@ export class VideoService {
     }
 
     const roomName = options.roomName || this.generateRoomName();
-    
+
+    // First check if room already exists
+    const existingRoom = await this.getRoom(roomName);
+    if (existingRoom) {
+      this.logger.log(`Using existing Metered room: ${roomName}`);
+      return existingRoom;
+    }
+
     try {
       const response = await firstValueFrom(
         this.httpService.post(
@@ -62,10 +69,15 @@ export class VideoService {
       const data = response.data as MeteredRoom;
       return {
         roomName: data.roomName,
-        roomUrl: `${this.meteredDomain}/${data.roomName}`,
+        roomUrl: `https://${this.meteredDomain}/${data.roomName}`,
         _id: data._id,
       };
     } catch (error: any) {
+      // If room already exists, try to get it
+      if (error.response?.data?.message?.includes('already exist')) {
+        const room = await this.getRoom(roomName);
+        if (room) return room;
+      }
       this.logger.error('Failed to create Metered room:', error.response?.data || error.message);
       throw new BadRequestException('Failed to create video room');
     }
@@ -85,7 +97,12 @@ export class VideoService {
           `${this.apiBase}/room/${roomName}?secretKey=${this.meteredSecretKey}`,
         ),
       );
-      return response.data as MeteredRoom;
+      const data = response.data as any;
+      return {
+        roomName: data.roomName,
+        roomUrl: `https://${this.meteredDomain}/${data.roomName}`,
+        _id: data._id,
+      };
     } catch (error: any) {
       if (error.response?.status === 404) {
         return null;
