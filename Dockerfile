@@ -44,6 +44,8 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy built application
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/admin/dist ./admin/dist
 COPY --from=builder /app/themes ./themes
@@ -61,6 +63,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health/ping || exit 1
 
-# Start the application
-CMD ["node", "dist/main.js"]
+# Start script: run migrations then start app
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
 
