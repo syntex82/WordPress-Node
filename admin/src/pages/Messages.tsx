@@ -10,7 +10,7 @@ import { io, Socket } from 'socket.io-client';
 import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
 import { messagesApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
-import VideoCall from '../components/VideoCall';
+import MeteredVideoCall from '../components/MeteredVideoCall';
 import {
   requestNotificationPermission,
   checkNotificationPermission,
@@ -936,14 +936,12 @@ export default function Messages() {
         </div>
       )}
 
-      {/* Video Call - Outgoing */}
-      {showVideoCall && activeConversation && user && (
-        <VideoCall
-          socket={socket}
+      {/* Video Call - Outgoing (using Metered SDK) */}
+      {showVideoCall && activeConversation && user && !incomingCall && (
+        <MeteredVideoCall
           currentUser={{ id: user.id, name: user.name || '', avatar: null }}
           remoteUser={activeConversation.otherUser}
           conversationId={activeConversation.id}
-          isIncoming={false}
           onClose={() => setShowVideoCall(false)}
         />
       )}
@@ -969,11 +967,11 @@ export default function Messages() {
               </button>
               <button
                 onClick={() => {
-                  // Don't clear incomingCall yet - we need it for VideoCall component
+                  // Start video call and find the conversation
                   setShowVideoCall(true);
-                  // Find the conversation for this caller
                   const conv = conversations.find(c => c.otherUser.id === incomingCall.callerId);
                   if (conv) setActiveConversation(conv);
+                  setIncomingCall(null); // Clear incoming call state
                 }}
                 className="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2"
               >
@@ -982,18 +980,6 @@ export default function Messages() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Video Call - Incoming (after accepting) */}
-      {showVideoCall && incomingCall && user && (
-        <VideoCall
-          socket={socket}
-          currentUser={{ id: user.id, name: user.name || '', avatar: null }}
-          remoteUser={{ id: incomingCall.callerId, name: incomingCall.callerName, avatar: incomingCall.callerAvatar }}
-          conversationId={incomingCall.conversationId}
-          isIncoming={true}
-          onClose={() => { setShowVideoCall(false); setIncomingCall(null); }}
-        />
       )}
 
       {/* Delete Confirmation Dialog */}

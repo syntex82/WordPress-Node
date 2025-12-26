@@ -40,6 +40,7 @@ import { BackupModule } from './modules/backup/backup.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { UpdatesModule } from './modules/updates/updates.module';
+import { VideoModule } from './modules/video/video.module';
 
 // Check if admin dist exists
 const adminDistPath = join(process.cwd(), 'admin', 'dist');
@@ -107,6 +108,7 @@ const staticModules = adminDistExists
     RecommendationsModule,
     MarketplaceModule,
     UpdatesModule,
+    VideoModule,
   ],
 })
 export class AppModule {}
