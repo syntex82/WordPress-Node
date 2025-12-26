@@ -11,6 +11,7 @@ import { io, Socket } from 'socket.io-client';
 import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
 import { groupsApi, messagesApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+import GroupVideoCall from '../components/GroupVideoCall';
 
 interface MediaAttachment {
   url: string;
@@ -107,6 +108,7 @@ export default function GroupChat() {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [lightboxMedia, setLightboxMedia] = useState<MediaAttachment | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showVideoCall, setShowVideoCall] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -491,6 +493,16 @@ export default function GroupChat() {
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            {/* Video Call Button */}
+            <button
+              onClick={() => setShowVideoCall(true)}
+              disabled={!socketConnected}
+              className={`p-2 sm:p-2.5 rounded-xl transition-colors ${socketConnected ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/20' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+              title="Start group video call"
+            >
+              <FiVideo size={18} className="sm:hidden" />
+              <FiVideo size={20} className="hidden sm:block" />
+            </button>
             <button onClick={() => setShowMembers(!showMembers)} className={`p-2 sm:p-2.5 rounded-xl transition-colors ${showMembers ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-slate-700/50 text-slate-400'}`}>
               <FiUsers size={18} className="sm:hidden" />
               <FiUsers size={20} className="hidden sm:block" />
@@ -744,6 +756,16 @@ export default function GroupChat() {
             <p className="text-center text-white/70 mt-2 text-sm">{lightboxMedia.filename}</p>
           </div>
         </div>
+      )}
+
+      {/* Group Video Call */}
+      {showVideoCall && group && user && (
+        <GroupVideoCall
+          groupId={group.id}
+          groupName={group.name}
+          userName={user.name || 'User'}
+          onClose={() => setShowVideoCall(false)}
+        />
       )}
     </div>
   );
