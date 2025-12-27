@@ -105,16 +105,24 @@ export default function MeteredVideoCall({
 
         if (containerRef.current && window.MeteredFrame) {
           frameRef.current = new window.MeteredFrame();
-          frameRef.current.init(
+          await frameRef.current.init(
             {
               roomURL: roomUrl,
               autoJoin: true,
               name: currentUser.name || 'User',
               joinVideoOn: true,
               joinAudioOn: true,
+              enableRequestToJoin: false,
+              showInviteLink: false,
             },
             containerRef.current
           );
+          // Explicitly join after init
+          try {
+            await frameRef.current.join();
+          } catch (joinErr) {
+            console.log('Already joined or join pending');
+          }
         }
       } catch (err) {
         console.error('Failed to initialize Metered frame:', err);
