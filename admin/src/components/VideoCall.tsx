@@ -155,8 +155,6 @@ export default function VideoCall({
   const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingOfferRef = useRef<RTCSessionDescriptionInit | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -201,42 +199,13 @@ export default function VideoCall({
       }
     };
 
-    // Handle incoming tracks - display remote video with audio processing
+    // Handle incoming tracks - display remote video
     pc.ontrack = (event) => {
       console.log('📹 Received remote track:', event.track.kind);
       if (remoteVideoRef.current && event.streams[0]) {
-        const stream = event.streams[0];
-
-        // Set up Web Audio API for volume control on audio tracks
-        if (event.track.kind === 'audio') {
-          try {
-            // Create audio context if not exists
-            if (!audioContextRef.current) {
-              audioContextRef.current = new AudioContext();
-            }
-            const audioContext = audioContextRef.current;
-
-            // Create gain node for volume control
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = remoteVolume;
-            gainNodeRef.current = gainNode;
-
-            // Create source from stream
-            const source = audioContext.createMediaStreamSource(stream);
-
-            // Connect: source -> gain -> destination (speakers)
-            source.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            // Mute the video element's audio since we're handling it via Web Audio
-            remoteVideoRef.current.muted = true;
-          } catch (err) {
-            console.log('Web Audio API not available, using direct playback');
-            remoteVideoRef.current.volume = remoteVolume;
-          }
-        }
-
-        remoteVideoRef.current.srcObject = stream;
+        remoteVideoRef.current.srcObject = event.streams[0];
+        // Set initial volume (lower to reduce feedback on mobile)
+        remoteVideoRef.current.volume = remoteVolume;
         setHasRemoteStream(true);
       }
     };
@@ -390,9 +359,7 @@ export default function VideoCall({
   // Update remote volume
   const handleVolumeChange = (newVolume: number) => {
     setRemoteVolume(newVolume);
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = newVolume;
-    } else if (remoteVideoRef.current) {
+    if (remoteVideoRef.current) {
       remoteVideoRef.current.volume = newVolume;
     }
   };
@@ -605,9 +572,6 @@ export default function VideoCall({
       }
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close().catch(() => {});
       }
     };
   }, []);
