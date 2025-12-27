@@ -1,0 +1,112 @@
+{{!-- 
+  Feature Gate Partial - Show locked content for premium features
+  Usage: {{> feature-gate feature="analytics" title="Advanced Analytics" description="Get detailed insights..."}}
+--}}
+<div class="feature-gate">
+  <div class="feature-gate-overlay">
+    <div class="feature-gate-content">
+      <div class="feature-gate-icon">🔒</div>
+      <h3 class="feature-gate-title">{{title}}</h3>
+      <p class="feature-gate-description">{{description}}</p>
+      <div class="feature-gate-plan">
+        <span>Available on</span>
+        <strong>{{requiredPlan}}</strong>
+        <span>and above</span>
+      </div>
+      <a href="/admin/pricing?feature={{feature}}" class="btn-unlock">
+        Unlock This Feature
+      </a>
+      <p class="feature-gate-current">
+        Your current plan: <strong>{{currentPlan}}</strong>
+      </p>
+    </div>
+  </div>
+  
+  {{!-- Blurred preview of the feature (optional slot) --}}
+  <div class="feature-gate-preview">
+    {{> @partial-block}}
+  </div>
+</div>
+
+<style>
+.feature-gate {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #f8fafc;
+  min-height: 300px;
+}
+.feature-gate-preview {
+  filter: blur(4px);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+.feature-gate-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+}
+.feature-gate-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 400px;
+}
+.feature-gate-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+.feature-gate-title {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+.feature-gate-description {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.feature-gate-plan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: #475569;
+}
+.feature-gate-plan strong {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.btn-unlock {
+  display: inline-block;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  padding: 0.875rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+.btn-unlock:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+.feature-gate-current {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+.feature-gate-current strong {
+  color: #64748b;
+}
+</style>
+

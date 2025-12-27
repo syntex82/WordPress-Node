@@ -230,15 +230,46 @@
         </form>
       </div>
 
-      <div class="order-summary">
-        <h3>🛒 Order Summary</h3>
-        <div id="orderItems"><div style="color: #64748b; text-align: center; padding: 2rem;">Loading cart...</div></div>
-        <div class="order-totals">
-          <div class="total-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
-          <div class="total-row"><span>Tax</span><span id="tax">$0.00</span></div>
-          <div class="total-row final"><span>Total</span><span id="total">$0.00</span></div>
+      <div>
+        <div class="order-summary" style="margin-bottom: 1rem;">
+          <h3>🛒 Order Summary</h3>
+          <div id="orderItems"><div style="color: #64748b; text-align: center; padding: 2rem;">Loading cart...</div></div>
+          <div class="order-totals">
+            <div class="total-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+            <div class="total-row"><span>Tax</span><span id="tax">$0.00</span></div>
+            <div class="total-row final"><span>Total</span><span id="total">$0.00</span></div>
+          </div>
+          <div class="secure-badge">🔐 Secured by Stripe</div>
         </div>
-        <div class="secure-badge">🔐 Secured by Stripe</div>
+
+        {{!-- Premium Upsell for Free Users --}}
+        {{#isFreePlan}}
+        <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+            <span style="font-size: 1.5rem;">✨</span>
+            <div>
+              <h4 style="margin: 0 0 0.5rem 0; color: #a78bfa; font-size: 1rem;">Upgrade to Pro</h4>
+              <p style="margin: 0 0 0.75rem 0; color: #c4b5fd; font-size: 0.875rem; line-height: 1.5;">Get 10% off all purchases, free shipping, and exclusive member discounts.</p>
+              <a href="/admin/pricing" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 600; text-decoration: none;">View Plans →</a>
+            </div>
+          </div>
+        </div>
+        {{/isFreePlan}}
+
+        {{!-- Premium Member Benefits --}}
+        {{#hasActiveSubscription}}
+        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.25rem;">🎉</span>
+            <span style="font-weight: 600; color: #34d399;">{{subscription.planName}} Member Benefits</span>
+          </div>
+          <ul style="margin: 0; padding-left: 1.5rem; color: #6ee7b7; font-size: 0.875rem;">
+            <li>Priority order processing</li>
+            <li>Exclusive member discounts applied</li>
+            <li>Free shipping on orders over $50</li>
+          </ul>
+        </div>
+        {{/hasActiveSubscription}}
       </div>
     </div>
   </div>

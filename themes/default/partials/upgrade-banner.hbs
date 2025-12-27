@@ -1,0 +1,112 @@
+{{!-- Upgrade Banner Partial - Show upgrade prompts for free users --}}
+{{#isFreePlan}}
+<div class="upgrade-banner" id="upgrade-banner">
+  <div class="upgrade-banner-content">
+    <div class="upgrade-banner-icon">🚀</div>
+    <div class="upgrade-banner-text">
+      <strong>Unlock Premium Features</strong>
+      <span>Upgrade to Pro for advanced analytics, unlimited storage, and priority support.</span>
+    </div>
+    <div class="upgrade-banner-actions">
+      <a href="/admin/pricing" class="btn-upgrade-now">Upgrade Now</a>
+      <button class="btn-dismiss" onclick="dismissUpgradeBanner()" aria-label="Dismiss">×</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.upgrade-banner {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  position: relative;
+  z-index: 100;
+}
+.upgrade-banner-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.upgrade-banner-icon {
+  font-size: 1.5rem;
+}
+.upgrade-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.upgrade-banner-text strong {
+  font-size: 1rem;
+}
+.upgrade-banner-text span {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+.upgrade-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-upgrade-now {
+  background: white;
+  color: #3b82f6;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-upgrade-now:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+.btn-dismiss {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.btn-dismiss:hover {
+  opacity: 1;
+}
+@media (max-width: 640px) {
+  .upgrade-banner-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .upgrade-banner-text {
+    align-items: center;
+  }
+}
+</style>
+
+<script>
+function dismissUpgradeBanner() {
+  const banner = document.getElementById('upgrade-banner');
+  if (banner) {
+    banner.style.display = 'none';
+    // Remember dismissal for 24 hours
+    localStorage.setItem('upgradeBannerDismissed', Date.now() + 86400000);
+  }
+}
+
+// Check if banner was recently dismissed
+document.addEventListener('DOMContentLoaded', function() {
+  const dismissedUntil = localStorage.getItem('upgradeBannerDismissed');
+  if (dismissedUntil && Date.now() < parseInt(dismissedUntil)) {
+    const banner = document.getElementById('upgrade-banner');
+    if (banner) banner.style.display = 'none';
+  }
+});
+</script>
+{{/isFreePlan}}
+

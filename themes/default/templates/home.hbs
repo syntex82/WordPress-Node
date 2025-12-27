@@ -1,5 +1,8 @@
 {{> header}}
 
+{{!-- Show upgrade banner for free plan users --}}
+{{> upgrade-banner}}
+
 <style>
   :root {
     --primary: #10b981;
@@ -1657,6 +1660,14 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeFeatureModal();
 });
 </script>
+
+{{!-- Pricing Section - Show available plans --}}
+{{#if plans.length}}
+{{> pricing-table}}
+{{/if}}
+
+{{!-- Floating upgrade CTA for free users --}}
+{{> subscription-cta style="floating"}}
 
 {{> footer}}
 

@@ -1,0 +1,103 @@
+{{!-- Pricing Table Partial - Display subscription plans --}}
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="pricing-header">
+      <h2>Choose Your Plan</h2>
+      <p>Unlock premium features and grow your business</p>
+    </div>
+    
+    <div class="pricing-grid">
+      {{#each plans}}
+      <div class="pricing-card {{#if isFeatured}}featured{{/if}}">
+        {{#if badgeText}}
+        <div class="pricing-badge">{{badgeText}}</div>
+        {{/if}}
+        
+        <div class="pricing-card-header">
+          <h3>{{name}}</h3>
+          <p class="pricing-description">{{description}}</p>
+        </div>
+        
+        <div class="pricing-price">
+          <span class="price-currency">$</span>
+          <span class="price-amount">{{formatPrice monthlyPrice}}</span>
+          <span class="price-period">/month</span>
+        </div>
+        
+        <div class="pricing-yearly">
+          <small>or {{formatPrice yearlyPrice}}/year (save 17%)</small>
+        </div>
+        
+        <ul class="pricing-features">
+          {{#each features}}
+          <li><span class="feature-check">✓</span> {{this}}</li>
+          {{/each}}
+          {{#if ../maxUsers}}
+          <li><span class="feature-check">✓</span> Up to {{../maxUsers}} users</li>
+          {{else}}
+          <li><span class="feature-check">✓</span> Unlimited users</li>
+          {{/if}}
+          {{#if ../maxStorageMb}}
+          <li><span class="feature-check">✓</span> {{../maxStorageMb}}MB storage</li>
+          {{else}}
+          <li><span class="feature-check">✓</span> Unlimited storage</li>
+          {{/if}}
+        </ul>
+        
+        <div class="pricing-cta">
+          {{#if (isCurrentPlan id)}}
+          <button class="btn btn-current" disabled>Current Plan</button>
+          {{else}}
+          <a href="{{upgradeUrl id}}" class="btn btn-upgrade {{#if isFeatured}}btn-primary{{/if}}">
+            Get Started
+          </a>
+          {{/if}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    
+    <div class="pricing-footer">
+      <p>All plans include 14-day free trial. No credit card required.</p>
+      <p><a href="/admin/pricing">Compare all features →</a></p>
+    </div>
+  </div>
+</section>
+
+<style>
+.pricing-section { padding: 4rem 0; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+.pricing-header { text-align: center; margin-bottom: 3rem; }
+.pricing-header h2 { font-size: 2.5rem; color: #1e293b; margin-bottom: 0.5rem; }
+.pricing-header p { color: #64748b; font-size: 1.1rem; }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+.pricing-card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: relative; transition: transform 0.3s, box-shadow 0.3s; }
+.pricing-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+.pricing-card.featured { border: 2px solid #3b82f6; transform: scale(1.05); }
+.pricing-card.featured:hover { transform: scale(1.05) translateY(-4px); }
+.pricing-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 0.25rem 1rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+.pricing-card-header h3 { font-size: 1.5rem; color: #1e293b; margin-bottom: 0.5rem; }
+.pricing-description { color: #64748b; font-size: 0.9rem; min-height: 40px; }
+.pricing-price { margin: 1.5rem 0 0.5rem; }
+.price-currency { font-size: 1.5rem; color: #1e293b; vertical-align: top; }
+.price-amount { font-size: 3rem; font-weight: 700; color: #1e293b; }
+.price-period { color: #64748b; font-size: 1rem; }
+.pricing-yearly { color: #10b981; font-size: 0.85rem; margin-bottom: 1.5rem; }
+.pricing-features { list-style: none; padding: 0; margin: 0 0 2rem 0; }
+.pricing-features li { padding: 0.5rem 0; color: #475569; display: flex; align-items: center; gap: 0.5rem; }
+.feature-check { color: #10b981; font-weight: bold; }
+.pricing-cta { margin-top: auto; }
+.pricing-cta .btn { display: block; width: 100%; padding: 0.875rem; border-radius: 0.5rem; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.2s; }
+.btn-upgrade { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
+.btn-upgrade:hover { background: #e2e8f0; }
+.btn-upgrade.btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; }
+.btn-upgrade.btn-primary:hover { opacity: 0.9; }
+.btn-current { background: #e2e8f0; color: #64748b; border: none; cursor: default; }
+.pricing-footer { text-align: center; margin-top: 3rem; color: #64748b; }
+.pricing-footer a { color: #3b82f6; text-decoration: none; }
+.pricing-footer a:hover { text-decoration: underline; }
+@media (max-width: 768px) {
+  .pricing-card.featured { transform: scale(1); }
+  .pricing-card.featured:hover { transform: translateY(-4px); }
+}
+</style>
+

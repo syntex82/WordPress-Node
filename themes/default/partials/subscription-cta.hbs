@@ -1,0 +1,139 @@
+{{!-- 
+  Subscription CTA Partial - Call-to-action buttons for subscription actions
+  Usage: {{> subscription-cta style="primary" text="Start Free Trial"}}
+--}}
+
+{{!-- Primary CTA Button --}}
+{{#if (eq style "primary")}}
+<a href="/admin/pricing" class="subscription-cta subscription-cta-primary">
+  <span class="cta-icon">✨</span>
+  <span class="cta-text">{{#if text}}{{text}}{{else}}Upgrade to Pro{{/if}}</span>
+</a>
+{{/if}}
+
+{{!-- Secondary/Outline CTA Button --}}
+{{#if (eq style "secondary")}}
+<a href="/admin/pricing" class="subscription-cta subscription-cta-secondary">
+  <span class="cta-text">{{#if text}}{{text}}{{else}}View Plans{{/if}}</span>
+</a>
+{{/if}}
+
+{{!-- Inline CTA (for use in text) --}}
+{{#if (eq style "inline")}}
+<a href="/admin/pricing" class="subscription-cta-inline">
+  {{#if text}}{{text}}{{else}}upgrade your plan{{/if}}
+</a>
+{{/if}}
+
+{{!-- Card CTA (larger, with description) --}}
+{{#if (eq style "card")}}
+<div class="subscription-cta-card">
+  <div class="cta-card-content">
+    <h4>{{#if title}}{{title}}{{else}}Ready to grow?{{/if}}</h4>
+    <p>{{#if description}}{{description}}{{else}}Unlock all features with a Pro subscription.{{/if}}</p>
+  </div>
+  <a href="/admin/pricing" class="subscription-cta subscription-cta-primary">
+    <span class="cta-text">{{#if text}}{{text}}{{else}}Get Started{{/if}}</span>
+    <span class="cta-arrow">→</span>
+  </a>
+</div>
+{{/if}}
+
+{{!-- Floating CTA (fixed position) --}}
+{{#if (eq style "floating")}}
+{{#isFreePlan}}
+<div class="subscription-cta-floating" id="floating-cta">
+  <a href="/admin/pricing" class="subscription-cta subscription-cta-primary">
+    <span class="cta-icon">🚀</span>
+    <span class="cta-text">Upgrade</span>
+  </a>
+</div>
+{{/isFreePlan}}
+{{/if}}
+
+<style>
+.subscription-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.subscription-cta-primary {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+.subscription-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+.subscription-cta-secondary {
+  background: transparent;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+}
+.subscription-cta-secondary:hover {
+  background: #3b82f6;
+  color: white;
+}
+.subscription-cta-inline {
+  color: #3b82f6;
+  text-decoration: underline;
+  font-weight: 500;
+}
+.subscription-cta-inline:hover {
+  color: #8b5cf6;
+}
+.subscription-cta-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.cta-card-content h4 {
+  font-size: 1.25rem;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+.cta-card-content p {
+  color: #64748b;
+  margin: 0;
+}
+.cta-arrow {
+  transition: transform 0.2s;
+}
+.subscription-cta:hover .cta-arrow {
+  transform: translateX(4px);
+}
+.subscription-cta-floating {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  animation: float-bounce 2s ease-in-out infinite;
+}
+@keyframes float-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@media (max-width: 640px) {
+  .subscription-cta-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  .subscription-cta-floating {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+</style>
+
