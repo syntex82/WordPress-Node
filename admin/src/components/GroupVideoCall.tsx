@@ -110,6 +110,8 @@ export default function GroupVideoCall({
               joinAudioOn: true,
               enableRequestToJoin: false,
               showInviteLink: false,
+              theme: 'dark',
+              color: '#6366f1', // Indigo accent color
             },
             containerRef.current
           );

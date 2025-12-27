@@ -114,6 +114,8 @@ export default function MeteredVideoCall({
               joinAudioOn: true,
               enableRequestToJoin: false,
               showInviteLink: false,
+              theme: 'dark',
+              color: '#8b5cf6', // Purple accent color
             },
             containerRef.current
           );
