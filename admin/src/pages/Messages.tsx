@@ -10,7 +10,7 @@ import { io, Socket } from 'socket.io-client';
 import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
 import { messagesApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
-import MeteredVideoCall from '../components/MeteredVideoCall';
+import VideoCall from '../components/VideoCall';
 import {
   requestNotificationPermission,
   checkNotificationPermission,
@@ -936,13 +936,18 @@ export default function Messages() {
         </div>
       )}
 
-      {/* Video Call - Outgoing (using Metered SDK) */}
-      {showVideoCall && activeConversation && user && !incomingCall && (
-        <MeteredVideoCall
+      {/* Video Call - WebRTC 1-on-1 */}
+      {showVideoCall && activeConversation && user && socket && (
+        <VideoCall
+          socket={socket}
           currentUser={{ id: user.id, name: user.name || '', avatar: null }}
           remoteUser={activeConversation.otherUser}
           conversationId={activeConversation.id}
-          onClose={() => setShowVideoCall(false)}
+          isIncoming={!!incomingCall}
+          onClose={() => {
+            setShowVideoCall(false);
+            setIncomingCall(null);
+          }}
         />
       )}
 
@@ -968,10 +973,10 @@ export default function Messages() {
               <button
                 onClick={() => {
                   // Start video call and find the conversation
-                  setShowVideoCall(true);
                   const conv = conversations.find(c => c.otherUser.id === incomingCall.callerId);
                   if (conv) setActiveConversation(conv);
-                  setIncomingCall(null); // Clear incoming call state
+                  setShowVideoCall(true);
+                  // Keep incomingCall set so VideoCall knows it's incoming
                 }}
                 className="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2"
               >

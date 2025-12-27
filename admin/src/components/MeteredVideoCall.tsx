@@ -115,7 +115,14 @@ export default function MeteredVideoCall({
               enableRequestToJoin: false,
               showInviteLink: false,
               theme: 'dark',
-              color: '#8b5cf6', // Purple accent color
+              color: '#8b5cf6',
+              // 1-on-1 call settings
+              maxParticipants: 2,
+              showParticipantsList: false,
+              showMeetingTitle: false,
+              showToolbar: true,
+              showLeaveButton: false, // We have our own close button
+              layout: 'spotlight', // Focus on remote user
             },
             containerRef.current
           );

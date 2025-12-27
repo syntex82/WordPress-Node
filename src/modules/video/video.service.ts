@@ -50,18 +50,25 @@ export class VideoService {
     }
 
     try {
+      const roomConfig: any = {
+        roomName,
+        privacy: options.privacy || 'public',
+        ejectAtRoomExp: options.ejectAtRoomExp || false,
+        joinVideoOn: true,
+        joinAudioOn: true,
+        enableScreenSharing: true,
+        enableChat: true,
+      };
+
+      // Add max participants for 1-on-1 calls
+      if (options.maxParticipants) {
+        roomConfig.maxParticipants = options.maxParticipants;
+      }
+
       const response = await firstValueFrom(
         this.httpService.post(
           `${this.apiBase}/room?secretKey=${this.meteredSecretKey}`,
-          {
-            roomName,
-            privacy: options.privacy || 'public',
-            ejectAtRoomExp: options.ejectAtRoomExp || false,
-            joinVideoOn: true,
-            joinAudioOn: true,
-            enableScreenSharing: true,
-            enableChat: true,
-          },
+          roomConfig,
         ),
       );
 

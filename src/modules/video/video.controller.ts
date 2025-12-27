@@ -29,7 +29,10 @@ export class VideoController {
   @Post('room/chat/:conversationId')
   async createChatRoom(@Param('conversationId') conversationId: string, @Req() req: any) {
     const roomName = `chat-${conversationId.substring(0, 8)}`;
-    const room = await this.videoService.createRoom({ roomName });
+    const room = await this.videoService.createRoom({
+      roomName,
+      maxParticipants: 2, // 1-on-1 call
+    });
     const embedInfo = this.videoService.getEmbedInfo(room.roomName);
     const turnCredentials = await this.videoService.getTurnCredentials();
 
