@@ -469,34 +469,22 @@
   <!-- Mobile Navigation -->
   <nav class="mobile-nav" id="mobileNav">
     <ul class="mobile-nav-links">
-      <li><a href="/#features">Features</a></li>
+      <li><a href="/">🏠 Home</a></li>
       <li><a href="/pricing">💎 Pricing</a></li>
-      <li><a href="/courses">Courses</a></li>
-      <li><a href="/shop">Shop</a></li>
-      <li><a href="/blog">Blog</a></li>
+      <li><a href="/courses">📚 Courses</a></li>
+      <li><a href="/shop">🛍️ Shop</a></li>
+      <li><a href="/blog">📝 Blog</a></li>
       <li><a href="/cart">🛒 Cart</a></li>
-      <li><a href="https://github.com/syntex82/WordPress-Node#readme" target="_blank">Docs</a></li>
-    </ul>
-    <div class="mobile-nav-auth">
       {{#if user}}
-      <div class="mobile-user">
-        <div class="mobile-user-avatar">{{substring user.name 0 1}}</div>
-        <div class="mobile-user-info">
-          <strong>{{user.name}}</strong>
-          <span>{{user.email}}</span>
-        </div>
-      </div>
-      <div class="mobile-nav-user-links">
-        <a href="/my-account"><span>👤</span> My Account</a>
-        <a href="/my-courses"><span>📚</span> My Courses</a>
-        <a href="/admin" class="admin"><span>⚙️</span> Admin Panel</a>
-        <a href="/logout" class="logout"><span>🚪</span> Sign Out</a>
-      </div>
+      <li style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 1rem; padding-top: 1rem;"><a href="/my-courses">📖 My Courses</a></li>
+      <li><a href="/my-account">👤 My Account</a></li>
+      <li><a href="/admin">⚙️ Admin Panel</a></li>
+      <li><a href="/logout">🚪 Sign Out</a></li>
       {{else}}
-      <a href="/login" class="mobile-login">Sign In</a>
-      <a href="/register" class="mobile-register">Get Started Free</a>
+      <li style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 1rem; padding-top: 1rem;"><a href="/login">🔐 Sign In</a></li>
+      <li><a href="/register">✨ Get Started</a></li>
       {{/if}}
-    </div>
+    </ul>
   </nav>
 
   <main style="padding-top: 60px;">
