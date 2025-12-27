@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FiPhone, FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiX, FiMaximize2, FiMinimize2, FiRefreshCw, FiAlertCircle, FiInfo } from 'react-icons/fi';
+import { FiPhone, FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiX, FiMaximize2, FiMinimize2, FiRefreshCw, FiAlertCircle, FiInfo, FiVolume2 } from 'react-icons/fi';
 import { Socket } from 'socket.io-client';
 import { requestMediaPermissions, getPermissionInstructions, getPermissionDebugInfo, clearPermissionCache } from '../utils/permissions';
 
@@ -146,6 +146,7 @@ export default function VideoCall({
   const [currentFacingMode, setCurrentFacingMode] = useState<'user' | 'environment'>('user');
   const [hasRemoteStream, setHasRemoteStream] = useState(false);
   const [permissionError, setPermissionError] = useState<string | null>(null);
+  const [remoteVolume, setRemoteVolume] = useState(0.7); // Default 70% volume to reduce feedback
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -154,6 +155,8 @@ export default function VideoCall({
   const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingOfferRef = useRef<RTCSessionDescriptionInit | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -198,11 +201,42 @@ export default function VideoCall({
       }
     };
 
-    // Handle incoming tracks - display remote video
+    // Handle incoming tracks - display remote video with audio processing
     pc.ontrack = (event) => {
       console.log('📹 Received remote track:', event.track.kind);
       if (remoteVideoRef.current && event.streams[0]) {
-        remoteVideoRef.current.srcObject = event.streams[0];
+        const stream = event.streams[0];
+
+        // Set up Web Audio API for volume control on audio tracks
+        if (event.track.kind === 'audio') {
+          try {
+            // Create audio context if not exists
+            if (!audioContextRef.current) {
+              audioContextRef.current = new AudioContext();
+            }
+            const audioContext = audioContextRef.current;
+
+            // Create gain node for volume control
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = remoteVolume;
+            gainNodeRef.current = gainNode;
+
+            // Create source from stream
+            const source = audioContext.createMediaStreamSource(stream);
+
+            // Connect: source -> gain -> destination (speakers)
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Mute the video element's audio since we're handling it via Web Audio
+            remoteVideoRef.current.muted = true;
+          } catch (err) {
+            console.log('Web Audio API not available, using direct playback');
+            remoteVideoRef.current.volume = remoteVolume;
+          }
+        }
+
+        remoteVideoRef.current.srcObject = stream;
         setHasRemoteStream(true);
       }
     };
@@ -350,6 +384,16 @@ export default function VideoCall({
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoOff(!videoTrack.enabled);
       }
+    }
+  };
+
+  // Update remote volume
+  const handleVolumeChange = (newVolume: number) => {
+    setRemoteVolume(newVolume);
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = newVolume;
+    } else if (remoteVideoRef.current) {
+      remoteVideoRef.current.volume = newVolume;
     }
   };
 
@@ -562,6 +606,9 @@ export default function VideoCall({
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
       }
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+      }
     };
   }, []);
 
@@ -653,6 +700,26 @@ export default function VideoCall({
           )}
         </div>
       </div>
+
+      {/* Volume Control - Only show when connected */}
+      {callStatus === 'connected' && (
+        <div className="absolute bottom-24 sm:bottom-28 left-4 right-4 flex items-center justify-center gap-2">
+          <div className="bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-3 max-w-xs w-full">
+            <FiVolume2 className="text-white/70 flex-shrink-0" size={18} />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={remoteVolume}
+              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+              className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              title={`Volume: ${Math.round(remoteVolume * 100)}%`}
+            />
+            <span className="text-white/70 text-xs min-w-[2rem] text-right">{Math.round(remoteVolume * 100)}%</span>
+          </div>
+        </div>
+      )}
 
       {/* Controls - Mobile optimized with larger touch targets */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 pb-safe flex items-center justify-center gap-3 sm:gap-4 bg-gradient-to-t from-black/70 to-transparent">
