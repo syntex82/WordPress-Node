@@ -112,6 +112,12 @@ export default function GroupVideoCall({
               showInviteLink: false,
               theme: 'dark',
               color: '#6366f1', // Indigo accent color
+              // Audio quality settings
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+              // Lower default volume to reduce feedback
+              defaultSpeakerVolume: 0.7,
             },
             containerRef.current
           );
