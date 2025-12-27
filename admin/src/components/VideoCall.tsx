@@ -300,7 +300,7 @@ export default function VideoCall({
 
   // RECEIVER: Accept incoming call
   const acceptCall = useCallback(async () => {
-    console.log('📞 Accepting call (receiver)');
+    console.log('📞 Accepting call (receiver) - setting up stream');
     setCallStatus('connecting');
 
     const stream = await getLocalStream();
@@ -314,32 +314,11 @@ export default function VideoCall({
       pc.addTrack(track, stream);
     });
 
-    // Process pending offer if we have one
-    if (pendingOfferRef.current) {
-      console.log('📥 Processing pending offer');
-      await pc.setRemoteDescription(new RTCSessionDescription(pendingOfferRef.current));
-
-      // Add any pending ICE candidates
-      for (const candidate of pendingCandidatesRef.current) {
-        await pc.addIceCandidate(new RTCIceCandidate(candidate));
-      }
-      pendingCandidatesRef.current = [];
-
-      // Create and send answer
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      console.log('📤 Sending answer');
-      socket?.emit('call:answer', {
-        targetUserId: remoteUser.id,
-        answer: answer,
-      });
-
-      pendingOfferRef.current = null;
-    }
-
-    // Also tell caller we accepted (so they can send offer if they haven't)
+    // Tell caller we're ready - they will then send the offer
+    console.log('📤 Sending call:accept to caller');
     socket?.emit('call:accept', { callerId: remoteUser.id, conversationId });
+
+    // The offer will come via socket event and handleOffer will process it
   }, [getLocalStream, createPeerConnection, socket, remoteUser.id, conversationId]);
 
   // Toggle mute
@@ -496,11 +475,34 @@ export default function VideoCall({
       setTimeout(onClose, 1000);
     };
 
+    // CALLER: When receiver accepts, send the offer
+    const handleCallAccepted = async () => {
+      console.log('📞 Call accepted by receiver, sending offer');
+      const pc = peerConnectionRef.current;
+      if (!pc) return;
+
+      setCallStatus('connecting');
+
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        console.log('📤 Sending offer');
+        socket.emit('call:offer', {
+          targetUserId: remoteUser.id,
+          offer: offer,
+        });
+      } catch (error) {
+        console.error('Error creating offer:', error);
+      }
+    };
+
     socket.on('call:offer', handleOffer);
     socket.on('call:answer', handleAnswer);
     socket.on('call:ice-candidate', handleIceCandidate);
     socket.on('call:ended', handleCallEnded);
     socket.on('call:rejected', handleCallRejected);
+    socket.on('call:accepted', handleCallAccepted);
 
     return () => {
       socket.off('call:offer', handleOffer);
@@ -508,16 +510,37 @@ export default function VideoCall({
       socket.off('call:ice-candidate', handleIceCandidate);
       socket.off('call:ended', handleCallEnded);
       socket.off('call:rejected', handleCallRejected);
+      socket.off('call:accepted', handleCallAccepted);
     };
   }, [socket, remoteUser.id, endCall, onClose]);
 
-  // Start call on mount (for outgoing calls)
+  // Start call on mount
   useEffect(() => {
-    if (!isIncoming && socket) {
+    if (!socket) return;
+
+    if (isIncoming) {
+      // RECEIVER: We just accepted, so start accepting the call
+      // This will set up our stream and wait for the offer
+      acceptCall();
+    } else {
+      // CALLER: Send initiate first, then wait for accept before sending offer
       socket.emit('call:initiate', { targetUserId: remoteUser.id, conversationId });
-      startCall();
+
+      // Start our local stream now, but don't send offer until they accept
+      const initCaller = async () => {
+        setCallStatus('ringing');
+        const stream = await getLocalStream();
+        if (!stream) return;
+
+        const pc = createPeerConnection();
+        stream.getTracks().forEach(track => {
+          console.log('➕ Adding local track:', track.kind);
+          pc.addTrack(track, stream);
+        });
+      };
+      initCaller();
     }
-  }, [isIncoming, socket, remoteUser.id, conversationId, startCall]);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
