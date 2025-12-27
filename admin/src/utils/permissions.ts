@@ -165,8 +165,11 @@ export async function requestMediaPermissions(options?: {
     }
     if (audio) {
       constraints.audio = {
-        echoCancellation: true,
-        noiseSuppression: true
+        echoCancellation: { ideal: true },
+        noiseSuppression: { ideal: true },
+        autoGainControl: { ideal: true },
+        channelCount: { ideal: 1 },
+        sampleRate: { ideal: 48000 },
       };
     }
 

@@ -250,15 +250,26 @@ export default function VideoCall({
     }
 
     // Now get the actual stream with our preferred constraints
+    // Enhanced audio constraints to prevent echo and feedback
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        audio: {
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+          autoGainControl: { ideal: true },
+          // Advanced audio processing constraints
+          channelCount: { ideal: 1 }, // Mono for voice
+          sampleRate: { ideal: 48000 },
+          sampleSize: { ideal: 16 },
+          latency: { ideal: 0.01 }, // Low latency
+        }
       });
 
       localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
+        localVideoRef.current.muted = true; // Ensure local video is always muted to prevent feedback
       }
 
       setPermissionError(null);
