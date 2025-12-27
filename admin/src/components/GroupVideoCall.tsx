@@ -1,198 +1,146 @@
 /**
- * GroupVideoCall Component - Metered Video SDK for Group Calls
+ * GroupVideoCall Component - Shows member list for 1-on-1 video calls
+ * Video calls in groups are 1-on-1 only - select a member to call
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { FiX, FiMaximize2, FiMinimize2, FiVideo } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiX, FiVideo, FiPhone, FiUsers } from 'react-icons/fi';
 import { useAuthStore } from '../stores/authStore';
 import { Socket } from 'socket.io-client';
+
+interface GroupMember {
+  id: string;
+  name: string;
+  avatar: string | null;
+  isOnline?: boolean;
+}
 
 interface GroupVideoCallProps {
   groupId: string;
   groupName: string;
   userName: string;
   socket: Socket | null;
+  members?: GroupMember[];
+  onlineUsers?: string[];
+  onCallUser?: (userId: string) => void;
   onClose: () => void;
-}
-
-declare global {
-  interface Window {
-    MeteredFrame: any;
-  }
 }
 
 export default function GroupVideoCall({
   groupId,
   groupName,
-  userName,
   socket,
+  members = [],
+  onlineUsers = [],
+  onCallUser,
   onClose,
 }: GroupVideoCallProps) {
-  const { token } = useAuthStore();
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [roomUrl, setRoomUrl] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<any>(null);
-
-  // Create or get video room for group
-  const initializeRoom = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`/api/video/room/group/${groupId}`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to create video room');
-      }
-
-      console.log('Group video room created:', data.room.roomUrl);
-      setRoomUrl(data.room.roomUrl);
-
-      // Notify group members that video call started
-      if (socket?.connected) {
-        socket.emit('group:video:start', { groupId, roomUrl: data.room.roomUrl });
-      }
-    } catch (err) {
-      console.error('Failed to initialize group video room:', err);
-      setError(err instanceof Error ? err.message : 'Failed to start video call');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [groupId, token, socket]);
+  const { user } = useAuthStore();
+  const [availableMembers, setAvailableMembers] = useState<GroupMember[]>([]);
 
   useEffect(() => {
-    initializeRoom();
-  }, [initializeRoom]);
+    // Filter out current user and mark online status
+    const filtered = members
+      .filter(m => m.id !== user?.id)
+      .map(m => ({
+        ...m,
+        isOnline: onlineUsers.includes(m.id),
+      }));
+    setAvailableMembers(filtered);
+  }, [members, onlineUsers, user?.id]);
 
-  // Initialize Metered frame when room URL is ready
-  useEffect(() => {
-    if (!roomUrl || !containerRef.current) return;
-
-    const loadSDK = () => {
-      return new Promise<void>((resolve, reject) => {
-        if (window.MeteredFrame) {
-          resolve();
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = 'https://cdn.metered.ca/sdk/frame/1.4.3/sdk-frame.min.js';
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load Metered SDK'));
-        document.head.appendChild(script);
-      });
-    };
-
-    const initFrame = async () => {
-      try {
-        await loadSDK();
-        if (containerRef.current && window.MeteredFrame) {
-          frameRef.current = new window.MeteredFrame();
-          await frameRef.current.init(
-            {
-              roomURL: roomUrl,
-              autoJoin: true,
-              name: userName || 'User',
-              joinVideoOn: true,
-              joinAudioOn: true,
-              enableRequestToJoin: false,
-              showInviteLink: false,
-              theme: 'dark',
-              color: '#6366f1', // Indigo accent color
-              // Audio quality settings
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true,
-              // Lower default volume to reduce feedback
-              defaultSpeakerVolume: 0.7,
-            },
-            containerRef.current
-          );
-          // Explicitly join after init
-          try {
-            await frameRef.current.join();
-          } catch (joinErr) {
-            console.log('Already joined or join pending');
-          }
-        }
-      } catch (err) {
-        console.error('Failed to initialize Metered frame:', err);
-        setError('Failed to load video call');
-      }
-    };
-
-    initFrame();
-
-    return () => {
-      if (frameRef.current) {
-        try { frameRef.current.leave(); } catch (e) { /* ignore */ }
-      }
-    };
-  }, [roomUrl, userName]);
-
-  const handleClose = () => {
-    if (frameRef.current) {
-      try { frameRef.current.leave(); } catch (e) { /* ignore */ }
+  const handleCallMember = (memberId: string) => {
+    if (onCallUser) {
+      onCallUser(memberId);
     }
-    // Notify group that user left the call
+    // Notify via socket
     if (socket?.connected) {
-      socket.emit('group:video:end', { groupId });
+      socket.emit('call:initiate', { targetUserId: memberId, groupId });
     }
     onClose();
   };
 
   return (
-    <div className={`fixed z-50 bg-gray-900 shadow-2xl rounded-lg overflow-hidden transition-all duration-300 ${
-      isFullscreen ? 'inset-0 rounded-none' : 'bottom-4 right-4 w-[600px] h-[700px] max-w-[95vw] max-h-[85vh]'
-    }`}>
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-3 bg-gradient-to-b from-black/70 to-transparent">
+    <div className="fixed z-50 bottom-4 right-4 w-[350px] max-w-[95vw] bg-gray-900 shadow-2xl rounded-lg overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div className="flex items-center gap-2">
-          <FiVideo className="text-green-400" />
-          <span className="text-white font-medium">{groupName} - Video Call</span>
+          <FiVideo className="text-white" size={20} />
+          <span className="text-white font-medium">Video Call</span>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white">
-            {isFullscreen ? <FiMinimize2 size={18} /> : <FiMaximize2 size={18} />}
-          </button>
-          <button onClick={handleClose} className="p-2 rounded-full bg-red-500/80 hover:bg-red-500 text-white">
-            <FiX size={18} />
-          </button>
+        <button onClick={onClose} className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white">
+          <FiX size={18} />
+        </button>
+      </div>
+
+      {/* Info Banner */}
+      <div className="px-4 py-3 bg-blue-500/20 border-b border-blue-500/30">
+        <div className="flex items-start gap-2">
+          <FiUsers className="text-blue-400 mt-0.5" size={16} />
+          <div>
+            <p className="text-blue-200 text-sm font-medium">1-on-1 Video Calls</p>
+            <p className="text-blue-300/70 text-xs">Select a member from {groupName} to start a private video call</p>
+          </div>
         </div>
       </div>
 
-      <div className="w-full h-full pt-12">
-        {isLoading && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-              <p className="text-white">Starting group video call...</p>
-            </div>
+      {/* Member List */}
+      <div className="max-h-[300px] overflow-y-auto">
+        {availableMembers.length === 0 ? (
+          <div className="p-6 text-center text-gray-400">
+            <FiUsers size={32} className="mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No other members in this group</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-800">
+            {availableMembers.map((member) => (
+              <div
+                key={member.id}
+                className="flex items-center justify-between p-3 hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    {member.avatar ? (
+                      <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-full" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-medium">
+                        {member.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    {member.isOnline && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"></span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">{member.name}</p>
+                    <p className={`text-xs ${member.isOnline ? 'text-green-400' : 'text-gray-500'}`}>
+                      {member.isOnline ? 'Online' : 'Offline'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleCallMember(member.id)}
+                  disabled={!member.isOnline}
+                  className={`p-2.5 rounded-full transition-all ${
+                    member.isOnline
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  }`}
+                  title={member.isOnline ? `Call ${member.name}` : 'User is offline'}
+                >
+                  <FiPhone size={16} />
+                </button>
+              </div>
+            ))}
           </div>
         )}
-        {error && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center p-6">
-              <p className="text-red-400 mb-4">{error}</p>
-              <button onClick={initializeRoom} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Retry</button>
-            </div>
-          </div>
-        )}
-        {!isLoading && !error && (
-          <div ref={containerRef} id="metered-group-frame" className="w-full h-full" style={{ minHeight: isFullscreen ? '100vh' : '600px' }} />
-        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-3 bg-gray-800/50 border-t border-gray-700">
+        <p className="text-gray-400 text-xs text-center">
+          Only online members can receive calls
+        </p>
       </div>
     </div>
   );

@@ -22,43 +22,16 @@ interface VideoCallProps {
   onClose: () => void;
 }
 
-// ICE servers for WebRTC - includes STUN and TURN for NAT traversal
-// Using Metered.ca TURN server for reliable connections
+// ICE servers for WebRTC - using public STUN servers for NAT traversal
+// For 1-on-1 calls, STUN is usually sufficient for most network configurations
 const iceServers: RTCConfiguration = {
   iceServers: [
-    // STUN servers (free, for simple NAT traversal)
+    // Google STUN servers (free, reliable)
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
-    // Metered STUN server
-    { urls: 'stun:wordpressnode.metered.live:80' },
-    // Metered TURN servers (UDP)
-    {
-      urls: 'turn:wordpressnode.metered.live:80',
-      username: 'wordpressnode',
-      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
-    },
-    {
-      urls: 'turn:wordpressnode.metered.live:443',
-      username: 'wordpressnode',
-      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
-    },
-    // Metered TURN servers (TCP - for strict firewalls)
-    {
-      urls: 'turn:wordpressnode.metered.live:80?transport=tcp',
-      username: 'wordpressnode',
-      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
-    },
-    {
-      urls: 'turn:wordpressnode.metered.live:443?transport=tcp',
-      username: 'wordpressnode',
-      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
-    },
-    // Metered TURNS (TLS - for maximum compatibility)
-    {
-      urls: 'turns:wordpressnode.metered.live:443',
-      username: 'wordpressnode',
-      credential: 'E5bjyr9nvSTEmYKk5n6UzDYMt3gn_6_tVni7TjwlbPJaDneR',
-    },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' },
   ],
   iceCandidatePoolSize: 10,
 };
