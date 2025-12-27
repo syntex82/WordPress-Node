@@ -14,13 +14,7 @@ import { BackupModule } from '../backup/backup.module';
 @Module({
   imports: [BackupModule],
   controllers: [UpdatesController],
-  providers: [
-    UpdatesService,
-    VersionService,
-    MigrationService,
-    PrismaService,
-  ],
+  providers: [UpdatesService, VersionService, MigrationService, PrismaService],
   exports: [UpdatesService, VersionService],
 })
 export class UpdatesModule {}
-

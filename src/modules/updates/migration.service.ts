@@ -36,7 +36,7 @@ export class MigrationService {
       // First, generate Prisma client
       this.logger.log('Generating Prisma client...');
       logs.push('Generating Prisma client...');
-      
+
       const generateResult = await execAsync('npx prisma generate', {
         cwd: process.cwd(),
         timeout: 120000,
@@ -46,7 +46,7 @@ export class MigrationService {
       // Run migrations in production mode
       this.logger.log('Deploying migrations...');
       logs.push('Deploying migrations...');
-      
+
       const migrateResult = await execAsync('npx prisma migrate deploy', {
         cwd: process.cwd(),
         timeout: 300000, // 5 minutes timeout
@@ -56,7 +56,7 @@ export class MigrationService {
       // Parse migrations run from output
       const migrationMatches = migrateResult.stdout.match(/Applied migration `([^`]+)`/g);
       if (migrationMatches) {
-        migrationMatches.forEach(match => {
+        migrationMatches.forEach((match) => {
           const name = match.match(/`([^`]+)`/)?.[1];
           if (name) migrationsRun.push(name);
         });
@@ -95,7 +95,7 @@ export class MigrationService {
 
       const pending: string[] = [];
       const lines = result.stdout.split('\n');
-      
+
       for (const line of lines) {
         if (line.includes('Not yet applied')) {
           const match = line.match(/(\d{14}_\w+)/);
@@ -147,11 +147,11 @@ export class MigrationService {
    */
   async validateSchema(): Promise<{ valid: boolean; issues: string[] }> {
     try {
-      const result = await execAsync('npx prisma validate', {
+      await execAsync('npx prisma validate', {
         cwd: process.cwd(),
         timeout: 60000,
       });
-      
+
       return { valid: true, issues: [] };
     } catch (error: any) {
       return {
@@ -161,4 +161,3 @@ export class MigrationService {
     }
   }
 }
-

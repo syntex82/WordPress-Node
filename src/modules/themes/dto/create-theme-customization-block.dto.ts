@@ -143,4 +143,3 @@ export class UpdateThemeCustomizationBlockDto {
   @IsOptional()
   customData?: Record<string, any>;
 }
-

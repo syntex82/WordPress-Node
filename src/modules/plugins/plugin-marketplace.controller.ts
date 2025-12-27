@@ -103,12 +103,14 @@ export class PluginMarketplaceController {
   @Post('submit')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'file', maxCount: 1 },
-    { name: 'icon', maxCount: 1 },
-  ]))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'file', maxCount: 1 },
+      { name: 'icon', maxCount: 1 },
+    ]),
+  )
   submitPlugin(
-    @UploadedFiles() files: { file?: Express.Multer.File[], icon?: Express.Multer.File[] },
+    @UploadedFiles() files: { file?: Express.Multer.File[]; icon?: Express.Multer.File[] },
     @Body() body: any,
     @Request() req: any,
   ) {
@@ -129,10 +131,14 @@ export class PluginMarketplaceController {
     if (!files.file?.[0]) {
       throw new Error('Plugin file is required');
     }
-    return this.marketplaceService.submitPlugin(dto, {
-      pluginFile: files.file[0],
-      iconFile: files.icon?.[0],
-    }, req.user.id);
+    return this.marketplaceService.submitPlugin(
+      dto,
+      {
+        pluginFile: files.file[0],
+        iconFile: files.icon?.[0],
+      },
+      req.user.id,
+    );
   }
 
   /**
@@ -205,11 +211,7 @@ export class PluginMarketplaceController {
   @Post('admin/plugins/:id/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  rejectPlugin(
-    @Param('id') id: string,
-    @Body() body: { reason: string },
-    @Request() req: any,
-  ) {
+  rejectPlugin(@Param('id') id: string, @Body() body: { reason: string }, @Request() req: any) {
     return this.marketplaceService.rejectPlugin(id, req.user.id, body.reason);
   }
 
@@ -220,10 +222,7 @@ export class PluginMarketplaceController {
   @Post('admin/plugins/:id/feature')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  setFeatured(
-    @Param('id') id: string,
-    @Body() body: { featured: boolean; order?: number },
-  ) {
+  setFeatured(@Param('id') id: string, @Body() body: { featured: boolean; order?: number }) {
     return this.marketplaceService.setFeatured(id, body.featured, body.order);
   }
 
@@ -271,4 +270,3 @@ export class PluginMarketplaceController {
     return this.marketplaceService.bulkDelete(body.ids);
   }
 }
-

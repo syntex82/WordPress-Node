@@ -45,7 +45,7 @@ export class RecommendationEngineService {
     if (relatedPosts.length < limit) {
       const additionalPosts = await this.prisma.post.findMany({
         where: {
-          id: { notIn: [post.id, ...relatedPosts.map(p => p.id)] },
+          id: { notIn: [post.id, ...relatedPosts.map((p) => p.id)] },
           status: 'PUBLISHED',
         },
         select: {
@@ -70,7 +70,7 @@ export class RecommendationEngineService {
       slug: p.slug,
       excerpt: p.excerpt || undefined,
       image: p.featuredImage || undefined,
-      score: 1 - (idx * 0.1), // Decrease score by position
+      score: 1 - idx * 0.1, // Decrease score by position
       metadata: { author: p.author?.name },
     }));
   }
@@ -102,7 +102,7 @@ export class RecommendationEngineService {
     if (relatedPages.length < limit) {
       const additionalPages = await this.prisma.page.findMany({
         where: {
-          id: { notIn: [page.id, ...relatedPages.map(p => p.id)] },
+          id: { notIn: [page.id, ...relatedPages.map((p) => p.id)] },
           status: 'PUBLISHED',
         },
         select: {
@@ -123,7 +123,7 @@ export class RecommendationEngineService {
       title: p.title,
       slug: p.slug,
       image: p.featuredImage || undefined,
-      score: 1 - (idx * 0.1),
+      score: 1 - idx * 0.1,
     }));
   }
 
@@ -135,7 +135,7 @@ export class RecommendationEngineService {
     limit: number,
   ): Promise<RecommendationItem[]> {
     const conditions: any[] = [];
-    
+
     if (product.categoryId) {
       conditions.push({ categoryId: product.categoryId });
     }
@@ -164,7 +164,7 @@ export class RecommendationEngineService {
     if (relatedProducts.length < limit) {
       const additionalProducts = await this.prisma.product.findMany({
         where: {
-          id: { notIn: [product.id, ...relatedProducts.map(p => p.id)] },
+          id: { notIn: [product.id, ...relatedProducts.map((p) => p.id)] },
           status: 'ACTIVE',
         },
         select: {
@@ -190,7 +190,7 @@ export class RecommendationEngineService {
       slug: p.slug,
       excerpt: p.description ? p.description.substring(0, 150) : undefined,
       image: Array.isArray(p.images) && p.images.length > 0 ? String(p.images[0]) : undefined,
-      score: 1 - (idx * 0.1),
+      score: 1 - idx * 0.1,
       metadata: {
         price: p.price,
         salePrice: p.salePrice,
@@ -240,7 +240,7 @@ export class RecommendationEngineService {
     if (relatedCourses.length < limit) {
       const additionalCourses = await this.prisma.course.findMany({
         where: {
-          id: { notIn: [course.id, ...relatedCourses.map(c => c.id)] },
+          id: { notIn: [course.id, ...relatedCourses.map((c) => c.id)] },
           status: 'PUBLISHED',
         },
         select: {
@@ -267,7 +267,7 @@ export class RecommendationEngineService {
       slug: c.slug,
       excerpt: c.description ? c.description.substring(0, 150) : undefined,
       image: c.featuredImage || undefined,
-      score: 1 - (idx * 0.1),
+      score: 1 - idx * 0.1,
       metadata: {
         price: c.priceAmount,
         category: c.category,
@@ -305,7 +305,7 @@ export class RecommendationEngineService {
       return this.getRecent(contentType, limit);
     }
 
-    const contentIds = interactions.map(i => i.contentId);
+    const contentIds = interactions.map((i) => i.contentId);
     return this.fetchContentByIds(contentType, contentIds, interactions);
   }
 
@@ -329,7 +329,7 @@ export class RecommendationEngineService {
       return this.getRecent(contentType, limit);
     }
 
-    const contentIds = interactions.map(i => i.contentId);
+    const contentIds = interactions.map((i) => i.contentId);
     return this.fetchContentByIds(contentType, contentIds, interactions);
   }
 
@@ -354,7 +354,7 @@ export class RecommendationEngineService {
       return this.getTrending(contentType, limit, 7);
     }
 
-    const viewedIds = userInteractions.map(i => i.contentId);
+    const viewedIds = userInteractions.map((i) => i.contentId);
 
     // Find content similar to what user has interacted with
     // For now, just return content the user hasn't seen
@@ -383,13 +383,20 @@ export class RecommendationEngineService {
           slug: p.slug,
           excerpt: p.excerpt || undefined,
           image: p.featuredImage || undefined,
-          score: 1 - (idx * 0.1),
+          score: 1 - idx * 0.1,
         }));
 
       case 'product':
         const products = await this.prisma.product.findMany({
           where: { status: 'ACTIVE' },
-          select: { id: true, name: true, slug: true, description: true, images: true, price: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            images: true,
+            price: true,
+          },
           orderBy: { createdAt: 'desc' },
           take: limit,
         });
@@ -400,14 +407,21 @@ export class RecommendationEngineService {
           slug: p.slug,
           excerpt: p.description ? p.description.substring(0, 150) : undefined,
           image: Array.isArray(p.images) && p.images.length > 0 ? String(p.images[0]) : undefined,
-          score: 1 - (idx * 0.1),
+          score: 1 - idx * 0.1,
           metadata: { price: p.price },
         }));
 
       case 'course':
         const courses = await this.prisma.course.findMany({
           where: { status: 'PUBLISHED' },
-          select: { id: true, title: true, slug: true, description: true, featuredImage: true, priceAmount: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            featuredImage: true,
+            priceAmount: true,
+          },
           orderBy: { createdAt: 'desc' },
           take: limit,
         });
@@ -418,7 +432,7 @@ export class RecommendationEngineService {
           slug: c.slug,
           excerpt: c.description ? c.description.substring(0, 150) : undefined,
           image: c.featuredImage || undefined,
-          score: 1 - (idx * 0.1),
+          score: 1 - idx * 0.1,
           metadata: { price: c.priceAmount },
         }));
 
@@ -435,8 +449,8 @@ export class RecommendationEngineService {
     contentIds: string[],
     interactions: Array<{ contentId: string; _count: { contentId: number } }>,
   ): Promise<RecommendationItem[]> {
-    const scoreMap = new Map(interactions.map(i => [i.contentId, i._count.contentId]));
-    const maxScore = Math.max(...interactions.map(i => i._count.contentId));
+    const scoreMap = new Map(interactions.map((i) => [i.contentId, i._count.contentId]));
+    const maxScore = Math.max(...interactions.map((i) => i._count.contentId));
 
     switch (contentType) {
       case 'post':
@@ -444,47 +458,67 @@ export class RecommendationEngineService {
           where: { id: { in: contentIds }, status: 'PUBLISHED' },
           select: { id: true, title: true, slug: true, excerpt: true, featuredImage: true },
         });
-        return posts.map(p => ({
-          id: p.id,
-          type: 'post',
-          title: p.title,
-          slug: p.slug,
-          excerpt: p.excerpt || undefined,
-          image: p.featuredImage || undefined,
-          score: (scoreMap.get(p.id) || 0) / maxScore,
-        })).sort((a, b) => (b.score || 0) - (a.score || 0));
+        return posts
+          .map((p) => ({
+            id: p.id,
+            type: 'post',
+            title: p.title,
+            slug: p.slug,
+            excerpt: p.excerpt || undefined,
+            image: p.featuredImage || undefined,
+            score: (scoreMap.get(p.id) || 0) / maxScore,
+          }))
+          .sort((a, b) => (b.score || 0) - (a.score || 0));
 
       case 'product':
         const products = await this.prisma.product.findMany({
           where: { id: { in: contentIds }, status: 'ACTIVE' },
-          select: { id: true, name: true, slug: true, description: true, images: true, price: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            images: true,
+            price: true,
+          },
         });
-        return products.map(p => ({
-          id: p.id,
-          type: 'product',
-          title: p.name,
-          slug: p.slug,
-          excerpt: p.description ? p.description.substring(0, 150) : undefined,
-          image: Array.isArray(p.images) && p.images.length > 0 ? String(p.images[0]) : undefined,
-          score: (scoreMap.get(p.id) || 0) / maxScore,
-          metadata: { price: p.price },
-        })).sort((a, b) => (b.score || 0) - (a.score || 0));
+        return products
+          .map((p) => ({
+            id: p.id,
+            type: 'product',
+            title: p.name,
+            slug: p.slug,
+            excerpt: p.description ? p.description.substring(0, 150) : undefined,
+            image: Array.isArray(p.images) && p.images.length > 0 ? String(p.images[0]) : undefined,
+            score: (scoreMap.get(p.id) || 0) / maxScore,
+            metadata: { price: p.price },
+          }))
+          .sort((a, b) => (b.score || 0) - (a.score || 0));
 
       case 'course':
         const courses2 = await this.prisma.course.findMany({
           where: { id: { in: contentIds }, status: 'PUBLISHED' },
-          select: { id: true, title: true, slug: true, description: true, featuredImage: true, priceAmount: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            featuredImage: true,
+            priceAmount: true,
+          },
         });
-        return courses2.map(c => ({
-          id: c.id,
-          type: 'course',
-          title: c.title,
-          slug: c.slug,
-          excerpt: c.description ? c.description.substring(0, 150) : undefined,
-          image: c.featuredImage || undefined,
-          score: (scoreMap.get(c.id) || 0) / maxScore,
-          metadata: { price: c.priceAmount },
-        })).sort((a, b) => (b.score || 0) - (a.score || 0));
+        return courses2
+          .map((c) => ({
+            id: c.id,
+            type: 'course',
+            title: c.title,
+            slug: c.slug,
+            excerpt: c.description ? c.description.substring(0, 150) : undefined,
+            image: c.featuredImage || undefined,
+            score: (scoreMap.get(c.id) || 0) / maxScore,
+            metadata: { price: c.priceAmount },
+          }))
+          .sort((a, b) => (b.score || 0) - (a.score || 0));
 
       default:
         return [];
@@ -511,13 +545,20 @@ export class RecommendationEngineService {
           slug: p.slug,
           excerpt: p.excerpt || undefined,
           image: p.featuredImage || undefined,
-          score: 1 - (idx * 0.05),
+          score: 1 - idx * 0.05,
         }));
 
       case 'product':
         const products = await this.prisma.product.findMany({
           where: { id: { in: contentIds }, status: 'ACTIVE' },
-          select: { id: true, name: true, slug: true, description: true, images: true, price: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            images: true,
+            price: true,
+          },
         });
         return products.map((p, idx) => ({
           id: p.id,
@@ -526,14 +567,21 @@ export class RecommendationEngineService {
           slug: p.slug,
           excerpt: p.description ? p.description.substring(0, 150) : undefined,
           image: Array.isArray(p.images) && p.images.length > 0 ? String(p.images[0]) : undefined,
-          score: 1 - (idx * 0.05),
+          score: 1 - idx * 0.05,
           metadata: { price: p.price },
         }));
 
       case 'course':
         const courses = await this.prisma.course.findMany({
           where: { id: { in: contentIds }, status: 'PUBLISHED' },
-          select: { id: true, title: true, slug: true, description: true, featuredImage: true, priceAmount: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            featuredImage: true,
+            priceAmount: true,
+          },
         });
         return courses.map((c, idx) => ({
           id: c.id,
@@ -542,7 +590,7 @@ export class RecommendationEngineService {
           slug: c.slug,
           excerpt: c.description ? c.description.substring(0, 150) : undefined,
           image: c.featuredImage || undefined,
-          score: 1 - (idx * 0.05),
+          score: 1 - idx * 0.05,
           metadata: { price: c.priceAmount },
         }));
 
@@ -574,13 +622,20 @@ export class RecommendationEngineService {
           slug: p.slug,
           excerpt: p.excerpt || undefined,
           image: p.featuredImage || undefined,
-          score: 1 - (idx * 0.1),
+          score: 1 - idx * 0.1,
         }));
 
       case 'product':
         const products = await this.prisma.product.findMany({
           where: { id: { notIn: viewedIds }, status: 'ACTIVE' },
-          select: { id: true, name: true, slug: true, description: true, images: true, price: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            images: true,
+            price: true,
+          },
           orderBy: { createdAt: 'desc' },
           take: limit,
         });
@@ -591,14 +646,21 @@ export class RecommendationEngineService {
           slug: p.slug,
           excerpt: p.description ? p.description.substring(0, 150) : undefined,
           image: Array.isArray(p.images) && p.images.length > 0 ? String(p.images[0]) : undefined,
-          score: 1 - (idx * 0.1),
+          score: 1 - idx * 0.1,
           metadata: { price: p.price },
         }));
 
       case 'course':
         const courses3 = await this.prisma.course.findMany({
           where: { id: { notIn: viewedIds }, status: 'PUBLISHED' },
-          select: { id: true, title: true, slug: true, description: true, featuredImage: true, priceAmount: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            featuredImage: true,
+            priceAmount: true,
+          },
           orderBy: { createdAt: 'desc' },
           take: limit,
         });
@@ -609,7 +671,7 @@ export class RecommendationEngineService {
           slug: c.slug,
           excerpt: c.description ? c.description.substring(0, 150) : undefined,
           image: c.featuredImage || undefined,
-          score: 1 - (idx * 0.1),
+          score: 1 - idx * 0.1,
           metadata: { price: c.priceAmount },
         }));
 
@@ -641,9 +703,7 @@ export class RecommendationEngineService {
         take: 100, // Limit to avoid performance issues
       });
 
-      const userIds = usersWhoViewed
-        .map(u => u.userId)
-        .filter((id): id is string => id !== null);
+      const userIds = usersWhoViewed.map((u) => u.userId).filter((id): id is string => id !== null);
 
       if (userIds.length === 0) {
         // Fall back to popular content
@@ -669,14 +729,14 @@ export class RecommendationEngineService {
       }
 
       // Step 3: Fetch content details
-      const contentIds = otherInteractions.map(i => i.contentId);
+      const contentIds = otherInteractions.map((i) => i.contentId);
       const items = await this.fetchContentByIdsSimple(contentType, contentIds);
 
       // Calculate scores based on co-occurrence
       const maxCount = otherInteractions[0]?._count?.id || 1;
       return items.slice(0, limit).map((item) => {
-        const interaction = otherInteractions.find(i => i.contentId === item.id);
-        const score = interaction ? (interaction._count.id / maxCount) : 0.5;
+        const interaction = otherInteractions.find((i) => i.contentId === item.id);
+        const score = interaction ? interaction._count.id / maxCount : 0.5;
         return { ...item, score: Math.max(0.1, score) };
       });
     } catch (error) {
@@ -711,14 +771,14 @@ export class RecommendationEngineService {
       }
 
       // Build list of user/session combos
-      const purchaseKeys = purchasers.map(p => ({
+      const purchaseKeys = purchasers.map((p) => ({
         userId: p.userId,
         sessionId: p.sessionId,
         date: p.createdAt,
       }));
 
       // Step 2: Find other products purchased by these users within 30 min window
-      const coPurchasePromises = purchaseKeys.map(async pk => {
+      const coPurchasePromises = purchaseKeys.map(async (pk) => {
         const windowStart = new Date(pk.date.getTime() - 30 * 60 * 1000);
         const windowEnd = new Date(pk.date.getTime() + 30 * 60 * 1000);
 
@@ -753,7 +813,7 @@ export class RecommendationEngineService {
 
       // Step 3: Count co-occurrence
       const countMap = new Map<string, number>();
-      flatCoPurchases.forEach(p => {
+      flatCoPurchases.forEach((p) => {
         countMap.set(p.contentId, (countMap.get(p.contentId) || 0) + 1);
       });
 
@@ -778,9 +838,9 @@ export class RecommendationEngineService {
 
       const maxCount = Math.max(...countMap.values()) || 1;
       return sortedIds
-        .map(id => products.find(p => p.id === id))
+        .map((id) => products.find((p) => p.id === id))
         .filter((p): p is NonNullable<typeof p> => p !== undefined)
-        .map(p => ({
+        .map((p) => ({
           id: p.id,
           type: 'product' as const,
           title: p.name,
@@ -799,7 +859,10 @@ export class RecommendationEngineService {
   /**
    * Helper to fetch related products by ID (used as fallback)
    */
-  private async getRelatedProductsById(productId: string, limit: number): Promise<RecommendationItem[]> {
+  private async getRelatedProductsById(
+    productId: string,
+    limit: number,
+  ): Promise<RecommendationItem[]> {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: { categoryId: true },
@@ -830,7 +893,7 @@ export class RecommendationEngineService {
       slug: p.slug,
       excerpt: p.description ? p.description.substring(0, 150) : undefined,
       image: (p.images as string[])?.[0] || undefined,
-      score: 1 - (idx * 0.1),
+      score: 1 - idx * 0.1,
       metadata: { price: p.price },
     }));
   }
@@ -855,7 +918,7 @@ export class RecommendationEngineService {
         return this.getPopular(contentType as 'post' | 'product' | 'course', limit);
       }
 
-      const userContentIds = userHistory.map(h => h.contentId);
+      const userContentIds = userHistory.map((h) => h.contentId);
 
       // Find users with similar interactions
       const similarUsers = await this.prisma.userInteraction.groupBy({
@@ -871,7 +934,7 @@ export class RecommendationEngineService {
       });
 
       const similarUserIds = similarUsers
-        .map(u => u.userId)
+        .map((u) => u.userId)
         .filter((id): id is string => id !== null);
 
       if (similarUserIds.length === 0) {
@@ -891,12 +954,12 @@ export class RecommendationEngineService {
         take: limit * 2,
       });
 
-      const contentIds = recommendations.map(r => r.contentId);
+      const contentIds = recommendations.map((r) => r.contentId);
       const items = await this.fetchContentByIdsSimple(contentType, contentIds);
 
       const maxCount = recommendations[0]?._count?.id || 1;
-      return items.slice(0, limit).map(item => {
-        const rec = recommendations.find(r => r.contentId === item.id);
+      return items.slice(0, limit).map((item) => {
+        const rec = recommendations.find((r) => r.contentId === item.id);
         return {
           ...item,
           score: rec ? rec._count.id / maxCount : 0.5,
@@ -909,4 +972,3 @@ export class RecommendationEngineService {
     }
   }
 }
-

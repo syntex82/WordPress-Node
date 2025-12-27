@@ -3,14 +3,20 @@
  * API endpoints for marketplace projects
  */
 
-import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole as _UserRole } from '@prisma/client';
 import { ProjectsService } from '../services/projects.service';
 import { MarketplacePaymentsService } from '../services/marketplace-payments.service';
-import { CreateProjectDto, UpdateProjectDto, LogHoursDto, CreateProjectReviewDto, ProjectStatus } from '../dto';
+import {
+  CreateProjectDto,
+  UpdateProjectDto,
+  LogHoursDto,
+  CreateProjectReviewDto,
+  ProjectStatus,
+} from '../dto';
 
 @Controller('api/marketplace/projects')
 @UseGuards(JwtAuthGuard)
@@ -137,7 +143,12 @@ export class ProjectsController {
     @Param('id') id: string,
     @Body() body: { amount: number; paymentMethodId?: string },
   ) {
-    return this.paymentsService.createEscrowDeposit(id, req.user.id, body.amount, body.paymentMethodId);
+    return this.paymentsService.createEscrowDeposit(
+      id,
+      req.user.id,
+      body.amount,
+      body.paymentMethodId,
+    );
   }
 
   /**
@@ -161,7 +172,13 @@ export class ProjectsController {
   ) {
     const project = await this.projectsService.findById(id, req.user.id, false);
     const initiatorType = project.clientId === req.user.id ? 'client' : 'developer';
-    return this.paymentsService.createDispute(id, req.user.id, initiatorType, body.reason, body.description);
+    return this.paymentsService.createDispute(
+      id,
+      req.user.id,
+      initiatorType,
+      body.reason,
+      body.description,
+    );
   }
 
   /**
@@ -174,4 +191,3 @@ export class ProjectsController {
     return this.paymentsService.releaseEscrow(id, amount, req.user.id);
   }
 }
-

@@ -102,41 +102,44 @@ export class ThemeRendererService {
    */
   private registerSubscriptionHelpers() {
     // Check if site has a specific feature enabled
-    Handlebars.registerHelper('hasFeature', function(this: any, feature: string, options: any) {
+    Handlebars.registerHelper('hasFeature', function (this: any, feature: string, options: any) {
       const subscription = this.subscription;
       if (!subscription || !subscription.features) {
         return options.inverse ? options.inverse(this) : '';
       }
       const hasIt = subscription.features.includes(feature);
-      return hasIt ? options.fn(this) : (options.inverse ? options.inverse(this) : '');
+      return hasIt ? options.fn(this) : options.inverse ? options.inverse(this) : '';
     });
 
     // Check if site has a specific plan or higher
-    Handlebars.registerHelper('hasPlan', function(this: any, planTier: string, options: any) {
+    Handlebars.registerHelper('hasPlan', function (this: any, planTier: string, options: any) {
       const subscription = this.subscription;
       const planHierarchy = ['free', 'starter', 'professional', 'enterprise'];
-      const currentPlanIndex = subscription ? planHierarchy.indexOf(subscription.planTier?.toLowerCase() || 'free') : 0;
+      const currentPlanIndex = subscription
+        ? planHierarchy.indexOf(subscription.planTier?.toLowerCase() || 'free')
+        : 0;
       const requiredPlanIndex = planHierarchy.indexOf(planTier.toLowerCase());
       const hasIt = currentPlanIndex >= requiredPlanIndex;
-      return hasIt ? options.fn(this) : (options.inverse ? options.inverse(this) : '');
+      return hasIt ? options.fn(this) : options.inverse ? options.inverse(this) : '';
     });
 
     // Check if site is on free plan (show upgrade prompts)
-    Handlebars.registerHelper('isFreePlan', function(this: any, options: any) {
+    Handlebars.registerHelper('isFreePlan', function (this: any, options: any) {
       const subscription = this.subscription;
-      const isFree = !subscription || subscription.planTier?.toLowerCase() === 'free' || !subscription.isActive;
-      return isFree ? options.fn(this) : (options.inverse ? options.inverse(this) : '');
+      const isFree =
+        !subscription || subscription.planTier?.toLowerCase() === 'free' || !subscription.isActive;
+      return isFree ? options.fn(this) : options.inverse ? options.inverse(this) : '';
     });
 
     // Check if subscription is active
-    Handlebars.registerHelper('hasActiveSubscription', function(this: any, options: any) {
+    Handlebars.registerHelper('hasActiveSubscription', function (this: any, options: any) {
       const subscription = this.subscription;
       const isActive = subscription && subscription.isActive;
-      return isActive ? options.fn(this) : (options.inverse ? options.inverse(this) : '');
+      return isActive ? options.fn(this) : options.inverse ? options.inverse(this) : '';
     });
 
     // Get current plan name
-    Handlebars.registerHelper('currentPlan', function(this: any) {
+    Handlebars.registerHelper('currentPlan', function (this: any) {
       const subscription = this.subscription;
       return subscription?.planName || 'Free';
     });
@@ -151,7 +154,7 @@ export class ThemeRendererService {
     });
 
     // Check if a plan is the current plan
-    Handlebars.registerHelper('isCurrentPlan', function(this: any, planId: string) {
+    Handlebars.registerHelper('isCurrentPlan', function (this: any, planId: string) {
       const subscription = this.subscription;
       return subscription?.planId === planId;
     });
@@ -514,10 +517,7 @@ export class ThemeRendererService {
   /**
    * Render course learning page
    */
-  async renderLearn(
-    courseId: string,
-    user?: { id: string; role: string; name?: string } | null,
-  ) {
+  async renderLearn(courseId: string, user?: { id: string; role: string; name?: string } | null) {
     return this.render(
       'learn',
       {
@@ -531,9 +531,7 @@ export class ThemeRendererService {
   /**
    * Render theme designer page
    */
-  async renderThemeDesigner(
-    user?: { id: string; role: string; name?: string } | null,
-  ) {
+  async renderThemeDesigner(user?: { id: string; role: string; name?: string } | null) {
     return this.render(
       'theme-designer',
       {
@@ -547,10 +545,7 @@ export class ThemeRendererService {
   /**
    * Render order success page
    */
-  async renderOrderSuccess(
-    order: any,
-    user?: { id: string; role: string; name?: string } | null,
-  ) {
+  async renderOrderSuccess(order: any, user?: { id: string; role: string; name?: string } | null) {
     return this.render(
       'order-success',
       {
@@ -578,22 +573,24 @@ export class ThemeRendererService {
       const currentSubscription = await this.subscriptionsService.getSiteSubscription();
 
       return {
-        currentSubscription: currentSubscription ? {
-          planId: currentSubscription.planId,
-          planName: currentSubscription.plan?.name || 'Free',
-          planTier: currentSubscription.plan?.slug?.toUpperCase() || 'FREE',
-          isActive: currentSubscription.status === 'ACTIVE',
-          features: currentSubscription.plan?.features || [],
-          expiresAt: currentSubscription.currentPeriodEnd,
-        } : {
-          planId: null,
-          planName: 'Free',
-          planTier: 'FREE',
-          isActive: false,
-          features: [],
-          expiresAt: null,
-        },
-        plans: plans.map(plan => ({
+        currentSubscription: currentSubscription
+          ? {
+              planId: currentSubscription.planId,
+              planName: currentSubscription.plan?.name || 'Free',
+              planTier: currentSubscription.plan?.slug?.toUpperCase() || 'FREE',
+              isActive: currentSubscription.status === 'ACTIVE',
+              features: currentSubscription.plan?.features || [],
+              expiresAt: currentSubscription.currentPeriodEnd,
+            }
+          : {
+              planId: null,
+              planName: 'Free',
+              planTier: 'FREE',
+              isActive: false,
+              features: [],
+              expiresAt: null,
+            },
+        plans: plans.map((plan) => ({
           id: plan.id,
           name: plan.name,
           slug: plan.slug,

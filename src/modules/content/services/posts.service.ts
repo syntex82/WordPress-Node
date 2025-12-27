@@ -179,7 +179,11 @@ export class PostsService {
         throw new Error(`Slug "${updatePostDto.slug}" is already in use`);
       }
       data.slug = updatePostDto.slug;
-    } else if (updatePostDto.title && updatePostDto.title !== existingPost.title && !updatePostDto.slug) {
+    } else if (
+      updatePostDto.title &&
+      updatePostDto.title !== existingPost.title &&
+      !updatePostDto.slug
+    ) {
       // Generate new slug only if title changed and no custom slug provided
       data.slug = await this.generateSlug(updatePostDto.title, id);
     } else {

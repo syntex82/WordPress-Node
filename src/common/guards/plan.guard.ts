@@ -33,10 +33,10 @@ export class PlanGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPlans = this.reflector.getAllAndOverride<string[]>(
-      REQUIRED_PLAN_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredPlans = this.reflector.getAllAndOverride<string[]>(REQUIRED_PLAN_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // If no plan requirement, allow access
     if (!requiredPlans || requiredPlans.length === 0) {
@@ -76,9 +76,7 @@ export class PlanGuard implements CanActivate {
     }
 
     // Check if user's plan meets the minimum required
-    const minRequiredLevel = Math.min(
-      ...requiredPlans.map(p => PLAN_HIERARCHY[p] ?? 999),
-    );
+    const minRequiredLevel = Math.min(...requiredPlans.map((p) => PLAN_HIERARCHY[p] ?? 999));
 
     if (userPlanLevel < minRequiredLevel) {
       const requiredPlanNames = requiredPlans.join(' or ');
@@ -98,4 +96,3 @@ export class PlanGuard implements CanActivate {
     return true;
   }
 }
-

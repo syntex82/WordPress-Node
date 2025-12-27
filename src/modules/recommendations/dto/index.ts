@@ -1,7 +1,16 @@
 /**
  * Recommendations DTOs
  */
-import { IsString, IsOptional, IsNumber, IsBoolean, IsArray, IsObject, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsArray,
+  IsObject,
+  Min,
+  Max,
+} from 'class-validator';
 
 // ============================================
 // Query DTOs
@@ -206,4 +215,3 @@ export class UpdateRecommendationSettingsDto {
   @IsString({ each: true })
   excludeTags?: string[];
 }
-

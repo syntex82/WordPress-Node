@@ -104,12 +104,14 @@ export class MarketplaceController {
   @Post('submit')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'file', maxCount: 1 },
-    { name: 'thumbnail', maxCount: 1 },
-  ]))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'file', maxCount: 1 },
+      { name: 'thumbnail', maxCount: 1 },
+    ]),
+  )
   submitTheme(
-    @UploadedFiles() files: { file?: Express.Multer.File[], thumbnail?: Express.Multer.File[] },
+    @UploadedFiles() files: { file?: Express.Multer.File[]; thumbnail?: Express.Multer.File[] },
     @Body() body: any,
     @Request() req: any,
   ) {
@@ -131,10 +133,14 @@ export class MarketplaceController {
     if (!files.file?.[0]) {
       throw new Error('Theme file is required');
     }
-    return this.marketplaceService.submitTheme(dto, {
-      themeFile: files.file[0],
-      thumbnailFile: files.thumbnail?.[0],
-    }, req.user.id);
+    return this.marketplaceService.submitTheme(
+      dto,
+      {
+        themeFile: files.file[0],
+        thumbnailFile: files.thumbnail?.[0],
+      },
+      req.user.id,
+    );
   }
 
   /**
@@ -207,11 +213,7 @@ export class MarketplaceController {
   @Post('admin/themes/:id/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  rejectTheme(
-    @Param('id') id: string,
-    @Body() body: { reason: string },
-    @Request() req: any,
-  ) {
+  rejectTheme(@Param('id') id: string, @Body() body: { reason: string }, @Request() req: any) {
     return this.marketplaceService.rejectTheme(id, req.user.id, body.reason);
   }
 
@@ -222,10 +224,7 @@ export class MarketplaceController {
   @Post('admin/themes/:id/feature')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  setFeatured(
-    @Param('id') id: string,
-    @Body() body: { featured: boolean; order?: number },
-  ) {
+  setFeatured(@Param('id') id: string, @Body() body: { featured: boolean; order?: number }) {
     return this.marketplaceService.setFeatured(id, body.featured, body.order);
   }
 
@@ -273,4 +272,3 @@ export class MarketplaceController {
     return this.marketplaceService.bulkDelete(body.ids);
   }
 }
-

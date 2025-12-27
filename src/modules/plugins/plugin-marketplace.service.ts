@@ -69,22 +69,30 @@ export class PluginMarketplaceService {
    * Get all marketplace plugins with filtering and pagination
    */
   async findAll(query: MarketplaceQuery) {
-    const { category, search, status = 'approved', featured, sortBy = 'downloads', page = 1, limit = 20 } = query;
+    const {
+      category,
+      search,
+      status = 'approved',
+      featured,
+      sortBy = 'downloads',
+      page = 1,
+      limit = 20,
+    } = query;
 
     const where: any = {};
-    
+
     if (status) {
       where.status = status;
     }
-    
+
     if (category && category !== 'all') {
       where.category = category;
     }
-    
+
     if (featured !== undefined) {
       where.isFeatured = featured;
     }
-    
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -95,12 +103,23 @@ export class PluginMarketplaceService {
 
     let orderBy: any = {};
     switch (sortBy) {
-      case 'downloads': orderBy = { downloads: 'desc' }; break;
-      case 'activeInstalls': orderBy = { activeInstalls: 'desc' }; break;
-      case 'rating': orderBy = { rating: 'desc' }; break;
-      case 'newest': orderBy = { createdAt: 'desc' }; break;
-      case 'name': orderBy = { name: 'asc' }; break;
-      default: orderBy = { downloads: 'desc' };
+      case 'downloads':
+        orderBy = { downloads: 'desc' };
+        break;
+      case 'activeInstalls':
+        orderBy = { activeInstalls: 'desc' };
+        break;
+      case 'rating':
+        orderBy = { rating: 'desc' };
+        break;
+      case 'newest':
+        orderBy = { createdAt: 'desc' };
+        break;
+      case 'name':
+        orderBy = { name: 'asc' };
+        break;
+      default:
+        orderBy = { downloads: 'desc' };
     }
 
     const [plugins, total] = await Promise.all([
@@ -147,7 +166,11 @@ export class PluginMarketplaceService {
       where: { id },
       include: {
         submittedBy: { select: { id: true, name: true, avatar: true } },
-        ratings: { include: { user: { select: { id: true, name: true, avatar: true } } }, orderBy: { createdAt: 'desc' }, take: 10 },
+        ratings: {
+          include: { user: { select: { id: true, name: true, avatar: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
       },
     });
     if (!plugin) throw new NotFoundException('Plugin not found');
@@ -162,7 +185,11 @@ export class PluginMarketplaceService {
       where: { slug },
       include: {
         submittedBy: { select: { id: true, name: true, avatar: true } },
-        ratings: { include: { user: { select: { id: true, name: true, avatar: true } } }, orderBy: { createdAt: 'desc' }, take: 10 },
+        ratings: {
+          include: { user: { select: { id: true, name: true, avatar: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
       },
     });
     if (!plugin) throw new NotFoundException('Plugin not found');
@@ -175,7 +202,10 @@ export class PluginMarketplaceService {
   async submitPlugin(dto: SubmitPluginDto, files: SubmitPluginFiles, userId: string) {
     const { pluginFile, iconFile } = files;
 
-    const slug = dto.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const slug = dto.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
 
     const existing = await this.prisma.marketplacePlugin.findUnique({ where: { slug } });
     if (existing) {
@@ -184,7 +214,10 @@ export class PluginMarketplaceService {
 
     const validation = await this.pluginsService.validatePlugin(pluginFile);
     if (!validation.valid) {
-      throw new BadRequestException({ message: 'Invalid plugin package', errors: validation.errors });
+      throw new BadRequestException({
+        message: 'Invalid plugin package',
+        errors: validation.errors,
+      });
     }
 
     const fileName = `${slug}-${Date.now()}.zip`;
@@ -332,9 +365,9 @@ export class PluginMarketplaceService {
    * Bulk approve plugins (admin only)
    */
   async bulkApprove(ids: string[], approverId: string) {
-    const results = await Promise.allSettled(ids.map(id => this.approvePlugin(id, approverId)));
-    const succeeded = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const results = await Promise.allSettled(ids.map((id) => this.approvePlugin(id, approverId)));
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
     return { succeeded, failed, total: ids.length };
   }
 
@@ -342,9 +375,11 @@ export class PluginMarketplaceService {
    * Bulk reject plugins (admin only)
    */
   async bulkReject(ids: string[], approverId: string, reason: string) {
-    const results = await Promise.allSettled(ids.map(id => this.rejectPlugin(id, approverId, reason)));
-    const succeeded = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const results = await Promise.allSettled(
+      ids.map((id) => this.rejectPlugin(id, approverId, reason)),
+    );
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
     return { succeeded, failed, total: ids.length };
   }
 
@@ -352,9 +387,9 @@ export class PluginMarketplaceService {
    * Bulk delete plugins (admin only)
    */
   async bulkDelete(ids: string[]) {
-    const results = await Promise.allSettled(ids.map(id => this.deletePlugin(id)));
-    const succeeded = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const results = await Promise.allSettled(ids.map((id) => this.deletePlugin(id)));
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
     return { succeeded, failed, total: ids.length };
   }
 
@@ -388,14 +423,15 @@ export class PluginMarketplaceService {
    * Get marketplace statistics
    */
   async getStats() {
-    const [total, approved, pending, featured, totalDownloads, totalActiveInstalls] = await Promise.all([
-      this.prisma.marketplacePlugin.count(),
-      this.prisma.marketplacePlugin.count({ where: { status: 'approved' } }),
-      this.prisma.marketplacePlugin.count({ where: { status: 'pending' } }),
-      this.prisma.marketplacePlugin.count({ where: { isFeatured: true } }),
-      this.prisma.marketplacePlugin.aggregate({ _sum: { downloads: true } }),
-      this.prisma.marketplacePlugin.aggregate({ _sum: { activeInstalls: true } }),
-    ]);
+    const [total, approved, pending, featured, totalDownloads, totalActiveInstalls] =
+      await Promise.all([
+        this.prisma.marketplacePlugin.count(),
+        this.prisma.marketplacePlugin.count({ where: { status: 'approved' } }),
+        this.prisma.marketplacePlugin.count({ where: { status: 'pending' } }),
+        this.prisma.marketplacePlugin.count({ where: { isFeatured: true } }),
+        this.prisma.marketplacePlugin.aggregate({ _sum: { downloads: true } }),
+        this.prisma.marketplacePlugin.aggregate({ _sum: { activeInstalls: true } }),
+      ]);
 
     return {
       total,
@@ -417,7 +453,7 @@ export class PluginMarketplaceService {
       _count: { id: true },
     });
 
-    return categories.map(c => ({ category: c.category, count: c._count.id }));
+    return categories.map((c) => ({ category: c.category, count: c._count.id }));
   }
 
   private async sendApprovalEmail(plugin: any) {
@@ -456,7 +492,9 @@ export class PluginMarketplaceService {
         recipientId: plugin.submittedBy.id,
         metadata: { type: 'plugin_approved', pluginId: plugin.id },
       });
-      this.logger.log(`Approval email sent to ${plugin.submittedBy.email} for plugin ${plugin.name}`);
+      this.logger.log(
+        `Approval email sent to ${plugin.submittedBy.email} for plugin ${plugin.name}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to send approval email: ${error.message}`);
     }
@@ -497,10 +535,11 @@ export class PluginMarketplaceService {
         recipientId: plugin.submittedBy.id,
         metadata: { type: 'plugin_rejected', pluginId: plugin.id },
       });
-      this.logger.log(`Rejection email sent to ${plugin.submittedBy.email} for plugin ${plugin.name}`);
+      this.logger.log(
+        `Rejection email sent to ${plugin.submittedBy.email} for plugin ${plugin.name}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to send rejection email: ${error.message}`);
     }
   }
 }
-

@@ -146,5 +146,7 @@ export function getWelcomeTemplate(): string {
   </tr>
 </table>`;
 
-  return getBaseEmailTemplate(content, { preheader: 'Welcome to our community! Get started in 3 easy steps.' });
+  return getBaseEmailTemplate(content, {
+    preheader: 'Welcome to our community! Get started in 3 easy steps.',
+  });
 }

@@ -50,15 +50,20 @@ function validateEnvironment(logger: Logger): void {
     const missingProduction: string[] = [];
 
     for (const envVar of productionRequired) {
-      if (!process.env[envVar] || process.env[envVar] === 'default-secret' ||
-          process.env[envVar] === 'default-secret-change-in-production') {
+      if (
+        !process.env[envVar] ||
+        process.env[envVar] === 'default-secret' ||
+        process.env[envVar] === 'default-secret-change-in-production'
+      ) {
         missingProduction.push(envVar);
       }
     }
 
     if (missingProduction.length > 0) {
       logger.error(`Production requires secure values for: ${missingProduction.join(', ')}`);
-      logger.error('Generate secure secrets with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+      logger.error(
+        "Generate secure secrets with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+      );
       process.exit(1);
     }
   }
@@ -78,7 +83,9 @@ function validateEnvironment(logger: Logger): void {
 
   // SMTP configuration check
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-    logger.warn('⚠️ SMTP not configured in .env - email features will be limited until configured via admin panel');
+    logger.warn(
+      '⚠️ SMTP not configured in .env - email features will be limited until configured via admin panel',
+    );
   }
 }
 
@@ -337,7 +344,7 @@ async function bootstrap() {
   // Note: Camera/microphone permissions are handled via Permissions-Policy HTTP header
   // and must be requested at runtime via navigator.mediaDevices.getUserMedia()
   // The permissions_policy field is informational for Android WebView / TWA apps
-  const generateManifest = (req: any) => ({
+  const generateManifest = (_req: any) => ({
     name: 'WP Node',
     short_name: 'WP Node',
     description: 'Modern CMS with real-time messaging, video calling, and collaboration',
@@ -349,10 +356,30 @@ async function bootstrap() {
     background_color: '#0f172a',
     categories: ['productivity', 'social', 'education', 'communication'],
     icons: [
-      { src: '/api/pwa/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
-      { src: '/api/pwa/icons/icon-192-maskable.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'maskable' },
-      { src: '/api/pwa/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
-      { src: '/api/pwa/icons/icon-512-maskable.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
+      {
+        src: '/api/pwa/icons/icon-192.svg',
+        sizes: '192x192',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+      {
+        src: '/api/pwa/icons/icon-192-maskable.svg',
+        sizes: '192x192',
+        type: 'image/svg+xml',
+        purpose: 'maskable',
+      },
+      {
+        src: '/api/pwa/icons/icon-512.svg',
+        sizes: '512x512',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+      {
+        src: '/api/pwa/icons/icon-512-maskable.svg',
+        sizes: '512x512',
+        type: 'image/svg+xml',
+        purpose: 'maskable',
+      },
     ],
     prefer_related_applications: false,
     // Permissions policy for Android WebView/TWA and supported browsers
@@ -387,7 +414,8 @@ self.addEventListener('fetch', e => {
 `;
 
   // Helper function to generate offline page
-  const generateOfflinePage = () => `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline</title><style>body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1e293b;font-family:system-ui;color:#f1f5f9;text-align:center}h1{margin-bottom:1rem}button{background:#4f46e5;color:white;border:none;padding:.75rem 1.5rem;border-radius:8px;cursor:pointer}</style></head><body><div><h1>You're Offline</h1><p>Check your connection and try again.</p><br><button onclick="location.reload()">Retry</button></div></body></html>`;
+  const generateOfflinePage = () =>
+    `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline</title><style>body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1e293b;font-family:system-ui;color:#f1f5f9;text-align:center}h1{margin-bottom:1rem}button{background:#4f46e5;color:white;border:none;padding:.75rem 1.5rem;border-radius:8px;cursor:pointer}</style></head><body><div><h1>You're Offline</h1><p>Check your connection and try again.</p><br><button onclick="location.reload()">Retry</button></div></body></html>`;
 
   // PWA routes under /api/pwa/ (guaranteed to be proxied by nginx)
   expressApp.get('/api/pwa/manifest.json', (req, res) => {
@@ -436,7 +464,9 @@ self.addEventListener('fetch', e => {
       const match = filename.match(/(\d+)/);
       const size = match ? parseInt(match[1]) : 192;
       res.setHeader('Content-Type', 'image/svg+xml');
-      res.send(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#1a2332" rx="${Math.round(size * 0.15)}"/><polygon points="${size/2},${size*0.15} ${size*0.78},${size*0.30} ${size*0.78},${size*0.70} ${size/2},${size*0.85} ${size*0.22},${size*0.70} ${size*0.22},${size*0.30}" fill="none" stroke="#2dd4bf" stroke-width="${Math.round(size*0.02)}"/><text x="50%" y="45%" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.15)}">WP</text><text x="50%" y="62%" dominant-baseline="central" text-anchor="middle" fill="#2dd4bf" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.10)}">NODE</text></svg>`);
+      res.send(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#1a2332" rx="${Math.round(size * 0.15)}"/><polygon points="${size / 2},${size * 0.15} ${size * 0.78},${size * 0.3} ${size * 0.78},${size * 0.7} ${size / 2},${size * 0.85} ${size * 0.22},${size * 0.7} ${size * 0.22},${size * 0.3}" fill="none" stroke="#2dd4bf" stroke-width="${Math.round(size * 0.02)}"/><text x="50%" y="45%" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.15)}">WP</text><text x="50%" y="62%" dominant-baseline="central" text-anchor="middle" fill="#2dd4bf" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.1)}">NODE</text></svg>`,
+      );
     }
   });
 
@@ -449,7 +479,9 @@ self.addEventListener('fetch', e => {
       res.sendFile(faviconPath);
     } else {
       res.setHeader('Content-Type', 'image/svg+xml');
-      res.send(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1a2332"/><polygon points="16,5 26,10 26,22 16,27 6,22 6,10" fill="none" stroke="#2dd4bf" stroke-width="1.5"/><text x="16" y="18" font-family="Arial" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">WP</text></svg>`);
+      res.send(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1a2332"/><polygon points="16,5 26,10 26,22 16,27 6,22 6,10" fill="none" stroke="#2dd4bf" stroke-width="1.5"/><text x="16" y="18" font-family="Arial" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">WP</text></svg>`,
+      );
     }
   });
 
@@ -464,7 +496,9 @@ self.addEventListener('fetch', e => {
       const match = filename.match(/(\d+)/);
       const size = match ? parseInt(match[1]) : 192;
       res.setHeader('Content-Type', 'image/svg+xml');
-      res.send(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#1a2332" rx="${Math.round(size * 0.15)}"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="#2dd4bf" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.3)}">WP</text></svg>`);
+      res.send(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#1a2332" rx="${Math.round(size * 0.15)}"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="#2dd4bf" font-family="Arial" font-weight="bold" font-size="${Math.round(size * 0.3)}">WP</text></svg>`,
+      );
     }
   });
 

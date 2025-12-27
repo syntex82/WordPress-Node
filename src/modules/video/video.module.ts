@@ -12,4 +12,3 @@ import { FeatureGuard } from '../../common/guards/feature.guard';
   exports: [VideoService],
 })
 export class VideoModule {}
-

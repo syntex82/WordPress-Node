@@ -41,7 +41,14 @@ import { FeatureGuard } from '../../common/guards/feature.guard';
     CheckoutController,
     StorefrontController,
   ],
-  providers: [ProductsService, CategoriesService, CartService, OrdersService, StripeService, FeatureGuard],
+  providers: [
+    ProductsService,
+    CategoriesService,
+    CartService,
+    OrdersService,
+    StripeService,
+    FeatureGuard,
+  ],
   exports: [ProductsService, CategoriesService, CartService, OrdersService, StripeService],
 })
 export class ShopModule {}

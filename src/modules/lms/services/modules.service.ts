@@ -107,7 +107,7 @@ export class ModulesService {
    */
   async delete(id: string) {
     const module = await this.findOne(id);
-    
+
     // Unassign all lessons from this module
     await this.prisma.lesson.updateMany({
       where: { moduleId: id },
@@ -165,4 +165,3 @@ export class ModulesService {
     });
   }
 }
-

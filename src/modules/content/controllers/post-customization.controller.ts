@@ -70,10 +70,7 @@ export class PostCustomizationController {
    */
   @Put(':id')
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdatePostCustomizationDto,
-  ) {
+  async update(@Param('id') id: string, @Body() dto: UpdatePostCustomizationDto) {
     return this.postCustomizationService.update(id, dto);
   }
 
@@ -87,4 +84,3 @@ export class PostCustomizationController {
     await this.postCustomizationService.delete(id);
   }
 }
-

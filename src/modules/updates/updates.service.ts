@@ -5,7 +5,7 @@
 
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { VersionService, VersionInfo } from './version.service';
+import { VersionService } from './version.service';
 import { MigrationService } from './migration.service';
 import { BackupService } from '../backup/backup.service';
 import * as fs from 'fs';
@@ -54,7 +54,7 @@ export class UpdatesService {
   async getStatus() {
     const updateCheck = await this.versionService.isUpdateAvailable();
     const pendingMigrations = await this.migrationService.getPendingMigrations();
-    
+
     return {
       currentVersion: updateCheck.currentVersion,
       latestVersion: updateCheck.latestVersion,
@@ -72,7 +72,7 @@ export class UpdatesService {
   async checkForUpdates() {
     const updateCheck = await this.versionService.isUpdateAvailable();
     const availableUpdates = await this.versionService.getAvailableUpdates();
-    
+
     // Store latest version info if update available
     if (updateCheck.available && updateCheck.versionInfo) {
       await this.prisma.setting.upsert({
@@ -96,10 +96,12 @@ export class UpdatesService {
   /**
    * Download update package
    */
-  async downloadUpdate(version: string): Promise<{ success: boolean; filePath?: string; error?: string }> {
+  async downloadUpdate(
+    version: string,
+  ): Promise<{ success: boolean; filePath?: string; error?: string }> {
     const manifest = await this.versionService.fetchUpdateManifest();
-    const versionInfo = manifest?.versions.find(v => v.version === version);
-    
+    const versionInfo = manifest?.versions.find((v) => v.version === version);
+
     if (!versionInfo) {
       throw new BadRequestException(`Version ${version} not found`);
     }
@@ -127,7 +129,7 @@ export class UpdatesService {
 
     try {
       this.setProgress('downloading', 0, `Downloading version ${version}...`);
-      
+
       await this.downloadFile(versionInfo.downloadUrl, filePath, (progress) => {
         this.setProgress('downloading', progress, `Downloading: ${progress}%`);
       });
@@ -165,7 +167,10 @@ export class UpdatesService {
   /**
    * Apply a downloaded update
    */
-  async applyUpdate(version: string, userId?: string): Promise<{ success: boolean; message: string }> {
+  async applyUpdate(
+    version: string,
+    userId?: string,
+  ): Promise<{ success: boolean; message: string }> {
     if (this.updateInProgress) {
       throw new BadRequestException('An update is already in progress');
     }
@@ -196,15 +201,18 @@ export class UpdatesService {
         data: { status: 'BACKING_UP', initiatedBy: userId },
       });
 
-      const backup = await this.backupService.create({
-        name: `Pre-Update Backup v${version}`,
-        description: `Auto backup before updating to ${version}`,
-        type: 'FULL',
-        includesDatabase: true,
-        includesMedia: true,
-        includesThemes: true,
-        includesPlugins: true,
-      }, userId || 'system');
+      const backup = await this.backupService.create(
+        {
+          name: `Pre-Update Backup v${version}`,
+          description: `Auto backup before updating to ${version}`,
+          type: 'FULL',
+          includesDatabase: true,
+          includesMedia: true,
+          includesThemes: true,
+          includesPlugins: true,
+        },
+        userId || 'system',
+      );
 
       await this.prisma.updateHistory.update({
         where: { id: updateHistory!.id },
@@ -243,14 +251,14 @@ export class UpdatesService {
       await execAsync('npm install --production --quiet --no-progress', {
         cwd: process.cwd(),
         timeout: 300000,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
 
       this.setProgress('building', 85, 'Building application...');
       await execAsync('npm run build', {
         cwd: process.cwd(),
         timeout: 300000,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
 
       this.setProgress('verifying', 95, 'Verifying update...');
@@ -316,14 +324,14 @@ export class UpdatesService {
       await execAsync('npm install --production --quiet --no-progress', {
         cwd: process.cwd(),
         timeout: 300000,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
 
       this.setProgress('rolling_back', 90, 'Rebuilding...');
       await execAsync('npm run build', {
         cwd: process.cwd(),
         timeout: 300000,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
 
       await this.prisma.updateHistory.update({
@@ -332,7 +340,10 @@ export class UpdatesService {
       });
 
       this.setProgress('completed', 100, 'Rollback completed');
-      return { success: true, message: `Rolled back to ${updateHistory.fromVersion}. Restart server.` };
+      return {
+        success: true,
+        message: `Rolled back to ${updateHistory.fromVersion}. Restart server.`,
+      };
     } catch (error: any) {
       this.setProgress('failed', 0, `Rollback failed: ${error.message}`);
       throw error;
@@ -351,26 +362,40 @@ export class UpdatesService {
   }
 
   // Helper methods
-  private async downloadFile(url: string, dest: string, onProgress?: (p: number) => void): Promise<void> {
+  private async downloadFile(
+    url: string,
+    dest: string,
+    onProgress?: (p: number) => void,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       const file = fs.createWriteStream(dest);
       const protocol = url.startsWith('https') ? https : http;
 
-      protocol.get(url, { headers: { 'User-Agent': 'WordPress-Node-CMS' } }, (response) => {
-        if (response.statusCode === 302 || response.statusCode === 301) {
-          file.close();
-          fs.unlinkSync(dest);
-          return this.downloadFile(response.headers.location!, dest, onProgress).then(resolve).catch(reject);
-        }
-        const totalSize = parseInt(response.headers['content-length'] || '0', 10);
-        let downloaded = 0;
-        response.on('data', (chunk) => {
-          downloaded += chunk.length;
-          if (totalSize && onProgress) onProgress(Math.round((downloaded / totalSize) * 100));
+      protocol
+        .get(url, { headers: { 'User-Agent': 'WordPress-Node-CMS' } }, (response) => {
+          if (response.statusCode === 302 || response.statusCode === 301) {
+            file.close();
+            fs.unlinkSync(dest);
+            return this.downloadFile(response.headers.location!, dest, onProgress)
+              .then(resolve)
+              .catch(reject);
+          }
+          const totalSize = parseInt(response.headers['content-length'] || '0', 10);
+          let downloaded = 0;
+          response.on('data', (chunk) => {
+            downloaded += chunk.length;
+            if (totalSize && onProgress) onProgress(Math.round((downloaded / totalSize) * 100));
+          });
+          response.pipe(file);
+          file.on('finish', () => {
+            file.close();
+            resolve();
+          });
+        })
+        .on('error', (err) => {
+          fs.unlink(dest, () => {});
+          reject(err);
         });
-        response.pipe(file);
-        file.on('finish', () => { file.close(); resolve(); });
-      }).on('error', (err) => { fs.unlink(dest, () => {}); reject(err); });
     });
   }
 
@@ -378,7 +403,7 @@ export class UpdatesService {
     return new Promise((resolve, reject) => {
       const hash = createHash('sha256');
       const stream = fs.createReadStream(filePath);
-      stream.on('data', data => hash.update(data));
+      stream.on('data', (data) => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
     });
@@ -462,7 +487,13 @@ export class UpdatesService {
    * Pull latest changes from GitHub main branch and rebuild
    * This is for quick updates without waiting for official releases
    */
-  async pullLatest(userId?: string): Promise<{ success: boolean; message: string; fromVersion: string; toVersion: string; logs: string[] }> {
+  async pullLatest(userId?: string): Promise<{
+    success: boolean;
+    message: string;
+    fromVersion: string;
+    toVersion: string;
+    logs: string[];
+  }> {
     if (this.updateInProgress) {
       throw new BadRequestException('An update is already in progress');
     }
@@ -504,7 +535,10 @@ export class UpdatesService {
       if (fs.existsSync(envPath)) {
         fs.copyFileSync(envPath, path.join(backupDir, '.env'));
       }
-      fs.copyFileSync(path.join(process.cwd(), 'package.json'), path.join(backupDir, 'package.json'));
+      fs.copyFileSync(
+        path.join(process.cwd(), 'package.json'),
+        path.join(backupDir, 'package.json'),
+      );
       logs.push(`✓ Backup created at: ${backupDir}`);
 
       // Step 2: Git pull
@@ -533,13 +567,18 @@ export class UpdatesService {
       }
 
       // Pull latest
-      const pullResult = await execAsync('git pull origin main', { cwd: process.cwd(), timeout: 120000 });
+      const pullResult = await execAsync('git pull origin main', {
+        cwd: process.cwd(),
+        timeout: 120000,
+      });
       logs.push('✓ Code updated');
       logs.push(pullResult.stdout.trim());
 
       // Get new version
       try {
-        const pkgJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+        const pkgJson = JSON.parse(
+          fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'),
+        );
         newVersion = pkgJson.version || currentVersion;
         logs.push(`New version: ${newVersion}`);
       } catch {
@@ -555,10 +594,10 @@ export class UpdatesService {
       this.setProgress('installing', 30, 'Installing backend dependencies...');
       logs.push('Installing backend dependencies...');
 
-      const backendInstall = await execAsync('npm install --production=false --quiet --no-progress', {
+      await execAsync('npm install --production=false --quiet --no-progress', {
         cwd: process.cwd(),
         timeout: 300000,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
       logs.push('✓ Backend dependencies installed');
 
@@ -585,7 +624,7 @@ export class UpdatesService {
         cwd: adminDir,
         timeout: 300000,
         maxBuffer: 1024 * 1024 * 10, // 10MB buffer
-        env: { ...process.env, NODE_ENV: 'development' }
+        env: { ...process.env, NODE_ENV: 'development' },
       });
       logs.push('✓ Admin dependencies installed');
 
@@ -597,7 +636,7 @@ export class UpdatesService {
           cwd: adminDir,
           timeout: 120000,
           maxBuffer: 1024 * 1024 * 10, // 10MB buffer
-          env: { ...process.env, NODE_ENV: 'development' }
+          env: { ...process.env, NODE_ENV: 'development' },
         });
         logs.push('✓ Vite installed');
       }
@@ -614,7 +653,7 @@ export class UpdatesService {
       await execAsync('npm run build', {
         cwd: adminDir,
         timeout: 300000,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
 
       // Verify admin build
@@ -630,7 +669,7 @@ export class UpdatesService {
       await execAsync('npm run build', {
         cwd: process.cwd(),
         timeout: 300000,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
 
       // Verify backend build
@@ -650,7 +689,10 @@ export class UpdatesService {
 
       try {
         await execAsync('npx prisma generate', { cwd: process.cwd(), timeout: 120000 });
-        await execAsync('npx prisma db push --accept-data-loss', { cwd: process.cwd(), timeout: 300000 });
+        await execAsync('npx prisma db push --accept-data-loss', {
+          cwd: process.cwd(),
+          timeout: 300000,
+        });
         logs.push('✓ Database schema updated');
       } catch (migErr: any) {
         logs.push(`Warning: Migration had issues: ${migErr.message}`);

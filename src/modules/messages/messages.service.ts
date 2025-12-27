@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -115,7 +120,13 @@ export class MessagesService {
     conversationId: string,
     senderId: string,
     content: string,
-    media?: Array<{ url: string; type: 'image' | 'video'; filename: string; size: number; mimeType: string }>,
+    media?: Array<{
+      url: string;
+      type: 'image' | 'video';
+      filename: string;
+      size: number;
+      mimeType: string;
+    }>,
   ) {
     const conversation = await this.prisma.conversation.findFirst({
       where: {

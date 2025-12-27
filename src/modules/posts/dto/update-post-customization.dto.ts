@@ -19,4 +19,3 @@ export class UpdatePostCustomizationDto {
   featuredImagePosition?: string;
   customFields?: Record<string, any>;
 }
-

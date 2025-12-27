@@ -34,10 +34,7 @@ export class RecommendationsController {
    * GET /api/recommendations/pages/:pageId
    */
   @Get('pages/:pageId')
-  async getRelatedPages(
-    @Param('pageId') pageId: string,
-    @Query() query: GetRecommendationsDto,
-  ) {
+  async getRelatedPages(@Param('pageId') pageId: string, @Query() query: GetRecommendationsDto) {
     return this.recommendationsService.getRelatedPages(pageId, query.limit || 6);
   }
 
@@ -119,9 +116,12 @@ export class RecommendationsController {
   async trackInteraction(@Body() dto: TrackInteractionDto, @Req() req: Request) {
     const userId = (req as any).user?.id || dto.userId;
     // Ensure sessionId is a string or undefined, not an object
-    const sessionId: string | undefined = typeof dto.sessionId === 'string'
-      ? dto.sessionId
-      : (typeof req.sessionID === 'string' ? req.sessionID : undefined);
+    const sessionId: string | undefined =
+      typeof dto.sessionId === 'string'
+        ? dto.sessionId
+        : typeof req.sessionID === 'string'
+          ? req.sessionID
+          : undefined;
 
     return this.trackingService.trackInteraction({
       ...dto,
@@ -138,9 +138,12 @@ export class RecommendationsController {
   async trackClick(@Body() dto: TrackRecommendationClickDto, @Req() req: Request) {
     const userId = (req as any).user?.id || dto.userId;
     // Ensure sessionId is a string or undefined, not an object
-    const sessionId: string | undefined = typeof dto.sessionId === 'string'
-      ? dto.sessionId
-      : (typeof req.sessionID === 'string' ? req.sessionID : undefined);
+    const sessionId: string | undefined =
+      typeof dto.sessionId === 'string'
+        ? dto.sessionId
+        : typeof req.sessionID === 'string'
+          ? req.sessionID
+          : undefined;
 
     return this.trackingService.trackRecommendationClick({
       ...dto,
@@ -175,10 +178,7 @@ export class RecommendationsController {
     @Param('productId') productId: string,
     @Query() query: GetRecommendationsDto,
   ) {
-    return this.recommendationsService.getFrequentlyBoughtTogether(
-      productId,
-      query.limit || 4,
-    );
+    return this.recommendationsService.getFrequentlyBoughtTogether(productId, query.limit || 4);
   }
 
   /**
@@ -203,4 +203,3 @@ export class RecommendationsController {
     );
   }
 }
-

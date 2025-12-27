@@ -3,16 +3,7 @@
  * API endpoints for system updates
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  UseGuards,
-  Request,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -129,4 +120,3 @@ export class UpdatesController {
     return this.updatesService.pullLatest(req.user?.id);
   }
 }
-

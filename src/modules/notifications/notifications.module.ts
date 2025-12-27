@@ -16,4 +16,3 @@ import { PrismaModule } from '../../database/prisma.module';
   exports: [NotificationsService],
 })
 export class NotificationsModule {}
-

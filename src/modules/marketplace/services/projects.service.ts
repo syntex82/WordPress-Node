@@ -3,11 +3,22 @@
  * Handles project management between clients and developers
  */
 
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { SystemConfigService } from '../../settings/system-config.service';
-import { CreateProjectDto, UpdateProjectDto, ProjectStatus, LogHoursDto, CreateProjectReviewDto } from '../dto';
+import {
+  CreateProjectDto,
+  UpdateProjectDto,
+  ProjectStatus,
+  LogHoursDto,
+  CreateProjectReviewDto,
+} from '../dto';
 import { DevelopersService } from './developers.service';
 
 @Injectable()
@@ -74,7 +85,8 @@ export class ProjectsService {
       include: { developer: true },
     });
     if (!request) throw new NotFoundException('Hiring request not found');
-    if (request.status !== 'ACCEPTED') throw new BadRequestException('Request must be accepted first');
+    if (request.status !== 'ACCEPTED')
+      throw new BadRequestException('Request must be accepted first');
     if (request.projectId) throw new BadRequestException('Project already created');
 
     // Get platform fee from system config (default 10%)
@@ -116,13 +128,15 @@ export class ProjectsService {
       where: { id },
       include: {
         client: { select: { id: true, name: true, email: true, avatar: true } },
-        developer: { include: { user: { select: { id: true, name: true, email: true, avatar: true } } } },
+        developer: {
+          include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+        },
         transactions: { orderBy: { createdAt: 'desc' } },
         messages: { orderBy: { createdAt: 'desc' }, take: 50 },
       },
     });
     if (!project) throw new NotFoundException('Project not found');
-    
+
     if (!isAdmin && project.clientId !== userId && project.developer.userId !== userId) {
       throw new ForbiddenException('Not authorized');
     }
@@ -139,7 +153,7 @@ export class ProjectsService {
       include: { developer: true },
     });
     if (!project) throw new NotFoundException('Project not found');
-    
+
     const isClient = project.clientId === userId;
     const isDeveloper = project.developer.userId === userId;
     if (!isAdmin && !isClient && !isDeveloper) throw new ForbiddenException('Not authorized');
@@ -167,7 +181,8 @@ export class ProjectsService {
       include: { developer: true },
     });
     if (!project) throw new NotFoundException('Project not found');
-    if (project.developer.userId !== userId) throw new ForbiddenException('Only developer can log hours');
+    if (project.developer.userId !== userId)
+      throw new ForbiddenException('Only developer can log hours');
     if (project.budgetType !== 'hourly') throw new BadRequestException('Not an hourly project');
 
     return this.prisma.project.update({
@@ -185,7 +200,8 @@ export class ProjectsService {
       include: { developer: true },
     });
     if (!project) throw new NotFoundException('Project not found');
-    if (!isAdmin && project.clientId !== userId) throw new ForbiddenException('Only client can complete');
+    if (!isAdmin && project.clientId !== userId)
+      throw new ForbiddenException('Only client can complete');
     if (project.status !== 'ACTIVE') throw new BadRequestException('Project is not active');
 
     return this.prisma.project.update({
@@ -241,11 +257,15 @@ export class ProjectsService {
   /**
    * List projects for user
    */
-  async findForUser(userId: string, role: 'client' | 'developer', filters: {
-    status?: ProjectStatus;
-    page?: number;
-    limit?: number;
-  }) {
+  async findForUser(
+    userId: string,
+    role: 'client' | 'developer',
+    filters: {
+      status?: ProjectStatus;
+      page?: number;
+      limit?: number;
+    },
+  ) {
     const { status, page = 1, limit = 10 } = filters;
 
     const where: any = {};
@@ -322,4 +342,3 @@ export class ProjectsService {
     };
   }
 }
-

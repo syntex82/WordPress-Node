@@ -16,4 +16,3 @@ export class CreatePageCustomizationDto {
   featuredImagePosition?: string; // 'top', 'background', 'hidden'
   customFields?: Record<string, any>;
 }
-

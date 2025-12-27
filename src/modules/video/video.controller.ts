@@ -1,17 +1,11 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FeatureGuard } from '../../common/guards/feature.guard';
-import { RequiresFeature, SUBSCRIPTION_FEATURES } from '../../common/decorators/subscription.decorator';
+import {
+  RequiresFeature,
+  SUBSCRIPTION_FEATURES,
+} from '../../common/decorators/subscription.decorator';
 
 interface CreateRoomDto {
   roomName?: string;
@@ -30,7 +24,7 @@ export class VideoController {
    * Create a video room for 1-to-1 chat
    */
   @Post('room/chat/:conversationId')
-  async createChatRoom(@Param('conversationId') conversationId: string, @Req() req: any) {
+  async createChatRoom(@Param('conversationId') conversationId: string, @Req() _req: any) {
     const roomName = `chat-${conversationId.substring(0, 8)}`;
     const room = await this.videoService.createRoom({
       roomName,
@@ -50,7 +44,7 @@ export class VideoController {
    * Create a video room for group call
    */
   @Post('room/group/:groupId')
-  async createGroupRoom(@Param('groupId') groupId: string, @Req() req: any) {
+  async createGroupRoom(@Param('groupId') groupId: string, @Req() _req: any) {
     const roomName = `group-${groupId.substring(0, 8)}`;
     const room = await this.videoService.createRoom({ roomName });
     const embedInfo = this.videoService.getEmbedInfo(room.roomName);
@@ -67,7 +61,7 @@ export class VideoController {
    * Create a new video room for a call (generic)
    */
   @Post('room')
-  async createRoom(@Body() dto: CreateRoomDto, @Req() req: any) {
+  async createRoom(@Body() dto: CreateRoomDto, @Req() _req: any) {
     const room = await this.videoService.createRoom({
       roomName: dto.roomName,
       privacy: dto.privacy,
@@ -146,4 +140,3 @@ export class VideoController {
     };
   }
 }
-

@@ -67,4 +67,3 @@ export class BulkMoveLessonsDto {
   @IsUUID()
   moduleId?: string;
 }
-

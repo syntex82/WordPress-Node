@@ -27,7 +27,12 @@ export class MarketplacePaymentsService {
   /**
    * Create escrow deposit (client pays into escrow)
    */
-  async createEscrowDeposit(projectId: string, clientId: string, amount: number, paymentMethodId?: string) {
+  async createEscrowDeposit(
+    projectId: string,
+    clientId: string,
+    amount: number,
+    paymentMethodId?: string,
+  ) {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       include: { developer: true },
@@ -84,7 +89,7 @@ export class MarketplacePaymentsService {
   /**
    * Release escrow to developer
    */
-  async releaseEscrow(projectId: string, amount: number, adminId: string) {
+  async releaseEscrow(projectId: string, amount: number, _adminId: string) {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       include: { developer: true },
@@ -214,7 +219,13 @@ export class MarketplacePaymentsService {
   /**
    * Create dispute
    */
-  async createDispute(projectId: string, initiatorId: string, initiatorType: string, reason: string, description: string) {
+  async createDispute(
+    projectId: string,
+    initiatorId: string,
+    initiatorType: string,
+    reason: string,
+    description: string,
+  ) {
     const project = await this.prisma.project.findUnique({ where: { id: projectId } });
     if (!project) throw new NotFoundException('Project not found');
 
@@ -234,7 +245,13 @@ export class MarketplacePaymentsService {
   /**
    * Resolve dispute (Admin)
    */
-  async resolveDispute(disputeId: string, adminId: string, resolution: string, notes: string, refundAmount?: number) {
+  async resolveDispute(
+    disputeId: string,
+    adminId: string,
+    resolution: string,
+    notes: string,
+    refundAmount?: number,
+  ) {
     const dispute = await this.prisma.projectDispute.findUnique({
       where: { id: disputeId },
       include: { project: { include: { developer: true } } },
@@ -249,7 +266,10 @@ export class MarketplacePaymentsService {
           type: 'DISPUTE_RESOLUTION',
           amount: refundAmount,
           status: 'COMPLETED',
-          toUserId: resolution === 'RESOLVED_CLIENT' ? dispute.project.clientId : dispute.project.developer.userId,
+          toUserId:
+            resolution === 'RESOLVED_CLIENT'
+              ? dispute.project.clientId
+              : dispute.project.developer.userId,
           processedAt: new Date(),
         },
       });
@@ -257,7 +277,13 @@ export class MarketplacePaymentsService {
 
     return this.prisma.projectDispute.update({
       where: { id: disputeId },
-      data: { status: resolution as any, resolution: notes, resolvedById: adminId, resolvedAt: new Date(), refundAmount },
+      data: {
+        status: resolution as any,
+        resolution: notes,
+        resolvedById: adminId,
+        resolvedAt: new Date(),
+        refundAmount,
+      },
     });
   }
 
@@ -285,20 +311,21 @@ export class MarketplacePaymentsService {
    * Get financial statistics (Admin)
    */
   async getFinancialStatistics() {
-    const [totalTransactions, totalEscrow, totalPaid, totalFees, pendingPayouts] = await Promise.all([
-      this.prisma.marketplaceTransaction.count(),
-      this.prisma.project.aggregate({ _sum: { amountInEscrow: true } }),
-      this.prisma.project.aggregate({ _sum: { amountPaid: true } }),
-      this.prisma.marketplaceTransaction.aggregate({
-        where: { type: 'PLATFORM_FEE' },
-        _sum: { amount: true },
-      }),
-      this.prisma.developerPayout.aggregate({
-        where: { status: 'PENDING' },
-        _sum: { amount: true },
-        _count: true,
-      }),
-    ]);
+    const [totalTransactions, totalEscrow, totalPaid, totalFees, pendingPayouts] =
+      await Promise.all([
+        this.prisma.marketplaceTransaction.count(),
+        this.prisma.project.aggregate({ _sum: { amountInEscrow: true } }),
+        this.prisma.project.aggregate({ _sum: { amountPaid: true } }),
+        this.prisma.marketplaceTransaction.aggregate({
+          where: { type: 'PLATFORM_FEE' },
+          _sum: { amount: true },
+        }),
+        this.prisma.developerPayout.aggregate({
+          where: { status: 'PENDING' },
+          _sum: { amount: true },
+          _count: true,
+        }),
+      ]);
 
     return {
       totalTransactions,
@@ -312,4 +339,3 @@ export class MarketplacePaymentsService {
     };
   }
 }
-

@@ -24,29 +24,27 @@ export class EncryptionService implements OnModuleInit {
   private initializeKey() {
     // Use ENCRYPTION_KEY from env, or derive from JWT_SECRET as fallback
     let keySource = this.configService.get<string>('ENCRYPTION_KEY');
-    
+
     if (!keySource) {
       keySource = this.configService.get<string>('JWT_SECRET');
       if (keySource) {
-        this.logger.warn('ENCRYPTION_KEY not set, deriving from JWT_SECRET. Set ENCRYPTION_KEY for production.');
+        this.logger.warn(
+          'ENCRYPTION_KEY not set, deriving from JWT_SECRET. Set ENCRYPTION_KEY for production.',
+        );
       }
     }
 
     if (!keySource) {
       // Generate a random key for development (not persistent!)
-      this.logger.error('No encryption key available! Using random key - data will not persist across restarts!');
+      this.logger.error(
+        'No encryption key available! Using random key - data will not persist across restarts!',
+      );
       this.encryptionKey = crypto.randomBytes(32);
       return;
     }
 
     // Derive a 256-bit key using PBKDF2
-    this.encryptionKey = crypto.pbkdf2Sync(
-      keySource,
-      'wordpress-node-salt',
-      100000,
-      32,
-      'sha256'
-    );
+    this.encryptionKey = crypto.pbkdf2Sync(keySource, 'wordpress-node-salt', 100000, 32, 'sha256');
     this.logger.log('Encryption service initialized');
   }
 
@@ -56,15 +54,15 @@ export class EncryptionService implements OnModuleInit {
    */
   encrypt(plaintext: string): string {
     if (!plaintext) return '';
-    
+
     const iv = crypto.randomBytes(this.ivLength);
     const cipher = crypto.createCipheriv(this.algorithm, this.encryptionKey, iv);
-    
+
     let encrypted = cipher.update(plaintext, 'utf8', 'base64');
     encrypted += cipher.final('base64');
-    
+
     const authTag = cipher.getAuthTag();
-    
+
     // Format: iv:authTag:encryptedData (all base64)
     return `${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted}`;
   }
@@ -75,7 +73,7 @@ export class EncryptionService implements OnModuleInit {
    */
   decrypt(ciphertext: string): string {
     if (!ciphertext) return '';
-    
+
     try {
       const parts = ciphertext.split(':');
       if (parts.length !== 3) {
@@ -88,13 +86,15 @@ export class EncryptionService implements OnModuleInit {
 
       const decipher = crypto.createDecipheriv(this.algorithm, this.encryptionKey, iv);
       decipher.setAuthTag(authTag);
-      
+
       let decrypted = decipher.update(encrypted, 'base64', 'utf8');
       decrypted += decipher.final('utf8');
-      
+
       return decrypted;
     } catch (error) {
-      this.logger.error(`Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       throw new Error('Failed to decrypt value');
     }
   }
@@ -113,4 +113,3 @@ export class EncryptionService implements OnModuleInit {
     return crypto.createHash('sha256').update(value).digest('hex');
   }
 }
-

@@ -105,4 +105,3 @@ export class UpdateThemeCustomizationImageDto {
   @IsOptional()
   customData?: Record<string, any>;
 }
-

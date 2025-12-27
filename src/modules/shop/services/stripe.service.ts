@@ -3,7 +3,13 @@
  * Handles Stripe payment integration
  * Reads configuration from database first, falls back to environment variables
  */
-import { Injectable, BadRequestException, NotFoundException, OnModuleInit, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  OnModuleInit,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../database/prisma.service';
 import { SystemConfigService } from '../../settings/system-config.service';
@@ -34,11 +40,13 @@ export class StripeService implements OnModuleInit {
 
       if (secretKey) {
         this.stripe = new Stripe(secretKey);
-        this.logger.log(`Stripe initialized: ${secretKey.substring(0, 10)}... (${config.isLiveMode ? 'LIVE' : 'TEST'} mode)`);
+        this.logger.log(
+          `Stripe initialized: ${secretKey.substring(0, 10)}... (${config.isLiveMode ? 'LIVE' : 'TEST'} mode)`,
+        );
       } else {
         this.logger.warn('Stripe secret key not configured');
       }
-    } catch (error) {
+    } catch (_error) {
       // Database not ready yet, try env fallback
       const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
       if (secretKey) {

@@ -100,9 +100,7 @@ export class VideoService {
 
     try {
       const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.apiBase}/room/${roomName}?secretKey=${this.meteredSecretKey}`,
-        ),
+        this.httpService.get(`${this.apiBase}/room/${roomName}?secretKey=${this.meteredSecretKey}`),
       );
       const data = response.data as any;
       return {
@@ -186,10 +184,7 @@ export class VideoService {
   async getTurnCredentials(): Promise<any[]> {
     if (!this.meteredSecretKey) {
       this.logger.warn('METERED_SECRET_KEY not configured, using fallback STUN');
-      return [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-      ];
+      return [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }];
     }
 
     try {
@@ -203,10 +198,7 @@ export class VideoService {
     } catch (error: any) {
       this.logger.error('Failed to get TURN credentials:', error.response?.data || error.message);
       // Return free STUN servers as fallback
-      return [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-      ];
+      return [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }];
     }
   }
 
@@ -229,4 +221,3 @@ export class VideoService {
     return result;
   }
 }
-

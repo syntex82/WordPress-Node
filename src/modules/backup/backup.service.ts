@@ -54,7 +54,7 @@ export class BackupService {
     });
 
     // Start backup process asynchronously
-    this.runBackup(backup.id).catch(err => {
+    this.runBackup(backup.id).catch((err) => {
       this.logger.error(`Backup ${backup.id} failed: ${err.message}`);
     });
 
@@ -95,7 +95,10 @@ export class BackupService {
           const dbData = this.exportDatabaseSync();
           archive.append(JSON.stringify(dbData, null, 2), { name: 'database.json' });
           tablesCount = Object.keys(dbData).length;
-          recordsCount = Object.values(dbData).reduce((sum: number, arr: any[]) => sum + arr.length, 0);
+          recordsCount = Object.values(dbData).reduce(
+            (sum: number, arr: any[]) => sum + arr.length,
+            0,
+          );
         }
 
         // Add media files
@@ -176,7 +179,9 @@ export class BackupService {
     const data: Record<string, any[]> = {};
 
     // Export core tables
-    data.users = await this.prisma.user.findMany({ select: { id: true, email: true, name: true, role: true, createdAt: true } });
+    data.users = await this.prisma.user.findMany({
+      select: { id: true, email: true, name: true, role: true, createdAt: true },
+    });
     data.posts = await this.prisma.post.findMany();
     data.pages = await this.prisma.page.findMany();
     data.media = await this.prisma.media.findMany();
@@ -202,7 +207,9 @@ export class BackupService {
           count++;
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return count;
   }
 
@@ -213,7 +220,7 @@ export class BackupService {
     return new Promise((resolve, reject) => {
       const hash = createHash('md5');
       const stream = fs.createReadStream(filePath);
-      stream.on('data', data => hash.update(data));
+      stream.on('data', (data) => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
     });
@@ -222,7 +229,9 @@ export class BackupService {
   /**
    * List all backups
    */
-  async findAll(query: { page?: number; limit?: number; status?: BackupStatus; type?: BackupType } = {}) {
+  async findAll(
+    query: { page?: number; limit?: number; status?: BackupStatus; type?: BackupType } = {},
+  ) {
     const { page = 1, limit = 20, status, type } = query;
     const skip = (page - 1) * limit;
 
@@ -242,7 +251,7 @@ export class BackupService {
     ]);
 
     return {
-      data: backups.map(b => ({
+      data: backups.map((b) => ({
         ...b,
         fileSize: b.fileSize ? Number(b.fileSize) : null,
       })),
@@ -313,7 +322,15 @@ export class BackupService {
   /**
    * Restore from a backup
    */
-  async restore(id: string, options: { restoreDatabase?: boolean; restoreMedia?: boolean; restoreThemes?: boolean; restorePlugins?: boolean } = {}) {
+  async restore(
+    id: string,
+    options: {
+      restoreDatabase?: boolean;
+      restoreMedia?: boolean;
+      restoreThemes?: boolean;
+      restorePlugins?: boolean;
+    } = {},
+  ) {
     const backup = await this.prisma.backup.findUnique({ where: { id } });
     if (!backup) {
       throw new BadRequestException('Backup not found');
@@ -344,7 +361,7 @@ export class BackupService {
 
       // Restore database
       if (restoreDatabase) {
-        const dbEntry = zipEntries.find(e => e.entryName === 'database.json');
+        const dbEntry = zipEntries.find((e) => e.entryName === 'database.json');
         if (dbEntry) {
           const dbData = JSON.parse(dbEntry.getData().toString('utf8'));
           results.database = await this.restoreDatabase(dbData);
@@ -353,7 +370,7 @@ export class BackupService {
 
       // Restore media files
       if (restoreMedia) {
-        const mediaEntries = zipEntries.filter(e => e.entryName.startsWith('uploads/'));
+        const mediaEntries = zipEntries.filter((e) => e.entryName.startsWith('uploads/'));
         if (mediaEntries.length > 0) {
           const uploadsDir = path.join(process.cwd(), 'uploads');
           if (!fs.existsSync(uploadsDir)) {
@@ -369,13 +386,13 @@ export class BackupService {
               fs.writeFileSync(targetPath, entry.getData());
             }
           }
-          results.media = { filesRestored: mediaEntries.filter(e => !e.isDirectory).length };
+          results.media = { filesRestored: mediaEntries.filter((e) => !e.isDirectory).length };
         }
       }
 
       // Restore themes
       if (restoreThemes) {
-        const themeEntries = zipEntries.filter(e => e.entryName.startsWith('themes/'));
+        const themeEntries = zipEntries.filter((e) => e.entryName.startsWith('themes/'));
         if (themeEntries.length > 0) {
           for (const entry of themeEntries) {
             if (!entry.isDirectory) {
@@ -387,13 +404,13 @@ export class BackupService {
               fs.writeFileSync(targetPath, entry.getData());
             }
           }
-          results.themes = { filesRestored: themeEntries.filter(e => !e.isDirectory).length };
+          results.themes = { filesRestored: themeEntries.filter((e) => !e.isDirectory).length };
         }
       }
 
       // Restore plugins
       if (restorePlugins) {
-        const pluginEntries = zipEntries.filter(e => e.entryName.startsWith('plugins/'));
+        const pluginEntries = zipEntries.filter((e) => e.entryName.startsWith('plugins/'));
         if (pluginEntries.length > 0) {
           for (const entry of pluginEntries) {
             if (!entry.isDirectory) {
@@ -405,7 +422,7 @@ export class BackupService {
               fs.writeFileSync(targetPath, entry.getData());
             }
           }
-          results.plugins = { filesRestored: pluginEntries.filter(e => !e.isDirectory).length };
+          results.plugins = { filesRestored: pluginEntries.filter((e) => !e.isDirectory).length };
         }
       }
 
@@ -444,7 +461,9 @@ export class BackupService {
             create: post,
             update: post,
           });
-        } catch { /* skip if conflict */ }
+        } catch {
+          /* skip if conflict */
+        }
       }
       results.posts = data.posts.length;
     }
@@ -458,7 +477,9 @@ export class BackupService {
             create: page,
             update: page,
           });
-        } catch { /* skip if conflict */ }
+        } catch {
+          /* skip if conflict */
+        }
       }
       results.pages = data.pages.length;
     }
@@ -483,7 +504,9 @@ export class BackupService {
               });
             }
           }
-        } catch { /* skip if conflict */ }
+        } catch {
+          /* skip if conflict */
+        }
       }
       results.menus = data.menus.length;
     }
@@ -491,4 +514,3 @@ export class BackupService {
     return results;
   }
 }
-

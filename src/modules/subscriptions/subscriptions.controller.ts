@@ -60,10 +60,7 @@ export class SubscriptionsController {
 
   @Post('checkout')
   @UseGuards(JwtAuthGuard)
-  async createCheckout(
-    @Req() req: Request,
-    @Body() dto: CreateCheckoutDto,
-  ) {
+  async createCheckout(@Req() req: Request, @Body() dto: CreateCheckoutDto) {
     const userId = (req.user as any).id;
     return this.subscriptionsService.createCheckoutSession(userId, dto);
   }
@@ -134,4 +131,3 @@ export class SubscriptionsController {
     return this.subscriptionsService.activateAllPlans();
   }
 }
-

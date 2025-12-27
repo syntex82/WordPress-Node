@@ -20,4 +20,3 @@ export class CreatePostCustomizationDto {
   featuredImagePosition?: string; // 'top', 'background', 'hidden'
   customFields?: Record<string, any>;
 }
-

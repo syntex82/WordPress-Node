@@ -77,11 +77,7 @@ export class RecommendationTrackingService {
   /**
    * Get user's recent interactions
    */
-  async getUserInteractions(
-    userId: string,
-    contentType?: string,
-    limit = 50,
-  ): Promise<any[]> {
+  async getUserInteractions(userId: string, contentType?: string, limit = 50): Promise<any[]> {
     const where: any = { userId };
     if (contentType) {
       where.contentType = contentType;
@@ -117,7 +113,7 @@ export class RecommendationTrackingService {
     });
 
     const breakdown: Record<string, number> = {};
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       breakdown[i.interactionType] = i._count.interactionType;
     });
     return breakdown;
@@ -157,4 +153,3 @@ export class RecommendationTrackingService {
     return result.count;
   }
 }
-

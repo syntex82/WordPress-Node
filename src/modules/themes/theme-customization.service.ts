@@ -1,8 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { CreateThemeCustomizationImageDto, UpdateThemeCustomizationImageDto } from './dto/create-theme-customization-image.dto';
-import { CreateThemeCustomizationBlockDto, UpdateThemeCustomizationBlockDto } from './dto/create-theme-customization-block.dto';
-import { CreateThemeCustomizationLinkDto, UpdateThemeCustomizationLinkDto } from './dto/create-theme-customization-link.dto';
+import {
+  CreateThemeCustomizationImageDto,
+  UpdateThemeCustomizationImageDto,
+} from './dto/create-theme-customization-image.dto';
+import {
+  CreateThemeCustomizationBlockDto,
+  UpdateThemeCustomizationBlockDto,
+} from './dto/create-theme-customization-block.dto';
+import {
+  CreateThemeCustomizationLinkDto,
+  UpdateThemeCustomizationLinkDto,
+} from './dto/create-theme-customization-link.dto';
 
 @Injectable()
 export class ThemeCustomizationService {
@@ -42,7 +51,7 @@ export class ThemeCustomizationService {
   }
 
   async updateImage(id: string, dto: UpdateThemeCustomizationImageDto) {
-    const image = await this.getImage(id);
+    await this.getImage(id); // Validate exists
     return this.prisma.themeCustomizationImage.update({
       where: { id },
       data: dto,
@@ -59,7 +68,7 @@ export class ThemeCustomizationService {
       this.prisma.themeCustomizationImage.update({
         where: { id },
         data: { position: index },
-      })
+      }),
     );
     return Promise.all(updates);
   }
@@ -112,7 +121,7 @@ export class ThemeCustomizationService {
       this.prisma.themeCustomizationBlock.update({
         where: { id },
         data: { position: index },
-      })
+      }),
     );
     return Promise.all(updates);
   }
@@ -166,9 +175,8 @@ export class ThemeCustomizationService {
       this.prisma.themeCustomizationLink.update({
         where: { id },
         data: { position: index },
-      })
+      }),
     );
     return Promise.all(updates);
   }
 }
-

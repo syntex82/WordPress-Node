@@ -3,7 +3,7 @@
  * Data transfer objects for developer profiles
  */
 
-import { IsString, IsEnum, IsNumber, IsOptional, IsArray, IsBoolean, Min, Max, IsUrl, IsUUID } from 'class-validator';
+import { IsString, IsEnum, IsNumber, IsOptional, IsArray, Min, Max, IsUrl } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum DeveloperStatus {
@@ -181,4 +181,3 @@ export class UpdateDeveloperDto {
   @IsOptional()
   timezone?: string;
 }
-

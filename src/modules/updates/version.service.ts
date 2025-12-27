@@ -35,11 +35,12 @@ export interface UpdateManifest {
 @Injectable()
 export class VersionService {
   private readonly logger = new Logger(VersionService.name);
-  
+
   // Update server configuration - can be overridden via settings
-  private readonly DEFAULT_UPDATE_SERVER = 'https://api.github.com/repos/syntex82/WordPress-Node/releases';
+  private readonly DEFAULT_UPDATE_SERVER =
+    'https://api.github.com/repos/syntex82/WordPress-Node/releases';
   private readonly MANIFEST_CACHE_DURATION = 3600000; // 1 hour in ms
-  
+
   private manifestCache: UpdateManifest | null = null;
   private manifestCacheTime: number = 0;
 
@@ -64,9 +65,15 @@ export class VersionService {
    * Returns: -1 if v1 < v2, 0 if equal, 1 if v1 > v2
    */
   compareVersions(v1: string, v2: string): number {
-    const parts1 = v1.replace(/[^0-9.]/g, '').split('.').map(Number);
-    const parts2 = v2.replace(/[^0-9.]/g, '').split('.').map(Number);
-    
+    const parts1 = v1
+      .replace(/[^0-9.]/g, '')
+      .split('.')
+      .map(Number);
+    const parts2 = v2
+      .replace(/[^0-9.]/g, '')
+      .split('.')
+      .map(Number);
+
     for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
       const p1 = parts1[i] || 0;
       const p2 = parts2[i] || 0;
@@ -79,19 +86,24 @@ export class VersionService {
   /**
    * Check if an update is available
    */
-  async isUpdateAvailable(): Promise<{ available: boolean; currentVersion: string; latestVersion: string; versionInfo?: VersionInfo }> {
+  async isUpdateAvailable(): Promise<{
+    available: boolean;
+    currentVersion: string;
+    latestVersion: string;
+    versionInfo?: VersionInfo;
+  }> {
     const currentVersion = this.getCurrentVersion();
     const manifest = await this.fetchUpdateManifest();
-    
+
     if (!manifest) {
       return { available: false, currentVersion, latestVersion: currentVersion };
     }
 
     const latestVersion = manifest.latestStable || manifest.latestVersion;
     const available = this.compareVersions(currentVersion, latestVersion) < 0;
-    
-    const versionInfo = manifest.versions.find(v => v.version === latestVersion);
-    
+
+    const versionInfo = manifest.versions.find((v) => v.version === latestVersion);
+
     return { available, currentVersion, latestVersion, versionInfo };
   }
 
@@ -101,11 +113,11 @@ export class VersionService {
   async getAvailableUpdates(): Promise<VersionInfo[]> {
     const currentVersion = this.getCurrentVersion();
     const manifest = await this.fetchUpdateManifest();
-    
+
     if (!manifest) return [];
-    
+
     return manifest.versions
-      .filter(v => this.compareVersions(currentVersion, v.version) < 0)
+      .filter((v) => this.compareVersions(currentVersion, v.version) < 0)
       .sort((a, b) => this.compareVersions(b.version, a.version));
   }
 
@@ -123,17 +135,17 @@ export class VersionService {
       const updateServerSetting = await this.prisma.setting.findUnique({
         where: { key: 'update_server_url' },
       });
-      
-      const updateServerUrl = updateServerSetting?.value as string || this.DEFAULT_UPDATE_SERVER;
-      
+
+      const updateServerUrl = (updateServerSetting?.value as string) || this.DEFAULT_UPDATE_SERVER;
+
       // Fetch from GitHub releases API or custom manifest
       const manifest = await this.fetchFromGitHub(updateServerUrl);
-      
+
       if (manifest) {
         this.manifestCache = manifest;
         this.manifestCacheTime = Date.now();
       }
-      
+
       return manifest;
     } catch (error) {
       this.logger.error('Failed to fetch update manifest', error);
@@ -149,24 +161,28 @@ export class VersionService {
       const options = {
         headers: {
           'User-Agent': 'WordPress-Node-CMS',
-          'Accept': 'application/vnd.github.v3+json',
+          Accept: 'application/vnd.github.v3+json',
         },
       };
 
-      https.get(url, options, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          try {
-            const releases = JSON.parse(data);
-            if (!Array.isArray(releases)) {
+      https
+        .get(url, options, (res) => {
+          let data = '';
+          res.on('data', (chunk) => (data += chunk));
+          res.on('end', () => {
+            try {
+              const releases = JSON.parse(data);
+              if (!Array.isArray(releases)) {
+                resolve(null);
+                return;
+              }
+              resolve(this.parseGitHubReleases(releases));
+            } catch {
               resolve(null);
-              return;
             }
-            resolve(this.parseGitHubReleases(releases));
-          } catch { resolve(null); }
-        });
-      }).on('error', () => resolve(null));
+          });
+        })
+        .on('error', () => resolve(null));
     });
   }
 
@@ -175,17 +191,17 @@ export class VersionService {
    */
   private parseGitHubReleases(releases: any[]): UpdateManifest {
     const versions: VersionInfo[] = releases
-      .filter(r => !r.draft)
-      .map(release => {
+      .filter((r) => !r.draft)
+      .map((release) => {
         // Prefer .tar.gz, then .zip, then zipball_url
-        const tarAsset = release.assets?.find((a: any) =>
-          a.name.endsWith('.tar.gz') && !a.name.endsWith('.sha256')
+        const tarAsset = release.assets?.find(
+          (a: any) => a.name.endsWith('.tar.gz') && !a.name.endsWith('.sha256'),
         );
-        const zipAsset = release.assets?.find((a: any) =>
-          a.name.endsWith('.zip') && !a.name.endsWith('.sha256')
+        const zipAsset = release.assets?.find(
+          (a: any) => a.name.endsWith('.zip') && !a.name.endsWith('.sha256'),
         );
-        const checksumAsset = release.assets?.find((a: any) =>
-          a.name.endsWith('.tar.gz.sha256') || a.name.endsWith('.zip.sha256')
+        const checksumAsset = release.assets?.find(
+          (a: any) => a.name.endsWith('.tar.gz.sha256') || a.name.endsWith('.zip.sha256'),
         );
 
         const asset = tarAsset || zipAsset;
@@ -206,7 +222,7 @@ export class VersionService {
         };
       });
 
-    const stableVersions = versions.filter(v => !v.version.includes('-'));
+    const stableVersions = versions.filter((v) => !v.version.includes('-'));
 
     return {
       latestVersion: versions[0]?.version || '1.0.0',
@@ -263,7 +279,7 @@ export class VersionService {
 
     const nodeVersion = process.version.replace('v', '');
     const manifest = await this.fetchUpdateManifest();
-    const versionInfo = manifest?.versions.find(v => v.version === targetVersion);
+    const versionInfo = manifest?.versions.find((v) => v.version === targetVersion);
 
     if (versionInfo?.minNodeVersion) {
       if (this.compareVersions(nodeVersion, versionInfo.minNodeVersion) < 0) {
@@ -277,7 +293,9 @@ export class VersionService {
       if (freeSpaceGB < 0.5) {
         issues.push(`Insufficient disk space. At least 500MB required.`);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     if (versionInfo?.breakingChanges) {
       warnings.push('This version contains breaking changes.');

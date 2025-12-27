@@ -38,11 +38,7 @@ export class RecommendationsService {
    * Get related posts for a given post
    * @param userId - If provided, filters out posts the user has already viewed
    */
-  async getRelatedPosts(
-    postId: string,
-    limit = 6,
-    userId?: string,
-  ): Promise<RecommendationResult> {
+  async getRelatedPosts(postId: string, limit = 6, userId?: string): Promise<RecommendationResult> {
     try {
       // Check cache first (only use cache for anonymous users)
       if (!userId) {
@@ -77,8 +73,8 @@ export class RecommendationsService {
           select: { contentId: true },
           take: 100,
         });
-        const viewedIds = new Set(viewedPosts.map(v => v.contentId));
-        items = items.filter(item => !viewedIds.has(item.id)).slice(0, limit);
+        const viewedIds = new Set(viewedPosts.map((v) => v.contentId));
+        items = items.filter((item) => !viewedIds.has(item.id)).slice(0, limit);
       }
 
       // Cache the results (only for anonymous users)
@@ -102,10 +98,7 @@ export class RecommendationsService {
   /**
    * Get related pages for a given page
    */
-  async getRelatedPages(
-    pageId: string,
-    limit = 6,
-  ): Promise<RecommendationResult> {
+  async getRelatedPages(pageId: string, limit = 6): Promise<RecommendationResult> {
     try {
       const cached = await this.getCachedRecommendations('page', pageId, 'page', 'related');
       if (cached) {
@@ -152,7 +145,12 @@ export class RecommendationsService {
     try {
       // Check cache first (only use cache for anonymous users)
       if (!userId) {
-        const cached = await this.getCachedRecommendations('product', productId, 'product', 'related');
+        const cached = await this.getCachedRecommendations(
+          'product',
+          productId,
+          'product',
+          'related',
+        );
         if (cached) {
           return { ...cached, cached: true };
         }
@@ -182,8 +180,8 @@ export class RecommendationsService {
           select: { contentId: true },
           take: 100,
         });
-        const viewedIds = new Set(viewedProducts.map(v => v.contentId));
-        items = items.filter(item => !viewedIds.has(item.id)).slice(0, limit);
+        const viewedIds = new Set(viewedProducts.map((v) => v.contentId));
+        items = items.filter((item) => !viewedIds.has(item.id)).slice(0, limit);
       }
 
       // Cache the results (only for anonymous users)
@@ -207,10 +205,7 @@ export class RecommendationsService {
   /**
    * Get related courses for a given course
    */
-  async getRelatedCourses(
-    courseId: string,
-    limit = 6,
-  ): Promise<RecommendationResult> {
+  async getRelatedCourses(courseId: string, limit = 6): Promise<RecommendationResult> {
     try {
       const cached = await this.getCachedRecommendations('course', courseId, 'course', 'related');
       if (cached) {
@@ -241,7 +236,7 @@ export class RecommendationsService {
       return this.emptyResult('course', courseId, 'related');
     }
   }
-  
+
   /**
    * Get trending content across all types
    */
@@ -252,7 +247,12 @@ export class RecommendationsService {
   ): Promise<RecommendationResult> {
     try {
       const cacheKey = `trending_${timeframeDays}`;
-      const cached = await this.getCachedRecommendations('global', cacheKey, contentType, 'trending');
+      const cached = await this.getCachedRecommendations(
+        'global',
+        cacheKey,
+        contentType,
+        'trending',
+      );
       if (cached) {
         return { ...cached, cached: true };
       }
@@ -281,7 +281,12 @@ export class RecommendationsService {
     limit = 6,
   ): Promise<RecommendationResult> {
     try {
-      const cached = await this.getCachedRecommendations('global', 'popular', contentType, 'popular');
+      const cached = await this.getCachedRecommendations(
+        'global',
+        'popular',
+        contentType,
+        'popular',
+      );
       if (cached) {
         return { ...cached, cached: true };
       }
@@ -409,7 +414,11 @@ export class RecommendationsService {
   /**
    * Return empty result
    */
-  private emptyResult(sourceType: string, sourceId: string, algorithm: string): RecommendationResult {
+  private emptyResult(
+    sourceType: string,
+    sourceId: string,
+    algorithm: string,
+  ): RecommendationResult {
     return {
       items: [],
       algorithm,
@@ -451,15 +460,31 @@ export class RecommendationsService {
   ): Promise<RecommendationResult> {
     try {
       // Check cache first
-      const cached = await this.getCachedRecommendations(contentType, contentId, contentType, 'collaborative');
+      const cached = await this.getCachedRecommendations(
+        contentType,
+        contentId,
+        contentType,
+        'collaborative',
+      );
       if (cached) {
         return { ...cached, cached: true };
       }
 
-      const items = await this.engine.getCollaborativeRecommendations(contentId, contentType, limit);
+      const items = await this.engine.getCollaborativeRecommendations(
+        contentId,
+        contentType,
+        limit,
+      );
 
       // Cache for 30 minutes
-      await this.cacheRecommendations(contentType, contentId, contentType, 'collaborative', items, 30);
+      await this.cacheRecommendations(
+        contentType,
+        contentId,
+        contentType,
+        'collaborative',
+        items,
+        30,
+      );
 
       return {
         items,
@@ -477,13 +502,15 @@ export class RecommendationsService {
   /**
    * Frequently bought together (for e-commerce)
    */
-  async getFrequentlyBoughtTogether(
-    productId: string,
-    limit = 4,
-  ): Promise<RecommendationResult> {
+  async getFrequentlyBoughtTogether(productId: string, limit = 4): Promise<RecommendationResult> {
     try {
       // Check cache first
-      const cached = await this.getCachedRecommendations('product', productId, 'product', 'bought_together');
+      const cached = await this.getCachedRecommendations(
+        'product',
+        productId,
+        'product',
+        'bought_together',
+      );
       if (cached) {
         return { ...cached, cached: true };
       }
@@ -491,7 +518,14 @@ export class RecommendationsService {
       const items = await this.engine.getFrequentlyBoughtTogether(productId, limit);
 
       // Cache for 1 hour (purchase patterns change slowly)
-      await this.cacheRecommendations('product', productId, 'product', 'bought_together', items, 60);
+      await this.cacheRecommendations(
+        'product',
+        productId,
+        'product',
+        'bought_together',
+        items,
+        60,
+      );
 
       return {
         items,
@@ -516,7 +550,12 @@ export class RecommendationsService {
   ): Promise<RecommendationResult> {
     try {
       // Check cache first (cache per user)
-      const cached = await this.getCachedRecommendations('user', userId, contentType, 'similar_users');
+      const cached = await this.getCachedRecommendations(
+        'user',
+        userId,
+        contentType,
+        'similar_users',
+      );
       if (cached) {
         return { ...cached, cached: true };
       }
@@ -539,4 +578,3 @@ export class RecommendationsService {
     }
   }
 }
-

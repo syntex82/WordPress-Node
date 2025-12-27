@@ -86,7 +86,9 @@ export class EmailService implements OnModuleInit {
       auth: { user: this.smtpConfig.user, pass: this.smtpConfig.pass },
     });
 
-    this.logger.log(`Email transporter initialized: ${this.smtpConfig.host}:${this.smtpConfig.port}`);
+    this.logger.log(
+      `Email transporter initialized: ${this.smtpConfig.host}:${this.smtpConfig.port}`,
+    );
   }
 
   /**

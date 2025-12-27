@@ -60,4 +60,3 @@ export class CourseOwnershipGuard implements CanActivate {
     return true;
   }
 }
-

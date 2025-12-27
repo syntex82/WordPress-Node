@@ -62,7 +62,9 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
 
       // Broadcast this user's online status to all other clients
       this.server.emit('user:online', { userId: user.id });
-      console.log(`User ${user.name} connected to messages gateway (${onlineUserIds.length} users online, ${this.userSockets.get(user.id)!.size} devices)`);
+      console.log(
+        `User ${user.name} connected to messages gateway (${onlineUserIds.length} users online, ${this.userSockets.get(user.id)!.size} devices)`,
+      );
     } catch (error) {
       console.error('WebSocket authentication failed:', error.message);
       client.disconnect();
@@ -85,7 +87,9 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
           this.server.emit('user:offline', { userId: user.id });
           console.log(`User ${user.name} disconnected from messages gateway (now offline)`);
         } else {
-          console.log(`User ${user.name} disconnected one device (${userSocketSet.size} devices still connected)`);
+          console.log(
+            `User ${user.name} disconnected one device (${userSocketSet.size} devices still connected)`,
+          );
         }
       }
     }
@@ -98,7 +102,13 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     data: {
       conversationId: string;
       content: string;
-      media?: Array<{ url: string; type: 'image' | 'video'; filename: string; size: number; mimeType: string }>;
+      media?: Array<{
+        url: string;
+        type: 'image' | 'video';
+        filename: string;
+        size: number;
+        mimeType: string;
+      }>;
     },
   ) {
     const user = this.socketUsers.get(client.id);
@@ -208,7 +218,10 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         conversation.participant1Id === user.id
           ? conversation.participant2Id
           : conversation.participant1Id;
-      this.emitToUser(recipientId, 'dm:read', { conversationId: data.conversationId, readBy: user.id });
+      this.emitToUser(recipientId, 'dm:read', {
+        conversationId: data.conversationId,
+        readBy: user.id,
+      });
     }
   }
 
@@ -388,7 +401,9 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     const onlineUserIds = Array.from(this.userSockets.keys());
     client.emit('users:online:list', { users: onlineUserIds });
-    console.log(`User ${user.name} requested online users list (${onlineUserIds.length} users online)`);
+    console.log(
+      `User ${user.name} requested online users list (${onlineUserIds.length} users online)`,
+    );
     return { success: true, count: onlineUserIds.length };
   }
 

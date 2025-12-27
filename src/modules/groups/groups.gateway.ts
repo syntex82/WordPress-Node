@@ -79,7 +79,9 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Broadcast this user's online status to all other clients
       this.server.emit('user:online', { userId: user.id });
 
-      console.log(`User ${user.name} connected to groups gateway (${onlineUserIds.length} users online, ${this.userSockets.get(user.id)!.size} devices)`);
+      console.log(
+        `User ${user.name} connected to groups gateway (${onlineUserIds.length} users online, ${this.userSockets.get(user.id)!.size} devices)`,
+      );
     } catch (error) {
       console.error('WebSocket authentication failed:', error.message);
       client.disconnect();
@@ -120,7 +122,9 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           this.server.emit('user:offline', { userId: user.id });
           console.log(`User ${user.name} disconnected from groups gateway (now offline)`);
         } else {
-          console.log(`User ${user.name} disconnected one device from groups (${userSocketSet.size} devices still connected)`);
+          console.log(
+            `User ${user.name} disconnected one device from groups (${userSocketSet.size} devices still connected)`,
+          );
         }
       }
     }
@@ -220,7 +224,13 @@ export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     data: {
       groupId: string;
       content: string;
-      media?: Array<{ url: string; type: 'image' | 'video'; filename: string; size: number; mimeType: string }>;
+      media?: Array<{
+        url: string;
+        type: 'image' | 'video';
+        filename: string;
+        size: number;
+        mimeType: string;
+      }>;
     },
   ) {
     const user = this.socketUsers.get(client.id);

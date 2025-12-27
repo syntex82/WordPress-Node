@@ -3,7 +3,18 @@
  * API endpoints for developer profiles
  */
 
-import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -89,12 +100,15 @@ export class DevelopersController {
    */
   @Post('match')
   @UseGuards(JwtAuthGuard)
-  async matchDevelopers(@Body() requirements: {
-    category?: DeveloperCategory;
-    skills?: string[];
-    budget?: number;
-    budgetType?: string;
-  }) {
+  async matchDevelopers(
+    @Body()
+    requirements: {
+      category?: DeveloperCategory;
+      skills?: string[];
+      budget?: number;
+      budgetType?: string;
+    },
+  ) {
     return this.developersService.matchDevelopers(requirements);
   }
 
@@ -201,4 +215,3 @@ export class DevelopersController {
     return this.developersService.update(id, req.user.id, dto, true);
   }
 }
-

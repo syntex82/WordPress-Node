@@ -3,7 +3,12 @@
  * Handles developer profile management and matching
  */
 
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateDeveloperDto, UpdateDeveloperDto, DeveloperStatus, DeveloperCategory } from '../dto';
 import { Prisma } from '@prisma/client';
@@ -38,7 +43,10 @@ export class DevelopersService {
     }
 
     // Generate slug from display name
-    const baseSlug = dto.displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const baseSlug = dto.displayName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
     let slug = baseSlug;
     let counter = 1;
     while (await this.prisma.developer.findUnique({ where: { slug } })) {
@@ -53,7 +61,7 @@ export class DevelopersService {
         slug,
         headline: dto.headline,
         bio: dto.bio,
-        category: dto.category as any || 'FULLSTACK',
+        category: (dto.category as any) || 'FULLSTACK',
         skills: dto.skills || [],
         languages: dto.languages || [],
         frameworks: dto.frameworks || [],
@@ -85,7 +93,9 @@ export class DevelopersService {
         category: dto.category as any,
         portfolio: dto.portfolio ? JSON.parse(JSON.stringify(dto.portfolio)) : undefined,
         education: dto.education ? JSON.parse(JSON.stringify(dto.education)) : undefined,
-        certifications: dto.certifications ? JSON.parse(JSON.stringify(dto.certifications)) : undefined,
+        certifications: dto.certifications
+          ? JSON.parse(JSON.stringify(dto.certifications))
+          : undefined,
       },
       include: { user: { select: USER_SELECT } },
     });
@@ -114,8 +124,12 @@ export class DevelopersService {
       where: { slug, status: 'ACTIVE' },
       include: {
         user: { select: { id: true, name: true, avatar: true } },
-        reviews: { where: { isApproved: true }, orderBy: { createdAt: 'desc' }, take: 10,
-          include: { reviewer: { select: { id: true, name: true, avatar: true } } } },
+        reviews: {
+          where: { isApproved: true },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          include: { reviewer: { select: { id: true, name: true, avatar: true } } },
+        },
       },
     });
     if (!developer) throw new NotFoundException('Developer not found');
@@ -148,8 +162,19 @@ export class DevelopersService {
     page?: number;
     limit?: number;
   }) {
-    const { status, category, skills, minRate, maxRate, minRating, availability, search,
-      sortBy = 'rating', page = 1, limit = 12 } = filters;
+    const {
+      status,
+      category,
+      skills,
+      minRate,
+      maxRate,
+      minRating,
+      availability,
+      search,
+      sortBy = 'rating',
+      page = 1,
+      limit = 12,
+    } = filters;
 
     const where: Prisma.DeveloperWhereInput = {};
     if (status) where.status = status;
@@ -180,7 +205,10 @@ export class DevelopersService {
 
     const [developers, total] = await Promise.all([
       this.prisma.developer.findMany({
-        where, orderBy, skip: (page - 1) * limit, take: limit,
+        where,
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
         include: { user: { select: USER_SELECT } },
       }),
       this.prisma.developer.count({ where }),
@@ -195,7 +223,8 @@ export class DevelopersService {
   async approve(developerId: string) {
     const developer = await this.prisma.developer.findUnique({ where: { id: developerId } });
     if (!developer) throw new NotFoundException('Developer not found');
-    if (developer.status !== 'PENDING') throw new BadRequestException('Developer is not pending approval');
+    if (developer.status !== 'PENDING')
+      throw new BadRequestException('Developer is not pending approval');
 
     return this.prisma.developer.update({
       where: { id: developerId },
@@ -278,7 +307,7 @@ export class DevelopersService {
     if (!developer) return;
 
     const newReviewCount = developer.reviewCount + 1;
-    const newRating = ((developer.rating * developer.reviewCount) + projectRating) / newReviewCount;
+    const newRating = (developer.rating * developer.reviewCount + projectRating) / newReviewCount;
 
     await this.prisma.developer.update({
       where: { id: developerId },
@@ -294,12 +323,15 @@ export class DevelopersService {
   /**
    * Match developers for a project based on requirements
    */
-  async matchDevelopers(requirements: {
-    category?: DeveloperCategory;
-    skills?: string[];
-    budget?: number;
-    budgetType?: string;
-  }, limit = 10) {
+  async matchDevelopers(
+    requirements: {
+      category?: DeveloperCategory;
+      skills?: string[];
+      budget?: number;
+      budgetType?: string;
+    },
+    limit = 10,
+  ) {
     const where: Prisma.DeveloperWhereInput = { status: 'ACTIVE', availability: 'available' };
     if (requirements.category) where.category = requirements.category;
     if (requirements.skills?.length) where.skills = { hasSome: requirements.skills };
@@ -315,15 +347,16 @@ export class DevelopersService {
     });
 
     // Calculate match score
-    return developers.map((dev) => {
-      let score = dev.rating * 20; // Base score from rating
-      if (requirements.skills?.length) {
-        const matchedSkills = requirements.skills.filter((s) => dev.skills.includes(s));
-        score += (matchedSkills.length / requirements.skills.length) * 30;
-      }
-      score += Math.min(dev.projectsCompleted, 10) * 2;
-      return { ...dev, matchScore: Math.round(score) };
-    }).sort((a, b) => b.matchScore - a.matchScore);
+    return developers
+      .map((dev) => {
+        let score = dev.rating * 20; // Base score from rating
+        if (requirements.skills?.length) {
+          const matchedSkills = requirements.skills.filter((s) => dev.skills.includes(s));
+          score += (matchedSkills.length / requirements.skills.length) * 30;
+        }
+        score += Math.min(dev.projectsCompleted, 10) * 2;
+        return { ...dev, matchScore: Math.round(score) };
+      })
+      .sort((a, b) => b.matchScore - a.matchScore);
   }
 }
-

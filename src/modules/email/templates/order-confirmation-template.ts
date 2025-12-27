@@ -232,5 +232,7 @@ export function getOrderConfirmationTemplate(): string {
   </tr>
 </table>`;
 
-  return getBaseEmailTemplate(content, { preheader: 'Your order has been confirmed! Track your shipment.' });
+  return getBaseEmailTemplate(content, {
+    preheader: 'Your order has been confirmed! Track your shipment.',
+  });
 }

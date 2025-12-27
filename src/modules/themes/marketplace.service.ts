@@ -9,7 +9,6 @@ import { ThemesService } from './themes.service';
 import { EmailService } from '../email/email.service';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import * as AdmZip from 'adm-zip';
 
 interface SubmitThemeDto {
   name: string;
@@ -71,23 +70,31 @@ export class MarketplaceService {
    * Get all marketplace themes with filtering and pagination
    */
   async findAll(query: MarketplaceQuery) {
-    const { category, search, status = 'approved', featured, sortBy = 'downloads', page = 1, limit = 20 } = query;
+    const {
+      category,
+      search,
+      status = 'approved',
+      featured,
+      sortBy = 'downloads',
+      page = 1,
+      limit = 20,
+    } = query;
 
     const where: any = {};
-    
+
     // Only show approved themes to non-admins
     if (status) {
       where.status = status;
     }
-    
+
     if (category && category !== 'all') {
       where.category = category;
     }
-    
+
     if (featured !== undefined) {
       where.isFeatured = featured;
     }
-    
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -99,11 +106,20 @@ export class MarketplaceService {
     // Sorting
     let orderBy: any = {};
     switch (sortBy) {
-      case 'downloads': orderBy = { downloads: 'desc' }; break;
-      case 'rating': orderBy = { rating: 'desc' }; break;
-      case 'newest': orderBy = { createdAt: 'desc' }; break;
-      case 'name': orderBy = { name: 'asc' }; break;
-      default: orderBy = { downloads: 'desc' };
+      case 'downloads':
+        orderBy = { downloads: 'desc' };
+        break;
+      case 'rating':
+        orderBy = { rating: 'desc' };
+        break;
+      case 'newest':
+        orderBy = { createdAt: 'desc' };
+        break;
+      case 'name':
+        orderBy = { name: 'asc' };
+        break;
+      default:
+        orderBy = { downloads: 'desc' };
     }
 
     const [themes, total] = await Promise.all([
@@ -150,7 +166,11 @@ export class MarketplaceService {
       where: { id },
       include: {
         submittedBy: { select: { id: true, name: true, avatar: true } },
-        ratings: { include: { user: { select: { id: true, name: true, avatar: true } } }, orderBy: { createdAt: 'desc' }, take: 10 },
+        ratings: {
+          include: { user: { select: { id: true, name: true, avatar: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
       },
     });
     if (!theme) throw new NotFoundException('Theme not found');
@@ -165,7 +185,11 @@ export class MarketplaceService {
       where: { slug },
       include: {
         submittedBy: { select: { id: true, name: true, avatar: true } },
-        ratings: { include: { user: { select: { id: true, name: true, avatar: true } } }, orderBy: { createdAt: 'desc' }, take: 10 },
+        ratings: {
+          include: { user: { select: { id: true, name: true, avatar: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
       },
     });
     if (!theme) throw new NotFoundException('Theme not found');
@@ -179,7 +203,10 @@ export class MarketplaceService {
     const { themeFile, thumbnailFile } = files;
 
     // Generate slug from name
-    const slug = dto.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const slug = dto.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
 
     // Check for duplicate slug
     const existing = await this.prisma.marketplaceTheme.findUnique({ where: { slug } });
@@ -190,7 +217,10 @@ export class MarketplaceService {
     // Validate the theme ZIP
     const validation = await this.themesService.validateTheme(themeFile);
     if (!validation.valid) {
-      throw new BadRequestException({ message: 'Invalid theme package', errors: validation.errors });
+      throw new BadRequestException({
+        message: 'Invalid theme package',
+        errors: validation.errors,
+      });
     }
 
     // Save the theme file
@@ -350,11 +380,9 @@ export class MarketplaceService {
    * Bulk approve themes (admin only)
    */
   async bulkApprove(ids: string[], approverId: string) {
-    const results = await Promise.allSettled(
-      ids.map(id => this.approveTheme(id, approverId))
-    );
-    const succeeded = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const results = await Promise.allSettled(ids.map((id) => this.approveTheme(id, approverId)));
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
     return { succeeded, failed, total: ids.length };
   }
 
@@ -363,10 +391,10 @@ export class MarketplaceService {
    */
   async bulkReject(ids: string[], approverId: string, reason: string) {
     const results = await Promise.allSettled(
-      ids.map(id => this.rejectTheme(id, approverId, reason))
+      ids.map((id) => this.rejectTheme(id, approverId, reason)),
     );
-    const succeeded = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
     return { succeeded, failed, total: ids.length };
   }
 
@@ -374,11 +402,9 @@ export class MarketplaceService {
    * Bulk delete themes (admin only)
    */
   async bulkDelete(ids: string[]) {
-    const results = await Promise.allSettled(
-      ids.map(id => this.deleteTheme(id))
-    );
-    const succeeded = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const results = await Promise.allSettled(ids.map((id) => this.deleteTheme(id)));
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
     return { succeeded, failed, total: ids.length };
   }
 
@@ -513,7 +539,13 @@ export class MarketplaceService {
       this.prisma.marketplaceTheme.aggregate({ _sum: { downloads: true } }),
     ]);
 
-    return { total, approved, pending, featured, totalDownloads: totalDownloads._sum.downloads || 0 };
+    return {
+      total,
+      approved,
+      pending,
+      featured,
+      totalDownloads: totalDownloads._sum.downloads || 0,
+    };
   }
 
   /**
@@ -526,7 +558,6 @@ export class MarketplaceService {
       _count: { id: true },
     });
 
-    return categories.map(c => ({ category: c.category, count: c._count.id }));
+    return categories.map((c) => ({ category: c.category, count: c._count.id }));
   }
 }
-

@@ -20,11 +20,7 @@ import { RecommendationAnalyticsService } from './recommendation-analytics.servi
     RecommendationTrackingService,
     RecommendationAnalyticsService,
   ],
-  exports: [
-    RecommendationsService,
-    RecommendationEngineService,
-    RecommendationTrackingService,
-  ],
+  exports: [RecommendationsService, RecommendationEngineService, RecommendationTrackingService],
 })
 export class RecommendationsModule implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RecommendationsModule.name);
@@ -72,10 +68,8 @@ export class RecommendationsModule implements OnModuleInit, OnModuleDestroy {
       // Cleanup old clicks (older than 90 days)
       const clickCount = await this.trackingService.cleanupOldClicks();
       this.logger.log(`Cleaned up ${clickCount} old click records`);
-
     } catch (error) {
       this.logger.error(`Scheduled cleanup failed: ${error.message}`);
     }
   }
 }
-

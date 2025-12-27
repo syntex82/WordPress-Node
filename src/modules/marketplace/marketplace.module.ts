@@ -25,11 +25,7 @@ import {
 } from './services';
 
 @Module({
-  imports: [
-    PrismaModule,
-    ConfigModule,
-    NotificationsModule,
-  ],
+  imports: [PrismaModule, ConfigModule, NotificationsModule],
   controllers: [
     DevelopersController,
     HiringRequestsController,
@@ -42,12 +38,6 @@ import {
     ProjectsService,
     MarketplacePaymentsService,
   ],
-  exports: [
-    DevelopersService,
-    HiringRequestsService,
-    ProjectsService,
-    MarketplacePaymentsService,
-  ],
+  exports: [DevelopersService, HiringRequestsService, ProjectsService, MarketplacePaymentsService],
 })
 export class MarketplaceModule {}
-

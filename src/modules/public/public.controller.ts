@@ -3,7 +3,19 @@
  * Handles public-facing routes and renders theme templates
  */
 
-import { Controller, Get, Post, Body, Param, Query, Req, Res, UseGuards, Inject, forwardRef } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { join } from 'path';
 import { PostsService } from '../content/services/posts.service';
@@ -590,7 +602,11 @@ export class PublicController {
       });
 
       // Get related products for recommendations
-      const relatedProducts = await this.recommendationsService.getRelatedProducts(product.id, 4, user?.id);
+      const relatedProducts = await this.recommendationsService.getRelatedProducts(
+        product.id,
+        4,
+        user?.id,
+      );
       const productWithRecommendations = {
         ...product,
         relatedProducts: relatedProducts.items,
@@ -866,11 +882,13 @@ export class PublicController {
         categories.map(async (cat) => ({
           category: cat,
           label: cat.charAt(0) + cat.slice(1).toLowerCase().replace('_', ' '),
-          developers: (await this.developersService.findAll({
-            status: 'ACTIVE' as any,
-            category: cat as any,
-            limit: 4,
-          })).developers,
+          developers: (
+            await this.developersService.findAll({
+              status: 'ACTIVE' as any,
+              category: cat as any,
+              limit: 4,
+            })
+          ).developers,
         })),
       );
 
@@ -920,11 +938,7 @@ export class PublicController {
    */
   @Get('marketplace')
   @UseGuards(OptionalJwtAuthGuard)
-  async marketplace(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Query('tab') tab?: string,
-  ) {
+  async marketplace(@Req() req: Request, @Res() res: Response, @Query('tab') tab?: string) {
     try {
       const user = (req as any).user;
       const activeTab = tab === 'plugins' ? 'plugins' : 'themes';
@@ -1135,7 +1149,10 @@ export class PublicController {
 
       console.log('[Pricing] Plans fetched:', plans?.length || 0, 'plans');
       if (plans?.length) {
-        console.log('[Pricing] Plan names:', plans.map(p => `${p.name} (active: ${p.isActive})`).join(', '));
+        console.log(
+          '[Pricing] Plan names:',
+          plans.map((p) => `${p.name} (active: ${p.isActive})`).join(', '),
+        );
       }
 
       const html = await this.themeRenderer.render('pricing', {

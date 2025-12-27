@@ -133,14 +133,17 @@ export class BackupController {
   @Post('database')
   async databaseBackup(@Request() req: any) {
     const name = `Database Backup - ${new Date().toLocaleString()}`;
-    return this.backupService.create({
-      name,
-      type: 'DATABASE',
-      includesDatabase: true,
-      includesMedia: false,
-      includesThemes: false,
-      includesPlugins: false,
-    }, req.user.id);
+    return this.backupService.create(
+      {
+        name,
+        type: 'DATABASE',
+        includesDatabase: true,
+        includesMedia: false,
+        includesThemes: false,
+        includesPlugins: false,
+      },
+      req.user.id,
+    );
   }
 
   /**
@@ -150,7 +153,8 @@ export class BackupController {
   @Post(':id/restore')
   async restore(
     @Param('id') id: string,
-    @Body() options: {
+    @Body()
+    options: {
       restoreDatabase?: boolean;
       restoreMedia?: boolean;
       restoreThemes?: boolean;
@@ -167,4 +171,3 @@ export class BackupController {
     return this.backupService.restore(id, options);
   }
 }
-

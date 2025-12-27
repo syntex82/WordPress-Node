@@ -43,7 +43,13 @@ export interface StripeConfig {
 }
 
 // Keys that should be encrypted
-const ENCRYPTED_KEYS = ['smtp_pass', 'api_key', 'webhook_secret', 'stripe_secret_key', 'stripe_webhook_secret'];
+const ENCRYPTED_KEYS = [
+  'smtp_pass',
+  'api_key',
+  'webhook_secret',
+  'stripe_secret_key',
+  'stripe_webhook_secret',
+];
 
 @Injectable()
 export class SystemConfigService implements OnModuleInit {
@@ -67,13 +73,11 @@ export class SystemConfigService implements OnModuleInit {
     try {
       const configs = await this.prisma.systemConfig.findMany();
       for (const config of configs) {
-        const value = config.isEncrypted 
-          ? this.encryption.decrypt(config.value)
-          : config.value;
+        const value = config.isEncrypted ? this.encryption.decrypt(config.value) : config.value;
         this.configCache.set(config.key, value);
       }
       this.logger.log(`Loaded ${configs.length} system config values`);
-    } catch (error) {
+    } catch (_error) {
       this.logger.warn('Failed to load system config cache (table may not exist yet)');
     }
   }
@@ -90,9 +94,7 @@ export class SystemConfigService implements OnModuleInit {
     // Try database
     const config = await this.prisma.systemConfig.findUnique({ where: { key } });
     if (config) {
-      const value = config.isEncrypted 
-        ? this.encryption.decrypt(config.value)
-        : config.value;
+      const value = config.isEncrypted ? this.encryption.decrypt(config.value) : config.value;
       this.configCache.set(key, value);
       return value;
     }
@@ -137,7 +139,7 @@ export class SystemConfigService implements OnModuleInit {
   async getGroup(group: string): Promise<Record<string, string>> {
     const configs = await this.prisma.systemConfig.findMany({ where: { group } });
     const result: Record<string, string> = {};
-    
+
     for (const config of configs) {
       result[config.key] = config.isEncrypted
         ? this.encryption.decrypt(config.value)
@@ -157,7 +159,10 @@ export class SystemConfigService implements OnModuleInit {
       user: await this.get('smtp_user', this.configService.get('SMTP_USER', '')),
       pass: await this.get('smtp_pass', this.configService.get('SMTP_PASS', '')),
       fromEmail: await this.get('smtp_from', this.configService.get('SMTP_FROM', '')),
-      fromName: await this.get('smtp_from_name', this.configService.get('SMTP_FROM_NAME', 'WordPress Node CMS')),
+      fromName: await this.get(
+        'smtp_from_name',
+        this.configService.get('SMTP_FROM_NAME', 'WordPress Node CMS'),
+      ),
     };
   }
 
@@ -176,7 +181,12 @@ export class SystemConfigService implements OnModuleInit {
     }
 
     await this.set('smtp_from', config.fromEmail || config.user, 'email', 'Default from email');
-    await this.set('smtp_from_name', config.fromName || 'WordPress Node CMS', 'email', 'Default from name');
+    await this.set(
+      'smtp_from_name',
+      config.fromName || 'WordPress Node CMS',
+      'email',
+      'Default from name',
+    );
   }
 
   /**
@@ -184,10 +194,19 @@ export class SystemConfigService implements OnModuleInit {
    */
   async getDomainConfig(): Promise<DomainConfig> {
     return {
-      frontendUrl: await this.get('frontend_url', this.configService.get('FRONTEND_URL', 'http://localhost:3000')),
-      adminUrl: await this.get('admin_url', this.configService.get('ADMIN_URL', 'http://localhost:3000/admin')),
+      frontendUrl: await this.get(
+        'frontend_url',
+        this.configService.get('FRONTEND_URL', 'http://localhost:3000'),
+      ),
+      adminUrl: await this.get(
+        'admin_url',
+        this.configService.get('ADMIN_URL', 'http://localhost:3000/admin'),
+      ),
       supportEmail: await this.get('support_email', this.configService.get('SUPPORT_EMAIL', '')),
-      siteName: await this.get('site_name', this.configService.get('SITE_NAME', 'WordPress Node CMS')),
+      siteName: await this.get(
+        'site_name',
+        this.configService.get('SITE_NAME', 'WordPress Node CMS'),
+      ),
     };
   }
 
@@ -218,11 +237,36 @@ export class SystemConfigService implements OnModuleInit {
    * Save Marketplace configuration
    */
   async saveMarketplaceConfig(config: MarketplaceConfig): Promise<void> {
-    await this.set('marketplace_fee_percent', config.platformFeePercent.toString(), 'marketplace', 'Platform fee percentage');
-    await this.set('marketplace_min_payout', config.minPayoutAmount.toString(), 'marketplace', 'Minimum payout amount');
-    await this.set('marketplace_max_escrow_days', config.maxEscrowDays.toString(), 'marketplace', 'Maximum escrow days');
-    await this.set('marketplace_auto_release_days', config.autoReleaseDays.toString(), 'marketplace', 'Auto-release days after completion');
-    await this.set('marketplace_enabled', config.enabled.toString(), 'marketplace', 'Marketplace enabled');
+    await this.set(
+      'marketplace_fee_percent',
+      config.platformFeePercent.toString(),
+      'marketplace',
+      'Platform fee percentage',
+    );
+    await this.set(
+      'marketplace_min_payout',
+      config.minPayoutAmount.toString(),
+      'marketplace',
+      'Minimum payout amount',
+    );
+    await this.set(
+      'marketplace_max_escrow_days',
+      config.maxEscrowDays.toString(),
+      'marketplace',
+      'Maximum escrow days',
+    );
+    await this.set(
+      'marketplace_auto_release_days',
+      config.autoReleaseDays.toString(),
+      'marketplace',
+      'Auto-release days after completion',
+    );
+    await this.set(
+      'marketplace_enabled',
+      config.enabled.toString(),
+      'marketplace',
+      'Marketplace enabled',
+    );
   }
 
   /**
@@ -236,9 +280,18 @@ export class SystemConfigService implements OnModuleInit {
    * Get Stripe configuration
    */
   async getStripeConfig(): Promise<StripeConfig> {
-    const publishableKey = await this.get('stripe_publishable_key', this.configService.get('STRIPE_PUBLISHABLE_KEY', ''));
-    const secretKey = await this.get('stripe_secret_key', this.configService.get('STRIPE_SECRET_KEY', ''));
-    const webhookSecret = await this.get('stripe_webhook_secret', this.configService.get('STRIPE_WEBHOOK_SECRET', ''));
+    const publishableKey = await this.get(
+      'stripe_publishable_key',
+      this.configService.get('STRIPE_PUBLISHABLE_KEY', ''),
+    );
+    const secretKey = await this.get(
+      'stripe_secret_key',
+      this.configService.get('STRIPE_SECRET_KEY', ''),
+    );
+    const webhookSecret = await this.get(
+      'stripe_webhook_secret',
+      this.configService.get('STRIPE_WEBHOOK_SECRET', ''),
+    );
 
     // Determine if live mode based on key prefix
     const isLiveMode = publishableKey.startsWith('pk_live_') || secretKey.startsWith('sk_live_');
@@ -256,15 +309,34 @@ export class SystemConfigService implements OnModuleInit {
   /**
    * Save Stripe configuration
    */
-  async saveStripeConfig(config: { publishableKey: string; secretKey: string; webhookSecret: string }): Promise<void> {
+  async saveStripeConfig(config: {
+    publishableKey: string;
+    secretKey: string;
+    webhookSecret: string;
+  }): Promise<void> {
     if (config.publishableKey) {
-      await this.set('stripe_publishable_key', config.publishableKey, 'payment', 'Stripe publishable key');
+      await this.set(
+        'stripe_publishable_key',
+        config.publishableKey,
+        'payment',
+        'Stripe publishable key',
+      );
     }
     if (config.secretKey) {
-      await this.set('stripe_secret_key', config.secretKey, 'payment', 'Stripe secret key (encrypted)');
+      await this.set(
+        'stripe_secret_key',
+        config.secretKey,
+        'payment',
+        'Stripe secret key (encrypted)',
+      );
     }
     if (config.webhookSecret) {
-      await this.set('stripe_webhook_secret', config.webhookSecret, 'payment', 'Stripe webhook secret (encrypted)');
+      await this.set(
+        'stripe_webhook_secret',
+        config.webhookSecret,
+        'payment',
+        'Stripe webhook secret (encrypted)',
+      );
     }
   }
 
@@ -287,7 +359,13 @@ export class SystemConfigService implements OnModuleInit {
     await this.prisma.setupStatus.upsert({
       where: { id: 'setup' },
       update: { setupComplete: true, completedAt: new Date() },
-      create: { id: 'setup', setupComplete: true, adminCreated: true, smtpConfigured: true, completedAt: new Date() },
+      create: {
+        id: 'setup',
+        setupComplete: true,
+        adminCreated: true,
+        smtpConfigured: true,
+        completedAt: new Date(),
+      },
     });
   }
 
@@ -318,4 +396,3 @@ export class SystemConfigService implements OnModuleInit {
     await this.loadConfigCache();
   }
 }
-

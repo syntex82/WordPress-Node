@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { SystemConfigService } from '../settings/system-config.service';
 import { CreatePlanDto, UpdatePlanDto, CreateCheckoutDto } from './dto/subscription.dto';
@@ -127,9 +123,8 @@ export class SubscriptionsService {
     }
 
     // Get the appropriate price ID
-    const priceId = dto.billingCycle === 'yearly'
-      ? plan.stripePriceIdYearly
-      : plan.stripePriceIdMonthly;
+    const priceId =
+      dto.billingCycle === 'yearly' ? plan.stripePriceIdYearly : plan.stripePriceIdMonthly;
 
     if (!priceId) {
       throw new BadRequestException(`No Stripe price configured for ${dto.billingCycle} billing`);
@@ -141,8 +136,12 @@ export class SubscriptionsService {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: dto.successUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: dto.cancelUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/subscription/canceled`,
+      success_url:
+        dto.successUrl ||
+        `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:
+        dto.cancelUrl ||
+        `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/subscription/canceled`,
       metadata: {
         userId,
         planId: plan.id,
@@ -207,7 +206,7 @@ export class SubscriptionsService {
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(payload, signature, config.webhookSecret);
-    } catch (err) {
+    } catch (_err) {
       throw new BadRequestException(`Webhook signature verification failed`);
     }
 
@@ -234,7 +233,9 @@ export class SubscriptionsService {
     if (!userId || !planId) return;
 
     const stripe = await this.getStripe();
-    const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription as string) as Stripe.Subscription;
+    const stripeSubscription = (await stripe.subscriptions.retrieve(
+      session.subscription as string,
+    )) as Stripe.Subscription;
 
     const periodStart = (stripeSubscription as any).current_period_start;
     const periodEnd = (stripeSubscription as any).current_period_end;
@@ -326,7 +327,11 @@ export class SubscriptionsService {
     return features.includes(feature);
   }
 
-  async checkLimit(userId: string, limitType: 'users' | 'storage' | 'projects' | 'courses' | 'products', currentCount: number): Promise<boolean> {
+  async checkLimit(
+    userId: string,
+    limitType: 'users' | 'storage' | 'projects' | 'courses' | 'products',
+    currentCount: number,
+  ): Promise<boolean> {
     const subscription = await this.getUserSubscription(userId);
     if (!subscription) return false;
 
@@ -393,7 +398,17 @@ export class SubscriptionsService {
         maxStorageMb: 102400,
         maxCourses: null,
         maxProducts: null,
-        features: ['basic_cms', 'media_library', 'video_calls', 'lms', 'ecommerce', 'analytics', 'api_access', 'priority_support', 'custom_domain'],
+        features: [
+          'basic_cms',
+          'media_library',
+          'video_calls',
+          'lms',
+          'ecommerce',
+          'analytics',
+          'api_access',
+          'priority_support',
+          'custom_domain',
+        ],
         isActive: true,
         displayOrder: 2,
       },
@@ -405,7 +420,20 @@ export class SubscriptionsService {
         yearlyPrice: 1990,
         maxUsers: null,
         maxStorageMb: null,
-        features: ['basic_cms', 'media_library', 'video_calls', 'lms', 'ecommerce', 'analytics', 'api_access', 'priority_support', 'custom_domain', 'sla', 'dedicated_support', 'custom_integrations'],
+        features: [
+          'basic_cms',
+          'media_library',
+          'video_calls',
+          'lms',
+          'ecommerce',
+          'analytics',
+          'api_access',
+          'priority_support',
+          'custom_domain',
+          'sla',
+          'dedicated_support',
+          'custom_integrations',
+        ],
         isActive: true,
         badgeText: 'Best Value',
         displayOrder: 3,
@@ -460,7 +488,7 @@ export class SubscriptionsService {
     if (!subscription || subscription.status !== 'ACTIVE') {
       return false;
     }
-    const features = subscription.plan?.features as string[] || [];
+    const features = (subscription.plan?.features as string[]) || [];
     return features.includes(feature);
   }
 
@@ -479,4 +507,3 @@ export class SubscriptionsService {
     };
   }
 }
-

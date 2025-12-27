@@ -184,7 +184,11 @@ export class PagesService {
         throw new Error(`Slug "${updatePageDto.slug}" is already in use`);
       }
       data.slug = updatePageDto.slug;
-    } else if (updatePageDto.title && updatePageDto.title !== existingPage.title && !updatePageDto.slug) {
+    } else if (
+      updatePageDto.title &&
+      updatePageDto.title !== existingPage.title &&
+      !updatePageDto.slug
+    ) {
       // Generate new slug only if title changed and no custom slug provided
       data.slug = await this.generateSlug(updatePageDto.title, id);
     } else {

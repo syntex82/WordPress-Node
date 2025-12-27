@@ -128,4 +128,3 @@ export class TransactionFiltersDto {
   @Type(() => Number)
   limit?: number;
 }
-

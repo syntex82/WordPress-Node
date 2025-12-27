@@ -53,27 +53,20 @@ export class CustomizationRendererService {
 
     // Apply layout class
     if (customization.layout) {
-      result = result.replace(
-        /<main[^>]*>/,
-        `<main class="layout-${customization.layout}">`,
-      );
+      result = result.replace(/<main[^>]*>/, `<main class="layout-${customization.layout}">`);
     }
 
     // Apply background color
     if (customization.backgroundColor) {
       const bgStyle = `background-color: ${customization.backgroundColor};`;
-      result = result.replace(
-        /<main[^>]*>/,
-        (match) => match.replace('>', ` style="${bgStyle}">`),
-      );
+      result = result.replace(/<main[^>]*>/, (match) => match.replace('>', ` style="${bgStyle}">`));
     }
 
     // Apply text color
     if (customization.textColor) {
       const textStyle = `color: ${customization.textColor};`;
-      result = result.replace(
-        /<main[^>]*>/,
-        (match) => match.replace('>', ` style="${textStyle}">`),
+      result = result.replace(/<main[^>]*>/, (match) =>
+        match.replace('>', ` style="${textStyle}">`),
       );
     }
 
@@ -130,4 +123,3 @@ export class CustomizationRendererService {
     return css;
   }
 }
-

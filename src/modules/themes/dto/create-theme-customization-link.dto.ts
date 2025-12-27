@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsUrl } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateThemeCustomizationLinkDto {
   @IsString()
@@ -121,4 +121,3 @@ export class UpdateThemeCustomizationLinkDto {
   @IsOptional()
   customData?: Record<string, any>;
 }
-

@@ -3,7 +3,12 @@
  * Handles hiring request workflow between clients and developers
  */
 
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { HiringRequestStatus } from '@prisma/client';
@@ -68,12 +73,14 @@ export class HiringRequestsService {
       where: { id },
       include: {
         client: { select: { id: true, name: true, email: true, avatar: true } },
-        developer: { include: { user: { select: { id: true, name: true, email: true, avatar: true } } } },
+        developer: {
+          include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+        },
         project: true,
       },
     });
     if (!request) throw new NotFoundException('Hiring request not found');
-    
+
     // Check authorization
     if (!isAdmin && request.clientId !== userId && request.developer.userId !== userId) {
       throw new ForbiddenException('Not authorized to view this request');
@@ -85,11 +92,15 @@ export class HiringRequestsService {
   /**
    * List hiring requests for a user
    */
-  async findForUser(userId: string, role: 'client' | 'developer', filters: {
-    status?: HiringRequestStatus;
-    page?: number;
-    limit?: number;
-  }) {
+  async findForUser(
+    userId: string,
+    role: 'client' | 'developer',
+    filters: {
+      status?: HiringRequestStatus;
+      page?: number;
+      limit?: number;
+    },
+  ) {
     const { status, page = 1, limit = 10 } = filters;
 
     const where: any = {};
@@ -120,7 +131,12 @@ export class HiringRequestsService {
   /**
    * Update hiring request status (developer accepts/rejects)
    */
-  async updateStatus(id: string, userId: string, dto: UpdateHiringRequestStatusDto, isAdmin = false) {
+  async updateStatus(
+    id: string,
+    userId: string,
+    dto: UpdateHiringRequestStatusDto,
+    isAdmin = false,
+  ) {
     const request = await this.prisma.hiringRequest.findUnique({
       where: { id },
       include: { developer: true, client: true },
@@ -130,15 +146,20 @@ export class HiringRequestsService {
     // Authorization check
     const isDeveloper = request.developer.userId === userId;
     const isClient = request.clientId === userId;
-    
+
     if (!isAdmin && !isDeveloper && !isClient) {
       throw new ForbiddenException('Not authorized');
     }
 
     // Validate status transitions
-    const validTransitions = this.getValidTransitions(request.status as HiringRequestStatus, isDeveloper);
+    const validTransitions = this.getValidTransitions(
+      request.status as HiringRequestStatus,
+      isDeveloper,
+    );
     if (!validTransitions.includes(dto.status)) {
-      throw new BadRequestException(`Invalid status transition from ${request.status} to ${dto.status}`);
+      throw new BadRequestException(
+        `Invalid status transition from ${request.status} to ${dto.status}`,
+      );
     }
 
     const updated = await this.prisma.hiringRequest.update({
@@ -167,7 +188,10 @@ export class HiringRequestsService {
     return updated;
   }
 
-  private getValidTransitions(current: HiringRequestStatus, isDeveloper: boolean): HiringRequestStatus[] {
+  private getValidTransitions(
+    current: HiringRequestStatus,
+    isDeveloper: boolean,
+  ): HiringRequestStatus[] {
     const transitions: Record<HiringRequestStatus, HiringRequestStatus[]> = {
       PENDING: isDeveloper ? ['ACCEPTED', 'REJECTED'] : ['CANCELLED'],
       ACCEPTED: ['IN_PROGRESS', 'CANCELLED'],
@@ -180,4 +204,3 @@ export class HiringRequestsService {
     return transitions[current] || [];
   }
 }
-

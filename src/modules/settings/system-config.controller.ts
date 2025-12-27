@@ -4,8 +4,22 @@
  * Includes SMTP settings, domain settings, and test email functionality
  */
 
-import { Controller, Get, Post, Put, Body, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
-import { SystemConfigService, SmtpConfig, DomainConfig, MarketplaceConfig, StripeConfig } from './system-config.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  SystemConfigService,
+  SmtpConfig,
+  DomainConfig,
+  MarketplaceConfig,
+} from './system-config.service';
 import Stripe from 'stripe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -73,7 +87,7 @@ export class SystemConfigController {
     }
 
     const config = await this.systemConfig.getSmtpConfig();
-    
+
     if (!config.host || !config.user || !config.pass) {
       throw new HttpException('SMTP not configured', HttpStatus.BAD_REQUEST);
     }
@@ -199,16 +213,27 @@ export class SystemConfigController {
    * PUT /api/system-config/payment
    */
   @Put('payment')
-  async savePaymentConfig(@Body() body: { publishableKey?: string; secretKey?: string; webhookSecret?: string }) {
+  async savePaymentConfig(
+    @Body() body: { publishableKey?: string; secretKey?: string; webhookSecret?: string },
+  ) {
     // Validate key formats if provided
     if (body.publishableKey && !body.publishableKey.startsWith('pk_')) {
-      throw new HttpException('Invalid publishable key format. Must start with pk_test_ or pk_live_', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Invalid publishable key format. Must start with pk_test_ or pk_live_',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     if (body.secretKey && !body.secretKey.startsWith('sk_')) {
-      throw new HttpException('Invalid secret key format. Must start with sk_test_ or sk_live_', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Invalid secret key format. Must start with sk_test_ or sk_live_',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     if (body.webhookSecret && !body.webhookSecret.startsWith('whsec_')) {
-      throw new HttpException('Invalid webhook secret format. Must start with whsec_', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Invalid webhook secret format. Must start with whsec_',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // Check for mode mismatch (mixing test and live keys)
@@ -216,7 +241,10 @@ export class SystemConfigController {
       const pubIsLive = body.publishableKey.startsWith('pk_live_');
       const secIsLive = body.secretKey.startsWith('sk_live_');
       if (pubIsLive !== secIsLive) {
-        throw new HttpException('Key mode mismatch: Cannot mix test and live keys', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Key mode mismatch: Cannot mix test and live keys',
+          HttpStatus.BAD_REQUEST,
+        );
       }
     }
 
@@ -260,4 +288,3 @@ export class SystemConfigController {
     }
   }
 }
-

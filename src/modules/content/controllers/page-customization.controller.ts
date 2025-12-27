@@ -70,10 +70,7 @@ export class PageCustomizationController {
    */
   @Put(':id')
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdatePageCustomizationDto,
-  ) {
+  async update(@Param('id') id: string, @Body() dto: UpdatePageCustomizationDto) {
     return this.pageCustomizationService.update(id, dto);
   }
 
@@ -87,4 +84,3 @@ export class PageCustomizationController {
     await this.pageCustomizationService.delete(id);
   }
 }
-

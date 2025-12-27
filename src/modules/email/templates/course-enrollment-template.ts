@@ -199,5 +199,7 @@ export function getCourseEnrollmentTemplate(): string {
   </tr>
 </table>`;
 
-  return getBaseEmailTemplate(content, { preheader: 'Your course enrollment is confirmed! Start learning today.' });
+  return getBaseEmailTemplate(content, {
+    preheader: 'Your course enrollment is confirmed! Start learning today.',
+  });
 }

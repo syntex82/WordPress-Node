@@ -123,4 +123,3 @@ export function getDeviceClasses(device: DeviceInfo): string {
 
   return classes.join(' ');
 }
-

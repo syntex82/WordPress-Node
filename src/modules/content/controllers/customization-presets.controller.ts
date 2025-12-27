@@ -81,4 +81,3 @@ export class CustomizationPresetsController {
     return { message: 'Preset removed successfully' };
   }
 }
-

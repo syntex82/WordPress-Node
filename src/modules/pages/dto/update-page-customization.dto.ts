@@ -15,4 +15,3 @@ export class UpdatePageCustomizationDto {
   featuredImagePosition?: string;
   customFields?: Record<string, any>;
 }
-

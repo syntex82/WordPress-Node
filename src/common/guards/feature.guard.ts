@@ -25,10 +25,10 @@ export class FeatureGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredFeatures = this.reflector.getAllAndOverride<string[]>(
-      REQUIRED_FEATURES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredFeatures = this.reflector.getAllAndOverride<string[]>(REQUIRED_FEATURES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // If no features required, allow access
     if (!requiredFeatures || requiredFeatures.length === 0) {
@@ -70,7 +70,7 @@ export class FeatureGuard implements CanActivate {
 
     // Check if plan has all required features
     const planFeatures = (subscription.plan.features as string[]) || [];
-    const missingFeatures = requiredFeatures.filter(f => !planFeatures.includes(f));
+    const missingFeatures = requiredFeatures.filter((f) => !planFeatures.includes(f));
 
     if (missingFeatures.length > 0) {
       this.logger.debug(
@@ -87,4 +87,3 @@ export class FeatureGuard implements CanActivate {
     return true;
   }
 }
-

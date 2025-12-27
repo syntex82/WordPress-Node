@@ -1,7 +1,12 @@
 /**
  * Courses Service for LMS Module
  */
-import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateCourseDto, UpdateCourseDto, CourseQueryDto } from '../dto/course.dto';
 
@@ -129,14 +134,28 @@ export class CoursesService {
           include: {
             lessons: {
               orderBy: { orderIndex: 'asc' },
-              select: { id: true, title: true, type: true, estimatedMinutes: true, isPreview: true, orderIndex: true },
+              select: {
+                id: true,
+                title: true,
+                type: true,
+                estimatedMinutes: true,
+                isPreview: true,
+                orderIndex: true,
+              },
             },
           },
         },
         lessons: {
           orderBy: { orderIndex: 'asc' },
           where: { moduleId: null },
-          select: { id: true, title: true, type: true, estimatedMinutes: true, isPreview: true, orderIndex: true },
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            estimatedMinutes: true,
+            isPreview: true,
+            orderIndex: true,
+          },
         },
         _count: { select: { lessons: true, enrollments: true } },
       },

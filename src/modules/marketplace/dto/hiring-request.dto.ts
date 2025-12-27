@@ -72,4 +72,3 @@ export class HiringRequestFiltersDto {
   @Type(() => Number)
   limit?: number;
 }
-

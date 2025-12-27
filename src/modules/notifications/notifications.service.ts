@@ -52,7 +52,7 @@ export class NotificationsService {
    */
   async createBulk(userIds: string[], notification: Omit<CreateNotificationDto, 'userId'>) {
     return this.prisma.notification.createMany({
-      data: userIds.map(userId => ({
+      data: userIds.map((userId) => ({
         userId,
         type: notification.type || 'INFO',
         title: notification.title,
@@ -73,7 +73,10 @@ export class NotificationsService {
       where: { role: 'ADMIN' },
       select: { id: true },
     });
-    return this.createBulk(admins.map(a => a.id), notification);
+    return this.createBulk(
+      admins.map((a) => a.id),
+      notification,
+    );
   }
 
   /**
@@ -166,4 +169,3 @@ export class NotificationsService {
     });
   }
 }
-

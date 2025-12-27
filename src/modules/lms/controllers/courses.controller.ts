@@ -19,7 +19,10 @@ import {
 import { Response } from 'express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { FeatureGuard } from '../../../common/guards/feature.guard';
-import { RequiresFeature, SUBSCRIPTION_FEATURES } from '../../../common/decorators/subscription.decorator';
+import {
+  RequiresFeature,
+  SUBSCRIPTION_FEATURES,
+} from '../../../common/decorators/subscription.decorator';
 import { CoursesService } from '../services/courses.service';
 import { CoursePlaceholderService } from '../services/course-placeholder.service';
 import { CreateCourseDto, UpdateCourseDto, CourseQueryDto } from '../dto/course.dto';

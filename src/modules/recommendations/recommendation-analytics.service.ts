@@ -17,7 +17,7 @@ export class RecommendationAnalyticsService {
   async getAnalytics(period: string, contentType?: string) {
     const startDate = this.getStartDate(period);
     const where: any = { createdAt: { gte: startDate } };
-    
+
     if (contentType) {
       where.clickedType = contentType;
     }
@@ -60,18 +60,27 @@ export class RecommendationAnalyticsService {
       startDate,
       totalClicks,
       totalInteractions,
-      clicksByRecommendationType: clicksByType.reduce((acc, item) => {
-        acc[item.recommendationType] = item._count.id;
-        return acc;
-      }, {} as Record<string, number>),
-      clicksByContentType: clicksByContent.reduce((acc, item) => {
-        acc[item.clickedType] = item._count.id;
-        return acc;
-      }, {} as Record<string, number>),
-      interactionsByType: interactionsByType.reduce((acc, item) => {
-        acc[item.interactionType] = item._count.id;
-        return acc;
-      }, {} as Record<string, number>),
+      clicksByRecommendationType: clicksByType.reduce(
+        (acc, item) => {
+          acc[item.recommendationType] = item._count.id;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+      clicksByContentType: clicksByContent.reduce(
+        (acc, item) => {
+          acc[item.clickedType] = item._count.id;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+      interactionsByType: interactionsByType.reduce(
+        (acc, item) => {
+          acc[item.interactionType] = item._count.id;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
     };
   }
 
@@ -106,11 +115,14 @@ export class RecommendationAnalyticsService {
       totalImpressions: impressions,
       totalClicks: clicks,
       overallCTR: impressions > 0 ? (clicks / impressions) * 100 : 0,
-      ctrByType: clicksByType.reduce((acc, item) => {
-        // Note: This is clicks per type, actual CTR would need impression tracking per type
-        acc[item.recommendationType] = item._count.id;
-        return acc;
-      }, {} as Record<string, number>),
+      ctrByType: clicksByType.reduce(
+        (acc, item) => {
+          // Note: This is clicks per type, actual CTR would need impression tracking per type
+          acc[item.recommendationType] = item._count.id;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
     };
   }
 
@@ -284,12 +296,10 @@ export class RecommendationAnalyticsService {
       recommendationPurchases,
       totalPurchases,
       recommendationClicks,
-      conversionRate: recommendationClicks > 0
-        ? (recommendationPurchases / recommendationClicks) * 100
-        : 0,
-      recommendationContribution: totalPurchases > 0
-        ? (recommendationPurchases / totalPurchases) * 100
-        : 0,
+      conversionRate:
+        recommendationClicks > 0 ? (recommendationPurchases / recommendationClicks) * 100 : 0,
+      recommendationContribution:
+        totalPurchases > 0 ? (recommendationPurchases / totalPurchases) * 100 : 0,
     };
   }
 
@@ -320,4 +330,3 @@ export class RecommendationAnalyticsService {
     return now;
   }
 }
-

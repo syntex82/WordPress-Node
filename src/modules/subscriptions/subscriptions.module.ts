@@ -18,12 +18,6 @@ import { SubscriptionGuard, FeatureGuard, PlanGuard } from '../../common/guards'
     FeatureGuard,
     PlanGuard,
   ],
-  exports: [
-    SubscriptionsService,
-    SubscriptionGuard,
-    FeatureGuard,
-    PlanGuard,
-  ],
+  exports: [SubscriptionsService, SubscriptionGuard, FeatureGuard, PlanGuard],
 })
 export class SubscriptionsModule {}
-

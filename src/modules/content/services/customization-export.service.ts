@@ -116,7 +116,9 @@ export class CustomizationExportService {
   /**
    * Import customizations from export file
    */
-  async importCustomizations(data: CustomizationExport): Promise<{ imported: number; failed: number }> {
+  async importCustomizations(
+    data: CustomizationExport,
+  ): Promise<{ imported: number; failed: number }> {
     if (!data.version || !data.exportedAt) {
       throw new BadRequestException('Invalid export file format');
     }
@@ -215,4 +217,3 @@ export class CustomizationExportService {
     return { imported, failed };
   }
 }
-

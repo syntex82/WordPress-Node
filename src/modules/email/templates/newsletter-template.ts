@@ -123,5 +123,7 @@ export function getNewsletterTemplate(): string {
   </tr>
 </table>`;
 
-  return getBaseEmailTemplate(content, { preheader: 'Check out this week\'s featured content and updates' });
+  return getBaseEmailTemplate(content, {
+    preheader: "Check out this week's featured content and updates",
+  });
 }

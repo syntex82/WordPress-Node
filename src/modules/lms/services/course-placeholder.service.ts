@@ -89,9 +89,7 @@ export class CoursePlaceholderService {
           const left = Math.floor((width - logoWidth) / 2);
           const top = Math.floor((height - logoHeight) / 2) - 20;
 
-          baseImage = baseImage.composite([
-            { input: resizedLogo, left, top },
-          ]);
+          baseImage = baseImage.composite([{ input: resizedLogo, left, top }]);
         }
       } catch (error) {
         console.log('Could not overlay logo, using text fallback:', error.message);
@@ -191,7 +189,7 @@ export class CoursePlaceholderService {
    */
   async regeneratePlaceholder(): Promise<string> {
     const placeholderPath = path.join(this.cacheDir, 'course-default.png');
-    
+
     // Delete existing
     if (fs.existsSync(placeholderPath)) {
       fs.unlinkSync(placeholderPath);
@@ -200,4 +198,3 @@ export class CoursePlaceholderService {
     return this.getCoursePlaceholder();
   }
 }
-

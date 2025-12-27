@@ -2,7 +2,16 @@
  * Project DTOs
  */
 
-import { IsString, IsNumber, IsOptional, IsEnum, IsDateString, IsUUID, Min, Max, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsUUID,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ProjectStatus {
@@ -122,4 +131,3 @@ export class ProjectFiltersDto {
   @Type(() => Number)
   limit?: number;
 }
-

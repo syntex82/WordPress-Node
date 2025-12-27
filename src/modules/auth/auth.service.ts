@@ -307,7 +307,9 @@ export class AuthService {
     });
 
     // Always return success message to prevent email enumeration
-    const successMessage = { message: 'If an account with that email exists, a password reset link has been sent.' };
+    const successMessage = {
+      message: 'If an account with that email exists, a password reset link has been sent.',
+    };
 
     if (!user) {
       return successMessage;
@@ -415,15 +417,13 @@ export class AuthService {
     });
 
     // Log security event
-    await this.logSecurityEvent(
-      user.id,
-      SecurityEventType.PASSWORD_CHANGE,
-      undefined,
-      undefined,
-      { method: 'reset_token' },
-    );
+    await this.logSecurityEvent(user.id, SecurityEventType.PASSWORD_CHANGE, undefined, undefined, {
+      method: 'reset_token',
+    });
 
-    return { message: 'Password has been reset successfully. You can now log in with your new password.' };
+    return {
+      message: 'Password has been reset successfully. You can now log in with your new password.',
+    };
   }
 
   /**

@@ -37,7 +37,7 @@ export class SetupWizardController {
   async getSetupStatus() {
     const status = await this.systemConfig.getSetupStatus();
     const adminExists = await this.prisma.user.findFirst({ where: { role: 'ADMIN' } });
-    
+
     return {
       setupRequired: !status.setupComplete,
       adminCreated: !!adminExists,
@@ -53,7 +53,7 @@ export class SetupWizardController {
   @Post('admin')
   async createAdmin(@Body() dto: SetupAdminDto) {
     await this.ensureSetupNotComplete();
-    
+
     // Validate input
     if (!dto.email || !dto.password || !dto.name) {
       throw new HttpException('Email, name, and password are required', HttpStatus.BAD_REQUEST);
@@ -98,7 +98,7 @@ export class SetupWizardController {
   @Post('smtp')
   async configureSmtp(@Body() config: SmtpConfig) {
     await this.ensureSetupNotComplete();
-    
+
     // Test SMTP connection first
     try {
       const transporter = nodemailer.createTransport({
@@ -133,7 +133,7 @@ export class SetupWizardController {
   @Post('complete')
   async completeSetup(@Body() dto: SetupCompleteDto) {
     await this.ensureSetupNotComplete();
-    
+
     // Create admin if provided
     if (dto.admin) {
       const existingAdmin = await this.prisma.user.findFirst({ where: { role: 'ADMIN' } });
@@ -173,4 +173,3 @@ export class SetupWizardController {
     }
   }
 }
-

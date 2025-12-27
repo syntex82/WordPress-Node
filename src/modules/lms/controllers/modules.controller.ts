@@ -3,16 +3,7 @@
  * API endpoints for managing course sections/modules
  * Course creators can edit their own courses, admins/editors can edit any course
  */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CourseOwnershipGuard } from '../guards/course-ownership.guard';
 import { ModulesService } from '../services/modules.service';
@@ -29,10 +20,7 @@ export class ModulesController {
   constructor(private readonly modulesService: ModulesService) {}
 
   @Post()
-  async create(
-    @Param('courseId') courseId: string,
-    @Body() dto: CreateModuleDto,
-  ) {
+  async create(@Param('courseId') courseId: string, @Body() dto: CreateModuleDto) {
     return this.modulesService.create(courseId, dto);
   }
 
@@ -57,10 +45,7 @@ export class ModulesController {
   }
 
   @Put('reorder')
-  async reorder(
-    @Param('courseId') courseId: string,
-    @Body() dto: ReorderModulesDto,
-  ) {
+  async reorder(@Param('courseId') courseId: string, @Body() dto: ReorderModulesDto) {
     return this.modulesService.reorder(courseId, dto.moduleIds);
   }
 
@@ -73,4 +58,3 @@ export class ModulesController {
     );
   }
 }
-

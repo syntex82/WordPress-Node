@@ -12,8 +12,7 @@ export const RequiresFeature = (...features: string[]) =>
 
 // Plan tier-based access control (minimum plan required)
 export const REQUIRED_PLAN_KEY = 'requiredPlan';
-export const RequiresPlan = (...planSlugs: string[]) =>
-  SetMetadata(REQUIRED_PLAN_KEY, planSlugs);
+export const RequiresPlan = (...planSlugs: string[]) => SetMetadata(REQUIRED_PLAN_KEY, planSlugs);
 
 // Active subscription required (any paid plan)
 export const REQUIRES_SUBSCRIPTION_KEY = 'requiresSubscription';
@@ -42,4 +41,3 @@ export const PLAN_SLUGS = {
   BUSINESS: 'business',
   ENTERPRISE: 'enterprise',
 } as const;
-

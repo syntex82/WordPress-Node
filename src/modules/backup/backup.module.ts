@@ -15,4 +15,3 @@ import { PrismaModule } from '../../database/prisma.module';
   exports: [BackupService],
 })
 export class BackupModule {}
-

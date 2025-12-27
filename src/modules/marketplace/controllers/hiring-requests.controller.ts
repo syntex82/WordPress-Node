@@ -3,7 +3,17 @@
  * API endpoints for hiring requests
  */
 
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -142,11 +152,14 @@ export class HiringRequestsController {
   @Post(':id/create-project')
   async createProject(@Request() req, @Param('id') id: string) {
     // Verify the user is the client
-    const request = await this.hiringRequestsService.findById(id, req.user.id, req.user.role === 'ADMIN');
+    const request = await this.hiringRequestsService.findById(
+      id,
+      req.user.id,
+      req.user.role === 'ADMIN',
+    );
     if (request.clientId !== req.user.id && req.user.role !== 'ADMIN') {
       return { error: 'Only the client can create a project' };
     }
     return this.projectsService.createFromHiringRequest(id);
   }
 }
-

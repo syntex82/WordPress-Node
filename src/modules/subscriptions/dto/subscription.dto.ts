@@ -136,4 +136,3 @@ export class CreateCheckoutDto {
   @IsString()
   cancelUrl?: string;
 }
-

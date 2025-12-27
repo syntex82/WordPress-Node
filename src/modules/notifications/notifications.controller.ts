@@ -3,17 +3,7 @@
  * API endpoints for notification management
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Param,
-  Query,
-  Body,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { NotificationsService, NotificationQueryDto } from './notifications.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { NotificationType } from '@prisma/client';
@@ -104,4 +94,3 @@ export class NotificationsController {
     return { success: true };
   }
 }
-

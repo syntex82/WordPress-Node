@@ -7,7 +7,7 @@ import { Controller, Get, Post, Patch, Body, Param, UseGuards, Request } from '@
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole as _UserRole } from '@prisma/client';
 import { MarketplacePaymentsService } from '../services/marketplace-payments.service';
 import { DevelopersService } from '../services/developers.service';
 import { RequestPayoutDto, ResolveDisputeDto } from '../dto';
@@ -72,11 +72,7 @@ export class PaymentsController {
   @Patch('dispute/:id/resolve')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async resolveDispute(
-    @Request() req,
-    @Param('id') id: string,
-    @Body() dto: ResolveDisputeDto,
-  ) {
+  async resolveDispute(@Request() req, @Param('id') id: string, @Body() dto: ResolveDisputeDto) {
     return this.paymentsService.resolveDispute(
       id,
       req.user.id,
@@ -86,4 +82,3 @@ export class PaymentsController {
     );
   }
 }
-

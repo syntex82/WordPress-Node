@@ -2,17 +2,7 @@
  * Recommendations Admin Controller
  * Admin API endpoints for managing recommendation rules and settings
  */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -142,10 +132,7 @@ export class RecommendationsAdminController {
    * POST /api/admin/recommendations/rules/:ruleId/items
    */
   @Post('rules/:ruleId/items')
-  async addManualItem(
-    @Param('ruleId') ruleId: string,
-    @Body() dto: AddManualRecommendationDto,
-  ) {
+  async addManualItem(@Param('ruleId') ruleId: string, @Body() dto: AddManualRecommendationDto) {
     return this.prisma.manualRecommendation.create({
       data: {
         ruleId,
@@ -178,7 +165,7 @@ export class RecommendationsAdminController {
   async getSettings() {
     const settings = await this.prisma.recommendationSettings.findMany();
     const settingsMap: Record<string, any> = {};
-    settings.forEach(s => {
+    settings.forEach((s) => {
       settingsMap[s.key] = s.value;
     });
     return settingsMap;
@@ -212,10 +199,7 @@ export class RecommendationsAdminController {
    * GET /api/admin/recommendations/analytics
    */
   @Get('analytics')
-  async getAnalytics(
-    @Query('period') period?: string,
-    @Query('contentType') contentType?: string,
-  ) {
+  async getAnalytics(@Query('period') period?: string, @Query('contentType') contentType?: string) {
     return this.analyticsService.getAnalytics(period || 'week', contentType);
   }
 
@@ -233,14 +217,8 @@ export class RecommendationsAdminController {
    * GET /api/admin/recommendations/analytics/top
    */
   @Get('analytics/top')
-  async getTopPerforming(
-    @Query('period') period?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.analyticsService.getTopPerforming(
-      period || 'week',
-      parseInt(limit || '10'),
-    );
+  async getTopPerforming(@Query('period') period?: string, @Query('limit') limit?: string) {
+    return this.analyticsService.getTopPerforming(period || 'week', parseInt(limit || '10'));
   }
 
   /**
@@ -264,10 +242,7 @@ export class RecommendationsAdminController {
    * POST /api/admin/recommendations/cache/clear
    */
   @Post('cache/clear')
-  async clearCache(
-    @Query('sourceType') sourceType?: string,
-    @Query('sourceId') sourceId?: string,
-  ) {
+  async clearCache(@Query('sourceType') sourceType?: string, @Query('sourceId') sourceId?: string) {
     const count = await this.recommendationsService.clearCache(sourceType, sourceId);
     return { success: true, cleared: count };
   }
@@ -282,4 +257,3 @@ export class RecommendationsAdminController {
     return { success: true, cleared: count };
   }
 }
-

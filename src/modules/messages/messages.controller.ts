@@ -161,10 +161,7 @@ export class MessagesController {
    * Delete a conversation and all its messages
    */
   @Delete('conversations/:conversationId')
-  async deleteConversation(
-    @Request() req,
-    @Param('conversationId') conversationId: string,
-  ) {
+  async deleteConversation(@Request() req, @Param('conversationId') conversationId: string) {
     return this.messagesService.deleteConversation(conversationId, req.user.id);
   }
 
