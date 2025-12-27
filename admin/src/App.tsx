@@ -108,9 +108,7 @@ const MarketplaceProjects = lazy(() => import('./pages/marketplace').then(m => (
 const DeveloperApplication = lazy(() => import('./pages/marketplace').then(m => ({ default: m.DeveloperApplication })));
 const HireForm = lazy(() => import('./pages/marketplace').then(m => ({ default: m.HireForm })));
 
-// Lazy-loaded pages - Subscriptions
-const Pricing = lazy(() => import('./pages/Pricing'));
-const Subscription = lazy(() => import('./pages/Subscription'));
+
 
 function App() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
