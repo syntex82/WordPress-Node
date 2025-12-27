@@ -1550,6 +1550,101 @@ npm run dev
 
 <br />
 
+### 🔧 Local Development vs Production
+
+#### Local Development Requirements
+
+For full functionality in local development, you need:
+
+| Requirement | Purpose | Required? |
+|-------------|---------|:---------:|
+| **PostgreSQL** | Database | ✅ Yes |
+| **Redis** | Caching, sessions, job queues | ⚠️ Optional* |
+
+> \* **Redis is optional for local development.** If Redis is not installed, the application will run without caching/queues. However, some features (job queues, distributed rate limiting) will be disabled.
+
+#### Installing Redis Locally
+
+**Option 1: Docker (Recommended)**
+```bash
+docker run -d --name redis -p 6379:6379 redis:alpine
+```
+
+**Option 2: Windows (via Chocolatey)**
+```powershell
+choco install redis-64
+redis-server
+```
+
+**Option 3: WSL (Windows Subsystem for Linux)**
+```bash
+sudo apt install redis-server
+sudo service redis-server start
+```
+
+**Option 4: macOS (via Homebrew)**
+```bash
+brew install redis
+brew services start redis
+```
+
+#### Running Without Redis
+
+To run locally **without Redis**, comment out `REDIS_HOST` in your `.env` file:
+
+```env
+# Redis (for caching, sessions, and job queues)
+# Comment out REDIS_HOST to disable Redis for local dev without Redis installed
+# REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+The application will start without Redis and use in-memory fallbacks where possible.
+
+#### Previewing Changes Before Production
+
+Before pushing changes to production, always preview them locally:
+
+1. **Start the dev server:**
+   ```bash
+   npm run dev
+   ```
+
+2. **Access your local site:**
+   - Frontend: `http://localhost:3000`
+   - Admin Panel: `http://localhost:3000/admin`
+
+3. **Review changes with Git:**
+   ```bash
+   git diff                # Show unstaged changes
+   git diff --staged       # Show staged changes
+   git log -1 -p           # Show last commit with full diff
+   git status              # Show modified files
+   ```
+
+4. **Test thoroughly before committing:**
+   - Test the specific features you changed
+   - Check for console errors in browser DevTools
+   - Verify the build works: `npm run build`
+
+#### Production Deployment Checklist
+
+Before deploying to production:
+
+| Step | Command/Action | Description |
+|------|----------------|-------------|
+| 1. | `npm run build` | Ensure the build succeeds |
+| 2. | `npm run lint` | Check for linting errors |
+| 3. | Test locally | Verify all features work |
+| 4. | `git status` | Review all changed files |
+| 5. | `git diff` | Review the actual changes |
+| 6. | Commit with clear message | `git commit -m "feat: description"` |
+| 7. | Push to repository | `git push origin main` |
+
+> 💡 **Tip:** If auto-deploy is enabled on Render/Vercel, pushing to `main` will automatically trigger a production deployment. Consider using a staging branch for testing first.
+
+<br />
+
 ### 🌐 Access Points
 
 | Service | URL | Description |
