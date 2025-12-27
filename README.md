@@ -232,16 +232,22 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 
 | Feature | Description |
 |---------|-------------|
-| **Peer-to-Peer Video** | WebRTC-based video calling for direct communication |
-| **WebSocket Signaling** | Real-time signaling via Socket.IO for call setup |
-| **Call Controls** | Mute audio, toggle camera, end call with intuitive buttons |
-| **Incoming Call UI** | Notification with accept/decline options for incoming calls |
+| **1-on-1 Video Calls** | Direct peer-to-peer video calling between users in DMs |
+| **Incoming Call Notification** | Full-screen ringing modal with Accept/Decline buttons |
+| **WebRTC Connection** | Direct browser-to-browser video/audio streaming |
+| **WebSocket Signaling** | Real-time signaling via Socket.IO for call setup (offer/answer/ICE) |
+| **TURN/STUN Servers** | NAT traversal with Google STUN + Metered TURN servers for reliable connections |
+| **Call Controls** | Mute audio, toggle camera, switch camera (front/back), end call |
+| **Picture-in-Picture** | Local video preview in corner while viewing remote video fullscreen |
 | **Call Timer** | Duration displayed during active video calls |
 | **Fullscreen Mode** | Toggle fullscreen for immersive video experience |
-| **NAT Traversal** | STUN servers (Google) for connections through firewalls |
-| **Online User Requirement** | Video calls only available when the other user is online |
+| **Permission Handling** | Graceful camera/microphone permission requests with retry support |
+| **Connection Status** | Visual indicators for connecting, connected, and ended states |
+| **Group Video Calls** | Multi-participant video meetings in group chats (via Metered rooms) |
 
-> 💡 **Where to Find:** Admin Panel → Messages → Select a conversation → Click the 📞 phone icon (green when user is online)
+> 💡 **1-on-1 Calls:** Admin Panel → Messages → Select a DM conversation → Click the 📞 phone icon (green when user is online)
+>
+> 💡 **Group Calls:** Admin Panel → Messages → Select a group conversation → Click the 📞 phone icon → All members can join
 
 <br />
 
