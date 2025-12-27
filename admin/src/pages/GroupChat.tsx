@@ -112,6 +112,7 @@ export default function GroupChat() {
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [videoCallTarget, setVideoCallTarget] = useState<{ id: string; name: string; avatar: string | null } | null>(null);
   const [activeVideoCall, setActiveVideoCall] = useState<{ roomUrl: string; startedBy: { id: string; name: string } } | null>(null);
+  const [callSocket, setCallSocket] = useState<Socket | null>(null); // Separate socket for call signaling via messages namespace
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -220,6 +221,42 @@ export default function GroupChat() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Create messages socket when initiating a video call (for cross-namespace signaling)
+  useEffect(() => {
+    if (videoCallTarget && token && !callSocket) {
+      const wsUrl = `${window.location.protocol}//${window.location.host}/messages`;
+      const newCallSocket = io(wsUrl, {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+        path: '/socket.io',
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+
+      newCallSocket.on('connect', () => {
+        console.log('Connected to messages gateway for video call');
+      });
+
+      setCallSocket(newCallSocket);
+    }
+
+    // Cleanup when video call ends
+    if (!videoCallTarget && callSocket) {
+      callSocket.disconnect();
+      setCallSocket(null);
+    }
+  }, [videoCallTarget, token]);
+
+  // Cleanup call socket on unmount
+  useEffect(() => {
+    return () => {
+      if (callSocket) {
+        callSocket.disconnect();
+      }
+    };
+  }, []);
 
   const loadGroup = async () => {
     try {
@@ -824,10 +861,10 @@ export default function GroupChat() {
         />
       )}
 
-      {/* Active 1-on-1 Video Call */}
-      {videoCallTarget && socket && user && (
+      {/* Active 1-on-1 Video Call - uses messages socket for cross-namespace signaling */}
+      {videoCallTarget && callSocket && user && (
         <VideoCall
-          socket={socket}
+          socket={callSocket}
           currentUser={{
             id: user.id,
             name: user.name || 'User',

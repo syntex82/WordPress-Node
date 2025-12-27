@@ -6,14 +6,16 @@
 
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand, FiHardDrive, FiZap, FiArrowUp } from 'react-icons/fi';
-import { useState, useEffect, useCallback } from 'react';
+import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand, FiHardDrive, FiZap, FiArrowUp, FiVideo, FiPhone, FiPhoneOff } from 'react-icons/fi';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 import { messagesApi, systemConfigApi } from '../services/api';
 import { canAccess, ROLE_DESCRIPTIONS, type UserRole, type RolePermissions } from '../config/permissions';
 import Tooltip from './Tooltip';
 import { NAV_TOOLTIPS } from '../config/tooltips';
 import CommandPalette from './CommandPalette';
 import NotificationCenter from './NotificationCenter';
+import VideoCall from './VideoCall';
 
 // Get the frontend URL - in production it's same origin (without /admin), in development uses domain config
 const getFrontendUrl = async (): Promise<string> => {
@@ -29,9 +31,17 @@ const getFrontendUrl = async (): Promise<string> => {
   return window.location.origin;
 };
 
+// Incoming call interface
+interface IncomingCall {
+  callerId: string;
+  callerName: string;
+  callerAvatar: string | null;
+  conversationId: string;
+}
+
 export default function Layout() {
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const { user, logout, token } = useAuthStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showRoleInfo, setShowRoleInfo] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -49,6 +59,13 @@ export default function Layout() {
     theme: false,
   });
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+
+  // Global socket for incoming call notifications
+  const [globalSocket, setGlobalSocket] = useState<Socket | null>(null);
+  const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+  const [activeVideoCall, setActiveVideoCall] = useState<{ remoteUser: IncomingCall; isIncoming: boolean } | null>(null);
+  const incomingCallAudioRef = useRef<HTMLAudioElement | null>(null);
+
   const userRole = (user?.role || 'VIEWER') as UserRole;
   const roleInfo = ROLE_DESCRIPTIONS[userRole];
 
@@ -61,6 +78,92 @@ export default function Layout() {
   useEffect(() => {
     getFrontendUrl().then(url => setFrontendUrl(url));
   }, []);
+
+  // Global socket for incoming call notifications (works across all pages)
+  useEffect(() => {
+    if (!token || !user) return;
+
+    // Skip if already on Messages page (it has its own socket)
+    if (location.pathname === '/messages') return;
+
+    const wsUrl = `${window.location.protocol}//${window.location.host}/messages`;
+    const newSocket = io(wsUrl, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      path: '/socket.io',
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Global socket connected for incoming calls');
+    });
+
+    // Listen for incoming calls
+    newSocket.on('call:incoming', (data: IncomingCall) => {
+      console.log('📞 Incoming call from:', data.callerName);
+      setIncomingCall(data);
+
+      // Play ringtone
+      if (incomingCallAudioRef.current) {
+        incomingCallAudioRef.current.loop = true;
+        incomingCallAudioRef.current.play().catch(() => {});
+      }
+    });
+
+    // Listen for call cancelled (caller hung up before we answered)
+    newSocket.on('call:ended', () => {
+      setIncomingCall(null);
+      if (incomingCallAudioRef.current) {
+        incomingCallAudioRef.current.pause();
+        incomingCallAudioRef.current.currentTime = 0;
+      }
+    });
+
+    setGlobalSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+      setGlobalSocket(null);
+    };
+  }, [token, user, location.pathname]);
+
+  // Handle accepting incoming call
+  const handleAcceptCall = useCallback(() => {
+    if (!incomingCall || !globalSocket) return;
+
+    // Stop ringtone
+    if (incomingCallAudioRef.current) {
+      incomingCallAudioRef.current.pause();
+      incomingCallAudioRef.current.currentTime = 0;
+    }
+
+    // Notify caller that we accepted
+    globalSocket.emit('call:accept', { targetUserId: incomingCall.callerId });
+
+    // Open video call
+    setActiveVideoCall({
+      remoteUser: incomingCall,
+      isIncoming: true,
+    });
+    setIncomingCall(null);
+  }, [incomingCall, globalSocket]);
+
+  // Handle rejecting incoming call
+  const handleRejectCall = useCallback(() => {
+    if (!incomingCall || !globalSocket) return;
+
+    // Stop ringtone
+    if (incomingCallAudioRef.current) {
+      incomingCallAudioRef.current.pause();
+      incomingCallAudioRef.current.currentTime = 0;
+    }
+
+    // Notify caller that we rejected
+    globalSocket.emit('call:reject', { targetUserId: incomingCall.callerId });
+    setIncomingCall(null);
+  }, [incomingCall, globalSocket]);
 
   // Global keyboard shortcut for Command Palette (Cmd+K / Ctrl+K)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -1049,6 +1152,72 @@ export default function Layout() {
 
       {/* Command Palette */}
       <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
+
+      {/* Global Incoming Call Notification */}
+      {incomingCall && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-800 rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4 animate-pulse">
+            <div className="flex flex-col items-center">
+              {/* Caller Avatar */}
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mb-4 ring-4 ring-green-400/30">
+                {incomingCall.callerAvatar ? (
+                  <img src={incomingCall.callerAvatar} alt="" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <span className="text-3xl font-bold text-white">
+                    {incomingCall.callerName?.charAt(0)?.toUpperCase() || '?'}
+                  </span>
+                )}
+              </div>
+
+              {/* Caller Info */}
+              <h3 className="text-xl font-semibold text-white mb-1">{incomingCall.callerName}</h3>
+              <p className="text-slate-400 mb-6 flex items-center gap-2">
+                <FiVideo className="animate-pulse" />
+                Incoming Video Call...
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <button
+                  onClick={handleRejectCall}
+                  className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors shadow-lg"
+                >
+                  <FiPhoneOff size={24} className="text-white" />
+                </button>
+                <button
+                  onClick={handleAcceptCall}
+                  className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors shadow-lg animate-bounce"
+                >
+                  <FiPhone size={24} className="text-white" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global Active Video Call */}
+      {activeVideoCall && globalSocket && user && (
+        <VideoCall
+          socket={globalSocket}
+          currentUser={{
+            id: user.id,
+            name: user.name || 'User',
+            avatar: user.avatar || null,
+          }}
+          remoteUser={{
+            id: activeVideoCall.remoteUser.callerId,
+            name: activeVideoCall.remoteUser.callerName,
+            avatar: activeVideoCall.remoteUser.callerAvatar,
+          }}
+          conversationId={activeVideoCall.remoteUser.conversationId}
+          isIncoming={activeVideoCall.isIncoming}
+          onClose={() => setActiveVideoCall(null)}
+        />
+      )}
+
+      {/* Hidden audio for ringtone */}
+      <audio ref={incomingCallAudioRef} src="/sounds/ringtone.mp3" />
     </div>
   );
 }
