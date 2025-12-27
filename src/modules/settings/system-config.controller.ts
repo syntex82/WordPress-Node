@@ -216,20 +216,25 @@ export class SystemConfigController {
   async savePaymentConfig(
     @Body() body: { publishableKey?: string; secretKey?: string; webhookSecret?: string },
   ) {
+    // Trim whitespace from keys (common issue when copying/pasting)
+    const publishableKey = body.publishableKey?.trim() || '';
+    const secretKey = body.secretKey?.trim() || '';
+    const webhookSecret = body.webhookSecret?.trim() || '';
+
     // Validate key formats if provided
-    if (body.publishableKey && !body.publishableKey.startsWith('pk_')) {
+    if (publishableKey && !publishableKey.startsWith('pk_')) {
       throw new HttpException(
         'Invalid publishable key format. Must start with pk_test_ or pk_live_',
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (body.secretKey && !body.secretKey.startsWith('sk_')) {
+    if (secretKey && !secretKey.startsWith('sk_')) {
       throw new HttpException(
         'Invalid secret key format. Must start with sk_test_ or sk_live_',
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (body.webhookSecret && !body.webhookSecret.startsWith('whsec_')) {
+    if (webhookSecret && !webhookSecret.startsWith('whsec_')) {
       throw new HttpException(
         'Invalid webhook secret format. Must start with whsec_',
         HttpStatus.BAD_REQUEST,
@@ -237,9 +242,9 @@ export class SystemConfigController {
     }
 
     // Check for mode mismatch (mixing test and live keys)
-    if (body.publishableKey && body.secretKey) {
-      const pubIsLive = body.publishableKey.startsWith('pk_live_');
-      const secIsLive = body.secretKey.startsWith('sk_live_');
+    if (publishableKey && secretKey) {
+      const pubIsLive = publishableKey.startsWith('pk_live_');
+      const secIsLive = secretKey.startsWith('sk_live_');
       if (pubIsLive !== secIsLive) {
         throw new HttpException(
           'Key mode mismatch: Cannot mix test and live keys',
@@ -249,9 +254,9 @@ export class SystemConfigController {
     }
 
     await this.systemConfig.saveStripeConfig({
-      publishableKey: body.publishableKey || '',
-      secretKey: body.secretKey || '',
-      webhookSecret: body.webhookSecret || '',
+      publishableKey,
+      secretKey,
+      webhookSecret,
     });
 
     return { success: true, message: 'Payment settings saved successfully' };
