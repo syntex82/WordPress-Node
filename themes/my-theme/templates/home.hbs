@@ -1,8 +1,5 @@
 {{> header}}
 
-{{!-- Show upgrade banner for free plan users --}}
-{{> upgrade-banner}}
-
 <style>
   .hero-section { position: relative; min-height: 80vh; display: flex; align-items: center; overflow: hidden; }
   .hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(236, 72, 153, 0.1) 100%); }
@@ -225,13 +222,5 @@
   </div>
 </section>
 {{/if}}
-
-{{!-- Pricing Section - Show available plans --}}
-{{#if plans.length}}
-{{> pricing-table}}
-{{/if}}
-
-{{!-- Floating upgrade CTA for free users --}}
-{{> subscription-cta style="floating"}}
 
 {{> footer}}
