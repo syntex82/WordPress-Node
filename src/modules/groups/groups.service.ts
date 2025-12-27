@@ -66,6 +66,10 @@ export class GroupsService {
               avatar: true,
             },
           },
+          members: {
+            where: { userId },
+            select: { userId: true, role: true },
+          },
           _count: {
             select: {
               members: true,
@@ -79,8 +83,16 @@ export class GroupsService {
       this.prisma.group.count({ where }),
     ]);
 
+    // Add isMember flag to each group
+    const groupsWithMembership = groups.map((group) => ({
+      ...group,
+      isMember: group.members.length > 0,
+      memberRole: group.members[0]?.role || null,
+      members: undefined, // Don't expose the full members array
+    }));
+
     return {
-      groups,
+      groups: groupsWithMembership,
       pagination: {
         page,
         limit,

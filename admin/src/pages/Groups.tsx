@@ -269,9 +269,15 @@ export default function Groups() {
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    <Link to={`/groups/${group.id}/chat`} className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-indigo-600 text-white rounded-lg sm:rounded-xl font-medium hover:bg-indigo-700 transition-colors text-xs sm:text-sm">
-                      <FiMessageSquare size={14} className="sm:w-4 sm:h-4" /> Open Chat
-                    </Link>
+                    {group.isMember || group.owner.id === user?.id ? (
+                      <Link to={`/groups/${group.id}/chat`} className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-indigo-600 text-white rounded-lg sm:rounded-xl font-medium hover:bg-indigo-700 transition-colors text-xs sm:text-sm">
+                        <FiMessageSquare size={14} className="sm:w-4 sm:h-4" /> Open Chat
+                      </Link>
+                    ) : (
+                      <Link to={`/groups/${group.id}/chat`} className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg sm:rounded-xl font-medium hover:opacity-90 transition-opacity text-xs sm:text-sm">
+                        <FiUsers size={14} className="sm:w-4 sm:h-4" /> Join Group
+                      </Link>
+                    )}
                     {group.owner.id === user?.id && (
                       <>
                         <Link to={`/groups/${group.id}`} className="p-2 sm:p-2.5 bg-slate-700/50 text-slate-300 rounded-lg sm:rounded-xl hover:bg-slate-600/50 transition-colors">
