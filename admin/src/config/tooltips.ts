@@ -53,6 +53,10 @@ export const NAV_TOOLTIPS = {
     title: 'Site Settings',
     content: 'Configure site title, timezone, permalinks, email settings, and general preferences.',
   },
+  subscription: {
+    title: 'Subscription & Billing',
+    content: 'Manage your subscription plan, view billing history, and upgrade to unlock more features.',
+  },
 
   // Shop
   products: {
