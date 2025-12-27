@@ -1133,6 +1133,11 @@ export class PublicController {
       const user = (req as any).user;
       const plans = await this.subscriptionsService.getPlans(false);
 
+      console.log('[Pricing] Plans fetched:', plans?.length || 0, 'plans');
+      if (plans?.length) {
+        console.log('[Pricing] Plan names:', plans.map(p => `${p.name} (active: ${p.isActive})`).join(', '));
+      }
+
       const html = await this.themeRenderer.render('pricing', {
         title: 'Pricing Plans',
         description: 'Choose the perfect plan for your needs',

@@ -142,7 +142,6 @@
       <p>{{description}}</p>
     </div>
 
-    {{#if plans.length}}
     <div class="plans-grid">
       {{#each plans}}
       <div class="plan-card {{#if isFeatured}}featured{{/if}}">
@@ -164,14 +163,13 @@
         <a href="/admin/subscription" class="btn-plan">Choose {{name}}</a>
         {{/if}}
       </div>
+      {{else}}
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <h2>No plans available</h2>
+        <p>Please check back later or contact the administrator.</p>
+      </div>
       {{/each}}
     </div>
-    {{else}}
-    <div class="empty-state">
-      <h2>No plans available</h2>
-      <p>Please check back later.</p>
-    </div>
-    {{/if}}
   </div>
 </div>
 
