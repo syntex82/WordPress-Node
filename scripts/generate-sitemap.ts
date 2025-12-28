@@ -35,7 +35,14 @@ async function generateSitemap() {
     }),
   ]);
 
-  const urls = [
+  interface SitemapUrl {
+    loc: string;
+    lastmod?: string;
+    priority: string;
+    changefreq: string;
+  }
+
+  const urls: SitemapUrl[] = [
     { loc: BASE_URL, priority: '1.0', changefreq: 'daily' },
     { loc: `${BASE_URL}/blog`, priority: '0.9', changefreq: 'daily' },
     { loc: `${BASE_URL}/shop`, priority: '0.9', changefreq: 'daily' },
