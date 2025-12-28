@@ -954,6 +954,85 @@ async function main() {
   }
   console.log('✅ Sample recommendation analytics seeded');
 
+  // ============ SEO SETTINGS ============
+  const seoSettings = [
+    { key: 'seo_site_title', value: process.env.SITE_NAME || 'My Website', type: 'string', group: 'seo' },
+    { key: 'seo_site_description', value: process.env.SITE_DESCRIPTION || 'Welcome to my website - your destination for quality content, products, and courses.', type: 'string', group: 'seo' },
+    { key: 'seo_site_keywords', value: 'website, blog, ecommerce, courses, lms, cms, content management', type: 'string', group: 'seo' },
+    { key: 'seo_og_image', value: '/images/og-default.jpg', type: 'string', group: 'seo' },
+    { key: 'seo_twitter_handle', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_google_site_verification', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_bing_site_verification', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_robots_txt_custom', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_organization_name', value: process.env.SITE_NAME || 'My Organization', type: 'string', group: 'seo' },
+    { key: 'seo_organization_logo', value: '/images/logo.png', type: 'string', group: 'seo' },
+    { key: 'seo_organization_address', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_organization_phone', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_organization_email', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_social_facebook', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_social_twitter', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_social_instagram', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_social_linkedin', value: '', type: 'string', group: 'seo' },
+    { key: 'seo_social_youtube', value: '', type: 'string', group: 'seo' },
+  ];
+
+  for (const setting of seoSettings) {
+    await prisma.setting.upsert({
+      where: { key: setting.key },
+      update: {},
+      create: setting,
+    });
+  }
+  console.log('✅ SEO settings created');
+
+  // Create default Organization schema markup
+  await prisma.seoSchemaMarkup.upsert({
+    where: { id: 'default-organization' },
+    update: {},
+    create: {
+      id: 'default-organization',
+      name: 'Organization Schema',
+      type: 'Organization',
+      scope: 'global',
+      content: {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: process.env.SITE_NAME || 'My Organization',
+        url: process.env.SITE_URL || 'http://localhost:3000',
+        description: process.env.SITE_DESCRIPTION || 'Welcome to my website',
+      },
+      isActive: true,
+    },
+  });
+
+  // Create default WebSite schema markup
+  await prisma.seoSchemaMarkup.upsert({
+    where: { id: 'default-website' },
+    update: {},
+    create: {
+      id: 'default-website',
+      name: 'WebSite Schema',
+      type: 'WebSite',
+      scope: 'global',
+      content: {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: process.env.SITE_NAME || 'My Website',
+        url: process.env.SITE_URL || 'http://localhost:3000',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${process.env.SITE_URL || 'http://localhost:3000'}/search?q={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      isActive: true,
+    },
+  });
+  console.log('✅ Default schema markups created');
+
   console.log('🎉 Database seed completed successfully!');
 }
 

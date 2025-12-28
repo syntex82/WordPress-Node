@@ -23,25 +23,25 @@ export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   findAll(@Query() query: ProductQueryDto) {
     return this.productsService.findAll(query);
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.productsService.update(id, dto);
   }

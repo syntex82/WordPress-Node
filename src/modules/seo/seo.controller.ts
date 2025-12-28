@@ -143,4 +143,49 @@ export class SeoController {
   analyzeContent(@Param('contentType') contentType: string, @Param('contentId') contentId: string) {
     return this.seoService.analyzeContent(contentType, contentId);
   }
+
+  // ============ SEO SETTINGS ============
+  @Get('settings')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  getSeoSettings() {
+    return this.seoService.getSeoSettings();
+  }
+
+  @Put('settings')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  updateSeoSettings(@Body() body: Record<string, string>) {
+    return this.seoService.updateSeoSettings(body);
+  }
+
+  // ============ ROBOTS.TXT ============
+  @Get('robots.txt')
+  @Header('Content-Type', 'text/plain')
+  async getRobotsTxt(@Res() res: Response) {
+    const baseUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const robotsTxt = await this.seoService.generateRobotsTxt(baseUrl);
+    res.send(robotsTxt);
+  }
+
+  // ============ GLOBAL META TAGS ============
+  @Get('meta')
+  async getGlobalMeta() {
+    const baseUrl = process.env.SITE_URL || 'http://localhost:3000';
+    return this.seoService.getGlobalMetaTags(baseUrl);
+  }
+
+  // ============ ORGANIZATION SCHEMA ============
+  @Get('schema/organization')
+  async getOrganizationSchema() {
+    const baseUrl = process.env.SITE_URL || 'http://localhost:3000';
+    return this.seoService.generateOrganizationSchema(baseUrl);
+  }
+
+  // ============ WEBSITE SCHEMA ============
+  @Get('schema/website')
+  async getWebsiteSchema() {
+    const baseUrl = process.env.SITE_URL || 'http://localhost:3000';
+    return this.seoService.generateWebsiteSchema(baseUrl);
+  }
 }

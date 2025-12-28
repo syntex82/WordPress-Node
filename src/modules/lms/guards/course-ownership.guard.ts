@@ -24,10 +24,12 @@ export class CourseOwnershipGuard implements CanActivate {
       throw new ForbiddenException('Authentication required');
     }
 
-    // Admins and Editors have full access
+    // Admins and Editors have full access to all courses
     if (user.role === 'ADMIN' || user.role === 'EDITOR') {
       return true;
     }
+
+    // Authors can access their own courses (checked below)
 
     // Get courseId from route params
     const courseId = request.params.courseId || request.params.id;

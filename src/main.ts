@@ -517,6 +517,64 @@ self.addEventListener('fetch', e => {
 
   logger.log('✅ Built-in PWA routes registered');
 
+  // SEO routes at root level (preferred by search engines)
+  // Import SeoService dynamically
+  let seoService: any = null;
+  try {
+    const { SeoService } = await import('./modules/seo/seo.service');
+    seoService = app.get(SeoService);
+    logger.log('✅ SeoService loaded for root SEO routes');
+  } catch (e) {
+    logger.warn('⚠️ SeoService not available for root SEO routes');
+  }
+
+  // robots.txt - generates dynamically from SEO settings
+  expressApp.get('/robots.txt', async (req, res) => {
+    const baseUrl = process.env.SITE_URL || `http://localhost:${port}`;
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+
+    if (seoService) {
+      try {
+        const robotsTxt = await seoService.generateRobotsTxt(baseUrl);
+        return res.send(robotsTxt);
+      } catch (e) {
+        logger.warn('robots.txt generation failed:', e);
+      }
+    }
+
+    // Fallback
+    res.send(`User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Sitemap: ${baseUrl}/sitemap.xml`);
+  });
+
+  // sitemap.xml - generates dynamically from content
+  expressApp.get('/sitemap.xml', async (req, res) => {
+    const baseUrl = process.env.SITE_URL || `http://localhost:${port}`;
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+
+    if (seoService) {
+      try {
+        const sitemapXml = await seoService.generateSitemap(baseUrl);
+        return res.send(sitemapXml);
+      } catch (error) {
+        logger.warn('Sitemap generation failed:', error);
+      }
+    }
+
+    // Fallback minimal sitemap
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${baseUrl}</loc><priority>1.0</priority></url>
+</urlset>`);
+  });
+
+  logger.log('✅ SEO routes registered (robots.txt, sitemap.xml)');
+
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     logger.log(`Received ${signal}, starting graceful shutdown...`);

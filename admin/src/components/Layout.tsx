@@ -51,6 +51,7 @@ export default function Layout() {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     main: true,
     content: false,
+    communication: true, // Messages & Groups - expanded by default for all users
     system: false,
     shop: false,
     lms: false,
@@ -212,11 +213,15 @@ export default function Layout() {
     { name: 'SEO', path: '/seo', icon: FiSearch, permission: 'seo', tooltipKey: 'seo' },
   ];
 
-  // System navigation group
-  const systemNavigation: Array<{ name: string; path: string; icon: any; permission: keyof RolePermissions; badge?: number; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [
-    { name: 'Users', path: '/users', icon: FiUsers, permission: 'users', tooltipKey: 'users' },
+  // Communication navigation group (available to all roles)
+  const communicationNavigation: Array<{ name: string; path: string; icon: any; permission: keyof RolePermissions; badge?: number; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [
     { name: 'Messages', path: '/messages', icon: FiMail, permission: 'messages', badge: unreadMessages, tooltipKey: 'messages' },
     { name: 'Groups', path: '/groups', icon: FiMessageSquare, permission: 'groups', tooltipKey: 'groups' },
+  ];
+
+  // System navigation group (ADMIN only)
+  const systemNavigation: Array<{ name: string; path: string; icon: any; permission: keyof RolePermissions; badge?: number; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [
+    { name: 'Users', path: '/users', icon: FiUsers, permission: 'users', tooltipKey: 'users' },
     { name: 'Security', path: '/security', icon: FiShield, permission: 'security', tooltipKey: 'security' },
     { name: 'Backups', path: '/backups', icon: FiHardDrive, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Updates', path: '/updates', icon: FiArrowUp, permission: 'settings', tooltipKey: 'settings' },
@@ -254,6 +259,7 @@ export default function Layout() {
   // Filter navigation based on permissions
   const filteredMainNav = mainNavigation.filter(item => canAccess(userRole, item.permission));
   const filteredContentNav = contentNavigation.filter(item => canAccess(userRole, item.permission));
+  const filteredCommunicationNav = communicationNavigation.filter(item => canAccess(userRole, item.permission));
   const filteredSystemNav = systemNavigation.filter(item => canAccess(userRole, item.permission));
   const canViewShop = canAccess(userRole, 'shop');
   const canViewLms = canAccess(userRole, 'lms');
@@ -419,7 +425,48 @@ export default function Layout() {
               </div>
             )}
 
-            {/* System Section */}
+            {/* Communication Section - Messages & Groups (All roles) */}
+            {filteredCommunicationNav.length > 0 && (
+              <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <button
+                  onClick={() => toggleSection('communication')}
+                  className="flex items-center justify-between w-full px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors touch-manipulation min-h-[48px]"
+                >
+                  <div className="flex items-center gap-2">
+                    <FiMail size={14} className="text-green-400" />
+                    <span>Communication</span>
+                  </div>
+                  {expandedSections.communication ? <FiChevronDown size={16} /> : <FiChevronRight size={16} />}
+                </button>
+                {expandedSections.communication && (
+                  <div className="pb-2">
+                    {filteredCommunicationNav.map((item) => {
+                      const Icon = item.icon;
+                      const active = isActive(item.path);
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          className={`group flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all touch-manipulation min-h-[44px] ${
+                            active
+                              ? 'bg-green-500/20 text-green-200 border-l-2 border-green-400'
+                              : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                          }`}
+                        >
+                          <Icon size={18} className={active ? 'text-green-300' : 'text-slate-500'} />
+                          {item.name}
+                          {item.badge !== undefined && item.badge > 0 && (
+                            <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">{item.badge}</span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* System Section (ADMIN only) */}
             {filteredSystemNav.length > 0 && (
               <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
                 <button
@@ -757,7 +804,50 @@ export default function Layout() {
                 </div>
               )}
 
-              {/* System Section */}
+              {/* Communication Section - Messages & Groups (All roles) */}
+              {filteredCommunicationNav.length > 0 && (
+                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                  <button
+                    onClick={() => toggleSection('communication')}
+                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FiMail size={14} className="text-green-400" />
+                      <span>Communication</span>
+                    </div>
+                    {expandedSections.communication ? <FiChevronDown size={14} /> : <FiChevronRight size={14} />}
+                  </button>
+                  {expandedSections.communication && (
+                    <div className="pb-2">
+                      {filteredCommunicationNav.map((item) => {
+                        const Icon = item.icon;
+                        const tooltip = NAV_TOOLTIPS[item.tooltipKey];
+                        const active = isActive(item.path);
+                        return (
+                          <Tooltip key={item.path} title={tooltip.title} content={tooltip.content} position="right" variant="help" delay={400}>
+                            <Link
+                              to={item.path}
+                              className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                active
+                                  ? 'bg-green-500/20 text-green-200 border-l-2 border-green-400'
+                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                              }`}
+                            >
+                              <Icon size={16} className={active ? 'text-green-300' : 'text-slate-500'} />
+                              {item.name}
+                              {item.badge !== undefined && item.badge > 0 && (
+                                <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">{item.badge}</span>
+                              )}
+                            </Link>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* System Section (ADMIN only) */}
               {filteredSystemNav.length > 0 && (
                 <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
                   <button

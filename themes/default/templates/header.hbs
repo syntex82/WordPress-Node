@@ -3,18 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WordPress Node - Modern CMS Built with Node.js</title>
-  <meta name="description" content="A blazing-fast, enterprise-grade CMS built with NestJS, React, Prisma, and PostgreSQL. Full LMS, eCommerce, analytics, and plugin ecosystem.">
-  <meta property="og:title" content="WordPress Node - Modern CMS Built with Node.js">
-  <meta property="og:description" content="The modern WordPress alternative built with Node.js. Enterprise-grade features out of the box.">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Primary SEO Meta Tags -->
+  <title>{{#if metaTitle}}{{metaTitle}}{{else}}{{#if title}}{{title}} | {{siteName}}{{else}}{{siteName}} - Modern CMS Built with Node.js{{/if}}{{/if}}</title>
+  <meta name="description" content="{{#if metaDescription}}{{metaDescription}}{{else}}A blazing-fast, enterprise-grade CMS built with NestJS, React, Prisma, and PostgreSQL. Full LMS, eCommerce, analytics, and plugin ecosystem.{{/if}}">
+  {{#if metaKeywords}}<meta name="keywords" content="{{metaKeywords}}">{{/if}}
+  <meta name="author" content="{{#if author}}{{author}}{{else}}{{siteName}}{{/if}}">
+  <meta name="robots" content="{{#if noIndex}}noindex{{else}}index{{/if}}, {{#if noFollow}}nofollow{{else}}follow{{/if}}">
+  {{#if canonicalUrl}}<link rel="canonical" href="{{canonicalUrl}}">{{/if}}
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="{{#if ogType}}{{ogType}}{{else}}website{{/if}}">
+  <meta property="og:url" content="{{#if pageUrl}}{{pageUrl}}{{else}}{{siteUrl}}{{/if}}">
+  <meta property="og:title" content="{{#if ogTitle}}{{ogTitle}}{{else}}{{#if metaTitle}}{{metaTitle}}{{else}}{{siteName}}{{/if}}{{/if}}">
+  <meta property="og:description" content="{{#if ogDescription}}{{ogDescription}}{{else}}{{#if metaDescription}}{{metaDescription}}{{else}}The modern WordPress alternative built with Node.js. Enterprise-grade features out of the box.{{/if}}{{/if}}">
+  {{#if ogImage}}<meta property="og:image" content="{{ogImage}}">{{/if}}
+  <meta property="og:site_name" content="{{siteName}}">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="{{#if twitterCardType}}{{twitterCardType}}{{else}}summary_large_image{{/if}}">
+  {{#if twitterHandle}}<meta name="twitter:site" content="{{twitterHandle}}">{{/if}}
+  <meta name="twitter:title" content="{{#if ogTitle}}{{ogTitle}}{{else}}{{#if metaTitle}}{{metaTitle}}{{else}}{{siteName}}{{/if}}{{/if}}">
+  <meta name="twitter:description" content="{{#if ogDescription}}{{ogDescription}}{{else}}{{#if metaDescription}}{{metaDescription}}{{else}}Modern CMS built with Node.js{{/if}}{{/if}}">
+  {{#if ogImage}}<meta name="twitter:image" content="{{ogImage}}">{{/if}}
+
+  <!-- Search Engine Verification -->
+  {{#if googleVerification}}<meta name="google-site-verification" content="{{googleVerification}}">{{/if}}
+  {{#if bingVerification}}<meta name="msvalidate.01" content="{{bingVerification}}">{{/if}}
+
+  <!-- PWA & Mobile -->
   <meta name="theme-color" content="#4f46e5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="WordPress Node">
+  <meta name="apple-mobile-web-app-title" content="{{siteName}}">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/pwa/icons/icon-192x192.png">
+
+  <!-- Structured Data / JSON-LD -->
+  {{#if schemaMarkup}}
+  <script type="application/ld+json">{{{schemaMarkup}}}</script>
+  {{/if}}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">

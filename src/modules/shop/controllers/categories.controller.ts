@@ -16,31 +16,31 @@ export class CategoriesController {
   constructor(private categoriesService: CategoriesService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   findAll() {
     return this.categoriesService.findAll();
   }
 
   @Get('tree')
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   findTree() {
     return this.categoriesService.findTree();
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(id);
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
   update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.categoriesService.update(id, dto);
   }

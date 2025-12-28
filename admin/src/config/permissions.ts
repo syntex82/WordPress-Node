@@ -32,6 +32,7 @@ export interface RolePermissions {
   email: Permission;
   recommendations: Permission;
   marketplace: Permission;
+  payments: Permission; // Payment/billing management - ADMIN only
 }
 
 // Define permissions for each role
@@ -56,69 +57,73 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     email: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     recommendations: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     marketplace: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    payments: { canView: true, canCreate: true, canEdit: true, canDelete: true }, // ADMIN only
   },
   EDITOR: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    analytics: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    seo: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    posts: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    pages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    media: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    menus: { canView: true, canCreate: false, canEdit: true, canDelete: false },
-    users: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    groups: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    security: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    settings: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    shop: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    lms: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    themes: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    plugins: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    recommendations: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    marketplace: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    posts: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    pages: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    media: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true }, // All roles
+    groups: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // All roles
+    security: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    shop: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Can create/edit products
+    lms: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Can create/edit courses
+    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    email: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    marketplace: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    payments: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
   },
   AUTHOR: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    posts: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Own posts only
-    pages: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Own pages only
-    media: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Own media only
-    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    groups: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Own groups
-    security: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    shop: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    lms: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Own courses only
-    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    marketplace: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    posts: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    pages: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    media: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true }, // All roles
+    groups: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // All roles
+    security: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    shop: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Can create/edit products
+    lms: { canView: true, canCreate: true, canEdit: true, canDelete: false }, // Can create/edit courses
+    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    email: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    marketplace: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    payments: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
   },
   VIEWER: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    posts: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    pages: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    posts: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    pages: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
     media: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    groups: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    security: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    shop: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    lms: { canView: true, canCreate: false, canEdit: false, canDelete: false }, // View courses
-    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true }, // All roles
+    groups: { canView: true, canCreate: false, canEdit: false, canDelete: false }, // All roles (view only)
+    security: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    shop: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // View only
+    lms: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // View only
+    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    email: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
+    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
     marketplace: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    payments: { canView: false, canCreate: false, canEdit: false, canDelete: false }, // ADMIN only
   },
 };
 

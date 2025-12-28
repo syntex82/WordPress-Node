@@ -18,11 +18,14 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
 import { FeatureGuard } from '../../../common/guards/feature.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
 import {
   RequiresFeature,
   SUBSCRIPTION_FEATURES,
 } from '../../../common/decorators/subscription.decorator';
+import { UserRole } from '@prisma/client';
 import { CoursesService } from '../services/courses.service';
 import { CoursePlaceholderService } from '../services/course-placeholder.service';
 import { CreateCourseDto, UpdateCourseDto, CourseQueryDto } from '../dto/course.dto';
@@ -30,7 +33,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 @Controller('api/lms/admin/courses')
-@UseGuards(JwtAuthGuard, FeatureGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+@Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
 @RequiresFeature(SUBSCRIPTION_FEATURES.LMS)
 export class CoursesController {
   constructor(
