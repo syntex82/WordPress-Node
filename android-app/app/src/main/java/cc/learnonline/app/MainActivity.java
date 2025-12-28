@@ -17,12 +17,12 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private PermissionRequest pendingPermissionRequest;
     private static final int PERMISSION_REQUEST_CODE = 100;
-    private static final String URL = "https://learnonline.cc";
+    private static final String URL = "https://wordpressnode.co.uk";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         webView = new WebView(this);
         setContentView(webView);
 
@@ -44,16 +44,16 @@ public class MainActivity extends AppCompatActivity {
                     Manifest.permission.CAMERA,
                     Manifest.permission.RECORD_AUDIO
                 };
-                
+
                 boolean allGranted = true;
                 for (String permission : permissions) {
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, permission) 
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, permission)
                             != PackageManager.PERMISSION_GRANTED) {
                         allGranted = false;
                         break;
                     }
                 }
-                
+
                 if (allGranted) {
                     request.grant(request.getResources());
                 } else {
@@ -63,6 +63,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.loadUrl(URL);
+
+        // Check for app updates
+        new UpdateChecker(this).checkForUpdates();
     }
 
     @Override

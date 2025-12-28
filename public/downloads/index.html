@@ -184,6 +184,21 @@
             color: #5a6a7a;
             font-size: 13px;
         }
+        .signed-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            padding: 10px 20px;
+            border-radius: 30px;
+            margin-top: 25px;
+        }
+        .signed-badge span {
+            color: #2ecc71;
+            font-size: 14px;
+            font-weight: 500;
+        }
         @media (max-width: 480px) {
             .container { padding: 35px 25px; }
             h1 { font-size: 26px; }
@@ -251,7 +266,7 @@
             </div>
             <div class="step">
                 <div class="step-number">2</div>
-                <div class="step-text">When prompted, tap <strong>Download anyway</strong> (the file is safe)</div>
+                <div class="step-text">When prompted, tap <strong>Download anyway</strong> — the app is digitally signed and safe</div>
             </div>
             <div class="step">
                 <div class="step-number">3</div>
@@ -259,12 +274,17 @@
             </div>
             <div class="step">
                 <div class="step-number">4</div>
-                <div class="step-text">If asked, enable <strong>"Install from unknown sources"</strong> for your browser</div>
+                <div class="step-text">Allow installation from this source if prompted (required for apps outside Play Store)</div>
             </div>
             <div class="step">
                 <div class="step-number">5</div>
                 <div class="step-text">Tap <strong>Install</strong> and wait for completion</div>
             </div>
+        </div>
+
+        <div class="signed-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#2ecc71"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+            <span>Digitally Signed &amp; Verified</span>
         </div>
 
         <div class="features">
@@ -274,7 +294,7 @@
             </div>
             <div class="feature">
                 <div class="feature-icon">🔒</div>
-                <div class="feature-text">Secure Connection</div>
+                <div class="feature-text">Digitally Signed</div>
             </div>
             <div class="feature">
                 <div class="feature-icon">📱</div>
