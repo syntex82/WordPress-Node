@@ -3,41 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Learn Online App</title>
+    <title>Download WP Node App - Android</title>
+    <meta name="description" content="Download the official WP Node Android app for the best mobile experience.">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .container { background: white; border-radius: 20px; padding: 40px; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .logo { width: 100px; height: 100px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
-        .logo span { font-size: 40px; }
-        h1 { color: #333; margin-bottom: 10px; font-size: 24px; }
-        p { color: #666; margin-bottom: 30px; line-height: 1.6; }
-        .download-btn { display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; }
-        .download-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
-        .info { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-        .info p { font-size: 14px; color: #999; margin-bottom: 10px; }
-        .steps { text-align: left; margin-top: 20px; }
-        .steps h3 { font-size: 16px; color: #333; margin-bottom: 10px; }
-        .steps ol { padding-left: 20px; color: #666; font-size: 14px; line-height: 1.8; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a2332;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            background: linear-gradient(145deg, #232f3e 0%, #1a2332 100%);
+            border-radius: 24px;
+            padding: 50px 40px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 25px;
+        }
+        .logo svg {
+            width: 100%;
+            height: 100%;
+        }
+        h1 {
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .tagline {
+            color: #2ecc71;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        .description {
+            color: #8899a6;
+            margin-bottom: 35px;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: #1a2332;
+            text-decoration: none;
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(46, 204, 113, 0.3);
+        }
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(46, 204, 113, 0.4);
+        }
+        .download-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        .meta {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            text-align: center;
+        }
+        .meta-item .value {
+            color: #2ecc71;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .meta-item .label {
+            color: #8899a6;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(46, 204, 113, 0.3), transparent);
+            margin: 35px 0;
+        }
+        .steps {
+            text-align: left;
+        }
+        .steps h3 {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .steps h3 svg {
+            color: #2ecc71;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 16px;
+        }
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2ecc71;
+            flex-shrink: 0;
+        }
+        .step-text {
+            color: #b8c5d0;
+            font-size: 15px;
+            line-height: 1.6;
+            padding-top: 3px;
+        }
+        .step-text strong {
+            color: #fff;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .feature {
+            background: rgba(46, 204, 113, 0.08);
+            border: 1px solid rgba(46, 204, 113, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .feature-text {
+            color: #b8c5d0;
+            font-size: 13px;
+        }
+        .footer {
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .footer a {
+            color: #2ecc71;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .footer p {
+            color: #5a6a7a;
+            font-size: 13px;
+        }
+        @media (max-width: 480px) {
+            .container { padding: 35px 25px; }
+            h1 { font-size: 26px; }
+            .download-btn { padding: 16px 35px; font-size: 16px; }
+            .features { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo"><span>📚</span></div>
-        <h1>Learn Online</h1>
-        <p>Download our Android app for the best learning experience on your mobile device.</p>
-        <a href="learn-online.apk" class="download-btn">⬇️ Download APK</a>
-        <div class="info">
-            <p>Version 1.0.0 • Size: ~1.9 MB</p>
-            <div class="steps">
-                <h3>Installation Steps:</h3>
-                <ol>
-                    <li>Tap "Download APK" above</li>
-                    <li>Open the downloaded file</li>
-                    <li>Allow installation from unknown sources if prompted</li>
-                    <li>Tap "Install"</li>
-                </ol>
+        <!-- WP Node Logo -->
+        <div class="logo">
+            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Hexagon -->
+                <polygon points="60,10 110,35 110,85 60,110 10,85 10,35"
+                         fill="none" stroke="#2ecc71" stroke-width="3"/>
+                <!-- Corner dots -->
+                <circle cx="60" cy="10" r="6" fill="#2ecc71"/>
+                <circle cx="110" cy="35" r="6" fill="#9b59b6"/>
+                <circle cx="110" cy="85" r="6" fill="#2ecc71"/>
+                <circle cx="60" cy="110" r="6" fill="#9b59b6"/>
+                <circle cx="10" cy="85" r="6" fill="#2ecc71"/>
+                <circle cx="10" cy="35" r="6" fill="#9b59b6"/>
+                <!-- WP Text -->
+                <text x="60" y="58" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="24" font-weight="bold">WP</text>
+                <!-- NODE Text -->
+                <text x="60" y="78" text-anchor="middle" fill="#2ecc71" font-family="Arial, sans-serif" font-size="14" font-weight="600">NODE</text>
+            </svg>
+        </div>
+
+        <h1>WP Node</h1>
+        <p class="tagline">Official Android App</p>
+        <p class="description">Get the full WP Node experience on your Android device. Fast, secure, and always up-to-date with the latest content.</p>
+
+        <a href="learn-online.apk" class="download-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 18V19H6V18H17M16.5 11.5L15.8 10.8L12.5 14.1V4H11.5V14.1L8.2 10.8L7.5 11.5L12 16L16.5 11.5Z"/></svg>
+            Download APK
+        </a>
+
+        <div class="meta">
+            <div class="meta-item">
+                <div class="value">1.0.0</div>
+                <div class="label">Version</div>
             </div>
+            <div class="meta-item">
+                <div class="value">1.8 MB</div>
+                <div class="label">Size</div>
+            </div>
+            <div class="meta-item">
+                <div class="value">Android 7+</div>
+                <div class="label">Requires</div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="steps">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                Installation Guide
+            </h3>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-text">Tap the <strong>Download APK</strong> button above</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">When prompted, tap <strong>Download anyway</strong> (the file is safe)</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-text">Open the downloaded file from your notifications or Downloads folder</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-text">If asked, enable <strong>"Install from unknown sources"</strong> for your browser</div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-text">Tap <strong>Install</strong> and wait for completion</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🚀</div>
+                <div class="feature-text">Fast & Lightweight</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-text">Secure Connection</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <div class="feature-text">Native Experience</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔄</div>
+                <div class="feature-text">Auto Updates</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>By installing, you agree to our <a href="/privacy-policy.html">Privacy Policy</a></p>
+            <p style="margin-top: 10px;">© 2024 WP Node. All rights reserved.</p>
         </div>
     </div>
 </body>
