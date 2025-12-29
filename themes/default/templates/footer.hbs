@@ -64,6 +64,43 @@
     if (typeof WPAnalytics !== 'undefined') {
       WPAnalytics.init({ apiUrl: '/api/analytics' });
     }
+
+    // ========== UTM PARAMETER TRACKING FOR PPC ==========
+    // Captures utm_source, utm_medium, utm_campaign, utm_term, utm_content
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid'];
+      var hasUtm = false;
+      var utmData = {};
+
+      utmParams.forEach(function(param) {
+        var value = params.get(param);
+        if (value) {
+          utmData[param] = value;
+          hasUtm = true;
+        }
+      });
+
+      if (hasUtm) {
+        // Store UTM data for conversion attribution
+        utmData.landing_page = window.location.pathname;
+        utmData.timestamp = new Date().toISOString();
+        localStorage.setItem('utm_data', JSON.stringify(utmData));
+
+        // Push to dataLayer for GTM
+        window.dataLayer = window.dataLayer || [];
+        dataLayer.push({
+          'event': 'utm_capture',
+          'utm_source': utmData.utm_source || '',
+          'utm_medium': utmData.utm_medium || '',
+          'utm_campaign': utmData.utm_campaign || '',
+          'utm_term': utmData.utm_term || '',
+          'utm_content': utmData.utm_content || '',
+          'gclid': utmData.gclid || '',
+          'fbclid': utmData.fbclid || ''
+        });
+      }
+    })();
   </script>
   <!-- PWA Service Worker Registration -->
   <script>

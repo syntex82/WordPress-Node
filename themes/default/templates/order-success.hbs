@@ -163,6 +163,43 @@
 </section>
 
 <script>
+// ========== GOOGLE ADS CONVERSION TRACKING ==========
+// Track purchase conversion for PPC campaigns
+window.dataLayer = window.dataLayer || [];
+{{#if order}}
+dataLayer.push({
+  'event': 'purchase',
+  'transaction_id': '{{order.orderNumber}}',
+  'value': {{order.total}},
+  'currency': 'USD',
+  'items': [
+    {{#each order.items}}
+    {
+      'item_id': '{{this.productId}}',
+      'item_name': '{{this.name}}',
+      'price': {{this.price}},
+      'quantity': {{this.quantity}}
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ]
+});
+
+// Google Ads Conversion (replace AW-XXXXXXXXX with your Google Ads ID)
+// gtag('event', 'conversion', {
+//   'send_to': 'AW-XXXXXXXXX/CONVERSION_LABEL',
+//   'value': {{order.total}},
+//   'currency': 'USD',
+//   'transaction_id': '{{order.orderNumber}}'
+// });
+{{/if}}
+
+// ========== FACEBOOK PIXEL PURCHASE EVENT ==========
+// Uncomment and add your Pixel ID to header.hbs first
+// fbq('track', 'Purchase', {
+//   value: {{#if order}}{{order.total}}{{else}}0{{/if}},
+//   currency: 'USD'
+// });
+
 // Simple confetti effect
 (function() {
   var colors = ['#10b981', '#8b5cf6', '#6366f1', '#f59e0b', '#ec4899'];
