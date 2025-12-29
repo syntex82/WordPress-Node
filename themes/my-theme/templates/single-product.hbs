@@ -117,7 +117,7 @@
         </div>
 
         {{!-- Variant Selectors - show if variants exist --}}
-        {{#if product.variants.length}}
+        {{#if product.hasVariants}}
           <div id="variantSelectors">
             {{!-- Build available sizes/colors from variants --}}
             <script type="application/json" id="variantConfig">
@@ -157,12 +157,12 @@
           </div>
         </div>
 
-        <button class="btn btn-primary add-to-cart-btn" id="addToCartBtn" data-product-id="{{product.id}}" {{#if product.variants.length}}disabled{{/if}}>
-          {{#if product.variants.length}}Select Options{{else}}🛒 Add to Cart{{/if}}
+        <button class="btn btn-primary add-to-cart-btn" id="addToCartBtn" data-product-id="{{product.id}}" {{#if product.hasVariants}}disabled{{/if}}>
+          {{#if product.hasVariants}}Select Options{{else}}🛒 Add to Cart{{/if}}
         </button>
 
         {{!-- Hidden variant data for JavaScript --}}
-        {{#if product.variants.length}}
+        {{#if product.hasVariants}}
         <script type="application/json" id="variantData">
           {{{json product.variants}}}
         </script>
