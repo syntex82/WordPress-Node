@@ -7,7 +7,7 @@
     padding: 100px 20px 80px;
   }
   .pricing-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
   }
   .pricing-header {
@@ -23,27 +23,34 @@
   .pricing-header p {
     color: #94a3b8;
     font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
   }
   .plans-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    max-width: 1000px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
     margin: 0 auto;
   }
   .plan-card {
     background: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    padding: 2rem;
+    padding: 1.75rem;
     position: relative;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
   }
   .plan-card:hover {
     border-color: rgba(99, 102, 241, 0.5);
     transform: translateY(-4px);
   }
   .plan-card.featured {
+    border-color: #10b981;
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+  }
+  .plan-card.business {
     border-color: #6366f1;
     box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
   }
@@ -52,57 +59,84 @@
     top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
     padding: 6px 16px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
+    white-space: nowrap;
   }
+  .plan-card.business .plan-badge {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+  }
+  .plan-role {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+  }
+  .plan-card.featured .plan-role { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+  .plan-card.business .plan-role { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
   .plan-name {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: #fff;
     margin-bottom: 0.5rem;
   }
   .plan-description {
     color: #94a3b8;
-    font-size: 0.95rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
   }
   .plan-price {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
   .plan-price .amount {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: #fff;
   }
+  .plan-price .currency {
+    font-size: 1.25rem;
+    color: #64748b;
+    vertical-align: top;
+  }
   .plan-price .period {
     color: #64748b;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   .plan-features {
     list-style: none;
     padding: 0;
-    margin: 0 0 2rem 0;
+    margin: 0 0 1.5rem 0;
+    flex: 1;
   }
   .plan-features li {
-    padding: 0.5rem 0;
+    padding: 0.4rem 0;
     color: #cbd5e1;
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
-  .plan-features li::before {
-    content: "✓";
+  .plan-features li .check {
     color: #10b981;
     font-weight: bold;
+    flex-shrink: 0;
   }
   .btn-plan {
     display: block;
     width: 100%;
-    padding: 14px 24px;
+    padding: 12px 20px;
     background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: white;
     text-decoration: none;
@@ -112,6 +146,7 @@
     transition: all 0.3s ease;
     border: none;
     cursor: pointer;
+    font-size: 0.95rem;
   }
   .btn-plan:hover {
     transform: translateY(-2px);
@@ -119,6 +154,62 @@
   }
   .btn-plan.free {
     background: rgba(255, 255, 255, 0.1);
+  }
+  .btn-plan.free:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .btn-plan.pro {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+  .btn-plan.pro:hover {
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+  }
+  .plan-yearly {
+    text-align: center;
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+  .plan-yearly strong {
+    color: #10b981;
+  }
+  .comparison-section {
+    margin-top: 4rem;
+    text-align: center;
+  }
+  .comparison-section h2 {
+    color: #fff;
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+  .faq-section {
+    margin-top: 4rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .faq-section h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .faq-item {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .faq-item h3 {
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .faq-item p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
   }
   .empty-state {
     text-align: center;
@@ -128,47 +219,171 @@
   }
   .empty-state h2 { color: #fff; margin-bottom: 0.5rem; }
   .empty-state p { color: #94a3b8; }
+  @media (max-width: 1200px) {
+    .plans-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   @media (max-width: 768px) {
     .pricing-page { padding-top: 80px; }
     .pricing-header h1 { font-size: 2rem; }
-    .plans-grid { grid-template-columns: 1fr; }
+    .plans-grid { grid-template-columns: 1fr; max-width: 400px; }
   }
 </style>
 
 <div class="pricing-page">
   <div class="pricing-container">
     <div class="pricing-header">
-      <h1>💎 {{title}}</h1>
-      <p>{{description}}</p>
+      <h1>💎 Choose Your Plan</h1>
+      <p>Start free and upgrade as you grow. All plans include access to our learning community.</p>
     </div>
 
     <div class="plans-grid">
       {{#each plans}}
-      <div class="plan-card {{#if isFeatured}}featured{{/if}}">
+      <div class="plan-card {{#if isFeatured}}featured{{/if}} {{#if (eq slug 'business')}}business{{/if}}">
         {{#if badgeText}}<div class="plan-badge">{{badgeText}}</div>{{/if}}
+
+        {{#if (eq slug 'free')}}<span class="plan-role">👤 Viewer Account</span>{{/if}}
+        {{#if (eq slug 'pro')}}<span class="plan-role">✍️ Author & Editor</span>{{/if}}
+        {{#if (eq slug 'business')}}<span class="plan-role">⚙️ Admin Access</span>{{/if}}
+        {{#if (eq slug 'enterprise')}}<span class="plan-role">🏢 Enterprise</span>{{/if}}
+
         <h3 class="plan-name">{{name}}</h3>
         <p class="plan-description">{{description}}</p>
         <div class="plan-price">
-          <span class="amount">${{monthlyPrice}}</span>
+          {{#if (eq monthlyPrice 0)}}
+          <span class="amount">Free</span>
+          {{else}}
+          <span class="currency">£</span><span class="amount">{{monthlyPrice}}</span>
           <span class="period">/month</span>
+          {{/if}}
         </div>
         <ul class="plan-features">
           {{#each features}}
-          <li>{{this}}</li>
+          <li><span class="check">✓</span> {{this}}</li>
           {{/each}}
         </ul>
         {{#if (eq monthlyPrice 0)}}
-        <a href="/admin/subscription" class="btn-plan free">Get Started Free</a>
+        <a href="/register" class="btn-plan free">Sign Up Free</a>
+        {{else if isFeatured}}
+        <a href="/register?plan={{slug}}" class="btn-plan pro">Get Started</a>
         {{else}}
-        <a href="/admin/subscription" class="btn-plan">Choose {{name}}</a>
+        <a href="/register?plan={{slug}}" class="btn-plan">Choose {{name}}</a>
+        {{/if}}
+        {{#if yearlyPrice}}
+        <p class="plan-yearly">or <strong>£{{yearlyPrice}}/year</strong> (save 2 months)</p>
         {{/if}}
       </div>
       {{else}}
-      <div class="empty-state" style="grid-column: 1 / -1;">
-        <h2>No plans available</h2>
-        <p>Please check back later or contact the administrator.</p>
+      <!-- Fallback static plans if no dynamic plans -->
+      <div class="plan-card">
+        <span class="plan-role">👤 Viewer Account</span>
+        <h3 class="plan-name">Free</h3>
+        <p class="plan-description">Perfect for learners and community members</p>
+        <div class="plan-price"><span class="amount">Free</span></div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Enroll in free courses</li>
+          <li><span class="check">✓</span> Access community groups</li>
+          <li><span class="check">✓</span> Send & receive messages</li>
+          <li><span class="check">✓</span> View public content</li>
+          <li><span class="check">✓</span> Personal profile</li>
+          <li><span class="check">✓</span> Course certificates</li>
+        </ul>
+        <a href="/register" class="btn-plan free">Sign Up Free</a>
+      </div>
+
+      <div class="plan-card featured">
+        <div class="plan-badge">Most Popular</div>
+        <span class="plan-role">✍️ Author & Editor</span>
+        <h3 class="plan-name">Pro</h3>
+        <p class="plan-description">Create content and teach your audience</p>
+        <div class="plan-price">
+          <span class="currency">£</span><span class="amount">19</span>
+          <span class="period">/month</span>
+        </div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Everything in Free</li>
+          <li><span class="check">✓</span> Create & publish blog posts</li>
+          <li><span class="check">✓</span> Create & sell courses (LMS)</li>
+          <li><span class="check">✓</span> Create & manage groups</li>
+          <li><span class="check">✓</span> Advanced messaging</li>
+          <li><span class="check">✓</span> 10GB storage</li>
+          <li><span class="check">✓</span> Course analytics</li>
+          <li><span class="check">✓</span> Priority support</li>
+        </ul>
+        <a href="/register?plan=pro" class="btn-plan pro">Get Started</a>
+        <p class="plan-yearly">or <strong>£190/year</strong> (save 2 months)</p>
+      </div>
+
+      <div class="plan-card business">
+        <div class="plan-badge">Full Control</div>
+        <span class="plan-role">⚙️ Admin Access</span>
+        <h3 class="plan-name">Business</h3>
+        <p class="plan-description">Full platform control for your business</p>
+        <div class="plan-price">
+          <span class="currency">£</span><span class="amount">49</span>
+          <span class="period">/month</span>
+        </div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Everything in Pro</li>
+          <li><span class="check">✓</span> Full admin dashboard</li>
+          <li><span class="check">✓</span> Manage users & roles</li>
+          <li><span class="check">✓</span> eCommerce & sales</li>
+          <li><span class="check">✓</span> Advanced analytics</li>
+          <li><span class="check">✓</span> SEO management</li>
+          <li><span class="check">✓</span> Unlimited courses</li>
+          <li><span class="check">✓</span> 100GB storage</li>
+          <li><span class="check">✓</span> API access</li>
+        </ul>
+        <a href="/register?plan=business" class="btn-plan">Choose Business</a>
+        <p class="plan-yearly">or <strong>£490/year</strong> (save 2 months)</p>
+      </div>
+
+      <div class="plan-card">
+        <span class="plan-role">🏢 Enterprise</span>
+        <h3 class="plan-name">Enterprise</h3>
+        <p class="plan-description">Custom solutions for organizations</p>
+        <div class="plan-price">
+          <span class="currency">£</span><span class="amount">199</span>
+          <span class="period">/month</span>
+        </div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Everything in Business</li>
+          <li><span class="check">✓</span> Unlimited users</li>
+          <li><span class="check">✓</span> Unlimited storage</li>
+          <li><span class="check">✓</span> White-label branding</li>
+          <li><span class="check">✓</span> Custom integrations</li>
+          <li><span class="check">✓</span> Dedicated manager</li>
+          <li><span class="check">✓</span> 99.9% SLA</li>
+          <li><span class="check">✓</span> Phone support</li>
+        </ul>
+        <a href="/contact" class="btn-plan">Contact Sales</a>
+        <p class="plan-yearly">or <strong>£1,990/year</strong> (save 2 months)</p>
       </div>
       {{/each}}
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+      <h2>❓ Frequently Asked Questions</h2>
+
+      <div class="faq-item">
+        <h3>What's included in the Free plan?</h3>
+        <p>The Free plan gives you Viewer access - you can enroll in free courses, join community groups, send messages, and build your profile. It's perfect for learners who want to explore the platform.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>What can I do with the Pro plan?</h3>
+        <p>Pro gives you Author & Editor access. You can create and publish blog posts, build and sell online courses, manage groups, and access analytics. Great for content creators and educators.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>When should I upgrade to Business?</h3>
+        <p>Business is for those who need full Admin control - manage users, run an eCommerce store, access advanced SEO tools, and customize everything. Ideal for businesses and organizations.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Can I cancel anytime?</h3>
+        <p>Yes! All plans are month-to-month with no contracts. You can upgrade, downgrade, or cancel at any time from your account settings.</p>
+      </div>
     </div>
   </div>
 </div>
