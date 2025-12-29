@@ -8,15 +8,23 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 Disallow: /uploads/messages/
+Disallow: /checkout/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /my-account/
+Disallow: /my-courses/
 
 # Allow search engines to access these
 Allow: /blog/
 Allow: /shop/
 Allow: /courses/
 Allow: /page/
+Allow: /pricing
+Allow: /api/seo/sitemap.xml
 
-# Sitemap location
-Sitemap: https://wordpressnode.co.uk/sitemap.xml
+# Sitemap location (DYNAMIC - includes all posts, products, courses)
+Sitemap: https://wordpressnode.co.uk/api/seo/sitemap.xml
 
 # Crawl delay (optional, for politeness)
 Crawl-delay: 1

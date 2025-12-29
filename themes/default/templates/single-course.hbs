@@ -1,5 +1,53 @@
 {{> header}}
 
+<!-- Course Schema Markup -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "{{course.title}}",
+  "description": "{{#if course.shortDescription}}{{course.shortDescription}}{{else}}{{course.title}} - Learn from industry experts{{/if}}",
+  "url": "{{siteUrl}}/courses/{{course.slug}}",
+  "provider": {
+    "@type": "Organization",
+    "name": "{{siteName}}",
+    "url": "{{siteUrl}}"
+  },
+  {{#if course.instructor}}
+  "creator": {
+    "@type": "Person",
+    "name": "{{course.instructor.name}}"
+  },
+  {{/if}}
+  "educationalLevel": "{{#if course.level}}{{course.level}}{{else}}All Levels{{/if}}",
+  "inLanguage": "en",
+  "isAccessibleForFree": {{#if course.price}}false{{else}}true{{/if}},
+  {{#if course.price}}
+  "offers": {
+    "@type": "Offer",
+    "price": "{{course.price}}",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock",
+    "url": "{{siteUrl}}/courses/{{course.slug}}",
+    "validFrom": "2024-01-01"
+  },
+  {{/if}}
+  {{#if course._count.lessons}}
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "online",
+    "courseWorkload": "PT{{course._count.lessons}}H"
+  },
+  {{/if}}
+  "coursePrerequisites": "Basic computer skills",
+  "educationalCredentialAwarded": "Certificate of Completion",
+  "audience": {
+    "@type": "Audience",
+    "audienceType": "Students, Professionals, Self-learners"
+  }
+}
+</script>
+
 <style>
   .course-page {
     background: #f8fafc;
