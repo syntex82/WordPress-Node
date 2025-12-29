@@ -1,130 +1,453 @@
-{{!-- Hire a Developer Page --}}
+{{!-- Hire a Developer Page - Comprehensive Developer Marketplace --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   {{> partials/head title=title}}
+  <meta name="description" content="Hire skilled developers for your next project. Browse our marketplace of verified frontend, backend, full-stack, mobile, and DevOps professionals.">
+  <meta name="keywords" content="hire developer, freelance developer, web developer, mobile developer, full-stack developer, remote developer">
+  <meta property="og:title" content="Hire a Developer | Developer Marketplace">
+  <meta property="og:description" content="Find and hire top-tier developers for your projects. Browse by skills, experience, and hourly rates.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="{{siteUrl}}/hire-developer">
+
+  {{!-- Structured Data for SEO --}}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Hire a Developer",
+    "description": "Browse and hire skilled developers for web, mobile, and software projects",
+    "url": "{{siteUrl}}/hire-developer",
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": [
+        {{#each developers}}
+        {{#if @index}},{{/if}}
+        {
+          "@type": "Person",
+          "name": "{{displayName}}",
+          "jobTitle": "{{headline}}",
+          "url": "{{../siteUrl}}/developer/{{slug}}"
+        }
+        {{/each}}
+      ]
+    }
+  }
+  </script>
 </head>
 <body class="bg-gray-50">
   {{> partials/header user=user}}
 
-  <main class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Page Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">Hire a Developer</h1>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-        Find skilled developers for your next project. Browse our marketplace of verified professionals.
-      </p>
-    </div>
+  <main>
+    {{!-- Hero Section --}}
+    <section class="bg-gradient-to-br from-indigo-700 via-purple-700 to-blue-800 text-white py-16 md:py-24">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          Hire Top Developers
+        </h1>
+        <p class="text-xl md:text-2xl text-indigo-100 max-w-3xl mx-auto mb-8">
+          Connect with verified professionals ready to bring your vision to life.
+          From web apps to mobile solutions, find the perfect match for your project.
+        </p>
 
-    <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-      <form action="/hire-developer" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select name="category" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            <option value="">All Categories</option>
-            {{#each categories}}
-            <option value="{{value}}" {{#if (eq value ../filters.category)}}selected{{/if}}>{{label}}</option>
-            {{/each}}
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Skills</label>
-          <input type="text" name="skills" value="{{filters.skills}}" placeholder="e.g., React, Node.js"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Min Rate ($/hr)</label>
-          <input type="number" name="minRate" value="{{filters.minRate}}" placeholder="0"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Max Rate ($/hr)</label>
-          <input type="number" name="maxRate" value="{{filters.maxRate}}" placeholder="500"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        </div>
-        <div class="flex items-end">
-          <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
-            Search
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="mb-6">
-      <form action="/hire-developer" method="GET" class="flex gap-2">
-        <input type="text" name="search" value="{{filters.search}}" placeholder="Search developers..."
-          class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        <button type="submit" class="bg-gray-800 text-white py-2 px-6 rounded-md hover:bg-gray-900 transition">
-          Search
-        </button>
-      </form>
-    </div>
-
-    <!-- Developers Grid -->
-    {{#if developers.length}}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      {{#each developers}}
-      <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition">
-        <div class="p-6">
-          <div class="flex items-start gap-4">
-            <img src="{{#if profileImage}}{{profileImage}}{{else}}/images/default-avatar.png{{/if}}" 
-              alt="{{displayName}}" class="w-16 h-16 rounded-full object-cover">
-            <div class="flex-1">
-              <h3 class="font-semibold text-lg text-gray-900">{{displayName}}</h3>
-              <p class="text-sm text-gray-500">{{headline}}</p>
-              <div class="flex items-center gap-1 mt-1">
-                <span class="text-yellow-400">★</span>
-                <span class="text-sm font-medium">{{rating}}</span>
-                <span class="text-sm text-gray-400">({{reviewCount}} reviews)</span>
-              </div>
-            </div>
+        {{!-- Quick Stats --}}
+        <div class="flex flex-wrap justify-center gap-8 md:gap-16 mb-10">
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl font-bold">{{stats.totalDevelopers}}+</div>
+            <div class="text-indigo-200">Verified Developers</div>
           </div>
-          <div class="mt-4">
-            <div class="flex flex-wrap gap-2 mb-3">
-              {{#each skills}}
-              {{#if (lt @index 4)}}
-              <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{{this}}</span>
-              {{/if}}
-              {{/each}}
-            </div>
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-gray-600">{{yearsOfExperience}} years exp.</span>
-              <span class="font-semibold text-green-600">${{hourlyRate}}/hr</span>
-            </div>
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl font-bold">{{stats.projectsCompleted}}+</div>
+            <div class="text-indigo-200">Projects Completed</div>
           </div>
-          <div class="mt-4 flex gap-2">
-            <a href="/developer/{{slug}}" class="flex-1 text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
-              View Profile
-            </a>
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl font-bold">{{stats.avgRating}}</div>
+            <div class="text-indigo-200">Average Rating</div>
+          </div>
+        </div>
+
+        {{!-- Hero Search --}}
+        <form action="/hire-developer" method="GET" class="max-w-2xl mx-auto">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1 relative">
+              <input type="text" name="search" value="{{filters.search}}"
+                placeholder="Search by name, skill, or expertise..."
+                class="w-full px-5 py-4 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-4 focus:ring-indigo-300 focus:outline-none text-lg"
+                aria-label="Search developers">
+              <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+            <button type="submit" class="px-8 py-4 bg-white text-indigo-700 font-semibold rounded-xl hover:bg-indigo-50 transition shadow-lg">
+              Find Developers
+            </button>
+          </div>
+        </form>
+
+        {{!-- Quick Category Links --}}
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          {{#each categories}}
+          <a href="/hire-developer?category={{value}}"
+            class="px-4 py-2 rounded-full border-2 border-white/30 text-white/90 hover:bg-white/10 hover:border-white/50 transition text-sm font-medium">
+            {{label}}
+          </a>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+
+    {{!-- How It Works Section --}}
+    <section class="py-12 bg-white border-b">
+      <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">How It Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="text-2xl">🔍</span>
+            </div>
+            <h3 class="font-semibold text-gray-900 mb-2">1. Browse Developers</h3>
+            <p class="text-gray-600 text-sm">Search and filter by skills, experience, and rates</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="text-2xl">👤</span>
+            </div>
+            <h3 class="font-semibold text-gray-900 mb-2">2. View Profiles</h3>
+            <p class="text-gray-600 text-sm">Review portfolios, ratings, and past work</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="text-2xl">📝</span>
+            </div>
+            <h3 class="font-semibold text-gray-900 mb-2">3. Send Request</h3>
+            <p class="text-gray-600 text-sm">Describe your project and send a hiring request</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="text-2xl">🚀</span>
+            </div>
+            <h3 class="font-semibold text-gray-900 mb-2">4. Start Working</h3>
+            <p class="text-gray-600 text-sm">Collaborate and track progress securely</p>
           </div>
         </div>
       </div>
-      {{/each}}
-    </div>
+    </section>
 
-    <!-- Pagination -->
-    {{#if (gt pagination.pages 1)}}
-    <div class="flex justify-center gap-2">
-      {{#if (gt pagination.page 1)}}
-      <a href="?page={{subtract pagination.page 1}}" class="px-4 py-2 bg-white border rounded-md hover:bg-gray-50">Previous</a>
-      {{/if}}
-      <span class="px-4 py-2 bg-blue-600 text-white rounded-md">{{pagination.page}} / {{pagination.pages}}</span>
-      {{#if (lt pagination.page pagination.pages)}}
-      <a href="?page={{add pagination.page 1}}" class="px-4 py-2 bg-white border rounded-md hover:bg-gray-50">Next</a>
-      {{/if}}
-    </div>
-    {{/if}}
-    {{else}}
-    <div class="text-center py-12 bg-white rounded-lg">
-      <p class="text-gray-500 text-lg">No developers found matching your criteria.</p>
-      <a href="/hire-developer" class="mt-4 inline-block text-blue-600 hover:underline">Clear filters</a>
-    </div>
-    {{/if}}
+    {{!-- Main Content --}}
+    <section class="py-12">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex flex-col lg:flex-row gap-8">
+
+          {{!-- Filter Sidebar --}}
+          <aside class="lg:w-72 flex-shrink-0">
+            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-4">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-gray-900">Filters</h2>
+                <a href="/hire-developer" class="text-sm text-indigo-600 hover:underline">Clear all</a>
+              </div>
+
+              <form action="/hire-developer" method="GET" id="filterForm">
+                {{!-- Category Filter --}}
+                <div class="mb-6">
+                  <label class="block text-sm font-semibold text-gray-700 mb-3">Category</label>
+                  <select name="category" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" onchange="document.getElementById('filterForm').submit()">
+                    <option value="">All Categories</option>
+                    {{#each categories}}
+                    <option value="{{value}}" {{#if (eq value ../filters.category)}}selected{{/if}}>{{label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+
+                {{!-- Experience Level --}}
+                <div class="mb-6">
+                  <label class="block text-sm font-semibold text-gray-700 mb-3">Experience Level</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center">
+                      <input type="radio" name="experience" value="" {{#unless filters.experience}}checked{{/unless}} class="text-indigo-600 focus:ring-indigo-500">
+                      <span class="ml-2 text-sm text-gray-600">All Levels</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="radio" name="experience" value="entry" {{#if (eq filters.experience "entry")}}checked{{/if}} class="text-indigo-600 focus:ring-indigo-500">
+                      <span class="ml-2 text-sm text-gray-600">Entry (0-2 years)</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="radio" name="experience" value="mid" {{#if (eq filters.experience "mid")}}checked{{/if}} class="text-indigo-600 focus:ring-indigo-500">
+                      <span class="ml-2 text-sm text-gray-600">Mid (3-5 years)</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="radio" name="experience" value="senior" {{#if (eq filters.experience "senior")}}checked{{/if}} class="text-indigo-600 focus:ring-indigo-500">
+                      <span class="ml-2 text-sm text-gray-600">Senior (6-10 years)</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="radio" name="experience" value="expert" {{#if (eq filters.experience "expert")}}checked{{/if}} class="text-indigo-600 focus:ring-indigo-500">
+                      <span class="ml-2 text-sm text-gray-600">Expert (10+ years)</span>
+                    </label>
+                  </div>
+                </div>
+
+                {{!-- Hourly Rate --}}
+                <div class="mb-6">
+                  <label class="block text-sm font-semibold text-gray-700 mb-3">Hourly Rate</label>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="sr-only">Min rate</label>
+                      <input type="number" name="minRate" value="{{filters.minRate}}" placeholder="$0" min="0"
+                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div>
+                      <label class="sr-only">Max rate</label>
+                      <input type="number" name="maxRate" value="{{filters.maxRate}}" placeholder="$500+" min="0"
+                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    </div>
+                  </div>
+                </div>
+
+                {{!-- Skills Filter --}}
+                <div class="mb-6">
+                  <label class="block text-sm font-semibold text-gray-700 mb-3">Skills</label>
+                  <input type="text" name="skills" value="{{filters.skills}}"
+                    placeholder="React, Node.js, Python..."
+                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                  {{#if popularSkills.length}}
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    {{#each popularSkills}}
+                    {{#if (lt @index 6)}}
+                    <button type="button" onclick="addSkill('{{skill}}')"
+                      class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full hover:bg-indigo-100 hover:text-indigo-700 transition">
+                      {{skill}}
+                    </button>
+                    {{/if}}
+                    {{/each}}
+                  </div>
+                  {{/if}}
+                </div>
+
+                {{!-- Availability --}}
+                <div class="mb-6">
+                  <label class="block text-sm font-semibold text-gray-700 mb-3">Availability</label>
+                  <select name="availability" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">Any</option>
+                    <option value="available" {{#if (eq filters.availability "available")}}selected{{/if}}>Available Now</option>
+                    <option value="busy" {{#if (eq filters.availability "busy")}}selected{{/if}}>Partially Available</option>
+                  </select>
+                </div>
+
+                {{!-- Apply Filters Button --}}
+                <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                  Apply Filters
+                </button>
+              </form>
+            </div>
+          </aside>
+
+          {{!-- Developer Grid --}}
+          <div class="flex-1">
+            {{!-- Results Header --}}
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+              <div>
+                <h2 class="text-xl font-bold text-gray-900">
+                  {{#if filters.search}}Results for "{{filters.search}}"{{else}}Available Developers{{/if}}
+                </h2>
+                <p class="text-gray-600">{{pagination.total}} developers found</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="text-sm text-gray-600">Sort by:</label>
+                <select name="sortBy" onchange="updateSort(this.value)" class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                  <option value="rating" {{#if (eq filters.sortBy "rating")}}selected{{/if}}>Top Rated</option>
+                  <option value="projects" {{#if (eq filters.sortBy "projects")}}selected{{/if}}>Most Projects</option>
+                  <option value="rate_low" {{#if (eq filters.sortBy "rate_low")}}selected{{/if}}>Lowest Rate</option>
+                  <option value="rate_high" {{#if (eq filters.sortBy "rate_high")}}selected{{/if}}>Highest Rate</option>
+                  <option value="newest" {{#if (eq filters.sortBy "newest")}}selected{{/if}}>Newest</option>
+                </select>
+              </div>
+            </div>
+
+            {{!-- Developers Grid --}}
+            {{#if developers.length}}
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+              {{#each developers}}
+              <article class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group">
+                {{!-- Cover/Header --}}
+                <div class="h-20 bg-gradient-to-r from-indigo-500 to-purple-500 relative">
+                  {{#if isFeatured}}
+                  <span class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
+                    ⭐ Featured
+                  </span>
+                  {{/if}}
+                </div>
+
+                <div class="p-6 -mt-10">
+                  {{!-- Avatar --}}
+                  <div class="flex items-end gap-4 mb-4">
+                    <img src="{{#if profileImage}}{{profileImage}}{{else}}/images/default-avatar.png{{/if}}"
+                      alt="{{displayName}}"
+                      class="w-20 h-20 rounded-xl border-4 border-white object-cover shadow-md group-hover:scale-105 transition-transform"
+                      loading="lazy">
+                    <div class="flex-1 pb-2">
+                      <h3 class="font-bold text-lg text-gray-900 truncate">{{displayName}}</h3>
+                      <p class="text-sm text-gray-500 truncate">{{headline}}</p>
+                    </div>
+                  </div>
+
+                  {{!-- Rating & Stats --}}
+                  <div class="flex items-center gap-4 mb-4 text-sm">
+                    <div class="flex items-center gap-1">
+                      <span class="text-yellow-400">★</span>
+                      <span class="font-semibold text-gray-900">{{rating}}</span>
+                      <span class="text-gray-400">({{reviewCount}})</span>
+                    </div>
+                    <div class="text-gray-400">•</div>
+                    <div class="text-gray-600">{{projectsCompleted}} projects</div>
+                  </div>
+
+                  {{!-- Skills --}}
+                  <div class="flex flex-wrap gap-2 mb-4 min-h-[56px]">
+                    {{#each skills}}
+                    {{#if (lt @index 4)}}
+                    <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full font-medium">{{this}}</span>
+                    {{/if}}
+                    {{/each}}
+                    {{#if (gt skills.length 4)}}
+                    <span class="px-2.5 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">+{{subtract skills.length 4}} more</span>
+                    {{/if}}
+                  </div>
+
+                  {{!-- Rate & Experience --}}
+                  <div class="flex items-center justify-between py-3 border-t border-gray-100">
+                    <div class="text-sm text-gray-600">
+                      <span class="font-medium">{{yearsOfExperience}}</span> years exp.
+                    </div>
+                    <div class="text-right">
+                      <span class="text-xl font-bold text-green-600">${{hourlyRate}}</span>
+                      <span class="text-sm text-gray-400">/hr</span>
+                    </div>
+                  </div>
+
+                  {{!-- Availability Badge --}}
+                  <div class="mb-4">
+                    {{#if (eq availability 'available')}}
+                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+                      <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      Available Now
+                    </span>
+                    {{else}}
+                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 text-sm rounded-full">
+                      <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                      {{availability}}
+                    </span>
+                    {{/if}}
+                  </div>
+
+                  {{!-- Action Button --}}
+                  <a href="/developer/{{slug}}"
+                    class="block w-full text-center bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition"
+                    aria-label="View {{displayName}}'s profile">
+                    View Profile
+                  </a>
+                </div>
+              </article>
+              {{/each}}
+            </div>
+
+            {{!-- Pagination --}}
+            {{#if (gt pagination.totalPages 1)}}
+            <nav class="flex justify-center items-center gap-2" aria-label="Pagination">
+              {{#if (gt pagination.page 1)}}
+              <a href="?page={{subtract pagination.page 1}}{{#if filters.category}}&category={{filters.category}}{{/if}}{{#if filters.search}}&search={{filters.search}}{{/if}}"
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Previous
+              </a>
+              {{/if}}
+
+              <div class="flex items-center gap-1">
+                {{#each paginationPages}}
+                {{#if (eq this "...")}}
+                <span class="px-3 py-2 text-gray-400">...</span>
+                {{else}}
+                <a href="?page={{this}}{{#if ../filters.category}}&category={{../filters.category}}{{/if}}{{#if ../filters.search}}&search={{../filters.search}}{{/if}}"
+                  class="px-4 py-2 rounded-lg {{#if (eq this ../pagination.page)}}bg-indigo-600 text-white{{else}}bg-white border border-gray-300 hover:bg-gray-50{{/if}} transition">
+                  {{this}}
+                </a>
+                {{/if}}
+                {{/each}}
+              </div>
+
+              {{#if (lt pagination.page pagination.totalPages)}}
+              <a href="?page={{add pagination.page 1}}{{#if filters.category}}&category={{filters.category}}{{/if}}{{#if filters.search}}&search={{filters.search}}{{/if}}"
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
+                Next
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </a>
+              {{/if}}
+            </nav>
+            {{/if}}
+
+            {{else}}
+            {{!-- No Results --}}
+            <div class="text-center py-16 bg-white rounded-xl shadow-sm">
+              <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">No developers found</h3>
+              <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                We couldn't find any developers matching your criteria. Try adjusting your filters or search terms.
+              </p>
+              <a href="/hire-developer" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Clear All Filters
+              </a>
+            </div>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {{!-- CTA Section --}}
+    <section class="py-16 bg-gray-900 text-white">
+      <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Are You a Developer?</h2>
+        <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          Join our marketplace and connect with clients looking for your skills.
+          Set your own rates, choose your projects, and grow your freelance career.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="/register?role=developer" class="inline-block bg-indigo-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-indigo-700 transition text-lg">
+            Apply as Developer
+          </a>
+          <a href="/developer-marketplace" class="inline-block bg-white/10 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 transition text-lg border border-white/20">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </section>
   </main>
 
   {{> partials/footer}}
+
+  <script>
+    // Add skill to search input
+    function addSkill(skill) {
+      const input = document.querySelector('input[name="skills"]');
+      const current = input.value.trim();
+      if (current) {
+        if (!current.toLowerCase().includes(skill.toLowerCase())) {
+          input.value = current + ', ' + skill;
+        }
+      } else {
+        input.value = skill;
+      }
+    }
+
+    // Update sort parameter
+    function updateSort(value) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('sortBy', value);
+      window.location.href = url.toString();
+    }
+  </script>
 </body>
 </html>
-

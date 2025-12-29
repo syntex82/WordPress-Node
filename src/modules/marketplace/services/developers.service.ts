@@ -359,4 +359,89 @@ export class DevelopersService {
       })
       .sort((a, b) => b.matchScore - a.matchScore);
   }
+
+  /**
+   * Get all unique skills from active developers
+   */
+  async getAllSkills(): Promise<{ skill: string; count: number }[]> {
+    const developers = await this.prisma.developer.findMany({
+      where: { status: 'ACTIVE' },
+      select: { skills: true },
+    });
+
+    // Count skill occurrences
+    const skillCounts = new Map<string, number>();
+    for (const dev of developers) {
+      for (const skill of dev.skills) {
+        skillCounts.set(skill, (skillCounts.get(skill) || 0) + 1);
+      }
+    }
+
+    // Convert to array and sort by count
+    return Array.from(skillCounts.entries())
+      .map(([skill, count]) => ({ skill, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  /**
+   * Get featured developers for homepage/landing
+   */
+  async getFeatured(limit = 6) {
+    return this.prisma.developer.findMany({
+      where: {
+        status: 'ACTIVE',
+        OR: [{ isFeatured: true }, { rating: { gte: 4.5 } }],
+      },
+      orderBy: [{ isFeatured: 'desc' }, { rating: 'desc' }, { projectsCompleted: 'desc' }],
+      take: limit,
+      include: { user: { select: USER_SELECT } },
+    });
+  }
+
+  /**
+   * Get developer count by experience level
+   */
+  async getExperienceLevels(): Promise<{ level: string; count: number }[]> {
+    const developers = await this.prisma.developer.findMany({
+      where: { status: 'ACTIVE' },
+      select: { yearsOfExperience: true },
+    });
+
+    const levels = {
+      'Entry Level (0-2 years)': 0,
+      'Mid Level (3-5 years)': 0,
+      'Senior (6-10 years)': 0,
+      'Expert (10+ years)': 0,
+    };
+
+    for (const dev of developers) {
+      const years = dev.yearsOfExperience;
+      if (years <= 2) levels['Entry Level (0-2 years)']++;
+      else if (years <= 5) levels['Mid Level (3-5 years)']++;
+      else if (years <= 10) levels['Senior (6-10 years)']++;
+      else levels['Expert (10+ years)']++;
+    }
+
+    return Object.entries(levels).map(([level, count]) => ({ level, count }));
+  }
+
+  /**
+   * Get reviews for a developer
+   */
+  async getReviews(developerId: string, limit = 20) {
+    return this.prisma.developerReview.findMany({
+      where: { developerId, isApproved: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: {
+        reviewer: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+  }
 }

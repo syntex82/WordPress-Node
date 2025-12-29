@@ -914,7 +914,7 @@ Sitemap: ${baseUrl}/sitemap.xml
   // ============================================
 
   /**
-   * Hire a Developer page - browse all developers
+   * Hire a Developer page - browse all developers with comprehensive filtering
    * GET /hire-developer
    */
   @Get('hire-developer')
@@ -928,19 +928,50 @@ Sitemap: ${baseUrl}/sitemap.xml
     @Query('maxRate') maxRate?: string,
     @Query('search') search?: string,
     @Query('page') page?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('experience') experience?: string,
+    @Query('availability') availability?: string,
   ) {
     try {
       const user = (req as any).user;
+      const currentPage = page ? parseInt(page) : 1;
+      const limit = 12;
+
+      // Build experience filter based on years
+      let minExperience: number | undefined;
+      let maxExperience: number | undefined;
+      if (experience === 'entry') {
+        minExperience = 0;
+        maxExperience = 2;
+      } else if (experience === 'mid') {
+        minExperience = 3;
+        maxExperience = 5;
+      } else if (experience === 'senior') {
+        minExperience = 6;
+        maxExperience = 10;
+      } else if (experience === 'expert') {
+        minExperience = 10;
+      }
+
+      // Get developers with filters
       const result = await this.developersService.findAll({
         status: 'ACTIVE' as any,
         category: category as any,
-        skills: skills ? skills.split(',') : undefined,
+        skills: skills ? skills.split(',').map((s) => s.trim()) : undefined,
         minRate: minRate ? parseFloat(minRate) : undefined,
         maxRate: maxRate ? parseFloat(maxRate) : undefined,
+        availability: availability || undefined,
         search,
-        page: page ? parseInt(page) : 1,
-        limit: 12,
+        sortBy: sortBy || 'rating',
+        page: currentPage,
+        limit,
       });
+
+      // Get popular skills for filter suggestions
+      const popularSkills = await this.developersService.getAllSkills();
+
+      // Get stats for hero section
+      const stats = await this.developersService.getStatistics();
 
       const categories = [
         { value: 'FRONTEND', label: 'Frontend Developer' },
@@ -954,19 +985,64 @@ Sitemap: ${baseUrl}/sitemap.xml
         { value: 'SECURITY', label: 'Security Specialist' },
       ];
 
+      // Generate pagination pages array for template
+      const totalPages = result.pagination.pages || Math.ceil(result.pagination.total / limit);
+      const paginationPages = this.generatePaginationPages(currentPage, totalPages);
+
       const html = await this.themeRenderer.render('hire-developer', {
-        title: 'Hire a Developer',
+        title: 'Hire a Developer | Find Top Developers for Your Project',
         developers: result.developers,
-        pagination: result.pagination,
+        pagination: {
+          ...result.pagination,
+          page: currentPage,
+          totalPages,
+        },
+        paginationPages,
         categories,
-        filters: { category, skills, minRate, maxRate, search },
+        popularSkills: popularSkills.slice(0, 10),
+        stats: {
+          totalDevelopers: stats.total || 0,
+          projectsCompleted: stats.topRated?.reduce((sum: number, d: any) => sum + (d.projectsCompleted || 0), 0) || 0,
+          avgRating: stats.topRated?.length
+            ? (stats.topRated.reduce((sum: number, d: any) => sum + (d.rating || 0), 0) / stats.topRated.length).toFixed(1)
+            : '4.8',
+        },
+        filters: {
+          category,
+          skills,
+          minRate,
+          maxRate,
+          search,
+          sortBy: sortBy || 'rating',
+          experience,
+          availability,
+        },
         user,
+        siteUrl: process.env.SITE_URL || 'https://yoursite.com',
       });
       res.send(html);
     } catch (error) {
       console.error('Error rendering hire-developer page:', error);
       res.status(500).send('Error loading page');
     }
+  }
+
+  /**
+   * Helper to generate pagination page numbers with ellipsis
+   */
+  private generatePaginationPages(currentPage: number, totalPages: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    const delta = 2;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...');
+      }
+    }
+
+    return pages;
   }
 
   /**
@@ -1016,7 +1092,7 @@ Sitemap: ${baseUrl}/sitemap.xml
   }
 
   /**
-   * Developer Profile page
+   * Developer Profile page - comprehensive profile with hiring form
    * GET /developer/:slug
    */
   @Get('developer/:slug')
@@ -1026,10 +1102,34 @@ Sitemap: ${baseUrl}/sitemap.xml
       const user = (req as any).user;
       const developer = await this.developersService.findBySlug(slug);
 
+      if (!developer) {
+        return res.status(404).send('Developer not found');
+      }
+
+      // Ensure developer is active (or user is the developer themselves)
+      if (developer.status !== 'ACTIVE' && (!user || user.id !== developer.userId)) {
+        return res.status(404).send('Developer not found');
+      }
+
+      // Get developer reviews if available
+      const reviews = await this.developersService.getReviews(developer.id).catch(() => []);
+
+      // Format developer data for template
+      const developerData = {
+        ...developer,
+        reviews: reviews.slice(0, 10), // Limit to 10 reviews
+        portfolio: developer.portfolio || [],
+        tools: developer.tools || [],
+        spokenLanguages: developer.spokenLanguages || [],
+        responseTime: developer.responseTime || 24,
+        completionRate: developer.completionRate || 95,
+      };
+
       const html = await this.themeRenderer.render('developer-profile', {
-        title: developer.displayName,
-        developer,
+        title: `${developer.displayName} - ${developer.headline} | Developer Profile`,
+        developer: developerData,
         user,
+        siteUrl: process.env.SITE_URL || 'https://yoursite.com',
       });
       res.send(html);
     } catch (error) {
