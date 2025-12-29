@@ -1,42 +1,4 @@
-{{!-- Hire a Developer Page - Comprehensive Developer Marketplace --}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  {{> partials/head title=title}}
-  <meta name="description" content="Hire skilled developers for your next project. Browse our marketplace of verified frontend, backend, full-stack, mobile, and DevOps professionals.">
-  <meta name="keywords" content="hire developer, freelance developer, web developer, mobile developer, full-stack developer, remote developer">
-  <meta property="og:title" content="Hire a Developer | Developer Marketplace">
-  <meta property="og:description" content="Find and hire top-tier developers for your projects. Browse by skills, experience, and hourly rates.">
-  <meta property="og:type" content="website">
-  <link rel="canonical" href="{{siteUrl}}/hire-developer">
-
-  {{!-- Structured Data for SEO --}}
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "Hire a Developer",
-    "description": "Browse and hire skilled developers for web, mobile, and software projects",
-    "url": "{{siteUrl}}/hire-developer",
-    "mainEntity": {
-      "@type": "ItemList",
-      "itemListElement": [
-        {{#each developers}}
-        {{#if @index}},{{/if}}
-        {
-          "@type": "Person",
-          "name": "{{displayName}}",
-          "jobTitle": "{{headline}}",
-          "url": "{{../siteUrl}}/developer/{{slug}}"
-        }
-        {{/each}}
-      ]
-    }
-  }
-  </script>
-</head>
-<body class="bg-gray-50">
-  {{> partials/header user=user}}
+{{> header}}
 
   <main>
     {{!-- Hero Section --}}
@@ -424,30 +386,27 @@
         </div>
       </div>
     </section>
-  </main>
 
-  {{> partials/footer}}
-
-  <script>
-    // Add skill to search input
-    function addSkill(skill) {
-      const input = document.querySelector('input[name="skills"]');
-      const current = input.value.trim();
-      if (current) {
-        if (!current.toLowerCase().includes(skill.toLowerCase())) {
-          input.value = current + ', ' + skill;
-        }
-      } else {
-        input.value = skill;
+<script>
+  // Add skill to search input
+  function addSkill(skill) {
+    const input = document.querySelector('input[name="skills"]');
+    const current = input.value.trim();
+    if (current) {
+      if (!current.toLowerCase().includes(skill.toLowerCase())) {
+        input.value = current + ', ' + skill;
       }
+    } else {
+      input.value = skill;
     }
+  }
 
-    // Update sort parameter
-    function updateSort(value) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('sortBy', value);
-      window.location.href = url.toString();
-    }
-  </script>
-</body>
-</html>
+  // Update sort parameter
+  function updateSort(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sortBy', value);
+    window.location.href = url.toString();
+  }
+</script>
+
+{{> footer}}

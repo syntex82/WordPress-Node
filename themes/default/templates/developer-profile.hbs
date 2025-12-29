@@ -1,34 +1,4 @@
-{{!-- Developer Profile Page - Full profile with hiring request form --}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  {{> partials/head title=title}}
-  <meta name="description" content="{{developer.displayName}} - {{developer.headline}}. {{developer.yearsOfExperience}} years experience. ${developer.hourlyRate}/hr.">
-  <meta property="og:title" content="{{developer.displayName}} | Developer Profile">
-  <meta property="og:description" content="{{developer.headline}}">
-  <meta property="og:type" content="profile">
-  <link rel="canonical" href="{{siteUrl}}/developer/{{developer.slug}}">
-
-  {{!-- Structured Data --}}
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "{{developer.displayName}}",
-    "jobTitle": "{{developer.headline}}",
-    "url": "{{siteUrl}}/developer/{{developer.slug}}",
-    "image": "{{#if developer.profileImage}}{{developer.profileImage}}{{else}}/images/default-avatar.png{{/if}}",
-    "sameAs": [
-      {{#if developer.githubUrl}}"{{developer.githubUrl}}"{{/if}}
-      {{#if developer.linkedinUrl}}{{#if developer.githubUrl}},{{/if}}"{{developer.linkedinUrl}}"{{/if}}
-      {{#if developer.twitterUrl}}{{#if (or developer.githubUrl developer.linkedinUrl)}},{{/if}}"{{developer.twitterUrl}}"{{/if}}
-    ],
-    "knowsAbout": [{{#each developer.skills}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}]
-  }
-  </script>
-</head>
-<body class="bg-gray-50">
-  {{> partials/header user=user}}
+{{> header}}
 
   <main class="max-w-6xl mx-auto px-4 py-8">
     {{!-- Breadcrumb --}}
@@ -497,5 +467,5 @@
     });
   </script>
   {{/if}}
-</body>
-</html>
+
+{{> footer}}
