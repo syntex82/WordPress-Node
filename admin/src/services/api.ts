@@ -1585,13 +1585,21 @@ export interface DeveloperProfile {
   id: string;
   username?: string;
   name: string;
+  displayName?: string;
   avatar?: string;
   headline?: string;
   bio?: string;
   location?: string;
   skills: string[];
+  languages?: string[];
+  frameworks?: string[];
+  category?: string;
   hourlyRate?: number;
+  minimumBudget?: number;
+  yearsOfExperience?: number;
   availability?: 'available' | 'busy' | 'unavailable';
+  availableHours?: number;
+  timezone?: string;
   experienceLevel?: 'junior' | 'mid' | 'senior' | 'lead' | 'principal';
   followersCount: number;
   coursesCount: number;
@@ -1599,6 +1607,9 @@ export interface DeveloperProfile {
   rating?: number;
   reviewsCount?: number;
   completedProjects?: number;
+  websiteUrl?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
   socialLinks?: {
     github?: string;
     linkedin?: string;
