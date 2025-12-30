@@ -1,130 +1,197 @@
 {{> header}}
-</main>
 
-<div style="background: #f8fafc; padding: 2rem 0; min-height: calc(100vh - 120px);">
-  <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+<style>
+  .dev-profile-page { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
+  .dev-profile-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+  .dev-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 24px; }
+  .dev-breadcrumb a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
+  .dev-breadcrumb a:hover { color: #6366f1; }
+  .dev-breadcrumb span { color: rgba(255,255,255,0.4); }
+  .dev-header-card { background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 32px; }
+  .dev-cover { height: 180px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #3b82f6 100%); position: relative; }
+  .dev-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .dev-featured-badge { position: absolute; top: 16px; right: 16px; background: #fbbf24; color: #78350f; font-weight: 700; padding: 8px 16px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+  .dev-header-content { padding: 24px 32px 32px; margin-top: -80px; position: relative; }
+  .dev-header-flex { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+  .dev-avatar { width: 140px; height: 140px; border-radius: 20px; border: 4px solid #1e293b; object-fit: cover; box-shadow: 0 10px 40px rgba(0,0,0,0.3); background: #334155; }
+  .dev-info { flex: 1; min-width: 280px; }
+  .dev-name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .dev-name { font-size: 2rem; font-weight: 800; color: #fff; margin: 0; }
+  .dev-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+  .dev-badge.verified { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+  .dev-badge.available { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+  .dev-badge.busy { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+  .dev-headline { font-size: 1.15rem; color: rgba(255,255,255,0.7); margin-bottom: 16px; }
+  .dev-meta { display: flex; flex-wrap: wrap; gap: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+  .dev-meta-item { display: flex; align-items: center; gap: 8px; }
+  .dev-meta-item svg { width: 18px; height: 18px; }
+  .dev-meta-item .star { color: #fbbf24; font-size: 1.1rem; }
+  .dev-meta-item strong { color: #fff; font-weight: 700; }
+  .dev-rate-card { text-align: right; }
+  .dev-rate { font-size: 2.5rem; font-weight: 800; color: #6366f1; }
+  .dev-rate span { font-size: 1.2rem; color: rgba(255,255,255,0.5); font-weight: 400; }
+  .dev-min-budget { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+  .dev-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+  @media (max-width: 900px) { .dev-grid { grid-template-columns: 1fr; } .dev-rate-card { text-align: left; margin-top: 16px; } }
+  .dev-section { background: #1e293b; border-radius: 16px; padding: 28px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 24px; }
+  .dev-section-title { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 20px; }
+  .dev-bio { color: rgba(255,255,255,0.7); line-height: 1.7; white-space: pre-line; }
+  .dev-skills-group { margin-bottom: 20px; }
+  .dev-skills-label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .dev-skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .dev-skill { padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; }
+  .dev-skill.primary { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+  .dev-skill.lang { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+  .dev-skill.framework { background: rgba(168, 85, 247, 0.2); color: #c4b5fd; }
+  .dev-skill.tool { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+  .dev-sidebar-card { background: #1e293b; border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+  .dev-sidebar-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 16px; }
+  .dev-stat-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .dev-stat-row:last-child { border-bottom: none; }
+  .dev-stat-label { color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 10px; }
+  .dev-stat-label svg { width: 18px; height: 18px; color: rgba(255,255,255,0.4); }
+  .dev-stat-value { color: #fff; font-weight: 600; }
+  .dev-stat-value.green { color: #4ade80; }
+  .dev-cta-btn { display: block; width: 100%; padding: 14px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+  .dev-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
+  .dev-cta-secondary { display: block; width: 100%; padding: 14px; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; margin-top: 12px; transition: background 0.2s; }
+  .dev-cta-secondary:hover { background: rgba(255,255,255,0.05); }
+  .dev-form-group { margin-bottom: 16px; }
+  .dev-form-label { display: block; font-size: 0.85rem; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+  .dev-form-input, .dev-form-textarea, .dev-form-select { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; font-size: 0.95rem; transition: border-color 0.2s; }
+  .dev-form-input:focus, .dev-form-textarea:focus, .dev-form-select:focus { outline: none; border-color: #6366f1; }
+  .dev-form-input::placeholder, .dev-form-textarea::placeholder { color: rgba(255,255,255,0.4); }
+  .dev-form-textarea { min-height: 100px; resize: vertical; }
+  .dev-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dev-link-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; color: rgba(255,255,255,0.7); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.08); transition: color 0.2s; }
+  .dev-link-item:last-child { border-bottom: none; }
+  .dev-link-item:hover { color: #6366f1; }
+  .dev-link-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .dev-link-arrow { margin-left: auto; color: rgba(255,255,255,0.3); }
+  .dev-review { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .dev-review:last-child { border-bottom: none; }
+  .dev-review-header { display: flex; gap: 16px; margin-bottom: 12px; }
+  .dev-review-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #334155; }
+  .dev-review-meta { flex: 1; }
+  .dev-review-name { font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .dev-review-date { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+  .dev-review-stars { color: #fbbf24; margin-bottom: 8px; }
+  .dev-review-content { color: rgba(255,255,255,0.7); line-height: 1.6; }
+  .dev-empty { text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); }
+  .dev-empty svg { width: 48px; height: 48px; margin: 0 auto 16px; color: rgba(255,255,255,0.3); }
+  .dev-success { text-align: center; padding: 24px; }
+  .dev-success-icon { width: 64px; height: 64px; background: rgba(34, 197, 94, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .dev-success-icon svg { width: 32px; height: 32px; color: #4ade80; }
+  .dev-success h4 { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .dev-success p { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 16px; }
+  .dev-success a { color: #6366f1; font-weight: 500; text-decoration: none; }
+  .dev-success a:hover { text-decoration: underline; }
+  .hidden { display: none !important; }
+</style>
+
+<div class="dev-profile-page">
+  <div class="dev-profile-container">
     {{!-- Breadcrumb --}}
-    <nav class="mb-6" aria-label="Breadcrumb">
-      <ol class="flex items-center gap-2 text-sm text-gray-500">
-        <li><a href="/" class="hover:text-indigo-600">Home</a></li>
-        <li><span class="mx-2">/</span></li>
-        <li><a href="/hire-developer" class="hover:text-indigo-600">Hire a Developer</a></li>
-        <li><span class="mx-2">/</span></li>
-        <li class="text-gray-900 font-medium">{{developer.displayName}}</li>
-      </ol>
+    <nav class="dev-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>/</span>
+      <a href="/hire-developer">Hire a Developer</a>
+      <span>/</span>
+      <span style="color: #fff;">{{developer.displayName}}</span>
     </nav>
 
     {{!-- Profile Header --}}
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
-      {{!-- Cover Image --}}
-      <div class="h-40 md:h-52 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 relative">
+    <div class="dev-header-card">
+      <div class="dev-cover">
         {{#if developer.coverImage}}
-        <img src="{{developer.coverImage}}" alt="" class="w-full h-full object-cover">
+        <img src="{{developer.coverImage}}" alt="">
         {{/if}}
         {{#if developer.isFeatured}}
-        <span class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 font-bold px-4 py-2 rounded-full flex items-center gap-2">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        <div class="dev-featured-badge">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
           Featured Developer
-        </span>
+        </div>
         {{/if}}
       </div>
 
-      <div class="px-6 md:px-8 pb-8 -mt-20 relative">
-        <div class="flex flex-col lg:flex-row lg:items-end gap-6">
-          {{!-- Avatar --}}
-          <div class="flex-shrink-0">
-            <img src="{{#if developer.profileImage}}{{developer.profileImage}}{{else}}/images/default-avatar.png{{/if}}"
-              alt="{{developer.displayName}}"
-              class="w-36 h-36 rounded-2xl border-4 border-white object-cover shadow-xl">
-          </div>
+      <div class="dev-header-content">
+        <div class="dev-header-flex">
+          <img src="{{#if developer.profileImage}}{{developer.profileImage}}{{else}}/images/default-avatar.png{{/if}}"
+            alt="{{developer.displayName}}" class="dev-avatar">
 
-          {{!-- Info --}}
-          <div class="flex-1 pt-4 lg:pt-0">
-            <div class="flex flex-wrap items-center gap-3 mb-2">
-              <h1 class="text-3xl font-bold text-gray-900">{{developer.displayName}}</h1>
+          <div class="dev-info">
+            <div class="dev-name-row">
+              <h1 class="dev-name">{{developer.displayName}}</h1>
               {{#if developer.isVerified}}
-              <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              <span class="dev-badge verified">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                 Verified
               </span>
               {{/if}}
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium
-                {{#if (eq developer.availability 'available')}}bg-green-100 text-green-700{{else if (eq developer.availability 'busy')}}bg-yellow-100 text-yellow-700{{else}}bg-gray-100 text-gray-700{{/if}}">
-                <span class="w-2 h-2 rounded-full {{#if (eq developer.availability 'available')}}bg-green-500 animate-pulse{{else if (eq developer.availability 'busy')}}bg-yellow-500{{else}}bg-gray-400{{/if}}"></span>
-                {{#if (eq developer.availability 'available')}}Available Now{{else if (eq developer.availability 'busy')}}Partially Available{{else}}{{developer.availability}}{{/if}}
+              <span class="dev-badge {{#if (eq developer.availability 'available')}}available{{else}}busy{{/if}}">
+                {{#if (eq developer.availability 'available')}}● Available Now{{else if (eq developer.availability 'busy')}}● Partially Available{{else}}{{developer.availability}}{{/if}}
               </span>
             </div>
 
-            <p class="text-xl text-gray-600 mb-4">{{developer.headline}}</p>
+            <p class="dev-headline">{{developer.headline}}</p>
 
-            <div class="flex flex-wrap items-center gap-6 text-sm">
-              <div class="flex items-center gap-1.5">
-                <span class="text-yellow-400 text-lg">★</span>
-                <span class="font-bold text-gray-900 text-lg">{{developer.rating}}</span>
-                <span class="text-gray-500">({{developer.reviewCount}} reviews)</span>
+            <div class="dev-meta">
+              <div class="dev-meta-item">
+                <span class="star">★</span>
+                <strong>{{developer.rating}}</strong>
+                <span>({{developer.reviewCount}} reviews)</span>
               </div>
-              <div class="flex items-center gap-1.5 text-gray-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                <span>{{developer.projectsCompleted}} projects completed</span>
+              <div class="dev-meta-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span>{{developer.projectsCompleted}} projects</span>
               </div>
-              <div class="flex items-center gap-1.5 text-gray-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>{{developer.yearsOfExperience}} years experience</span>
+              <div class="dev-meta-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>{{developer.yearsOfExperience}} yrs exp</span>
               </div>
-              {{#if developer.timezone}}
-              <div class="flex items-center gap-1.5 text-gray-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
-                <span>{{developer.timezone}}</span>
-              </div>
-              {{/if}}
             </div>
           </div>
 
-          {{!-- Rate Card --}}
-          <div class="lg:text-right">
-            <div class="text-4xl font-bold text-indigo-600">
-              ${{developer.hourlyRate}}<span class="text-xl text-gray-400 font-normal">/hr</span>
-            </div>
+          <div class="dev-rate-card">
+            <div class="dev-rate">${{developer.hourlyRate}}<span>/hr</span></div>
             {{#if developer.minimumBudget}}
-            <p class="text-sm text-gray-500 mt-1">Min. project: ${{developer.minimumBudget}}</p>
+            <p class="dev-min-budget">Min. project: ${{developer.minimumBudget}}</p>
             {{/if}}
           </div>
         </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="dev-grid">
       {{!-- Main Content --}}
-      <div class="lg:col-span-2 space-y-8">
+      <div>
         {{!-- About Section --}}
-        <section class="bg-white rounded-xl shadow-sm p-6 md:p-8" id="about">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">About</h2>
-          <div class="prose prose-gray max-w-none">
-            <p class="text-gray-600 whitespace-pre-line leading-relaxed">{{developer.bio}}</p>
-          </div>
+        <section class="dev-section" id="about">
+          <h2 class="dev-section-title">About</h2>
+          <p class="dev-bio">{{developer.bio}}</p>
         </section>
 
         {{!-- Skills & Expertise --}}
-        <section class="bg-white rounded-xl shadow-sm p-6 md:p-8" id="skills">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Skills & Expertise</h2>
+        <section class="dev-section" id="skills">
+          <h2 class="dev-section-title">Skills & Expertise</h2>
 
           {{!-- Primary Skills --}}
-          <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Skills</h3>
-            <div class="flex flex-wrap gap-2">
+          <div class="dev-skills-group">
+            <div class="dev-skills-label">Skills</div>
+            <div class="dev-skills-list">
               {{#each developer.skills}}
-              <span class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">{{this}}</span>
+              <span class="dev-skill primary">{{this}}</span>
               {{/each}}
             </div>
           </div>
 
           {{!-- Programming Languages --}}
           {{#if developer.languages.length}}
-          <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Programming Languages</h3>
-            <div class="flex flex-wrap gap-2">
+          <div class="dev-skills-group">
+            <div class="dev-skills-label">Programming Languages</div>
+            <div class="dev-skills-list">
               {{#each developer.languages}}
-              <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">{{this}}</span>
+              <span class="dev-skill lang">{{this}}</span>
               {{/each}}
             </div>
           </div>
@@ -132,11 +199,11 @@
 
           {{!-- Frameworks --}}
           {{#if developer.frameworks.length}}
-          <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Frameworks & Libraries</h3>
-            <div class="flex flex-wrap gap-2">
+          <div class="dev-skills-group">
+            <div class="dev-skills-label">Frameworks & Libraries</div>
+            <div class="dev-skills-list">
               {{#each developer.frameworks}}
-              <span class="px-4 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">{{this}}</span>
+              <span class="dev-skill framework">{{this}}</span>
               {{/each}}
             </div>
           </div>
@@ -144,11 +211,11 @@
 
           {{!-- Tools --}}
           {{#if developer.tools.length}}
-          <div>
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Tools & Technologies</h3>
-            <div class="flex flex-wrap gap-2">
+          <div class="dev-skills-group">
+            <div class="dev-skills-label">Tools & Technologies</div>
+            <div class="dev-skills-list">
               {{#each developer.tools}}
-              <span class="px-4 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium">{{this}}</span>
+              <span class="dev-skill tool">{{this}}</span>
               {{/each}}
             </div>
           </div>
@@ -157,23 +224,23 @@
 
         {{!-- Portfolio Section --}}
         {{#if developer.portfolio.length}}
-        <section class="bg-white rounded-xl shadow-sm p-6 md:p-8" id="portfolio">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Portfolio</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section class="dev-section" id="portfolio">
+          <h2 class="dev-section-title">Portfolio</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
             {{#each developer.portfolio}}
-            <div class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition">
+            <div style="background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
               {{#if image}}
-              <img src="{{image}}" alt="{{title}}" class="w-full h-40 object-cover">
+              <img src="{{image}}" alt="{{title}}" style="width: 100%; height: 160px; object-fit: cover;">
               {{else}}
-              <div class="w-full h-40 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                <svg class="w-12 h-12 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <div style="width: 100%; height: 160px; background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(168,85,247,0.2) 100%); display: flex; align-items: center; justify-content: center;">
+                <svg width="48" height="48" fill="none" stroke="rgba(255,255,255,0.3)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               </div>
               {{/if}}
-              <div class="p-4">
-                <h3 class="font-bold text-gray-900 mb-1">{{title}}</h3>
-                <p class="text-sm text-gray-600 mb-3">{{description}}</p>
+              <div style="padding: 16px;">
+                <h3 style="font-weight: 700; color: #fff; margin-bottom: 6px;">{{title}}</h3>
+                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 12px;">{{description}}</p>
                 {{#if url}}
-                <a href="{{url}}" target="_blank" rel="noopener" class="text-indigo-600 text-sm font-medium hover:underline">View Project →</a>
+                <a href="{{url}}" target="_blank" rel="noopener" style="color: #6366f1; font-size: 0.9rem; font-weight: 500; text-decoration: none;">View Project →</a>
                 {{/if}}
               </div>
             </div>
@@ -183,51 +250,47 @@
         {{/if}}
 
         {{!-- Reviews Section --}}
-        <section class="bg-white rounded-xl shadow-sm p-6 md:p-8" id="reviews">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Reviews</h2>
-            <div class="flex items-center gap-2">
-              <span class="text-yellow-400 text-2xl">★</span>
-              <span class="text-2xl font-bold">{{developer.rating}}</span>
-              <span class="text-gray-500">({{developer.reviewCount}} reviews)</span>
+        <section class="dev-section" id="reviews">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 class="dev-section-title" style="margin-bottom: 0;">Reviews</h2>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #fbbf24; font-size: 1.5rem;">★</span>
+              <span style="font-size: 1.5rem; font-weight: 700; color: #fff;">{{developer.rating}}</span>
+              <span style="color: rgba(255,255,255,0.5);">({{developer.reviewCount}} reviews)</span>
             </div>
           </div>
 
           {{#if developer.reviews.length}}
-          <div class="space-y-6">
+          <div>
             {{#each developer.reviews}}
-            <article class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-              <div class="flex items-start gap-4">
+            <div class="dev-review">
+              <div class="dev-review-header">
                 <img src="{{#if reviewer.avatar}}{{reviewer.avatar}}{{else}}/images/default-avatar.png{{/if}}"
-                  alt="{{reviewer.name}}" class="w-12 h-12 rounded-full object-cover">
-                <div class="flex-1">
-                  <div class="flex flex-wrap items-center gap-2 mb-1">
-                    <span class="font-semibold text-gray-900">{{reviewer.name}}</span>
-                    <span class="text-gray-400">•</span>
-                    <time class="text-sm text-gray-500">{{formatDate createdAt}}</time>
-                  </div>
-                  <div class="flex items-center gap-1 mb-2">
-                    {{#times overallRating}}<span class="text-yellow-400">★</span>{{/times}}
-                    {{#times (subtract 5 overallRating)}}<span class="text-gray-300">★</span>{{/times}}
-                  </div>
-                  {{#if title}}<h4 class="font-medium text-gray-900 mb-1">{{title}}</h4>{{/if}}
-                  <p class="text-gray-600">{{content}}</p>
-
-                  {{!-- Developer Response --}}
-                  {{#if response}}
-                  <div class="mt-4 pl-4 border-l-2 border-indigo-200 bg-indigo-50/50 py-3 px-4 rounded-r-lg">
-                    <p class="text-sm font-medium text-indigo-700 mb-1">Response from {{../developer.displayName}}</p>
-                    <p class="text-sm text-gray-600">{{response}}</p>
-                  </div>
-                  {{/if}}
+                  alt="{{reviewer.name}}" class="dev-review-avatar">
+                <div class="dev-review-meta">
+                  <div class="dev-review-name">{{reviewer.name}}</div>
+                  <div class="dev-review-date">{{formatDate createdAt}}</div>
                 </div>
               </div>
-            </article>
+              <div class="dev-review-stars">
+                {{#times overallRating}}★{{/times}}{{#times (subtract 5 overallRating)}}<span style="color: rgba(255,255,255,0.3);">★</span>{{/times}}
+              </div>
+              {{#if title}}<h4 style="font-weight: 600; color: #fff; margin-bottom: 6px;">{{title}}</h4>{{/if}}
+              <p class="dev-review-content">{{content}}</p>
+
+              {{!-- Developer Response --}}
+              {{#if response}}
+              <div style="margin-top: 16px; padding: 12px 16px; background: rgba(99,102,241,0.1); border-left: 3px solid #6366f1; border-radius: 0 8px 8px 0;">
+                <p style="font-size: 0.85rem; font-weight: 600; color: #a5b4fc; margin-bottom: 4px;">Response from {{../developer.displayName}}</p>
+                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">{{response}}</p>
+              </div>
+              {{/if}}
+            </div>
             {{/each}}
           </div>
           {{else}}
-          <div class="text-center py-8 text-gray-500">
-            <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <div class="dev-empty">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
             <p>No reviews yet. Be the first to work with {{developer.displayName}}!</p>
           </div>
           {{/if}}
@@ -235,132 +298,122 @@
       </div>
 
       {{!-- Sidebar --}}
-      <div class="space-y-6">
+      <div>
         {{!-- Hire CTA Card --}}
-        <div class="bg-white rounded-xl shadow-sm p-6 sticky top-4" id="hire">
-          <h3 class="text-xl font-bold text-gray-900 mb-4">Hire {{developer.displayName}}</h3>
+        <div class="dev-sidebar-card" id="hire" style="position: sticky; top: 80px;">
+          <h3 class="dev-sidebar-title">Hire {{developer.displayName}}</h3>
 
           {{#if user}}
             {{!-- Authenticated User - Show Hiring Form --}}
-            <form action="/api/marketplace/hiring-requests" method="POST" id="hiringForm" class="space-y-4">
+            <form action="/api/marketplace/hiring-requests" method="POST" id="hiringForm">
               <input type="hidden" name="developerId" value="{{developer.id}}">
 
-              <div>
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Project Title *</label>
-                <input type="text" id="title" name="title" required
-                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              <div class="dev-form-group">
+                <label for="title" class="dev-form-label">Project Title *</label>
+                <input type="text" id="title" name="title" required class="dev-form-input"
                   placeholder="e.g., E-commerce Website Development">
               </div>
 
-              <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Project Description *</label>
-                <textarea id="description" name="description" rows="4" required
-                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              <div class="dev-form-group">
+                <label for="description" class="dev-form-label">Project Description *</label>
+                <textarea id="description" name="description" rows="4" required class="dev-form-textarea"
                   placeholder="Describe your project requirements, goals, and timeline..."></textarea>
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label for="budgetType" class="block text-sm font-medium text-gray-700 mb-1">Budget Type</label>
-                  <select id="budgetType" name="budgetType" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+              <div class="dev-form-row">
+                <div class="dev-form-group">
+                  <label for="budgetType" class="dev-form-label">Budget Type</label>
+                  <select id="budgetType" name="budgetType" class="dev-form-select">
                     <option value="fixed">Fixed Price</option>
                     <option value="hourly">Hourly</option>
                   </select>
                 </div>
-                <div>
-                  <label for="budgetAmount" class="block text-sm font-medium text-gray-700 mb-1">Budget ($) *</label>
-                  <input type="number" id="budgetAmount" name="budgetAmount" required min="1"
-                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                <div class="dev-form-group">
+                  <label for="budgetAmount" class="dev-form-label">Budget ($) *</label>
+                  <input type="number" id="budgetAmount" name="budgetAmount" required min="1" class="dev-form-input"
                     placeholder="1000">
                 </div>
               </div>
 
-              <div>
-                <label for="deadline" class="block text-sm font-medium text-gray-700 mb-1">Deadline (optional)</label>
-                <input type="date" id="deadline" name="deadline"
-                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+              <div class="dev-form-group">
+                <label for="deadline" class="dev-form-label">Deadline (optional)</label>
+                <input type="date" id="deadline" name="deadline" class="dev-form-input">
               </div>
 
-              <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              <button type="submit" class="dev-cta-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                 Send Hiring Request
               </button>
 
-              <p class="text-xs text-gray-500 text-center">
+              <p style="font-size: 0.75rem; color: rgba(255,255,255,0.5); text-align: center; margin-top: 12px;">
                 {{developer.displayName}} typically responds within {{developer.responseTime}} hours
               </p>
             </form>
 
-            <div id="formSuccess" class="hidden text-center py-6">
-              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <div id="formSuccess" class="hidden dev-success">
+              <div class="dev-success-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               </div>
-              <h4 class="font-bold text-gray-900 mb-2">Request Sent!</h4>
-              <p class="text-sm text-gray-600 mb-4">{{developer.displayName}} will review your request and respond soon.</p>
-              <a href="/admin/marketplace/requests" class="text-indigo-600 font-medium hover:underline">View My Requests →</a>
+              <h4>Request Sent!</h4>
+              <p>{{developer.displayName}} will review your request and respond soon.</p>
+              <a href="/admin/marketplace/requests">View My Requests →</a>
             </div>
           {{else}}
             {{!-- Guest User - Show Auth Gate --}}
-            <div class="text-center py-4">
-              <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <div style="text-align: center; padding: 16px 0;">
+              <div style="width: 64px; height: 64px; background: rgba(99,102,241,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                <svg width="32" height="32" fill="none" stroke="#6366f1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               </div>
-              <h4 class="font-bold text-gray-900 mb-2">Sign up to hire this developer</h4>
-              <p class="text-sm text-gray-600 mb-6">Create a free account to send hiring requests and collaborate with developers.</p>
+              <h4 style="font-weight: 700; color: #fff; margin-bottom: 8px;">Sign up to hire this developer</h4>
+              <p style="font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 24px;">Create a free account to send hiring requests and collaborate with developers.</p>
 
-              <a href="/register?redirect=/developer/{{developer.slug}}"
-                class="block w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition mb-3">
-                Create Free Account
-              </a>
-              <a href="/login?redirect=/developer/{{developer.slug}}"
-                class="block w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition">
-                Already have an account? Login
-              </a>
+              <a href="/register?redirect=/developer/{{developer.slug}}" class="dev-cta-btn">Create Free Account</a>
+              <a href="/login?redirect=/developer/{{developer.slug}}" class="dev-cta-secondary">Already have an account? Login</a>
             </div>
           {{/if}}
         </div>
 
         {{!-- Quick Stats Card --}}
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="font-bold text-gray-900 mb-4">Quick Stats</h3>
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 flex items-center gap-2">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+        <div class="dev-sidebar-card">
+          <h3 class="dev-sidebar-title">Quick Stats</h3>
+          <div>
+            <div class="dev-stat-row">
+              <span class="dev-stat-label">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                 Category
               </span>
-              <span class="font-medium text-gray-900">{{developer.category}}</span>
+              <span class="dev-stat-value">{{developer.category}}</span>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 flex items-center gap-2">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="dev-stat-row">
+              <span class="dev-stat-label">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Min. Budget
               </span>
-              <span class="font-medium text-gray-900">${{developer.minimumBudget}}</span>
+              <span class="dev-stat-value">${{developer.minimumBudget}}</span>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 flex items-center gap-2">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="dev-stat-row">
+              <span class="dev-stat-label">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Available Hours
               </span>
-              <span class="font-medium text-gray-900">{{developer.availableHours}} hrs/week</span>
+              <span class="dev-stat-value">{{developer.availableHours}} hrs/week</span>
             </div>
             {{#if developer.completionRate}}
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 flex items-center gap-2">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="dev-stat-row">
+              <span class="dev-stat-label">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Completion Rate
               </span>
-              <span class="font-medium text-green-600">{{developer.completionRate}}%</span>
+              <span class="dev-stat-value green">{{developer.completionRate}}%</span>
             </div>
             {{/if}}
             {{#if developer.responseTime}}
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 flex items-center gap-2">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <div class="dev-stat-row">
+              <span class="dev-stat-label">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                 Response Time
               </span>
-              <span class="font-medium text-gray-900">~{{developer.responseTime}} hours</span>
+              <span class="dev-stat-value">~{{developer.responseTime}} hours</span>
             </div>
             {{/if}}
           </div>
@@ -368,41 +421,37 @@
 
         {{!-- Links Card --}}
         {{#if (or developer.websiteUrl developer.githubUrl developer.linkedinUrl developer.twitterUrl)}}
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="font-bold text-gray-900 mb-4">Links</h3>
-          <div class="space-y-3">
+        <div class="dev-sidebar-card">
+          <h3 class="dev-sidebar-title">Links</h3>
+          <div>
             {{#if developer.websiteUrl}}
-            <a href="{{developer.websiteUrl}}" target="_blank" rel="noopener"
-              class="flex items-center gap-3 text-gray-700 hover:text-indigo-600 transition">
-              <span class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">🌐</span>
+            <a href="{{developer.websiteUrl}}" target="_blank" rel="noopener" class="dev-link-item">
+              <span class="dev-link-icon">🌐</span>
               <span>Website</span>
-              <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              <svg class="dev-link-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             </a>
             {{/if}}
             {{#if developer.githubUrl}}
-            <a href="{{developer.githubUrl}}" target="_blank" rel="noopener"
-              class="flex items-center gap-3 text-gray-700 hover:text-indigo-600 transition">
-              <span class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <a href="{{developer.githubUrl}}" target="_blank" rel="noopener" class="dev-link-item">
+              <span class="dev-link-icon">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
               </span>
               <span>GitHub</span>
-              <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              <svg class="dev-link-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             </a>
             {{/if}}
             {{#if developer.linkedinUrl}}
-            <a href="{{developer.linkedinUrl}}" target="_blank" rel="noopener"
-              class="flex items-center gap-3 text-gray-700 hover:text-indigo-600 transition">
-              <span class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">in</span>
+            <a href="{{developer.linkedinUrl}}" target="_blank" rel="noopener" class="dev-link-item">
+              <span class="dev-link-icon" style="color: #0077b5;">in</span>
               <span>LinkedIn</span>
-              <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              <svg class="dev-link-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             </a>
             {{/if}}
             {{#if developer.twitterUrl}}
-            <a href="{{developer.twitterUrl}}" target="_blank" rel="noopener"
-              class="flex items-center gap-3 text-gray-700 hover:text-indigo-600 transition">
-              <span class="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center text-sky-500">𝕏</span>
+            <a href="{{developer.twitterUrl}}" target="_blank" rel="noopener" class="dev-link-item">
+              <span class="dev-link-icon">𝕏</span>
               <span>Twitter/X</span>
-              <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              <svg class="dev-link-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             </a>
             {{/if}}
           </div>
@@ -411,11 +460,11 @@
 
         {{!-- Spoken Languages --}}
         {{#if developer.spokenLanguages.length}}
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="font-bold text-gray-900 mb-4">Languages</h3>
-          <div class="flex flex-wrap gap-2">
+        <div class="dev-sidebar-card">
+          <h3 class="dev-sidebar-title">Languages</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             {{#each developer.spokenLanguages}}
-            <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{{this}}</span>
+            <span style="padding: 6px 12px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); border-radius: 20px; font-size: 0.85rem;">{{this}}</span>
             {{/each}}
           </div>
         </div>
