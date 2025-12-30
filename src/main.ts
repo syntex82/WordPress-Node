@@ -128,16 +128,26 @@ async function bootstrap() {
         ? {
             directives: {
               defaultSrc: ["'self'"],
-              styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+              styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdn.tailwindcss.com'],
               fontSrc: ["'self'", 'https://fonts.gstatic.com'],
               imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
-              scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
+              scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "'unsafe-eval'",
+                'https://js.stripe.com',
+                'https://cdn.tailwindcss.com',
+                'https://www.googletagmanager.com',
+                'https://www.google-analytics.com',
+              ],
+              scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
               connectSrc: [
                 "'self'",
                 'https://api.stripe.com',
                 'https://fonts.googleapis.com',
                 'https://fonts.gstatic.com',
                 'https://js.stripe.com',
+                'https://www.google-analytics.com',
                 'wss:',
                 'ws:',
               ],
@@ -157,7 +167,7 @@ async function bootstrap() {
           }
         : false,
       frameguard: false, // Handled by custom middleware below
-      hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true } : false,
+      hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
     }),
   );
 
