@@ -28,6 +28,22 @@ const USER_SELECT = {
   username: true,
 };
 
+/**
+ * Helper to flatten user data into developer object for frontend compatibility
+ * Ensures profileImage and coverImage fall back to user's avatar/coverImage
+ */
+function flattenDeveloperData(developer: any) {
+  if (!developer) return null;
+  return {
+    ...developer,
+    name: developer.user?.name || developer.displayName,
+    username: developer.user?.username || developer.slug,
+    avatar: developer.user?.avatar || developer.profileImage,
+    profileImage: developer.profileImage || developer.user?.avatar,
+    coverImage: developer.coverImage || developer.user?.coverImage,
+  };
+}
+
 @Injectable()
 export class DevelopersService {
   constructor(private prisma: PrismaService) {}
@@ -56,7 +72,7 @@ export class DevelopersService {
       counter++;
     }
 
-    return this.prisma.developer.create({
+    const developer = await this.prisma.developer.create({
       data: {
         id: uuidv4(),
         userId,
@@ -80,17 +96,18 @@ export class DevelopersService {
       },
       include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
    * Update developer profile
    */
   async update(developerId: string, userId: string, dto: UpdateDeveloperDto, isAdmin = false) {
-    const developer = await this.prisma.developer.findUnique({ where: { id: developerId } });
-    if (!developer) throw new NotFoundException('Developer not found');
-    if (!isAdmin && developer.userId !== userId) throw new ForbiddenException('Not authorized');
+    const existing = await this.prisma.developer.findUnique({ where: { id: developerId } });
+    if (!existing) throw new NotFoundException('Developer not found');
+    if (!isAdmin && existing.userId !== userId) throw new ForbiddenException('Not authorized');
 
-    return this.prisma.developer.update({
+    const developer = await this.prisma.developer.update({
       where: { id: developerId },
       data: {
         ...dto,
@@ -103,6 +120,7 @@ export class DevelopersService {
       },
       include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
@@ -117,7 +135,7 @@ export class DevelopersService {
       },
     });
     if (!developer) throw new NotFoundException('Developer not found');
-    return developer;
+    return flattenDeveloperData(developer);
   }
 
   /**
@@ -127,7 +145,7 @@ export class DevelopersService {
     const developer = await this.prisma.developer.findUnique({
       where: { slug, status: 'ACTIVE' },
       include: {
-        user: { select: { id: true, name: true, avatar: true, username: true, coverImage: true } },
+        user: { select: USER_SELECT },
         reviews: {
           where: { isApproved: true },
           orderBy: { createdAt: 'desc' },
@@ -137,16 +155,7 @@ export class DevelopersService {
       },
     });
     if (!developer) throw new NotFoundException('Developer not found');
-
-    // Flatten user data for frontend compatibility - use user's avatar/cover if developer-specific not set
-    return {
-      ...developer,
-      name: developer.user?.name || developer.displayName,
-      username: developer.user?.username || developer.slug,
-      avatar: developer.user?.avatar || developer.profileImage,
-      profileImage: developer.profileImage || developer.user?.avatar,
-      coverImage: developer.coverImage || developer.user?.coverImage,
-    };
+    return flattenDeveloperData(developer);
   }
 
   /**
@@ -157,18 +166,7 @@ export class DevelopersService {
       where: { userId },
       include: { user: { select: USER_SELECT } },
     });
-
-    if (!developer) return null;
-
-    // Flatten user data for frontend compatibility
-    return {
-      ...developer,
-      name: developer.user?.name || developer.displayName,
-      username: developer.user?.username || developer.slug,
-      avatar: developer.user?.avatar || developer.profileImage,
-      profileImage: developer.profileImage || developer.user?.avatar,
-      coverImage: developer.coverImage || developer.user?.coverImage,
-    };
+    return flattenDeveloperData(developer);
   }
 
   /**
@@ -240,14 +238,7 @@ export class DevelopersService {
     ]);
 
     // Flatten user data into developer for frontend compatibility
-    const developers = developersRaw.map(dev => ({
-      ...dev,
-      name: dev.user?.name || dev.displayName,
-      username: dev.user?.username || dev.slug,
-      avatar: dev.user?.avatar || dev.profileImage,
-      profileImage: dev.profileImage || dev.user?.avatar,
-      coverImage: dev.coverImage || dev.user?.coverImage,
-    }));
+    const developers = developersRaw.map(flattenDeveloperData);
 
     return { developers, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
   }
@@ -256,61 +247,71 @@ export class DevelopersService {
    * Approve developer application (Admin)
    */
   async approve(developerId: string) {
-    const developer = await this.prisma.developer.findUnique({ where: { id: developerId } });
-    if (!developer) throw new NotFoundException('Developer not found');
-    if (developer.status !== 'PENDING')
+    const existing = await this.prisma.developer.findUnique({ where: { id: developerId } });
+    if (!existing) throw new NotFoundException('Developer not found');
+    if (existing.status !== 'PENDING')
       throw new BadRequestException('Developer is not pending approval');
 
-    return this.prisma.developer.update({
+    const developer = await this.prisma.developer.update({
       where: { id: developerId },
       data: { status: 'ACTIVE', isVerified: true, verifiedAt: new Date() },
+      include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
    * Reject developer application (Admin)
    */
   async reject(developerId: string, reason: string) {
-    const developer = await this.prisma.developer.findUnique({ where: { id: developerId } });
-    if (!developer) throw new NotFoundException('Developer not found');
+    const existing = await this.prisma.developer.findUnique({ where: { id: developerId } });
+    if (!existing) throw new NotFoundException('Developer not found');
 
-    return this.prisma.developer.update({
+    const developer = await this.prisma.developer.update({
       where: { id: developerId },
       data: { status: 'REJECTED', rejectionReason: reason },
+      include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
    * Suspend developer (Admin)
    */
   async suspend(developerId: string, reason: string) {
-    return this.prisma.developer.update({
+    const developer = await this.prisma.developer.update({
       where: { id: developerId },
       data: { status: 'SUSPENDED', suspensionReason: reason },
+      include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
    * Reactivate developer (Admin)
    */
   async reactivate(developerId: string) {
-    return this.prisma.developer.update({
+    const developer = await this.prisma.developer.update({
       where: { id: developerId },
       data: { status: 'ACTIVE', suspensionReason: null },
+      include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
    * Feature/unfeature developer (Admin)
    */
   async setFeatured(developerId: string, featured: boolean, daysUntil = 30) {
-    return this.prisma.developer.update({
+    const developer = await this.prisma.developer.update({
       where: { id: developerId },
       data: {
         isFeatured: featured,
         featuredUntil: featured ? new Date(Date.now() + daysUntil * 24 * 60 * 60 * 1000) : null,
       },
+      include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
@@ -361,7 +362,7 @@ export class DevelopersService {
     const status = dto.status || DeveloperStatus.ACTIVE;
     const isVerified = dto.isVerified !== undefined ? dto.isVerified : status === DeveloperStatus.ACTIVE;
 
-    return this.prisma.developer.create({
+    const developer = await this.prisma.developer.create({
       data: {
         id: uuidv4(),
         userId: dto.userId,
@@ -386,6 +387,7 @@ export class DevelopersService {
       },
       include: { user: { select: USER_SELECT } },
     });
+    return flattenDeveloperData(developer);
   }
 
   /**
@@ -478,15 +480,15 @@ export class DevelopersService {
       where.hourlyRate = { lte: requirements.budget };
     }
 
-    const developers = await this.prisma.developer.findMany({
+    const developersRaw = await this.prisma.developer.findMany({
       where,
       orderBy: [{ rating: 'desc' }, { projectsCompleted: 'desc' }],
       take: limit,
       include: { user: { select: USER_SELECT } },
     });
 
-    // Calculate match score
-    return developers
+    // Calculate match score and flatten user data
+    return developersRaw
       .map((dev) => {
         let score = dev.rating * 20; // Base score from rating
         if (requirements.skills?.length) {
@@ -494,7 +496,10 @@ export class DevelopersService {
           score += (matchedSkills.length / requirements.skills.length) * 30;
         }
         score += Math.min(dev.projectsCompleted, 10) * 2;
-        return { ...dev, matchScore: Math.round(score) };
+        return {
+          ...flattenDeveloperData(dev),
+          matchScore: Math.round(score),
+        };
       })
       .sort((a, b) => b.matchScore - a.matchScore);
   }
