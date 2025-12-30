@@ -68,6 +68,21 @@ export class ThemeRendererService {
     Handlebars.registerHelper('eq', (a, b) => a === b);
     Handlebars.registerHelper('ne', (a, b) => a !== b);
 
+    // Logical helpers
+    Handlebars.registerHelper('or', (...args) => {
+      // Remove the options object (last argument from Handlebars)
+      args.pop();
+      return args.some((arg) => !!arg);
+    });
+
+    Handlebars.registerHelper('and', (...args) => {
+      // Remove the options object (last argument from Handlebars)
+      args.pop();
+      return args.every((arg) => !!arg);
+    });
+
+    Handlebars.registerHelper('not', (value) => !value);
+
     // Math helpers
     Handlebars.registerHelper('subtract', (a, b) => {
       const numA = parseFloat(a) || 0;
