@@ -126,7 +126,7 @@ export class DevelopersService {
     const developer = await this.prisma.developer.findUnique({
       where: { slug, status: 'ACTIVE' },
       include: {
-        user: { select: { id: true, name: true, avatar: true } },
+        user: { select: { id: true, name: true, avatar: true, username: true } },
         reviews: {
           where: { isApproved: true },
           orderBy: { createdAt: 'desc' },
@@ -136,17 +136,34 @@ export class DevelopersService {
       },
     });
     if (!developer) throw new NotFoundException('Developer not found');
-    return developer;
+
+    // Flatten user data for frontend compatibility
+    return {
+      ...developer,
+      name: developer.user?.name || developer.displayName,
+      username: developer.user?.username || developer.slug,
+      avatar: developer.user?.avatar || developer.profileImage,
+    };
   }
 
   /**
    * Get developer by user ID
    */
   async findByUserId(userId: string) {
-    return this.prisma.developer.findUnique({
+    const developer = await this.prisma.developer.findUnique({
       where: { userId },
       include: { user: { select: USER_SELECT } },
     });
+
+    if (!developer) return null;
+
+    // Flatten user data for frontend compatibility
+    return {
+      ...developer,
+      name: developer.user?.name || developer.displayName,
+      username: developer.user?.username || developer.slug,
+      avatar: developer.user?.avatar || developer.profileImage,
+    };
   }
 
   /**
@@ -206,7 +223,7 @@ export class DevelopersService {
     else if (sortBy === 'projects') orderBy.projectsCompleted = 'desc';
     else orderBy.createdAt = 'desc';
 
-    const [developers, total] = await Promise.all([
+    const [developersRaw, total] = await Promise.all([
       this.prisma.developer.findMany({
         where,
         orderBy,
@@ -216,6 +233,14 @@ export class DevelopersService {
       }),
       this.prisma.developer.count({ where }),
     ]);
+
+    // Flatten user data into developer for frontend compatibility
+    const developers = developersRaw.map(dev => ({
+      ...dev,
+      name: dev.user?.name || dev.displayName,
+      username: dev.user?.username || dev.slug,
+      avatar: dev.user?.avatar || dev.profileImage,
+    }));
 
     return { developers, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
   }
