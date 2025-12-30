@@ -1,0 +1,40 @@
+# robots.txt for wordpressnode.co.uk
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://wordpressnode.co.uk/sitemap.xml
+
+# Disallow admin-only routes (login required)
+Disallow: /admin/posts/
+Disallow: /admin/pages/
+Disallow: /admin/media
+Disallow: /admin/users
+Disallow: /admin/messages
+Disallow: /admin/groups
+Disallow: /admin/settings
+Disallow: /admin/analytics
+Disallow: /admin/security
+Disallow: /admin/email
+Disallow: /admin/backups
+Disallow: /admin/customize
+Disallow: /admin/theme-builder
+Disallow: /admin/theme-designer
+Disallow: /admin/theme-content
+Disallow: /admin/marketplace
+Disallow: /admin/dev-marketplace
+Disallow: /admin/shop
+Disallow: /admin/lms/courses
+Disallow: /admin/lms/categories
+
+# Allow public pages
+Allow: /admin/login
+Allow: /admin/register
+Allow: /admin/pricing
+Allow: /admin/storefront
+Allow: /admin/lms/catalog
+Allow: /admin/u/
+
+# Crawl delay (be nice to our server)
+Crawl-delay: 1
+
