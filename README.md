@@ -1,7 +1,8 @@
 <div align="center">
 
 <!-- Hero Banner -->
-<img width="1007" height="592" alt="Screenshot 2025-12-19 234046" src="https://github.com/user-attachments/assets/9c4a0cd6-d4aa-4d45-864f-48abb954e72b" />
+<img width="1536" height="1024" alt="nodepress banner" src="https://github.com/user-attachments/assets/8a26d999-ff65-423d-9d49-e5297d6a5ed5" />
+
 
 
 <br />
