@@ -301,15 +301,60 @@ export default function Layout() {
         </div>
         <div className="flex items-center gap-2">
           <NotificationCenter />
-          <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="User menu"
-          >
-            <FiUser size={20} />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="User menu"
+            >
+              <FiUser size={20} />
+            </button>
+            {/* Mobile User Dropdown Menu */}
+            {showUserMenu && (
+              <div className="absolute top-full right-0 mt-2 w-56 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden z-50">
+                <div className="p-3 border-b border-slate-700/50 bg-slate-800/50">
+                  <p className="text-xs text-slate-400">Signed in as</p>
+                  <p className="text-sm font-medium text-white truncate">{user?.email}</p>
+                </div>
+                <Link
+                  to="/profile"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors touch-manipulation min-h-[48px]"
+                >
+                  <FiUser size={16} className="text-slate-500" />
+                  My Profile
+                </Link>
+                <Link
+                  to="/lms/dashboard"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors touch-manipulation min-h-[48px]"
+                >
+                  <FiAward size={16} className="text-slate-500" />
+                  My Learning
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    logout();
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors border-t border-slate-700/50 touch-manipulation min-h-[48px]"
+                >
+                  <FiLogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Mobile User Menu Overlay - closes dropdown when clicking outside */}
+      {showUserMenu && (
+        <div
+          className="lg:hidden fixed inset-0 z-40"
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (

@@ -1882,6 +1882,8 @@ export const developerMarketplaceApi = {
     linkedinUrl?: string;
     status?: string;
     isVerified?: boolean;
+    rating?: number;
+    reviewCount?: number;
   }) => api.post<DeveloperProfile>('/marketplace/developers/admin/create', data),
 
   // Admin: Approve developer

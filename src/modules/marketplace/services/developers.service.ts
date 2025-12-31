@@ -315,6 +315,22 @@ export class DevelopersService {
   }
 
   /**
+   * Delete developer (Admin)
+   * Permanently removes the developer profile
+   */
+  async delete(developerId: string) {
+    const existing = await this.prisma.developer.findUnique({ where: { id: developerId } });
+    if (!existing) throw new NotFoundException('Developer not found');
+
+    // Delete the developer profile
+    await this.prisma.developer.delete({
+      where: { id: developerId },
+    });
+
+    return { success: true, message: 'Developer deleted successfully' };
+  }
+
+  /**
    * Admin: Create developer profile directly for a user (bypasses application)
    */
   async adminCreateDeveloper(dto: {
@@ -334,6 +350,8 @@ export class DevelopersService {
     linkedinUrl?: string;
     status?: DeveloperStatus;
     isVerified?: boolean;
+    rating?: number;
+    reviewCount?: number;
   }) {
     // Check if user exists
     const user = await this.prisma.user.findUnique({ where: { id: dto.userId } });
@@ -377,6 +395,8 @@ export class DevelopersService {
         hourlyRate: dto.hourlyRate,
         minimumBudget: dto.minimumBudget,
         yearsOfExperience: dto.yearsOfExperience || 0,
+        rating: dto.rating || 0,
+        reviewCount: dto.reviewCount || 0,
         websiteUrl: dto.websiteUrl,
         githubUrl: dto.githubUrl,
         linkedinUrl: dto.linkedinUrl,

@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -189,6 +190,8 @@ export class DevelopersController {
       linkedinUrl?: string;
       status?: string;
       isVerified?: boolean;
+      rating?: number;
+      reviewCount?: number;
     },
   ) {
     return this.developersService.adminCreateDeveloper(dto as any);
@@ -263,5 +266,15 @@ export class DevelopersController {
   @Roles('ADMIN')
   async update(@Param('id') id: string, @Request() req, @Body() dto: UpdateDeveloperDto) {
     return this.developersService.update(id, req.user.id, dto, true);
+  }
+
+  /**
+   * Delete developer (admin)
+   */
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async delete(@Param('id') id: string) {
+    return this.developersService.delete(id);
   }
 }

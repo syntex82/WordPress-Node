@@ -9,7 +9,7 @@ import {
   FiUsers, FiSearch, FiX, FiEye, FiCheckCircle,
   FiXCircle, FiSlash, FiRefreshCw, FiStar, FiBarChart2,
   FiChevronLeft, FiChevronRight, FiUser, FiShield, FiCalendar,
-  FiLock, FiExternalLink, FiPlus
+  FiLock, FiExternalLink, FiPlus, FiTrash2
 } from 'react-icons/fi';
 import api from '../../services/api';
 import { developerMarketplaceApi } from '../../services/api';
@@ -86,6 +86,9 @@ export default function Developers() {
     headline: '',
     category: 'FULLSTACK',
     hourlyRate: 50,
+    yearsOfExperience: 0,
+    rating: 0,
+    reviewCount: 0,
     status: 'ACTIVE',
     isVerified: true,
   });
@@ -133,6 +136,20 @@ export default function Developers() {
     }
   };
 
+  const handleDelete = async (id: string, displayName: string) => {
+    if (!confirm(`Are you sure you want to permanently delete the developer "${displayName}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      await api.delete(`/marketplace/developers/${id}`);
+      toast.success('Developer deleted successfully');
+      fetchDevelopers();
+    } catch (error: any) {
+      console.error('Error deleting developer:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete developer');
+    }
+  };
+
   const clearFilters = () => {
     setFilter({ status: '', category: '', search: '' });
     setPagination(prev => ({ ...prev, page: 1 }));
@@ -160,13 +177,16 @@ export default function Developers() {
         headline: addForm.headline,
         category: addForm.category,
         hourlyRate: addForm.hourlyRate,
+        yearsOfExperience: addForm.yearsOfExperience,
+        rating: addForm.rating,
+        reviewCount: addForm.reviewCount,
         status: addForm.status,
         isVerified: addForm.isVerified,
       });
       toast.success('Developer created successfully!');
       setShowAddModal(false);
       setSelectedUser(null);
-      setAddForm({ displayName: '', headline: '', category: 'FULLSTACK', hourlyRate: 50, status: 'ACTIVE', isVerified: true });
+      setAddForm({ displayName: '', headline: '', category: 'FULLSTACK', hourlyRate: 50, yearsOfExperience: 0, rating: 0, reviewCount: 0, status: 'ACTIVE', isVerified: true });
       fetchDevelopers();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to create developer');
@@ -435,6 +455,14 @@ export default function Developers() {
                           <FiEye size={16} />
                         </Link>
                       </Tooltip>
+                      <Tooltip title="Delete Developer" content="Permanently remove this developer profile" position="top">
+                        <button
+                          onClick={() => handleDelete(dev.id, dev.displayName)}
+                          className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </Tooltip>
                     </div>
                   </td>
                 </tr>
@@ -536,6 +564,20 @@ export default function Developers() {
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Hourly Rate ($)</label>
                   <input type="number" min={1} value={addForm.hourlyRate} onChange={e => setAddForm(f => ({ ...f, hourlyRate: parseInt(e.target.value) || 0 }))} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-2.5 text-white" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Years of Experience</label>
+                  <input type="number" min={0} max={50} value={addForm.yearsOfExperience} onChange={e => setAddForm(f => ({ ...f, yearsOfExperience: parseInt(e.target.value) || 0 }))} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-2.5 text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Rating (0-5)</label>
+                  <input type="number" min={0} max={5} step={0.1} value={addForm.rating} onChange={e => setAddForm(f => ({ ...f, rating: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-2.5 text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Review Count</label>
+                  <input type="number" min={0} value={addForm.reviewCount} onChange={e => setAddForm(f => ({ ...f, reviewCount: parseInt(e.target.value) || 0 }))} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-2.5 text-white" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
