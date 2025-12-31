@@ -5,45 +5,45 @@
       <stop offset="100%" style="stop-color:#0f172a"/>
     </linearGradient>
     <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#5eead4"/>
+      <stop offset="0%" style="stop-color:#10b981"/>
       <stop offset="100%" style="stop-color:#6366f1"/>
     </linearGradient>
   </defs>
-  
+
   <!-- Background -->
   <rect width="200" height="200" rx="16" fill="url(#bgGrad)"/>
-  
+
   <!-- Hexagon outline -->
-  <polygon 
-    points="100,25 160,55 160,145 100,175 40,145 40,55" 
-    fill="none" 
-    stroke="url(#hexGrad)" 
+  <polygon
+    points="100,25 160,55 160,145 100,175 40,145 40,55"
+    fill="none"
+    stroke="url(#hexGrad)"
     stroke-width="4"
     stroke-linejoin="round"
   />
-  
+
   <!-- Corner dots -->
-  <circle cx="100" cy="25" r="8" fill="#5eead4"/>
+  <circle cx="100" cy="25" r="8" fill="#10b981"/>
   <circle cx="160" cy="55" r="8" fill="#6366f1"/>
-  <circle cx="160" cy="145" r="8" fill="#5eead4"/>
+  <circle cx="160" cy="145" r="8" fill="#10b981"/>
   <circle cx="100" cy="175" r="8" fill="#6366f1"/>
   <circle cx="40" cy="145" r="8" fill="#6366f1"/>
-  <circle cx="40" cy="55" r="8" fill="#5eead4"/>
-  
+  <circle cx="40" cy="55" r="8" fill="#10b981"/>
+
   <!-- NODE Text -->
-  <text x="100" y="92" 
-    font-family="Arial, Helvetica, sans-serif" 
-    font-size="32" 
-    font-weight="bold" 
-    fill="#ffffff" 
+  <text x="100" y="92"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="32"
+    font-weight="bold"
+    fill="#ffffff"
     text-anchor="middle">NODE</text>
-  
+
   <!-- PRESS Text -->
-  <text x="100" y="124" 
-    font-family="Arial, Helvetica, sans-serif" 
-    font-size="32" 
-    font-weight="bold" 
-    fill="#ffffff" 
+  <text x="100" y="124"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="32"
+    font-weight="bold"
+    fill="#ffffff"
     text-anchor="middle">PRESS</text>
 </svg>
 

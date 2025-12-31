@@ -1,42 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
     <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#5eead4"/>
+      <stop offset="0%" style="stop-color:#10b981"/>
       <stop offset="100%" style="stop-color:#6366f1"/>
     </linearGradient>
   </defs>
-  
+
   <!-- Hexagon outline -->
-  <polygon 
-    points="100,20 165,52 165,148 100,180 35,148 35,52" 
-    fill="none" 
-    stroke="url(#hexGrad)" 
+  <polygon
+    points="100,20 165,52 165,148 100,180 35,148 35,52"
+    fill="none"
+    stroke="url(#hexGrad)"
     stroke-width="4"
     stroke-linejoin="round"
   />
-  
+
   <!-- Corner dots -->
-  <circle cx="100" cy="20" r="8" fill="#5eead4"/>
+  <circle cx="100" cy="20" r="8" fill="#10b981"/>
   <circle cx="165" cy="52" r="8" fill="#6366f1"/>
-  <circle cx="165" cy="148" r="8" fill="#5eead4"/>
+  <circle cx="165" cy="148" r="8" fill="#10b981"/>
   <circle cx="100" cy="180" r="8" fill="#6366f1"/>
   <circle cx="35" cy="148" r="8" fill="#6366f1"/>
-  <circle cx="35" cy="52" r="8" fill="#5eead4"/>
-  
+  <circle cx="35" cy="52" r="8" fill="#10b981"/>
+
   <!-- NODE Text -->
-  <text x="100" y="92" 
-    font-family="Arial, Helvetica, sans-serif" 
-    font-size="32" 
-    font-weight="bold" 
-    fill="#1e293b" 
+  <text x="100" y="92"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="32"
+    font-weight="bold"
+    fill="#1e293b"
     text-anchor="middle">NODE</text>
-  
+
   <!-- PRESS Text -->
-  <text x="100" y="124" 
-    font-family="Arial, Helvetica, sans-serif" 
-    font-size="32" 
-    font-weight="bold" 
-    fill="#1e293b" 
+  <text x="100" y="124"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="32"
+    font-weight="bold"
+    fill="#1e293b"
     text-anchor="middle">PRESS</text>
 </svg>
 
