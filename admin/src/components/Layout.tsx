@@ -215,7 +215,6 @@ export default function Layout() {
 
   // Communication navigation group (available to all roles)
   const communicationNavigation: Array<{ name: string; path: string; icon: any; permission: keyof RolePermissions; badge?: number; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [
-    { name: 'Timeline', path: '/timeline', icon: FiLayers, permission: 'messages', tooltipKey: 'messages' },
     { name: 'Activity Feed', path: '/feed', icon: FiActivity, permission: 'messages', tooltipKey: 'messages' },
     { name: 'Messages', path: '/messages', icon: FiMail, permission: 'messages', badge: unreadMessages, tooltipKey: 'messages' },
     { name: 'Groups', path: '/groups', icon: FiMessageSquare, permission: 'groups', tooltipKey: 'groups' },

@@ -2,11 +2,14 @@
  * Timeline Service
  * Handles CRUD operations for timeline posts with media support
  * Includes sharing, hashtags, mentions, and social features
+ * Integrates with Activity Feed for social visibility
  */
 
 import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TimelineGateway } from './timeline.gateway';
+import { FeedService } from '../feed/feed.service';
+import { ActivityType } from '@prisma/client';
 
 export interface CreatePostDto {
   content?: string;
@@ -38,6 +41,8 @@ export class TimelineService {
     private prisma: PrismaService,
     @Inject(forwardRef(() => TimelineGateway))
     private timelineGateway: TimelineGateway,
+    @Inject(forwardRef(() => FeedService))
+    private feedService: FeedService,
   ) {}
 
   private readonly userSelect = {
@@ -237,8 +242,31 @@ export class TimelineService {
 
     const formattedPost = await this.formatPost(updatedPost, userId);
 
-    // Broadcast new post to all connected users
+    // Create activity for the feed (so followers see the post in their activity feed)
     if (updatedPost?.isPublic) {
+      const user = updatedPost.user;
+      const previewContent = content
+        ? content.length > 100 ? content.substring(0, 100) + '...' : content
+        : 'shared a post';
+
+      await this.feedService.createActivity({
+        userId,
+        type: ActivityType.STATUS_UPDATE,
+        targetType: 'TimelinePost',
+        targetId: post.id,
+        title: `${user.name || user.username} shared an update`,
+        description: previewContent,
+        link: `/profile/${user.username}`,
+        imageUrl: dto.media?.[0]?.url,
+        isPublic: true,
+        metadata: {
+          postId: post.id,
+          hasMedia: dto.media && dto.media.length > 0,
+          mediaCount: dto.media?.length || 0,
+        },
+      });
+
+      // Broadcast new post to all connected users
       this.timelineGateway.broadcastNewPost(formattedPost);
     }
 

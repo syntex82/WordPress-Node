@@ -1,15 +1,18 @@
 /**
  * Public Profile Page
- * View another user's profile with follow functionality
+ * View another user's profile with follow functionality and timeline
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { profileApi, UserProfile, ProfileStats, ActivityItem } from '../../services/api';
+import { profileApi, timelineApi, UserProfile, ProfileStats, ActivityItem, TimelinePost } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
+import PostCard from '../../components/PostCard';
+import CreatePostForm from '../../components/CreatePostForm';
 import {
   FiMapPin, FiCalendar, FiUsers, FiBook, FiAward, FiExternalLink,
-  FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiActivity, FiUserPlus, FiUserCheck
+  FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiActivity, FiUserPlus, FiUserCheck,
+  FiEdit3, FiMessageCircle
 } from 'react-icons/fi';
 
 export default function PublicProfile() {
@@ -18,9 +21,14 @@ export default function PublicProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [timelinePosts, setTimelinePosts] = useState<TimelinePost[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
+  const [postsPage, setPostsPage] = useState(1);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [loadingPosts, setLoadingPosts] = useState(false);
 
   useEffect(() => {
     if (identifier) loadProfile();
@@ -37,6 +45,11 @@ export default function PublicProfile() {
       setStats(statsRes.data);
       setActivities(activityRes.data?.activities || []);
 
+      // Load timeline posts for this user
+      if (profileRes.data?.id) {
+        loadUserPosts(profileRes.data.id, true);
+      }
+
       // Check if following
       if (currentUser) {
         try {
@@ -46,10 +59,46 @@ export default function PublicProfile() {
       }
     } catch (error: any) {
       console.error('Error loading profile:', error);
-      // Don't set profile to null for 403 (private profile) or 404 (not found)
-      // The UI already handles !profile case
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserPosts = useCallback(async (userId: string, reset = false) => {
+    try {
+      setLoadingPosts(true);
+      const currentPage = reset ? 1 : postsPage;
+      const res = await timelineApi.getUserPosts(userId, currentPage, 10);
+
+      if (reset) {
+        setTimelinePosts(res.data.data || []);
+        setPostsPage(1);
+      } else {
+        setTimelinePosts(prev => [...prev, ...(res.data.data || [])]);
+      }
+      setHasMorePosts(res.data.meta?.hasMore || false);
+    } catch (err) {
+      console.error('Error loading user posts:', err);
+    } finally {
+      setLoadingPosts(false);
+    }
+  }, [postsPage]);
+
+  const handlePostCreated = () => {
+    // Reload posts after creating
+    if (profile?.id) {
+      loadUserPosts(profile.id, true);
+    }
+  };
+
+  const handlePostDeleted = (postId: string) => {
+    setTimelinePosts(prev => prev.filter(p => p.id !== postId));
+  };
+
+  const loadMorePosts = () => {
+    if (profile?.id && hasMorePosts && !loadingPosts) {
+      setPostsPage(prev => prev + 1);
+      loadUserPosts(profile.id, false);
     }
   };
 
@@ -176,64 +225,125 @@ export default function PublicProfile() {
         ))}
       </div>
 
+      {/* Profile Tabs */}
+      <div className="px-2 sm:px-6 mb-4">
+        <div className="flex gap-1 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
+          <button
+            onClick={() => setActiveTab('posts')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+              activeTab === 'posts' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <FiEdit3 className="w-4 h-4" /> Posts
+          </button>
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+              activeTab === 'about' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <FiBook className="w-4 h-4" /> About
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-6 pb-6 sm:pb-8">
-        {/* Left Column */}
+        {/* Left Column - Main Content */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-          {/* About */}
-          {profile.bio && (
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">About</h2>
-              <p className="text-slate-300 leading-relaxed text-sm sm:text-base">{profile.bio}</p>
-            </div>
-          )}
+          {activeTab === 'posts' ? (
+            <>
+              {/* Create Post (only on own profile) */}
+              {isOwnProfile && (
+                <CreatePostForm onPostCreated={handlePostCreated} />
+              )}
 
-          {/* Skills */}
-          {profile.skills && profile.skills.length > 0 && (
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Skills</h2>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {profile.skills.map((skill, i) => (
-                  <span key={i} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-500/20 text-indigo-400 rounded-full text-xs sm:text-sm font-medium">{skill}</span>
-                ))}
-              </div>
-            </div>
-          )}
+              {/* Timeline Posts */}
+              {timelinePosts.length > 0 ? (
+                <div className="space-y-4">
+                  {timelinePosts.map(post => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onDelete={handlePostDeleted}
+                    />
+                  ))}
+                  {hasMorePosts && (
+                    <button
+                      onClick={loadMorePosts}
+                      disabled={loadingPosts}
+                      className="w-full py-3 bg-slate-800/50 text-slate-400 rounded-xl hover:bg-slate-700/50 transition disabled:opacity-50"
+                    >
+                      {loadingPosts ? 'Loading...' : 'Load More Posts'}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-slate-800/50 backdrop-blur rounded-xl p-8 border border-slate-700/50 text-center">
+                  <FiMessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <p className="text-slate-400">No posts yet</p>
+                  {isOwnProfile && <p className="text-slate-500 text-sm mt-1">Share what's on your mind!</p>}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* About Tab Content */}
+              {profile.bio && (
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+                  <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">About</h2>
+                  <p className="text-slate-300 leading-relaxed text-sm sm:text-base">{profile.bio}</p>
+                </div>
+              )}
 
-          {/* Posts */}
-          {profile.posts && profile.posts.length > 0 && (
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-                <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Recent Posts
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {profile.posts.map(post => (
-                  <a key={post.id} href={`/post/${post.slug}`} className="group block p-3 sm:p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition">
-                    <h3 className="font-medium text-white group-hover:text-blue-400 transition line-clamp-2 text-sm sm:text-base">{post.title}</h3>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-1">{new Date(post.createdAt).toLocaleDateString()}</p>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+              {/* Skills */}
+              {profile.skills && profile.skills.length > 0 && (
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+                  <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Skills</h2>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    {profile.skills.map((skill, i) => (
+                      <span key={i} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-500/20 text-indigo-400 rounded-full text-xs sm:text-sm font-medium">{skill}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* Courses */}
-          {profile.instructedCourses && profile.instructedCourses.length > 0 && (
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-                <FiAward className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Courses
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {profile.instructedCourses.map(course => (
-                  <a key={course.id} href={`/courses/${course.slug}`} className="group flex gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition">
-                    <div className="w-16 h-12 sm:w-20 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex-shrink-0" />
-                    <div className="min-w-0">
-                      <h3 className="font-medium text-white group-hover:text-blue-400 transition text-sm sm:text-base truncate">{course.title}</h3>
-                      <p className="text-xs sm:text-sm text-slate-500 line-clamp-1">{course.shortDescription}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
+              {/* Blog Posts */}
+              {profile.posts && profile.posts.length > 0 && (
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+                  <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                    <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Blog Posts
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {profile.posts.map(post => (
+                      <a key={post.id} href={`/post/${post.slug}`} className="group block p-3 sm:p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition">
+                        <h3 className="font-medium text-white group-hover:text-blue-400 transition line-clamp-2 text-sm sm:text-base">{post.title}</h3>
+                        <p className="text-xs sm:text-sm text-slate-500 mt-1">{new Date(post.createdAt).toLocaleDateString()}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Courses */}
+              {profile.instructedCourses && profile.instructedCourses.length > 0 && (
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
+                  <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                    <FiAward className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Courses
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {profile.instructedCourses.map(course => (
+                      <a key={course.id} href={`/courses/${course.slug}`} className="group flex gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition">
+                        <div className="w-16 h-12 sm:w-20 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex-shrink-0" />
+                        <div className="min-w-0">
+                          <h3 className="font-medium text-white group-hover:text-blue-400 transition text-sm sm:text-base truncate">{course.title}</h3>
+                          <p className="text-xs sm:text-sm text-slate-500 line-clamp-1">{course.shortDescription}</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
