@@ -44,7 +44,7 @@ export class EncryptionService implements OnModuleInit {
     }
 
     // Derive a 256-bit key using PBKDF2
-    this.encryptionKey = crypto.pbkdf2Sync(keySource, 'wordpress-node-salt', 100000, 32, 'sha256');
+    this.encryptionKey = crypto.pbkdf2Sync(keySource, 'NodePress-salt', 100000, 32, 'sha256');
     this.logger.log('Encryption service initialized');
   }
 

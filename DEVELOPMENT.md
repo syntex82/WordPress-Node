@@ -1,6 +1,6 @@
 # Development Guide
 
-This guide covers development workflows, architecture decisions, and best practices for WordPress Node.
+This guide covers development workflows, architecture decisions, and best practices for NodePress.
 
 ## Project Architecture
 
@@ -69,7 +69,7 @@ admin/
 ### Why Handlebars for Themes?
 
 - **Server-side rendering**: Better SEO for public pages
-- **Familiar syntax**: Similar to WordPress themes
+- **Familiar syntax**: Easy to learn template language
 - **Logic-less templates**: Separation of concerns
 - **Extensible**: Custom helpers for common tasks
 

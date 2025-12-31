@@ -1,8 +1,8 @@
 {
   "name": "Default Theme",
   "version": "1.1.0",
-  "author": "WordPress Node",
-  "description": "A clean, modern default theme for WordPress Node CMS with PWA support, real-time messaging, and video calling",
+  "author": "NodePress",
+  "description": "A clean, modern default theme for NodePress CMS with PWA support, real-time messaging, and video calling",
   "license": "MIT",
   "templates": [
     "home",

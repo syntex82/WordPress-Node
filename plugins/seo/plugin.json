@@ -1,7 +1,7 @@
 {
   "name": "SEO Plugin",
   "version": "2.0.0",
-  "author": "WordPress Node",
+  "author": "NodePress",
   "description": "Advanced SEO with redirects, sitemap generation, schema markup, Open Graph, Twitter Cards, and content analysis scoring",
   "entry": "index.js",
   "hooks": ["onActivate", "onDeactivate", "beforeSave", "registerFields"],

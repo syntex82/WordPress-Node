@@ -1,6 +1,6 @@
 #!/bin/bash
 #═══════════════════════════════════════════════════════════════════════════════
-# WordPress Node CMS - Hostinger VPS Production Setup Script
+# NodePress CMS - Hostinger VPS Production Setup Script
 # Domain: wordpressnode.co.uk
 # 
 # Prerequisites:
@@ -10,8 +10,8 @@
 #
 # Usage:
 #   1. SSH into your VPS: ssh root@your-vps-ip
-#   2. Clone repo: git clone https://github.com/syntex82/WordPress-Node.git /var/www/WordPress-Node
-#   3. Run: cd /var/www/WordPress-Node && chmod +x scripts/hostinger-vps-setup.sh
+#   2. Clone repo: git clone https://github.com/syntex82/NodePress.git /var/www/NodePress
+#   3. Run: cd /var/www/NodePress && chmod +x scripts/hostinger-vps-setup.sh
 #   4. Execute: ./scripts/hostinger-vps-setup.sh
 #═══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ set -e
 # CONFIGURATION
 # ══════════════════════════════════════════════════════════════
 DOMAIN="wordpressnode.co.uk"
-APP_DIR="/var/www/WordPress-Node"
+APP_DIR="/var/www/NodePress"
 APP_USER="wpnode"
 APP_PORT="3000"
 NODE_VERSION="20"
@@ -60,7 +60,7 @@ fi
 clear
 echo -e "${MAGENTA}"
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "        WordPress Node CMS - Hostinger VPS Production Setup"
+echo "        NodePress CMS - Hostinger VPS Production Setup"
 echo "        Domain: ${DOMAIN}"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo -e "${NC}"
@@ -76,8 +76,8 @@ ADMIN_EMAIL=${INPUT_ADMIN_EMAIL:-"admin@${DOMAIN}"}
 read -p "  Admin password [SecurePass123!]: " INPUT_ADMIN_PASSWORD
 ADMIN_PASSWORD=${INPUT_ADMIN_PASSWORD:-"SecurePass123!"}
 
-read -p "  Database name [wordpress_node]: " INPUT_DB_NAME
-DB_NAME=${INPUT_DB_NAME:-"wordpress_node"}
+read -p "  Database name [nodepress]: " INPUT_DB_NAME
+DB_NAME=${INPUT_DB_NAME:-"nodepress"}
 
 read -p "  Database user [wpnode]: " INPUT_DB_USER
 DB_USER=${INPUT_DB_USER:-"wpnode"}
@@ -217,7 +217,7 @@ cd "$APP_DIR"
 if [ ! -f "package.json" ]; then
     print_fail "package.json not found in $APP_DIR"
     echo -e "  Please clone the repository first:"
-    echo -e "  git clone https://github.com/syntex82/WordPress-Node.git $APP_DIR"
+    echo -e "  git clone https://github.com/syntex82/NodePress.git $APP_DIR"
     exit 1
 fi
 
@@ -225,7 +225,7 @@ fi
 print_info "Creating production environment configuration..."
 cat > "$APP_DIR/.env" << ENVEOF
 # ═══════════════════════════════════════════════════════════════════════════
-# WordPress Node CMS - Production Configuration
+# NodePress CMS - Production Configuration
 # Generated: $(date '+%Y-%m-%d %H:%M:%S')
 # Domain: ${DOMAIN}
 # ═══════════════════════════════════════════════════════════════════════════
@@ -282,7 +282,7 @@ STORAGE_LOCAL_URL=/uploads
 # ─────────────────────────────────────────────────────────────
 # SITE CONFIGURATION
 # ─────────────────────────────────────────────────────────────
-SITE_NAME="WordPress Node"
+SITE_NAME="NodePress"
 SITE_DESCRIPTION="A modern CMS built with Node.js"
 ACTIVE_THEME=my-theme
 ENVEOF
@@ -407,7 +407,7 @@ server {
 
     # Static uploads with caching
     location /uploads {
-        alias /var/www/WordPress-Node/uploads;
+        alias /var/www/NodePress/uploads;
         expires 1y;
         add_header Cache-Control "public, immutable";
         access_log off;
@@ -415,7 +415,7 @@ server {
 
     # Admin panel (SPA)
     location /admin {
-        alias /var/www/WordPress-Node/admin/dist;
+        alias /var/www/NodePress/admin/dist;
         try_files $uri $uri/ /admin/index.html;
         expires 1d;
         add_header Cache-Control "public";
@@ -423,7 +423,7 @@ server {
 
     # Theme assets
     location /themes {
-        alias /var/www/WordPress-Node/themes;
+        alias /var/www/NodePress/themes;
         expires 1d;
         add_header Cache-Control "public";
     }
@@ -486,7 +486,7 @@ module.exports = {
   apps: [{
     name: 'wpnode',
     script: 'dist/main.js',
-    cwd: '/var/www/WordPress-Node',
+    cwd: '/var/www/NodePress',
     instances: 'max',
     exec_mode: 'cluster',
     autorestart: true,
@@ -571,7 +571,7 @@ echo ""
 # Save credentials to a file
 cat > "$APP_DIR/CREDENTIALS.txt" << CREDSEOF
 ═══════════════════════════════════════════════════════════════════════════════
-WordPress Node CMS - Production Credentials
+NodePress CMS - Production Credentials
 Domain: ${DOMAIN}
 Generated: $(date '+%Y-%m-%d %H:%M:%S')
 ═══════════════════════════════════════════════════════════════════════════════

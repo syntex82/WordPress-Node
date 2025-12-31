@@ -154,7 +154,7 @@ export const generatePreview = (settings: PreviewSettings, title: string = 'Prev
     <body>
       ${showHeader ? `
         <header>
-          <h1>WordPress Node CMS</h1>
+          <h1>NodePress CMS</h1>
           <p>Live Preview of Your Customizations</p>
         </header>
       ` : ''}
@@ -199,7 +199,7 @@ export const generatePreview = (settings: PreviewSettings, title: string = 'Prev
 
       ${showFooter ? `
         <footer>
-          <p>&copy; 2024 WordPress Node CMS. All rights reserved.</p>
+          <p>&copy; 2024 NodePress CMS. All rights reserved.</p>
         </footer>
       ` : ''}
     </body>

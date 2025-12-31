@@ -3,7 +3,7 @@
  * Sitemap Generator Script
  * Generates sitemap.xml from database content
  * Run with: npx ts-node scripts/generate-sitemap.ts
- * Or add to cron: 0 * * * * cd /var/www/WordPress-Node && npx ts-node scripts/generate-sitemap.ts
+ * Or add to cron: 0 * * * * cd /var/www/NodePress && npx ts-node scripts/generate-sitemap.ts
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -11,7 +11,7 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 const prisma = new PrismaClient();
-const BASE_URL = process.env.SITE_URL || 'https://wordpressnode.co.uk';
+const BASE_URL = process.env.SITE_URL || 'https://nodepress.co.uk';
 
 async function generateSitemap() {
   console.log('🗺️  Generating sitemap...');

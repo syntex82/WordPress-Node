@@ -2,7 +2,7 @@
 
 ## ✨ Overview
 
-The WordPress Node CMS now includes a **production-ready, visually stunning Theme Customizer** with advanced page and post customization capabilities. This feature allows complete control over theme appearance and functionality without requiring manual file editing.
+The NodePress CMS now includes a **production-ready, visually stunning Theme Customizer** with advanced page and post customization capabilities. This feature allows complete control over theme appearance and functionality without requiring manual file editing.
 
 ## 🚀 Features Implemented
 

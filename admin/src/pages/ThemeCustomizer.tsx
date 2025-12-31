@@ -1,6 +1,6 @@
 /**
  * Theme Customizer Page
- * WordPress-like live theme customization with sidebar and preview
+ * Live theme customization with sidebar and preview
  * Features: Real-time preview via postMessage, Undo/Redo, Import/Export, Element Inspector
  * With comprehensive tooltips for user guidance
  */

@@ -182,7 +182,7 @@ export default function SetupWizard() {
           {currentStep === 0 && (
             <div className="text-center">
               <p className="text-slate-300 mb-6">
-                Welcome to WordPress Node CMS! This wizard will help you set up your site in just a few steps.
+                Welcome to NodePress CMS! This wizard will help you set up your site in just a few steps.
               </p>
               <ul className="text-left text-slate-400 space-y-2 mb-8 max-w-md mx-auto">
                 <li className="flex items-center gap-2"><FiCheck className="text-emerald-400" /> Create your admin account</li>

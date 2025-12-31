@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download WP Node CMS - Self-Hosted</title>
-    <meta name="description" content="Download WP Node CMS - A modern, self-hosted content management system built with Node.js.">
+    <title>Download NodePress CMS - Self-Hosted</title>
+    <meta name="description" content="Download NodePress CMS - A modern, self-hosted content management system built with Node.js.">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -89,7 +89,7 @@
                     <text x="60" y="78" text-anchor="middle" fill="#2ecc71" font-family="Arial" font-size="14" font-weight="600">NODE</text>
                 </svg>
             </div>
-            <h1>WP Node CMS</h1>
+            <h1>NodePress CMS</h1>
             <p class="tagline">Self-Hosted Content Management System</p>
             <p class="description">A modern, fast, and secure CMS built with Node.js. Perfect for blogs, courses, e-commerce, and more.</p>
         </div>
@@ -100,7 +100,7 @@
                 <div class="version-item"><div class="value">1.5 MB</div><div class="label">Size</div></div>
                 <div class="version-item"><div class="value">MIT</div><div class="label">License</div></div>
             </div>
-            <a href="wordpressnode-v1.0.0.zip" class="download-btn">
+            <a href="nodepress-v1.0.0.zip" class="download-btn">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17 18V19H6V18H17M16.5 11.5L15.8 10.8L12.5 14.1V4H11.5V14.1L8.2 10.8L7.5 11.5L12 16L16.5 11.5Z"/></svg>
                 Download ZIP
             </a>
@@ -124,8 +124,8 @@
                     <div class="step-content">
                         <h3>Upload & Extract</h3>
                         <p>Upload the ZIP to your server and extract it:</p>
-                        <div class="code"><code>unzip wordpressnode-v1.0.0.zip -d /var/www/wpnode
-cd /var/www/wpnode</code></div>
+                        <div class="code"><code>unzip nodepress-v1.0.0.zip -d /var/www/NodePress
+cd /var/www/NodePress</code></div>
                     </div>
                 </div>
                 <div class="step">
@@ -141,7 +141,7 @@ cd /var/www/wpnode</code></div>
                     <div class="step-content">
                         <h3>Configure Environment</h3>
                         <p>Create a .env file with your settings:</p>
-                        <div class="code"><code>DATABASE_URL="mysql://user:pass@localhost:3306/wpnode"
+                        <div class="code"><code>DATABASE_URL="mysql://user:pass@localhost:3306/NodePress"
 PORT=3000
 NODE_ENV=production
 JWT_SECRET=your-secret-key-here
@@ -163,7 +163,7 @@ npx prisma migrate deploy</code></div>
                         <h3>Start the Server</h3>
                         <p>Run with PM2 for production:</p>
                         <div class="code"><code>npm install -g pm2
-pm2 start dist/main.js --name wpnode
+pm2 start dist/main.js --name NodePress
 pm2 save && pm2 startup</code></div>
                     </div>
                 </div>
@@ -185,8 +185,8 @@ pm2 save && pm2 startup</code></div>
         </div>
 
         <div class="footer">
-            <p>Need help? Check our <a href="https://github.com/syntex82/WordPress-Node" target="_blank">GitHub Repository</a></p>
-            <p style="margin-top: 10px;">© 2024 WP Node. MIT License.</p>
+            <p>Need help? Check our <a href="https://github.com/syntex82/NodePress" target="_blank">GitHub Repository</a></p>
+            <p style="margin-top: 10px;">© 2024 NodePress. MIT License.</p>
         </div>
     </div>
 </body>

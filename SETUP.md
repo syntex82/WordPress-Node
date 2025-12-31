@@ -1,6 +1,6 @@
-# WordPress Node - Complete Setup Guide
+# NodePress - Complete Setup Guide
 
-This guide will walk you through setting up the WordPress Node CMS from scratch.
+This guide will walk you through setting up the NodePress CMS from scratch.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 git clone <repository-url>
-cd wordpress-node
+cd NodePress
 ```
 
 ## Step 2: Install Backend Dependencies
@@ -38,21 +38,21 @@ pnpm admin:install
 2. Create a new database:
 
 ```bash
-createdb wordpress_node
+createdb nodepress
 ```
 
 Or using psql:
 
 ```sql
-CREATE DATABASE wordpress_node;
+CREATE DATABASE nodepress;
 ```
 
 ### Option B: Using Docker
 
 ```bash
-docker run --name wordpress-node-db \
+docker run --name NodePress-db \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=wordpress_node \
+  -e POSTGRES_DB=nodepress \
   -p 5432:5432 \
   -d postgres:15
 ```
@@ -69,7 +69,7 @@ cp .env.example .env
 
 ```env
 # Database
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/wordpress_node?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/nodepress?schema=public"
 
 # JWT Secret (generate a random string)
 JWT_SECRET=your-super-secret-jwt-key-change-this

@@ -1,4 +1,4 @@
-# WordPress Node - Theme Shop Guide
+# NodePress - Theme Shop Guide
 
 ## 🎨 How to Add Themes to the Theme Shop
 
@@ -31,7 +31,7 @@ The theme shop supports installing themes from GitHub repositories or local file
      id: 'my-awesome-theme',
      name: 'My Awesome Theme',
      author: 'Your Name',
-     description: 'A beautiful theme for WordPress Node',
+     description: 'A beautiful theme for NodePress',
      thumbnail: 'https://images.unsplash.com/photo-xxx',
      downloadUrl: 'https://github.com/yourusername/your-theme/archive/refs/heads/main.zip',
      demoUrl: 'https://your-demo-site.com',
@@ -122,7 +122,7 @@ To share your theme with others:
 
 ### Community Themes
 
-Want to contribute a theme to the WordPress Node community?
+Want to contribute a theme to the NodePress community?
 
 1. Create an awesome theme
 2. Push it to GitHub
@@ -144,7 +144,7 @@ The Modern Blog theme is ready to use right now:
 - Check the theme requirements documentation in the admin panel
 - Look at the Modern Blog theme as a reference
 - Read the Handlebars documentation for template syntax
-- Join the WordPress Node community for support
+- Join the NodePress community for support
 
 Happy theming! 🎨
 

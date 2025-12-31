@@ -1,6 +1,6 @@
 @echo off
 REM ═══════════════════════════════════════════════════════════════════════════════
-REM WordPress Node CMS - Windows Setup Batch File
+REM NodePress CMS - Windows Setup Batch File
 REM Works on Windows 11 and Windows Server (2019, 2022)
 REM This batch file launches the PowerShell setup script with proper permissions
 REM
@@ -15,7 +15,7 @@ set START_TIME=%TIME%
 
 echo.
 echo ===============================================================
-echo       WordPress Node CMS - Windows Setup Launcher
+echo       NodePress CMS - Windows Setup Launcher
 echo ===============================================================
 echo.
 
@@ -51,7 +51,7 @@ if not exist "%SCRIPT_DIR%windows-setup.ps1" (
     echo Expected location: %SCRIPT_DIR%windows-setup.ps1
     echo.
     echo Please ensure you're running this from the scripts directory
-    echo inside the WordPress Node CMS repository.
+    echo inside the NodePress CMS repository.
     echo.
     pause
     exit /b 1
@@ -98,7 +98,7 @@ if %SCRIPT_ERROR% equ 0 (
     echo       [SUCCESS] Installation Completed Successfully!
     echo ===============================================================
     echo.
-    echo  The WordPress Node CMS has been installed and configured.
+    echo  The NodePress CMS has been installed and configured.
     echo.
     echo  Next Steps:
     echo    1. Open a new terminal in: %APP_DIR%

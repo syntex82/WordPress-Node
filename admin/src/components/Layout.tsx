@@ -328,7 +328,7 @@ export default function Layout() {
               <span className="text-white font-bold text-lg">W</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">WordPress Node</h1>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">NodePress</h1>
               <p className="text-xs text-slate-500">Admin Panel</p>
             </div>
           </div>
@@ -671,7 +671,7 @@ export default function Layout() {
               </div>
               {!sidebarCollapsed && (
                 <div>
-                  <h1 className="text-lg font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">WordPress Node</h1>
+                  <h1 className="text-lg font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">NodePress</h1>
                   <p className="text-xs text-slate-500">Admin Panel</p>
                 </div>
               )}
@@ -1201,7 +1201,7 @@ export default function Layout() {
         {!sidebarCollapsed && (
           <div className="px-4 py-3 bg-slate-950/50 border-t border-slate-800/30">
             <p className="text-xs text-slate-600">
-              © {new Date().getFullYear()} WordPress Node
+              © {new Date().getFullYear()} NodePress
             </p>
             <p className="text-xs text-slate-700 mt-0.5">
               By <span className="text-blue-400/70">Michael James Blenkinsop</span>

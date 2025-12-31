@@ -184,7 +184,7 @@ export class CertificateGeneratorService {
       doc
         .fontSize(10)
         .fillColor('#94a3b8')
-        .text('WordPress Node LMS', 0, pageHeight - 60, { align: 'center' });
+        .text('NodePress LMS', 0, pageHeight - 60, { align: 'center' });
 
       doc.end();
 

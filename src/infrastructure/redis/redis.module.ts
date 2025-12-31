@@ -32,7 +32,7 @@ const logger = new Logger('RedisModule');
           port: configService.get<number>('REDIS_PORT', 6379),
           password: configService.get<string>('REDIS_PASSWORD'),
           db: configService.get<number>('REDIS_DB', 0),
-          keyPrefix: configService.get<string>('REDIS_PREFIX', 'wpnode:'),
+          keyPrefix: configService.get<string>('REDIS_PREFIX', 'NodePress:'),
           maxRetriesPerRequest: null, // Required by BullMQ
           lazyConnect: true,
           enableReadyCheck: true,

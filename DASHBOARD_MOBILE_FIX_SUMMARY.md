@@ -99,7 +99,7 @@ min-h-[44px]           // Minimum touch target
 
 ```bash
 # On your server
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Pull the latest changes
 git pull origin main

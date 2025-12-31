@@ -1,6 +1,6 @@
 #!/bin/bash
 #═══════════════════════════════════════════════════════════════════════════════
-# WordPress Node CMS - Ubuntu/Linux Setup Script
+# NodePress CMS - Ubuntu/Linux Setup Script
 # Works on Ubuntu 20.04+, Debian 11+, and compatible distributions
 # Run this from inside the cloned repository folder
 # Usage: sudo ./scripts/ubuntu-setup.sh
@@ -109,7 +109,7 @@ fi
 
 echo ""
 echo -e "${MAGENTA}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${MAGENTA}         WordPress Node CMS - Linux Setup Script${NC}"
+echo -e "${MAGENTA}         NodePress CMS - Linux Setup Script${NC}"
 echo -e "${MAGENTA}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 echo -e "  ${CYAN}System:${NC}      $OS_NAME $OS_VERSION"
@@ -133,7 +133,7 @@ echo -e "${GRAY}─────────────────────�
 echo ""
 
 # Default values
-DEFAULT_DB_NAME="wordpress_node"
+DEFAULT_DB_NAME="nodepress"
 DEFAULT_DB_USER="wpnode"
 DEFAULT_DB_PASSWORD=$(generate_random_string 16)
 DEFAULT_PORT="3000"
@@ -331,7 +331,7 @@ print_step "$CURRENT_STEP/$TOTAL_STEPS" "Creating environment configuration..."
 
     cat > "$APP_DIR/.env" << ENVEOF
 # ═══════════════════════════════════════════════════════════════════════════
-# WordPress Node CMS - Environment Configuration
+# NodePress CMS - Environment Configuration
 # Generated: $(date '+%Y-%m-%d %H:%M:%S')
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -384,7 +384,7 @@ STORAGE_LOCAL_URL=/uploads
 # ─────────────────────────────────────────────────────────────
 # SITE CONFIGURATION
 # ─────────────────────────────────────────────────────────────
-SITE_NAME="WordPress Node"
+SITE_NAME="NodePress"
 SITE_DESCRIPTION="A modern CMS built with Node.js"
 ACTIVE_THEME=my-theme
 ENVEOF

@@ -52,7 +52,7 @@ export class EmailQueueProcessor extends WorkerHost {
 
     try {
       const fromEmail = this.configService.get<string>('SMTP_FROM');
-      const fromName = this.configService.get<string>('SMTP_FROM_NAME', 'WordPress Node');
+      const fromName = this.configService.get<string>('SMTP_FROM_NAME', 'NodePress');
 
       const info = await this.transporter.sendMail({
         from: `"${fromName}" <${fromEmail}>`,

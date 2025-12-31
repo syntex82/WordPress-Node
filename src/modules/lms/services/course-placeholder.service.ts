@@ -63,7 +63,7 @@ export class CoursePlaceholderService {
         <rect width="${width}" height="${height}" fill="url(#grad)"/>
         <text x="${width / 2}" y="${height - 40}" text-anchor="middle" 
               font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.7)">
-          WordPress Node LMS
+          NodePress LMS
         </text>
       </svg>
     `;
@@ -128,7 +128,7 @@ export class CoursePlaceholderService {
         </text>
         <text x="${width / 2}" y="${height - 40}" text-anchor="middle" 
               font-family="Arial, sans-serif" font-size="20" fill="rgba(255,255,255,0.7)">
-          WordPress Node LMS
+          NodePress LMS
         </text>
       </svg>
     `;

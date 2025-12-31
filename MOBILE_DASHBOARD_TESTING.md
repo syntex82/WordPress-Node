@@ -184,7 +184,7 @@ Test on these common viewports:
 ## 🚀 Deployment:
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Pull the dashboard fixes
 git pull origin main

@@ -1,6 +1,6 @@
 # 🐧 Local Development Setup - Ubuntu
 
-This guide provides detailed instructions for setting up a local development environment for WordPress Node CMS on Ubuntu (22.04 or 24.04 LTS).
+This guide provides detailed instructions for setting up a local development environment for NodePress CMS on Ubuntu (22.04 or 24.04 LTS).
 
 ## Table of Contents
 
@@ -97,22 +97,22 @@ sudo -u postgres psql -c "SELECT version();"
 
 ```bash
 # Create a new database user
-sudo -u postgres createuser --interactive --pwprompt wordpress_node
+sudo -u postgres createuser --interactive --pwprompt nodepress
 # Enter password when prompted (e.g., "password123")
 # Answer: Superuser? n, Create databases? y, Create roles? n
 
 # Create the database
-sudo -u postgres createdb -O wordpress_node wordpress_node
+sudo -u postgres createdb -O nodepress nodepress
 
 # Verify database was created
-sudo -u postgres psql -c "\l" | grep wordpress_node
+sudo -u postgres psql -c "\l" | grep nodepress
 ```
 
 ### Test Database Connection
 
 ```bash
 # Test connection with the new user
-PGPASSWORD=password123 psql -h localhost -U wordpress_node -d wordpress_node -c "SELECT 1;"
+PGPASSWORD=password123 psql -h localhost -U nodepress -d nodepress -c "SELECT 1;"
 ```
 
 ---
@@ -158,8 +158,8 @@ sudo systemctl restart redis-server
 ```bash
 # Clone to your preferred location
 cd ~
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 ```
 
 ### Install Dependencies
@@ -190,7 +190,7 @@ Update the following values in your `.env` file:
 # ─────────────────────────────────────────────────────────────
 # DATABASE
 # ─────────────────────────────────────────────────────────────
-DATABASE_URL="postgresql://wordpress_node:password123@localhost:5432/wordpress_node?schema=public"
+DATABASE_URL="postgresql://nodepress:password123@localhost:5432/nodepress?schema=public"
 
 # ─────────────────────────────────────────────────────────────
 # REDIS (Optional for local development)
@@ -263,7 +263,7 @@ This creates an admin account with the credentials specified in your `.env` file
 
 ```bash
 # Connect to the database and list tables
-PGPASSWORD=password123 psql -h localhost -U wordpress_node -d wordpress_node -c "\dt"
+PGPASSWORD=password123 psql -h localhost -U nodepress -d nodepress -c "\dt"
 ```
 
 ---
@@ -319,7 +319,7 @@ Access points:
 ### Daily Development
 
 ```bash
-cd ~/WordPress-Node
+cd ~/NodePress
 
 # Pull latest changes
 git pull origin main
@@ -408,7 +408,7 @@ redis-cli ping
 ```bash
 # Fix npm permissions (don't use sudo with npm)
 sudo chown -R $(whoami) ~/.npm
-sudo chown -R $(whoami) ~/WordPress-Node/node_modules
+sudo chown -R $(whoami) ~/NodePress/node_modules
 ```
 
 ### Prisma Client Not Generated
@@ -434,11 +434,11 @@ kill -9 <PID>
 PORT=3001 npm run dev
 ```
 
-### Database "wordpress_node" Does Not Exist
+### Database "nodepress" Does Not Exist
 
 ```bash
 # Create the database
-sudo -u postgres createdb -O wordpress_node wordpress_node
+sudo -u postgres createdb -O nodepress nodepress
 ```
 
 ### Native Module Build Errors (Sharp, bcrypt)
@@ -483,7 +483,7 @@ For simplified local development without Redis:
 
 ```bash
 # Start everything
-cd ~/WordPress-Node && npm run dev
+cd ~/NodePress && npm run dev
 
 # Open Prisma Studio (database GUI)
 npx prisma studio
@@ -496,10 +496,10 @@ pm2 logs  # if using PM2
 tail -f ~/.npm/_logs/*  # npm logs
 
 # Database backup
-pg_dump -U wordpress_node -d wordpress_node > backup.sql
+pg_dump -U nodepress -d nodepress > backup.sql
 
 # Database restore
-psql -U wordpress_node -d wordpress_node < backup.sql
+psql -U nodepress -d nodepress < backup.sql
 ```
 
 

@@ -18,7 +18,7 @@ export enum DeveloperCategory {
   FRONTEND = 'FRONTEND',
   BACKEND = 'BACKEND',
   FULLSTACK = 'FULLSTACK',
-  WORDPRESS = 'WORDPRESS',
+  CMS = 'CMS',
   MOBILE = 'MOBILE',
   DEVOPS = 'DEVOPS',
   DESIGN = 'DESIGN',

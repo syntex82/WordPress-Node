@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# WordPress Node CMS - Update Script
+# NodePress CMS - Update Script
 # Updates the installation to the latest version from GitHub
 #
 # Usage: sudo ./scripts/update.sh
@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║       WordPress Node CMS - Update Script                   ║${NC}"
+echo -e "${BLUE}║       NodePress CMS - Update Script                   ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -125,9 +125,9 @@ npx prisma db push --accept-data-loss 2>/dev/null || npx prisma db push
 echo -e "${GREEN}✓ Database schema updated${NC}"
 
 # Restart service if running as systemd
-if systemctl is-active --quiet wordpress-node 2>/dev/null; then
+if systemctl is-active --quiet NodePress 2>/dev/null; then
     echo -e "${BLUE}[+]${NC} Restarting service..."
-    sudo systemctl restart wordpress-node
+    sudo systemctl restart NodePress
     echo -e "${GREEN}✓ Service restarted${NC}"
 else
     echo -e "${YELLOW}Note: Restart the server manually to apply changes${NC}"

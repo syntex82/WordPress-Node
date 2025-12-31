@@ -12,7 +12,7 @@ https://github.com/sponsors/syntex82
 
 <br />
 
-# 🚀 WordPress Node CMS
+# 🚀 NodePress CMS
 
 ### **A Modern, Full-Featured Content Management System Built with Node.js**
 
@@ -39,11 +39,7 @@ https://github.com/user-attachments/assets/bd8a8a34-a0d5-432d-8555-5d74f8ee886b
 <br />
 
 <p align="center">
-  <strong>A powerful, extensible CMS platform inspired by WordPress functionality,<br />built from scratch with modern JavaScript technologies for superior performance and type-safety.</strong>
-</p>
-
-<p align="center">
-  <sub>⚠️ <em>This is an independent project, not affiliated with WordPress or Automattic Inc.</em></sub>
+  <strong>A powerful, extensible CMS platform built with modern JavaScript technologies<br />for superior performance and type-safety.</strong>
 </p>
 
 <br />
@@ -68,7 +64,7 @@ https://github.com/user-attachments/assets/bd8a8a34-a0d5-432d-8555-5d74f8ee886b
 
 ## ✨ Features
 
-WordPress Node CMS provides a comprehensive set of features for building modern web applications, from simple blogs to complex e-commerce and e-learning platforms.
+NodePress CMS provides a comprehensive set of features for building modern web applications, from simple blogs to complex e-commerce and e-learning platforms.
 
 <br />
 
@@ -451,7 +447,7 @@ WordPress Node CMS provides a comprehensive set of features for building modern 
 
 ## 🏗️ Scaling Architecture
 
-WordPress Node CMS is designed for **horizontal scaling** and production deployments. Run multiple instances behind a load balancer to handle increased traffic.
+NodePress CMS is designed for **horizontal scaling** and production deployments. Run multiple instances behind a load balancer to handle increased traffic.
 
 ### Architecture Diagram
 
@@ -511,8 +507,8 @@ WordPress Node CMS is designed for **horizontal scaling** and production deploym
 
 ```bash
 # Clone and configure
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 cp .env.example .env
 # Edit .env with your configuration
 
@@ -569,7 +565,7 @@ For detailed setup and deployment guides, see our comprehensive documentation:
 
 <div align="center">
 
-**Deploy WordPress Node CMS on Ubuntu Server with a single command!**
+**Deploy NodePress CMS on Ubuntu Server with a single command!**
 
 </div>
 
@@ -577,8 +573,8 @@ For detailed setup and deployment guides, see our comprehensive documentation:
 
 ```bash
 # Clone the repository
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 
 # Run the setup script
 chmod +x scripts/ubuntu-setup.sh
@@ -620,7 +616,7 @@ The script also:
 To update an existing Ubuntu installation with the latest fixes and features:
 
 ```bash
-cd /home/WordPress-Node
+cd /home/NodePress
 
 # Discard any local changes to scripts (required before pulling)
 git checkout scripts/
@@ -667,13 +663,13 @@ The update script will:
 
 <div align="center">
 
-**Deploy WordPress Node CMS on Hostinger VPS with a custom domain and SSL!**
+**Deploy NodePress CMS on Hostinger VPS with a custom domain and SSL!**
 
 </div>
 
 > 📖 **For a comprehensive guide with troubleshooting, security hardening, and performance optimization, see the [Production Deployment Guide](./docs/PRODUCTION-DEPLOYMENT.md).**
 
-This guide covers deploying to a Hostinger VPS with a custom domain (e.g., `wordpressnode.co.uk`).
+This guide covers deploying to a Hostinger VPS with a custom domain (e.g., `nodepress.co.uk`).
 
 #### Prerequisites
 
@@ -691,8 +687,8 @@ ssh root@your-vps-ip
 sudo apt update && sudo apt upgrade -y
 
 # Clone the repository
-git clone https://github.com/syntex82/WordPress-Node.git /var/www/WordPress-Node
-cd /var/www/WordPress-Node
+git clone https://github.com/syntex82/NodePress.git /var/www/NodePress
+cd /var/www/NodePress
 
 # Run the Ubuntu setup script
 chmod +x scripts/ubuntu-setup.sh
@@ -823,13 +819,13 @@ sudo ufw status
 #### Step 4: Setup PM2 Process Manager
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Build the application
 npm run build
 
 # Start with PM2
-pm2 start dist/main.js --name wordpress-node
+pm2 start dist/main.js --name NodePress
 
 # Save PM2 process list
 pm2 save
@@ -874,14 +870,14 @@ After SSL is installed, update your domain configuration:
 #### Step 7: Update Admin Password (Recommended)
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Connect to PostgreSQL and update password
 # First, generate a bcrypt hash for your new password
 node -e "const bcrypt = require('bcrypt'); bcrypt.hash('YourNewSecurePassword123!', 10).then(h => console.log(h));"
 
 # Update password in database (replace HASH with the output above)
-sudo -u postgres psql -d wordpress_node -c "UPDATE \"User\" SET password = '\$2b\$10\$YOUR_HASH_HERE' WHERE email = 'admin@starter.dev';"
+sudo -u postgres psql -d nodepress -c "UPDATE \"User\" SET password = '\$2b\$10\$YOUR_HASH_HERE' WHERE email = 'admin@starter.dev';"
 ```
 
 #### Verification Commands
@@ -894,7 +890,7 @@ sudo systemctl status nginx
 pm2 status
 
 # Check application logs
-pm2 logs wordpress-node
+pm2 logs NodePress
 
 # Test nginx configuration
 sudo nginx -t
@@ -918,12 +914,12 @@ Use the built-in update feature in the admin panel:
 Or update manually via SSH:
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 git pull origin main
 cd admin && npm install && npm run build && cd ..
 npm install && npm run build
 npx prisma migrate deploy
-pm2 restart wordpress-node
+pm2 restart NodePress
 ```
 
 #### Troubleshooting
@@ -952,10 +948,10 @@ sudo ss -tlnp | grep -E ':80|:443'
 ```bash
 # Check PM2 process
 pm2 status
-pm2 logs wordpress-node --lines 50
+pm2 logs NodePress --lines 50
 
 # Restart the app
-pm2 restart wordpress-node
+pm2 restart NodePress
 ```
 
 **504 Gateway Timeout:**
@@ -981,13 +977,13 @@ sudo certbot renew --force-renewal
 sudo systemctl status postgresql
 
 # Test database connection
-sudo -u postgres psql -d wordpress_node -c "SELECT 1;"
+sudo -u postgres psql -d nodepress -c "SELECT 1;"
 ```
 
 **Git Permission Issues:**
 ```bash
 # Fix git ownership
-git config --global --add safe.directory /var/www/WordPress-Node
+git config --global --add safe.directory /var/www/NodePress
 ```
 
 </details>
@@ -1011,7 +1007,7 @@ git config --global --add safe.directory /var/www/WordPress-Node
 
 <div align="center">
 
-**Deploy WordPress Node CMS to Render.com with automatic builds from GitHub!**
+**Deploy NodePress CMS to Render.com with automatic builds from GitHub!**
 
 </div>
 
@@ -1027,9 +1023,9 @@ Render provides a simple way to deploy Docker-based applications with free SSL, 
 1. Go to [Render Dashboard](https://dashboard.render.com)
 2. Click **New** → **PostgreSQL**
 3. Configure:
-   - **Name:** `wordpress-node-db`
-   - **Database:** `wordpress_node`
-   - **User:** `wordpress_node`
+   - **Name:** `NodePress-db`
+   - **Database:** `nodepress`
+   - **User:** `nodepress`
    - **Region:** Oregon (or closest to your users)
    - **Plan:** Free (or Starter for production)
 4. Click **Create Database**
@@ -1043,7 +1039,7 @@ Render provides a simple way to deploy Docker-based applications with free SSL, 
 
 | Setting | Value |
 |---------|-------|
-| **Name** | `wordpress-node` |
+| **Name** | `NodePress` |
 | **Region** | Same as database (e.g., Oregon) |
 | **Branch** | `main` |
 | **Runtime** | Docker |
@@ -1087,7 +1083,7 @@ For automated infrastructure setup, create a `render.yaml` in your repo root:
 ```yaml
 services:
   - type: web
-    name: wordpress-node
+    name: NodePress
     runtime: docker
     region: oregon
     plan: starter
@@ -1095,7 +1091,7 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: wordpress-node-db
+          name: NodePress-db
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
@@ -1105,7 +1101,7 @@ services:
         value: production
 
 databases:
-  - name: wordpress-node-db
+  - name: NodePress-db
     plan: starter
     region: oregon
 ```
@@ -1149,11 +1145,11 @@ Then click **New** → **Blueprint** in Render dashboard and connect your repo.
 
 <div align="center">
 
-**Publish WordPress Node CMS as a native Android app on the Google Play Store!**
+**Publish NodePress CMS as a native Android app on the Google Play Store!**
 
 </div>
 
-WordPress Node CMS includes full PWA (Progressive Web App) support, which means you can package it as a native Android app using Trusted Web Activity (TWA).
+NodePress CMS includes full PWA (Progressive Web App) support, which means you can package it as a native Android app using Trusted Web Activity (TWA).
 
 #### Prerequisites
 
@@ -1184,8 +1180,8 @@ Test your PWA at: https://pwabuilder.com
 3. Click **Start** and wait for analysis
 4. Click **Package for stores** → **Android**
 5. Configure:
-   - **Package ID:** `com.yourcompany.wpnode`
-   - **App name:** `WP Node`
+   - **Package ID:** `com.yourcompany.NodePress`
+   - **App name:** `NodePress`
    - **App version:** `1.0.0`
 6. **Generate signing key** (save securely - you'll need it for updates!)
 7. Download the **AAB file** (Android App Bundle)
@@ -1202,7 +1198,7 @@ Test your PWA at: https://pwabuilder.com
 For TWA to work, you need to verify ownership of your domain:
 
 1. After generating the AAB, PWABuilder provides a `assetlinks.json` file
-2. The file is automatically served at `/.well-known/assetlinks.json` in WordPress Node
+2. The file is automatically served at `/.well-known/assetlinks.json` in NodePress
 3. Update it with your signing key fingerprint:
 
 ```json
@@ -1210,7 +1206,7 @@ For TWA to work, you need to verify ownership of your domain:
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.yourcompany.wpnode",
+    "package_name": "com.yourcompany.NodePress",
     "sha256_cert_fingerprints": ["YOUR:SHA256:FINGERPRINT:HERE"]
   }
 }]
@@ -1231,7 +1227,7 @@ In Google Play Console:
 
 1. Click **Create app**
 2. Fill in app details:
-   - **App name:** WP Node
+   - **App name:** NodePress
    - **Default language:** English
    - **App or game:** App
    - **Free or paid:** Free
@@ -1262,7 +1258,7 @@ Modern CMS with real-time messaging, video calls, and collaboration tools.
 
 **Full Description:**
 ```
-WP Node is a powerful, modern content management system that brings
+NodePress is a powerful, modern content management system that brings
 real-time collaboration to your fingertips.
 
 🚀 KEY FEATURES
@@ -1292,7 +1288,7 @@ real-time collaboration to your fingertips.
 • Video lessons and quizzes
 • Student progress tracking
 
-Download WP Node today!
+Download NodePress today!
 ```
 
 **Screenshots Needed:**
@@ -1336,7 +1332,7 @@ In your app manifest, these permissions are requested:
 
 <div align="center">
 
-**Deploy WordPress Node CMS on Windows 11 or Windows Server with a single command!**
+**Deploy NodePress CMS on Windows 11 or Windows Server with a single command!**
 
 </div>
 
@@ -1344,8 +1340,8 @@ In your app manifest, these permissions are requested:
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 ```
 
 2. **Run the setup script:**
@@ -1391,10 +1387,10 @@ After setup completes, you need to start the servers:
 
 **Option 1: Production Mode (Recommended)**
 
-Start from the `WordPress-Node` directory - this serves both backend and the pre-built admin panel:
+Start from the `NodePress` directory - this serves both backend and the pre-built admin panel:
 
 ```powershell
-cd WordPress-Node
+cd NodePress
 npm run dev
 ```
 
@@ -1403,12 +1399,12 @@ npm run dev
 For frontend development with hot reloading, run both servers:
 
 ```powershell
-# Terminal 1 - Backend Server (from WordPress-Node directory)
-cd WordPress-Node
+# Terminal 1 - Backend Server (from NodePress directory)
+cd NodePress
 npm run dev
 
 # Terminal 2 - Admin Frontend with Hot Reload (from admin directory)
-cd WordPress-Node\admin
+cd NodePress\admin
 npm run dev
 ```
 
@@ -1464,7 +1460,7 @@ Then navigate to `http://localhost:3000/admin/setup`
 The setup script automatically creates a `.env` file in your project root directory with all the necessary configuration:
 
 ```
-c:\Users\<YourUsername>\WordPress-Node\.env
+c:\Users\<YourUsername>\NodePress\.env
 ```
 
 **To modify the admin password or email after setup:**
@@ -1489,8 +1485,8 @@ c:\Users\<YourUsername>\WordPress-Node\.env
 
 ```bash
 # 1️⃣ Clone the repository
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 
 # 2️⃣ Install all dependencies
 npm install
@@ -1523,7 +1519,7 @@ Create a `.env` file in the root directory. Here's the minimum required:
 
 ```env
 # Database (required)
-DATABASE_URL="postgresql://user:password@localhost:5432/wordpress_node?schema=public"
+DATABASE_URL="postgresql://user:password@localhost:5432/nodepress?schema=public"
 
 # Authentication (required)
 JWT_SECRET="your-super-secret-jwt-key-min-32-characters"
@@ -1544,10 +1540,10 @@ After setup, you have two options for running the application:
 
 #### Option 1: Production Mode (Single Server)
 
-Run from the `WordPress-Node` directory - serves both backend API and pre-built admin panel:
+Run from the `NodePress` directory - serves both backend API and pre-built admin panel:
 
 ```bash
-cd WordPress-Node
+cd NodePress
 npm run dev
 ```
 
@@ -1557,11 +1553,11 @@ For frontend development with hot reloading, run two terminals:
 
 ```bash
 # Terminal 1 - Backend Server
-cd WordPress-Node
+cd NodePress
 npm run dev
 
 # Terminal 2 - Admin Frontend (Hot Reload)
-cd WordPress-Node/admin
+cd NodePress/admin
 npm run dev
 ```
 
@@ -1774,7 +1770,7 @@ npx prisma db seed
 ## 📁 Project Structure
 
 ```
-wordpress-node/
+NodePress/
 │
 ├── 📂 src/                           # Backend source code (NestJS)
 │   ├── 📂 modules/                   # Feature modules
@@ -1866,7 +1862,7 @@ This section covers ALL environment variables available in the system. Copy `.en
 
 ```env
 # PostgreSQL connection string (required)
-DATABASE_URL="postgresql://username:password@localhost:5432/wordpress_node?schema=public"
+DATABASE_URL="postgresql://username:password@localhost:5432/nodepress?schema=public"
 ```
 
 | Variable | Required | Description |
@@ -1880,12 +1876,12 @@ DATABASE_URL="postgresql://username:password@localhost:5432/wordpress_node?schem
 
 **Local PostgreSQL:**
 ```env
-DATABASE_URL="postgresql://postgres:mypassword@localhost:5432/wordpress_node?schema=public"
+DATABASE_URL="postgresql://postgres:mypassword@localhost:5432/nodepress?schema=public"
 ```
 
 **Docker PostgreSQL:**
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5433/wordpress_node?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/nodepress?schema=public"
 ```
 
 **Supabase:**
@@ -1942,7 +1938,7 @@ MAX_FILE_SIZE=10485760
 UPLOAD_DIR=./uploads
 
 # Site Configuration
-SITE_NAME="WordPress Node"
+SITE_NAME="NodePress"
 SITE_DESCRIPTION="A modern CMS built with Node.js"
 ACTIVE_THEME=default
 ```
@@ -1954,7 +1950,7 @@ ACTIVE_THEME=default
 | `APP_URL` | ❌ | `http://localhost:3000` | Public URL of your application |
 | `MAX_FILE_SIZE` | ❌ | `10485760` | Max upload size in bytes (10MB) |
 | `UPLOAD_DIR` | ❌ | `./uploads` | Directory for uploaded files |
-| `SITE_NAME` | ❌ | `WordPress Node` | Site name displayed in UI |
+| `SITE_NAME` | ❌ | `NodePress` | Site name displayed in UI |
 | `SITE_DESCRIPTION` | ❌ | - | Site description for SEO |
 | `ACTIVE_THEME` | ❌ | `default` | Currently active theme slug |
 
@@ -1972,7 +1968,7 @@ SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=your-email@gmail.com
-SMTP_FROM_NAME="WordPress Node CMS"
+SMTP_FROM_NAME="NodePress CMS"
 ```
 
 | Variable | Required | Default | Description |
@@ -2403,7 +2399,7 @@ AI_RATE_LIMIT_WINDOW=3600
 # ═══════════════════════════════════════════════════════════════════════════
 # 🗄️ DATABASE
 # ═══════════════════════════════════════════════════════════════════════════
-DATABASE_URL="postgresql://user:password@localhost:5432/wordpress_node?schema=public"
+DATABASE_URL="postgresql://user:password@localhost:5432/nodepress?schema=public"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 🌐 APPLICATION
@@ -2434,7 +2430,7 @@ UPLOAD_DIR=./uploads
 # ═══════════════════════════════════════════════════════════════════════════
 # 🌍 SITE CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════
-SITE_NAME=WordPress Node
+SITE_NAME=NodePress
 SITE_DESCRIPTION=A modern CMS built with Node.js
 ACTIVE_THEME=default
 
@@ -2447,7 +2443,7 @@ SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=your-email@gmail.com
-SMTP_FROM_NAME=WordPress Node CMS
+SMTP_FROM_NAME=NodePress CMS
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 💳 STRIPE PAYMENTS
@@ -2523,7 +2519,7 @@ AI_RATE_LIMIT_WINDOW=3600
 
 ## 📡 API Documentation
 
-The WordPress Node CMS provides a comprehensive RESTful API for all functionality.
+The NodePress CMS provides a comprehensive RESTful API for all functionality.
 
 <br />
 
@@ -2742,8 +2738,8 @@ Copy and paste these commands to get up and running quickly:
 
 ```powershell
 # Fresh installation
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 powershell -ExecutionPolicy Bypass -File .\scripts\windows-setup.ps1
 
 # Start the server
@@ -2754,8 +2750,8 @@ npm run dev
 
 ```bash
 # Fresh installation
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 chmod +x scripts/ubuntu-setup.sh
 sudo ./scripts/ubuntu-setup.sh
 ```
@@ -2764,14 +2760,14 @@ sudo ./scripts/ubuntu-setup.sh
 
 ```bash
 # Ubuntu/Linux - Update to latest version
-cd /home/WordPress-Node
+cd /home/NodePress
 git checkout scripts/          # Reset any local script changes
 git pull origin main           # Pull latest code
 chmod +x scripts/update.sh
 sudo ./scripts/update.sh       # Rebuild and restart
 
 # Windows - Update to latest version
-cd WordPress-Node
+cd NodePress
 git checkout scripts/
 git pull origin main
 cd admin; npm install; npm run build; cd ..
@@ -2845,7 +2841,7 @@ Having issues? Check these common problems and solutions:
 |-------|----------|
 | **PostgreSQL not running** | Start PostgreSQL service |
 | **Wrong DATABASE_URL** | Verify connection string in `.env` matches your database |
-| **Database doesn't exist** | Create the database: `createdb wordpress_node` |
+| **Database doesn't exist** | Create the database: `createdb nodepress` |
 | **Migrations not run** | Run migrations: `npx prisma migrate dev` |
 | **Prisma client outdated** | Regenerate: `npx prisma generate` |
 
@@ -2947,7 +2943,7 @@ npm run dev
 
 ### 🖥️ VPS/Server Troubleshooting Commands
 
-Essential commands for managing and troubleshooting your WordPress Node CMS on a production VPS.
+Essential commands for managing and troubleshooting your NodePress CMS on a production VPS.
 
 <br />
 
@@ -2956,7 +2952,7 @@ Essential commands for managing and troubleshooting your WordPress Node CMS on a
 If a user is locked out due to 2FA issues, reset it with this command:
 
 ```bash
-cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.user.update({ where: { email: 'user@example.com' }, data: { twoFactorEnabled: false, twoFactorSecret: null, recoveryCodes: [] } }).then(u => console.log('✓ 2FA disabled for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
+cd /var/www/NodePress && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.user.update({ where: { email: 'user@example.com' }, data: { twoFactorEnabled: false, twoFactorSecret: null, recoveryCodes: [] } }).then(u => console.log('✓ 2FA disabled for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
 ```
 
 > 💡 Replace `user@example.com` with the actual user's email address.
@@ -2968,7 +2964,7 @@ cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma
 If a user is locked out due to too many failed login attempts:
 
 ```bash
-cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.user.update({ where: { email: 'user@example.com' }, data: { failedLoginAttempts: 0, accountLockedUntil: null } }).then(u => console.log('✓ Account unlocked for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
+cd /var/www/NodePress && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.user.update({ where: { email: 'user@example.com' }, data: { failedLoginAttempts: 0, accountLockedUntil: null } }).then(u => console.log('✓ Account unlocked for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
 ```
 
 <br />
@@ -2976,7 +2972,7 @@ cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma
 #### 🔑 Reset User Password
 
 ```bash
-cd /var/www/WordPress-Node && node -e "const bcrypt = require('bcrypt'); const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); bcrypt.hash('NewPassword123!', 10).then(hash => p.user.update({ where: { email: 'user@example.com' }, data: { password: hash } })).then(u => console.log('✓ Password reset for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
+cd /var/www/NodePress && node -e "const bcrypt = require('bcrypt'); const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); bcrypt.hash('NewPassword123!', 10).then(hash => p.user.update({ where: { email: 'user@example.com' }, data: { password: hash } })).then(u => console.log('✓ Password reset for:', u.email)).catch(console.error).finally(() => p.\$disconnect());"
 ```
 
 > ⚠️ Replace `NewPassword123!` with a strong password.
@@ -2989,18 +2985,18 @@ If you get `EACCES: permission denied` errors (backup creation, file uploads, et
 
 ```bash
 # Check current ownership
-ls -la /var/www/WordPress-Node
+ls -la /var/www/NodePress
 
 # Check what user the app is running as
 ps aux | grep node
 
-# Fix ownership (replace 'wpnode' with your app user)
-sudo chown -R wpnode:wpnode /var/www/WordPress-Node
+# Fix ownership (replace 'NodePress' with your app user)
+sudo chown -R NodePress:NodePress /var/www/NodePress
 
 # Or fix specific directories only
-sudo chown -R wpnode:wpnode /var/www/WordPress-Node/backups
-sudo chown -R wpnode:wpnode /var/www/WordPress-Node/uploads
-sudo chown -R wpnode:wpnode /var/www/WordPress-Node/updates
+sudo chown -R NodePress:NodePress /var/www/NodePress/backups
+sudo chown -R NodePress:NodePress /var/www/NodePress/uploads
+sudo chown -R NodePress:NodePress /var/www/NodePress/updates
 ```
 
 <br />
@@ -3012,25 +3008,25 @@ sudo chown -R wpnode:wpnode /var/www/WordPress-Node/updates
 pm2 status
 
 # View logs (live)
-pm2 logs wordpress-node
+pm2 logs NodePress
 
 # View last 100 lines of logs
-pm2 logs wordpress-node --lines 100
+pm2 logs NodePress --lines 100
 
 # Restart the app
-pm2 restart wordpress-node
+pm2 restart NodePress
 
 # Reload with zero-downtime
-pm2 reload wordpress-node
+pm2 reload NodePress
 
 # Stop the app
-pm2 stop wordpress-node
+pm2 stop NodePress
 
 # Start the app
-pm2 start wordpress-node
+pm2 start NodePress
 
 # Delete and re-add the app
-pm2 delete wordpress-node
+pm2 delete NodePress
 pm2 start ecosystem.config.js
 
 # Save PM2 configuration (persists across reboots)
@@ -3046,20 +3042,20 @@ pm2 monit
 
 ```bash
 # Open Prisma Studio (database GUI)
-cd /var/www/WordPress-Node && npx prisma studio --browser none --hostname 0.0.0.0
+cd /var/www/NodePress && npx prisma studio --browser none --hostname 0.0.0.0
 # Then access via http://your-vps-ip:5555 (close immediately after use!)
 
 # Run database migrations
-cd /var/www/WordPress-Node && npx prisma migrate deploy
+cd /var/www/NodePress && npx prisma migrate deploy
 
 # Reset database (WARNING: destroys all data)
-cd /var/www/WordPress-Node && npx prisma migrate reset --force
+cd /var/www/NodePress && npx prisma migrate reset --force
 
 # Check database connection
-cd /var/www/WordPress-Node && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.\$connect().then(() => console.log('✓ Database connected')).catch(console.error).finally(() => p.\$disconnect());"
+cd /var/www/NodePress && node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.\$connect().then(() => console.log('✓ Database connected')).catch(console.error).finally(() => p.\$disconnect());"
 
 # PostgreSQL direct access
-sudo -u postgres psql -d wordpress_node
+sudo -u postgres psql -d nodepress
 ```
 
 <br />
@@ -3109,7 +3105,7 @@ sudo netstat -tlnp | grep -E '3000|5432|6379|80|443'
 #### 🔄 Manual Update Commands
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Pull latest changes
 git pull origin main
@@ -3126,7 +3122,7 @@ cd admin && npm run build && cd ..
 npx prisma migrate deploy
 
 # Restart app
-pm2 restart wordpress-node
+pm2 restart NodePress
 ```
 
 <br />
@@ -3156,13 +3152,13 @@ sudo journalctl -f
 
 ## 🚀 Production Deployment
 
-This section covers deploying WordPress Node CMS to a production environment.
+This section covers deploying NodePress CMS to a production environment.
 
 <br />
 
 ### 🧙 Setup Wizard (First-Time Installation)
 
-When deploying to production for the first time, WordPress Node CMS includes a **Setup Wizard** that guides you through initial configuration:
+When deploying to production for the first time, NodePress CMS includes a **Setup Wizard** that guides you through initial configuration:
 
 1. **Access the Setup Wizard**: Navigate to `https://yourdomain.com/admin/setup`
 2. **Create Admin Account**: Set up your administrator account with a secure password
@@ -3243,8 +3239,8 @@ Before going live, ensure you've completed these steps:
 
 ```bash
 # Clone and configure
-git clone https://github.com/syntex82/WordPress-Node.git
-cd WordPress-Node
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
 cp .env.example .env
 # Edit .env with production values
 
@@ -3360,7 +3356,7 @@ location /socket.io/ {
 curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" https://yoursite.com/socket.io/
 
 # Check server logs for WebSocket errors
-pm2 logs wordpress-node --lines 50
+pm2 logs NodePress --lines 50
 ```
 
 <br />
@@ -3455,7 +3451,7 @@ http {
 sudo systemctl status postgresql
 
 # Test database connection
-sudo -u postgres psql -d wordpress_node -c "SELECT 1;"
+sudo -u postgres psql -d nodepress -c "SELECT 1;"
 
 # Reset Prisma client
 npx prisma generate
@@ -3485,20 +3481,10 @@ cd admin && npm run build && cd ..
 npm run build
 
 # 5. Restart the server
-pm2 restart wordpress-node
+pm2 restart NodePress
 # or for development:
 npm run dev
 ```
-
-<br />
-
----
-
-## ⚖️ Legal Disclaimer
-
-**Disclaimer:** WordPress Node is an independent project and is not affiliated with, endorsed by, or sponsored by WordPress or Automattic Inc. "WordPress" is a trademark of the WordPress Foundation. This project is a separate CMS platform built with Node.js and does not use WordPress code or components.
-
-This project draws inspiration from WordPress's user-friendly approach to content management while being built entirely from scratch using modern technologies including Node.js, NestJS, React, and PostgreSQL. No WordPress source code, plugins, themes, or other components are used in this project.
 
 <br />
 
@@ -3511,7 +3497,7 @@ We welcome contributions! Here's how you can help:
 ### Getting Started
 
 1. **Fork** the repository
-2. **Clone** your fork: `git clone https://github.com/yourusername/wordpress-node.git`
+2. **Clone** your fork: `git clone https://github.com/yourusername/NodePress.git`
 3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
 4. **Make** your changes
 5. **Commit** your changes: `git commit -m 'Add amazing feature'`
@@ -3546,7 +3532,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ```
 MIT License
 
-Copyright (c) 2025 WordPress Node CMS
+Copyright (c) 2025 NodePress CMS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -3585,13 +3571,13 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 <br />
 
-**Made with ❤️ by the WordPress Node CMS Team**
+**Made with ❤️ by the NodePress CMS Team**
 
 <br />
 
-[Report Bug](https://github.com/yourusername/wordpress-node/issues) •
-[Request Feature](https://github.com/yourusername/wordpress-node/issues) •
-[Documentation](https://github.com/yourusername/wordpress-node/wiki)
+[Report Bug](https://github.com/yourusername/NodePress/issues) •
+[Request Feature](https://github.com/yourusername/NodePress/issues) •
+[Documentation](https://github.com/yourusername/NodePress/wiki)
 
 <br />
 

@@ -65,7 +65,7 @@ const categoryLabels: Record<string, string> = {
   FULLSTACK: 'Full-Stack',
   MOBILE: 'Mobile',
   DEVOPS: 'DevOps',
-  WORDPRESS: 'WordPress',
+  CMS: 'CMS',
   DESIGN: 'UI/UX Design',
   DATABASE: 'Database',
   SECURITY: 'Security',
@@ -243,7 +243,7 @@ export default function Developers() {
               <option value="FULLSTACK">Full-Stack</option>
               <option value="MOBILE">Mobile</option>
               <option value="DEVOPS">DevOps</option>
-              <option value="WORDPRESS">WordPress</option>
+              <option value="CMS">CMS</option>
               <option value="DESIGN">UI/UX Design</option>
             </select>
           </Tooltip>

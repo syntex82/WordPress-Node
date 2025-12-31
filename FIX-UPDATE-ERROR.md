@@ -20,7 +20,7 @@ This happens when npm install produces too much output.
 The latest update includes fixes for both errors. SSH into your server and run:
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Pull the latest fixes
 git pull origin main
@@ -38,7 +38,7 @@ The updated script now:
 ### Option 2: Use the Fix Script First (If update still fails)
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 sudo bash scripts/fix-vite-cache.sh
 sudo bash scripts/update.sh
 ```
@@ -48,7 +48,7 @@ sudo bash scripts/update.sh
 If you prefer to fix it manually:
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Stop all processes
 pm2 stop all
@@ -87,7 +87,7 @@ pm2 save
 ### Option 4: Quick Fix (If you just want to get it running)
 
 ```bash
-cd /var/www/WordPress-Node/admin
+cd /var/www/NodePress/admin
 sudo rm -rf node_modules/.vite
 sudo rm -rf .vite
 npm install --quiet --no-progress

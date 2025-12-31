@@ -1,8 +1,8 @@
-# WordPress Node - Project Summary
+# NodePress - Project Summary
 
 ## Overview
 
-WordPress Node is a complete, self-hosted CMS platform built with modern JavaScript technologies. It replicates the core functionality of WordPress while leveraging the Node.js ecosystem.
+NodePress is a complete, self-hosted CMS platform built with modern JavaScript technologies, leveraging the Node.js ecosystem for superior performance and flexibility.
 
 ## Tech Stack
 
@@ -96,7 +96,7 @@ WordPress Node is a complete, self-hosted CMS platform built with modern JavaScr
 ## Project Structure
 
 ```
-wordpress-node/
+NodePress/
 ├── src/                      # Backend source
 │   ├── modules/             # Feature modules
 │   ├── common/              # Shared utilities
@@ -198,7 +198,7 @@ The seed script creates:
 
 ## What Makes This Special
 
-1. **WordPress-like Experience**: Familiar concepts (posts, pages, themes, plugins) in a modern stack
+1. **Intuitive Experience**: Familiar concepts (posts, pages, themes, plugins) in a modern stack
 2. **Type Safety**: Full TypeScript coverage for better DX
 3. **Modular Architecture**: Clean separation of concerns with NestJS
 4. **Extensible**: Plugin and theme systems allow unlimited customization

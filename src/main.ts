@@ -212,7 +212,7 @@ async function bootstrap() {
     secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
-    name: 'wpnode.sid',
+    name: 'NodePress.sid',
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       httpOnly: true,
@@ -239,7 +239,7 @@ async function bootstrap() {
 
       sessionConfig.store = new RedisStore({
         client: redisClient,
-        prefix: 'wpnode:session:',
+        prefix: 'NodePress:session:',
         ttl: 60 * 60 * 24 * 7, // 7 days in seconds
       });
     } catch (error) {
@@ -592,7 +592,7 @@ Sitemap: ${baseUrl}/sitemap.xml`);
   await app.listen(port, host);
 
   logger.log(`
-    🚀 WordPress Node CMS is running!
+    🚀 NodePress CMS is running!
 
     📍 Application: http://localhost:${port}
     📍 Admin Panel: http://localhost:${port}/admin

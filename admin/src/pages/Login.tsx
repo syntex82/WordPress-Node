@@ -133,7 +133,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-slate-900">
       <div className="max-w-md w-full bg-slate-800/50 backdrop-blur rounded-2xl shadow-2xl border border-slate-700/50 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">WordPress Node</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">NodePress</h1>
           <p className="text-slate-400 mt-2">Admin Panel</p>
         </div>
 

@@ -33,8 +33,8 @@ export class TwoFactorService {
     }
 
     const secret = speakeasy.generateSecret({
-      name: `WordPress Node (${user.email})`,
-      issuer: 'WordPress Node CMS',
+      name: `NodePress (${user.email})`,
+      issuer: 'NodePress CMS',
     });
 
     // Generate QR code

@@ -1,6 +1,6 @@
 #!/bin/bash
 #═══════════════════════════════════════════════════════════════════════════════
-# WordPress Node CMS - Quick Install (Development)
+# NodePress CMS - Quick Install (Development)
 # Lightweight script for quick development setup
 #
 # Usage:
@@ -57,7 +57,7 @@ generate_random_string() {
 
 echo ""
 echo -e "${MAGENTA}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${MAGENTA}       WordPress Node CMS - Quick Install${NC}"
+echo -e "${MAGENTA}       NodePress CMS - Quick Install${NC}"
 echo -e "${MAGENTA}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 
@@ -82,7 +82,7 @@ if [ ! -f "$PROJECT_DIR/package.json" ]; then
 fi
 
 # Generate secure values
-DB_NAME="wordpress_node"
+DB_NAME="nodepress"
 DB_USER="wpnode"
 DB_PASS=$(generate_random_string 16)
 JWT_SECRET=$(generate_random_string 64)
@@ -172,7 +172,7 @@ if [ -f .env ]; then
 fi
 
 cat > .env << EOF
-# WordPress Node CMS - Quick Install Configuration
+# NodePress CMS - Quick Install Configuration
 # Generated: $(date '+%Y-%m-%d %H:%M:%S')
 
 DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}?schema=public"
@@ -197,7 +197,7 @@ MAX_FILE_SIZE=104857600
 UPLOAD_DIR=./uploads
 STORAGE_PROVIDER=local
 STORAGE_LOCAL_URL=/uploads
-SITE_NAME="WordPress Node"
+SITE_NAME="NodePress"
 SITE_DESCRIPTION="A modern CMS built with Node.js"
 ACTIVE_THEME=my-theme
 EOF

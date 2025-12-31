@@ -37,7 +37,7 @@ export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
   private transporter: nodemailer.Transporter | null = null;
   private defaultFrom: string = '';
-  private defaultFromName: string = 'WordPress Node CMS';
+  private defaultFromName: string = 'NodePress CMS';
   private smtpConfig: SmtpConfig | null = null;
 
   constructor(
@@ -66,7 +66,7 @@ export class EmailService implements OnModuleInit {
         user: this.configService.get<string>('SMTP_USER', ''),
         pass: this.configService.get<string>('SMTP_PASS', ''),
         fromEmail: this.configService.get<string>('SMTP_FROM', ''),
-        fromName: this.configService.get<string>('SMTP_FROM_NAME', 'WordPress Node CMS'),
+        fromName: this.configService.get<string>('SMTP_FROM_NAME', 'NodePress CMS'),
       };
     }
 
@@ -193,7 +193,7 @@ export class EmailService implements OnModuleInit {
     const domainConfig = await this.systemConfig.getDomainConfig();
     return {
       site: {
-        name: domainConfig.siteName || 'WordPress Node CMS',
+        name: domainConfig.siteName || 'NodePress CMS',
         logo: undefined, // Can be extended to support logo from config
         address: undefined, // Can be extended to support address from config
       },

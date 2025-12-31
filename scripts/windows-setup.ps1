@@ -1,5 +1,5 @@
 #═══════════════════════════════════════════════════════════════════════════════
-# WordPress Node CMS - Windows Setup Script
+# NodePress CMS - Windows Setup Script
 # Works on Windows 11 and Windows Server (2019, 2022)
 # Run this from inside the cloned repository folder
 # Usage: powershell -ExecutionPolicy Bypass -File .\scripts\windows-setup.ps1
@@ -109,7 +109,7 @@ $isWindowsServer = $osName -match "Server"
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Magenta
-Write-Host "         WordPress Node CMS - Windows Setup Script" -ForegroundColor Magenta
+Write-Host "         NodePress CMS - Windows Setup Script" -ForegroundColor Magenta
 Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Magenta
 Write-Host ""
 Write-Host "  System:      $osName" -ForegroundColor Cyan
@@ -140,7 +140,7 @@ Write-Host "──────────────────────�
 Write-Host ""
 
 # Database configuration
-$defaultDbName = "wordpress_node"
+$defaultDbName = "nodepress"
 $defaultDbUser = "wpnode"
 $defaultDbPassword = Get-SecureRandomString -Length 16
 $defaultPort = "3000"
@@ -372,7 +372,7 @@ try {
 
     $envContent = @"
 # ═══════════════════════════════════════════════════════════════════════════
-# WordPress Node CMS - Environment Configuration
+# NodePress CMS - Environment Configuration
 # Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -425,7 +425,7 @@ STORAGE_LOCAL_URL=/uploads
 # ─────────────────────────────────────────────────────────────
 # SITE CONFIGURATION
 # ─────────────────────────────────────────────────────────────
-SITE_NAME="WordPress Node"
+SITE_NAME="NodePress"
 SITE_DESCRIPTION="A modern CMS built with Node.js"
 ACTIVE_THEME=my-theme
 "@

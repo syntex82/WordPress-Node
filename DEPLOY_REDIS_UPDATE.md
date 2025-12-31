@@ -18,12 +18,12 @@ This update resolves two issues:
 ```bash
 ssh root@your-vps-ip
 # Or if you have a specific user:
-ssh wpnode@wordpressnode.co.uk
+ssh NodePress@nodepress.co.uk
 ```
 
 ### Step 2: Navigate to Application Directory
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 ```
 
 ### Step 3: Pull Latest Changes
@@ -45,10 +45,10 @@ npm run build
 ### Step 6: Restart PM2 Application
 ```bash
 # If logged in as root:
-sudo -u wpnode pm2 restart wpnode
+sudo -u NodePress pm2 restart NodePress
 
-# If logged in as wpnode user:
-pm2 restart wpnode
+# If logged in as NodePress user:
+pm2 restart NodePress
 
 # Or restart all PM2 processes:
 pm2 restart all
@@ -57,7 +57,7 @@ pm2 restart all
 ### Step 7: Verify Redis Connection
 ```bash
 # Check PM2 logs to confirm Redis connected:
-pm2 logs wpnode --lines 50
+pm2 logs NodePress --lines 50
 
 # You should see:
 # "🔴 Redis session store connected successfully"
@@ -66,7 +66,7 @@ pm2 logs wpnode --lines 50
 ### Step 8: Check Application Status
 ```bash
 pm2 status
-pm2 logs wpnode
+pm2 logs NodePress
 ```
 
 ---
@@ -82,7 +82,7 @@ redis-cli ping
 ### Check Redis Session Keys
 ```bash
 redis-cli
-> KEYS wpnode:session:*
+> KEYS NodePress:session:*
 > exit
 ```
 
@@ -111,12 +111,12 @@ Visit your site and check:
 
 3. **Check Redis Configuration:**
    ```bash
-   cat /var/www/WordPress-Node/.env | grep REDIS
+   cat /var/www/NodePress/.env | grep REDIS
    ```
 
 4. **View Application Logs:**
    ```bash
-   pm2 logs wpnode --lines 100
+   pm2 logs NodePress --lines 100
    ```
 
 ### If Build Fails:
@@ -135,12 +135,12 @@ npm run build
 For quick updates, you can run all steps in one command:
 
 ```bash
-cd /var/www/WordPress-Node && \
+cd /var/www/NodePress && \
 git pull && \
 npm install && \
 npm run build && \
-sudo -u wpnode pm2 restart wpnode && \
-pm2 logs wpnode --lines 20
+sudo -u NodePress pm2 restart NodePress && \
+pm2 logs NodePress --lines 20
 ```
 
 ---

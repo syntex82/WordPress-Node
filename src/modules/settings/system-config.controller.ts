@@ -108,7 +108,7 @@ export class SystemConfigController {
       await transporter.sendMail({
         from: `"${config.fromName}" <${config.fromEmail || config.user}>`,
         to: body.testEmail,
-        subject: 'WordPress Node CMS - Test Email',
+        subject: 'NodePress CMS - Test Email',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #3b82f6;">🎉 Email Configuration Successful!</h2>
@@ -117,7 +117,7 @@ export class SystemConfigController {
             <p><strong>From:</strong> ${config.fromName} &lt;${config.fromEmail || config.user}&gt;</p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
             <p style="color: #6b7280; font-size: 12px;">
-              This is a test email from WordPress Node CMS.
+              This is a test email from NodePress CMS.
             </p>
           </div>
         `,

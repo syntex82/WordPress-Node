@@ -2,7 +2,7 @@
 
 ## 🎉 Project Overview
 
-A production-ready, visually stunning Advanced Theme Customizer for the WordPress Node CMS admin panel that allows complete customization of the active theme, pages, and posts with a visual interface.
+A production-ready, visually stunning Advanced Theme Customizer for the NodePress CMS admin panel that allows complete customization of the active theme, pages, and posts with a visual interface.
 
 ## ✨ Features Implemented
 

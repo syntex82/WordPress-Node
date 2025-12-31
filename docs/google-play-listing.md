@@ -8,7 +8,7 @@ Modern LMS with real-time messaging, video calls, and online course creation.
 
 ## Full Description (4000 characters max)
 
-WP Node is a powerful, modern content management system that brings real-time collaboration to your fingertips. Whether you're managing a blog, e-commerce store, or online learning platform, WP Node has you covered.
+NodePress is a powerful, modern content management system that brings real-time collaboration to your fingertips. Whether you're managing a blog, e-commerce store, or online learning platform, NodePress has you covered.
 
 🚀 **KEY FEATURES**
 
@@ -60,7 +60,7 @@ WP Node is a powerful, modern content management system that brings real-time co
 • IP blocking
 • Audit logs
 
-💡 **Why Choose WP Node?**
+💡 **Why Choose NodePress?**
 • Fast and responsive
 • Works offline (PWA)
 • Mobile-first design
@@ -77,13 +77,13 @@ WP Node is a powerful, modern content management system that brings real-time co
 
 ---
 
-Download WP Node today and experience the future of content management!
+Download NodePress today and experience the future of content management!
 
 ## Category
 Productivity
 
 ## Tags/Keywords
-CMS, messaging, video call, blog, e-commerce, LMS, learning, collaboration, content management, WordPress alternative
+CMS, messaging, video call, blog, e-commerce, LMS, learning, collaboration, content management, CMS platform
 
 ## Content Rating
 Everyone

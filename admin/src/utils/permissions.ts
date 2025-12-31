@@ -311,7 +311,7 @@ export function getPermissionInstructions(): string {
   if (isAndroid()) {
     if (isPwaInstalled) {
       // For installed PWAs, the app itself should appear in Android settings
-      return `Go to Android Settings > Apps > "WordPress Node" (or ${browserName}) > Permissions > Camera & Microphone > Allow`;
+      return `Go to Android Settings > Apps > "NodePress" (or ${browserName}) > Permissions > Camera & Microphone > Allow`;
     }
     return `Go to Android Settings > Apps > ${browserName} > Permissions > Camera & Microphone > Allow`;
   }

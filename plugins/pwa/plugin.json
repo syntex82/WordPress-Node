@@ -1,8 +1,8 @@
 {
   "name": "PWA Plugin",
   "version": "1.0.0",
-  "author": "WordPress Node",
-  "description": "Progressive Web App plugin that enables offline access, push notifications, and native app-like installation for your WordPress Node site",
+  "author": "NodePress",
+  "description": "Progressive Web App plugin that enables offline access, push notifications, and native app-like installation for your NodePress site",
   "entry": "index.js",
   "hooks": ["onActivate", "onDeactivate", "registerRoutes"],
   "features": [
@@ -17,9 +17,9 @@
     "Icon generation support"
   ],
   "settings": {
-    "appName": "WordPress Node",
-    "shortName": "WP Node",
-    "description": "Modern WordPress Node CMS",
+    "appName": "NodePress",
+    "shortName": "NodePress",
+    "description": "Modern NodePress CMS",
     "themeColor": "#4f46e5",
     "backgroundColor": "#1e293b",
     "display": "standalone",

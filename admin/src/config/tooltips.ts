@@ -1,6 +1,6 @@
 /**
  * Tooltip Content Configuration
- * Comprehensive help text for all WordPress Node features
+ * Comprehensive help text for all NodePress features
  */
 
 export const NAV_TOOLTIPS = {

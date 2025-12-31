@@ -161,16 +161,15 @@ async function main() {
 
   // Create sample posts
   const post1 = await prisma.post.upsert({
-    where: { slug: 'welcome-to-wordpress-node' },
+    where: { slug: 'welcome-to-NodePress' },
     update: {},
     create: {
-      title: 'Welcome to WordPress Node',
-      slug: 'welcome-to-wordpress-node',
+      title: 'Welcome to NodePress',
+      slug: 'welcome-to-NodePress',
       content: `
-        <h2>Welcome to WordPress Node CMS!</h2>
-        <p>This is a modern, self-hosted CMS platform built with Node.js, TypeScript, and NestJS. 
-        It brings the familiar WordPress experience to the Node.js ecosystem with a powerful plugin 
-        and theme system.</p>
+        <h2>Welcome to NodePress CMS!</h2>
+        <p>This is a modern, self-hosted CMS platform built with Node.js, TypeScript, and NestJS.
+        It provides a powerful plugin and theme system for the Node.js ecosystem.</p>
         
         <h3>Key Features</h3>
         <ul>
@@ -184,12 +183,12 @@ async function main() {
         
         <p>Get started by exploring the admin panel and creating your first post!</p>
       `,
-      excerpt: 'Welcome to WordPress Node CMS - a modern, self-hosted CMS platform built with Node.js.',
+      excerpt: 'Welcome to NodePress CMS - a modern, self-hosted CMS platform built with Node.js.',
       status: PostStatus.PUBLISHED,
       publishedAt: new Date(),
       authorId: admin.id,
-      metaTitle: 'Welcome to WordPress Node CMS',
-      metaDescription: 'Discover the features of WordPress Node, a modern CMS built with Node.js and TypeScript.',
+      metaTitle: 'Welcome to NodePress CMS',
+      metaDescription: 'Discover the features of NodePress, a modern CMS built with Node.js and TypeScript.',
     },
   });
   console.log('✅ Sample post created:', post1.title);
@@ -201,7 +200,7 @@ async function main() {
       title: 'Getting Started Guide',
       slug: 'getting-started-guide',
       content: `
-        <h2>Getting Started with WordPress Node</h2>
+        <h2>Getting Started with NodePress</h2>
         <p>This guide will help you get up and running with your new CMS.</p>
         
         <h3>1. Access the Admin Panel</h3>
@@ -216,7 +215,7 @@ async function main() {
         <h3>4. Install Plugins</h3>
         <p>Extend functionality with plugins like SEO and Analytics.</p>
       `,
-      excerpt: 'Learn how to get started with WordPress Node CMS in just a few simple steps.',
+      excerpt: 'Learn how to get started with NodePress CMS in just a few simple steps.',
       status: PostStatus.PUBLISHED,
       publishedAt: new Date(),
       authorId: author.id,
@@ -232,13 +231,13 @@ async function main() {
       title: 'About Us',
       slug: 'about',
       content: `
-        <h1>About WordPress Node</h1>
-        <p>WordPress Node is a modern content management system built for developers who love Node.js 
-        and want the flexibility of WordPress-style content management.</p>
+        <h1>About NodePress</h1>
+        <p>NodePress is a modern content management system built for developers who love Node.js 
+        and want the flexibility of modern content management.</p>
         
         <h2>Our Mission</h2>
-        <p>To provide a powerful, extensible, and developer-friendly CMS platform that combines the 
-        best of WordPress with modern JavaScript technologies.</p>
+        <p>To provide a powerful, extensible, and developer-friendly CMS platform built with
+        modern JavaScript technologies.</p>
         
         <h2>Technology Stack</h2>
         <ul>
@@ -262,7 +261,7 @@ async function main() {
     update: {},
     create: {
       key: 'site_name',
-      value: process.env.SITE_NAME || 'WordPress Node',
+      value: process.env.SITE_NAME || 'NodePress',
       type: 'string',
       group: 'general',
     },
@@ -288,7 +287,7 @@ async function main() {
       name: 'Default Theme',
       slug: 'default',
       version: '1.0.0',
-      author: 'WordPress Node',
+      author: 'NodePress',
       description: 'A clean, modern default theme',
       path: '/themes/default',
       config: {
@@ -360,7 +359,7 @@ async function main() {
       name: 'SEO Plugin',
       slug: 'seo',
       version: '1.0.0',
-      author: 'WordPress Node',
+      author: 'NodePress',
       description: 'Adds SEO meta fields to posts and pages',
       path: '/plugins/seo',
       config: {
@@ -379,7 +378,7 @@ async function main() {
       name: 'Analytics Plugin',
       slug: 'analytics',
       version: '1.0.0',
-      author: 'WordPress Node',
+      author: 'NodePress',
       description: 'Tracks page views and provides analytics',
       path: '/plugins/analytics',
       config: {

@@ -1,7 +1,7 @@
 {
   "name": "Analytics Plugin",
   "version": "2.0.0",
-  "author": "WordPress Node",
+  "author": "NodePress",
   "description": "Advanced analytics with real-time tracking, session management, custom events, device/browser detection, and comprehensive dashboards",
   "entry": "index.js",
   "hooks": ["onActivate", "onDeactivate", "registerRoutes"],

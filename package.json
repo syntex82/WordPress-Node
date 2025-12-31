@@ -1,7 +1,7 @@
 {
-  "name": "wordpress-node",
+  "name": "nodepress",
   "version": "1.0.0",
-  "description": "A self-hosted WordPress-style CMS platform built with Node.js, TypeScript, and NestJS",
+  "description": "A self-hosted CMS platform built with Node.js, TypeScript, and NestJS",
   "author": "Your Name",
   "license": "MIT",
   "scripts": {

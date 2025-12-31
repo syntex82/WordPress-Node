@@ -1,5 +1,5 @@
 /**
- * Script to add size/color variants to WP Node Hoody product
+ * Script to add size/color variants to NodePress Hoody product
  * Run with: npx ts-node scripts/add-hoodie-variants.ts
  */
 import { PrismaClient } from '@prisma/client';
@@ -15,12 +15,12 @@ const COLORS = [
 ];
 
 async function main() {
-  // Find the WP Node Hoody product
+  // Find the NodePress Hoody product
   const product = await prisma.product.findFirst({
     where: {
       OR: [
-        { name: { contains: 'WP Node Hoody', mode: 'insensitive' } },
-        { name: { contains: 'WP Node Hoodie', mode: 'insensitive' } },
+        { name: { contains: 'NodePress Hoody', mode: 'insensitive' } },
+        { name: { contains: 'NodePress Hoodie', mode: 'insensitive' } },
         { slug: { contains: 'wp-node-hoody' } },
         { slug: { contains: 'wp-node-hoodie' } },
       ],
@@ -28,7 +28,7 @@ async function main() {
   });
 
   if (!product) {
-    console.log('❌ WP Node Hoody product not found!');
+    console.log('❌ NodePress Hoody product not found!');
     console.log('Searching for all products...');
     const allProducts = await prisma.product.findMany({ select: { id: true, name: true, slug: true } });
     console.log('Available products:', allProducts);

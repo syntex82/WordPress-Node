@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get WordPress Node up and running in 5 minutes!
+Get NodePress up and running in 5 minutes!
 
 ## Prerequisites
 

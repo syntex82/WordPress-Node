@@ -1,5 +1,5 @@
 {
-  "name": "wordpress-node-admin",
+  "name": "nodepress-admin",
   "version": "1.0.0",
   "type": "module",
   "scripts": {

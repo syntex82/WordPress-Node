@@ -110,7 +110,7 @@ export class UpdatesService {
       throw new BadRequestException('No download URL available for this version');
     }
 
-    const fileName = `wordpress-node-${version}.zip`;
+    const fileName = `NodePress-${version}.zip`;
     const filePath = path.join(this.updatesDir, fileName);
 
     // Create update history record
@@ -228,7 +228,7 @@ export class UpdatesService {
         data: { status: 'APPLYING' },
       });
 
-      const updateFile = path.join(this.updatesDir, `wordpress-node-${version}.zip`);
+      const updateFile = path.join(this.updatesDir, `NodePress-${version}.zip`);
       await this.extractUpdate(updateFile);
 
       this.setProgress('migrating', 60, 'Running database migrations...');
@@ -372,7 +372,7 @@ export class UpdatesService {
       const protocol = url.startsWith('https') ? https : http;
 
       protocol
-        .get(url, { headers: { 'User-Agent': 'WordPress-Node-CMS' } }, (response) => {
+        .get(url, { headers: { 'User-Agent': 'NodePress-CMS' } }, (response) => {
           if (response.statusCode === 302 || response.statusCode === 301) {
             file.close();
             fs.unlinkSync(dest);

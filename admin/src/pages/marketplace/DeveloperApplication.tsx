@@ -20,7 +20,7 @@ const categories = [
   { value: 'FRONTEND', label: 'Frontend Developer' },
   { value: 'BACKEND', label: 'Backend Developer' },
   { value: 'FULLSTACK', label: 'Full-Stack Developer' },
-  { value: 'WORDPRESS', label: 'WordPress Developer' },
+  { value: 'CMS', label: 'CMS Developer' },
   { value: 'MOBILE', label: 'Mobile Developer' },
   { value: 'DEVOPS', label: 'DevOps Engineer' },
   { value: 'DESIGN', label: 'UI/UX Designer' },

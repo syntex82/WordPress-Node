@@ -1,6 +1,6 @@
 # 🚀 Production Deployment - Hostinger VPS
 
-This guide provides comprehensive instructions for deploying WordPress Node CMS to a Hostinger VPS (or any Ubuntu-based VPS) with a custom domain, SSL, and production optimizations.
+This guide provides comprehensive instructions for deploying NodePress CMS to a Hostinger VPS (or any Ubuntu-based VPS) with a custom domain, SSL, and production optimizations.
 
 ## Table of Contents
 
@@ -80,7 +80,7 @@ Before starting, configure your DNS records:
 │                                      │                                      │
 │    ┌─────────────────────────────────▼─────────────────────────────────┐   │
 │    │                     PM2 Process Manager                            │   │
-│    │                    WordPress Node CMS                              │   │
+│    │                    NodePress CMS                              │   │
 │    │                       Port 3000                                    │   │
 │    └─────────────────────────────────┬─────────────────────────────────┘   │
 │                                      │                                      │
@@ -193,13 +193,13 @@ echo "Database password: $DB_PASSWORD"
 # SAVE THIS PASSWORD - you'll need it for .env
 
 # Create database user
-sudo -u postgres psql -c "CREATE USER wordpress_node WITH PASSWORD '$DB_PASSWORD';"
+sudo -u postgres psql -c "CREATE USER nodepress WITH PASSWORD '$DB_PASSWORD';"
 
 # Create database
-sudo -u postgres createdb -O wordpress_node wordpress_node
+sudo -u postgres createdb -O nodepress nodepress
 
 # Verify
-sudo -u postgres psql -c "\l" | grep wordpress_node
+sudo -u postgres psql -c "\l" | grep nodepress
 ```
 
 ### Secure PostgreSQL
@@ -208,9 +208,9 @@ sudo -u postgres psql -c "\l" | grep wordpress_node
 # Edit PostgreSQL configuration
 sudo nano /etc/postgresql/16/main/pg_hba.conf
 
-# Change the local connection method from "peer" to "scram-sha-256" for the wordpress_node user
+# Change the local connection method from "peer" to "scram-sha-256" for the nodepress user
 # Find the line: local all all peer
-# Add above it: local wordpress_node wordpress_node scram-sha-256
+# Add above it: local nodepress nodepress scram-sha-256
 
 # Restart PostgreSQL
 sudo systemctl restart postgresql
@@ -260,9 +260,9 @@ sudo systemctl restart redis-server
 ```bash
 sudo mkdir -p /var/www
 cd /var/www
-sudo git clone https://github.com/syntex82/WordPress-Node.git
-sudo chown -R $USER:$USER WordPress-Node
-cd WordPress-Node
+sudo git clone https://github.com/syntex82/NodePress.git
+sudo chown -R $USER:$USER NodePress
+cd NodePress
 ```
 
 ### Install Dependencies
@@ -290,7 +290,7 @@ Copy and customize this configuration:
 # ─────────────────────────────────────────────────────────────
 # DATABASE
 # ─────────────────────────────────────────────────────────────
-DATABASE_URL="postgresql://wordpress_node:YOUR_DB_PASSWORD@localhost:5432/wordpress_node?schema=public"
+DATABASE_URL="postgresql://nodepress:YOUR_DB_PASSWORD@localhost:5432/nodepress?schema=public"
 
 # ─────────────────────────────────────────────────────────────
 # REDIS
@@ -401,7 +401,7 @@ npm run build
 ### Start Application with PM2
 
 ```bash
-pm2 start dist/main.js --name wordpress-node
+pm2 start dist/main.js --name NodePress
 ```
 
 ### Configure PM2 for Production
@@ -429,7 +429,7 @@ nano ecosystem.config.js
 ```javascript
 module.exports = {
   apps: [{
-    name: 'wordpress-node',
+    name: 'NodePress',
     script: 'dist/main.js',
     instances: 'max',
     exec_mode: 'cluster',
@@ -437,8 +437,8 @@ module.exports = {
       NODE_ENV: 'production',
     },
     max_memory_restart: '1G',
-    error_file: '/var/log/pm2/wordpress-node-error.log',
-    out_file: '/var/log/pm2/wordpress-node-out.log',
+    error_file: '/var/log/pm2/NodePress-error.log',
+    out_file: '/var/log/pm2/NodePress-out.log',
     merge_logs: true,
     time: true,
   }]
@@ -469,7 +469,7 @@ limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
 limit_req_zone $binary_remote_addr zone=login_limit:10m rate=5r/m;
 
 # Upstream backend
-upstream wpnode_backend {
+upstream NodePress_backend {
     server 127.0.0.1:3000;
     keepalive 32;
 }
@@ -501,7 +501,7 @@ server {
 
     # Health check endpoint (no rate limiting)
     location /health {
-        proxy_pass http://wpnode_backend;
+        proxy_pass http://NodePress_backend;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         access_log off;
@@ -511,7 +511,7 @@ server {
     location /api {
         limit_req zone=api_limit burst=20 nodelay;
 
-        proxy_pass http://wpnode_backend;
+        proxy_pass http://NodePress_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -528,7 +528,7 @@ server {
     location /api/auth/login {
         limit_req zone=login_limit burst=3 nodelay;
 
-        proxy_pass http://wpnode_backend;
+        proxy_pass http://NodePress_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -538,7 +538,7 @@ server {
 
     # WebSocket for real-time features
     location /socket.io/ {
-        proxy_pass http://wpnode_backend;
+        proxy_pass http://NodePress_backend;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -552,7 +552,7 @@ server {
 
     # Static uploads with caching
     location /uploads {
-        alias /var/www/WordPress-Node/uploads;
+        alias /var/www/NodePress/uploads;
         expires 1y;
         add_header Cache-Control "public, immutable";
         access_log off;
@@ -560,7 +560,7 @@ server {
 
     # Admin panel static files
     location /admin {
-        alias /var/www/WordPress-Node/admin/dist;
+        alias /var/www/NodePress/admin/dist;
         try_files $uri $uri/ /admin/index.html;
         expires 1d;
         add_header Cache-Control "public";
@@ -568,7 +568,7 @@ server {
 
     # All other routes
     location / {
-        proxy_pass http://wpnode_backend;
+        proxy_pass http://NodePress_backend;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -725,7 +725,7 @@ Password: ChangeThisSecurePassword123!
 ### Updating the Application
 
 ```bash
-cd /var/www/WordPress-Node
+cd /var/www/NodePress
 
 # Pull latest changes
 git pull origin main
@@ -742,7 +742,7 @@ cd admin && npm run build && cd ..
 npm run build
 
 # Restart PM2
-pm2 restart wordpress-node
+pm2 restart NodePress
 
 # Verify status
 pm2 status
@@ -753,14 +753,14 @@ pm2 status
 Create an update script:
 
 ```bash
-nano /var/www/WordPress-Node/scripts/update.sh
+nano /var/www/NodePress/scripts/update.sh
 ```
 
 ```bash
 #!/bin/bash
 set -e
 
-APP_DIR="/var/www/WordPress-Node"
+APP_DIR="/var/www/NodePress"
 cd $APP_DIR
 
 echo "📥 Pulling latest changes..."
@@ -778,14 +778,14 @@ cd admin && npm run build && cd ..
 npm run build
 
 echo "🔄 Restarting application..."
-pm2 restart wordpress-node
+pm2 restart NodePress
 
 echo "✅ Update complete!"
 pm2 status
 ```
 
 ```bash
-chmod +x /var/www/WordPress-Node/scripts/update.sh
+chmod +x /var/www/NodePress/scripts/update.sh
 ```
 
 ---
@@ -799,10 +799,10 @@ chmod +x /var/www/WordPress-Node/scripts/update.sh
 pm2 status
 
 # View real-time logs
-pm2 logs wordpress-node
+pm2 logs NodePress
 
 # View logs with timestamps
-pm2 logs wordpress-node --lines 100
+pm2 logs NodePress --lines 100
 
 # Monitor CPU/Memory
 pm2 monit
@@ -858,10 +858,10 @@ pm2 plus
 
 ```bash
 # Create backup directory
-sudo mkdir -p /var/backups/wordpress-node
+sudo mkdir -p /var/backups/NodePress
 
 # Backup database
-pg_dump -U wordpress_node -d wordpress_node > /var/backups/wordpress-node/db_$(date +%Y%m%d_%H%M%S).sql
+pg_dump -U nodepress -d nodepress > /var/backups/NodePress/db_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### Automated Daily Backups
@@ -869,15 +869,15 @@ pg_dump -U wordpress_node -d wordpress_node > /var/backups/wordpress-node/db_$(d
 Create a backup script:
 
 ```bash
-sudo nano /var/www/WordPress-Node/scripts/backup.sh
+sudo nano /var/www/NodePress/scripts/backup.sh
 ```
 
 ```bash
 #!/bin/bash
 set -e
 
-BACKUP_DIR="/var/backups/wordpress-node"
-APP_DIR="/var/www/WordPress-Node"
+BACKUP_DIR="/var/backups/NodePress"
+APP_DIR="/var/www/NodePress"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 # Create backup directory
@@ -885,7 +885,7 @@ mkdir -p $BACKUP_DIR
 
 # Backup database
 echo "📦 Backing up database..."
-PGPASSWORD="YOUR_DB_PASSWORD" pg_dump -h localhost -U wordpress_node -d wordpress_node > $BACKUP_DIR/db_$DATE.sql
+PGPASSWORD="YOUR_DB_PASSWORD" pg_dump -h localhost -U nodepress -d nodepress > $BACKUP_DIR/db_$DATE.sql
 
 # Backup uploads
 echo "📁 Backing up uploads..."
@@ -903,7 +903,7 @@ ls -la $BACKUP_DIR
 ```
 
 ```bash
-chmod +x /var/www/WordPress-Node/scripts/backup.sh
+chmod +x /var/www/NodePress/scripts/backup.sh
 ```
 
 ### Schedule Daily Backups
@@ -913,20 +913,20 @@ chmod +x /var/www/WordPress-Node/scripts/backup.sh
 crontab -e
 
 # Add daily backup at 2 AM
-0 2 * * * /var/www/WordPress-Node/scripts/backup.sh >> /var/log/wordpress-node-backup.log 2>&1
+0 2 * * * /var/www/NodePress/scripts/backup.sh >> /var/log/NodePress-backup.log 2>&1
 ```
 
 ### Restore from Backup
 
 ```bash
 # Restore database
-psql -U wordpress_node -d wordpress_node < /var/backups/wordpress-node/db_YYYYMMDD_HHMMSS.sql
+psql -U nodepress -d nodepress < /var/backups/NodePress/db_YYYYMMDD_HHMMSS.sql
 
 # Restore uploads
-tar -xzf /var/backups/wordpress-node/uploads_YYYYMMDD_HHMMSS.tar.gz -C /var/www/WordPress-Node/
+tar -xzf /var/backups/NodePress/uploads_YYYYMMDD_HHMMSS.tar.gz -C /var/www/NodePress/
 
 # Restart application
-pm2 restart wordpress-node
+pm2 restart NodePress
 ```
 
 ---
@@ -937,16 +937,16 @@ pm2 restart wordpress-node
 
 ```bash
 # Check PM2 logs
-pm2 logs wordpress-node --lines 50
+pm2 logs NodePress --lines 50
 
 # Check if port is in use
 sudo lsof -i :3000
 
 # Verify environment variables
-cat /var/www/WordPress-Node/.env
+cat /var/www/NodePress/.env
 
 # Test database connection
-PGPASSWORD=YOUR_PASSWORD psql -h localhost -U wordpress_node -d wordpress_node -c "SELECT 1;"
+PGPASSWORD=YOUR_PASSWORD psql -h localhost -U nodepress -d nodepress -c "SELECT 1;"
 ```
 
 ### 502 Bad Gateway
@@ -959,7 +959,7 @@ pm2 status
 sudo tail -f /var/log/nginx/error.log
 
 # Restart services
-pm2 restart wordpress-node
+pm2 restart NodePress
 sudo systemctl restart nginx
 ```
 
@@ -973,7 +973,7 @@ sudo systemctl status postgresql
 sudo tail -f /var/log/postgresql/postgresql-16-main.log
 
 # Verify database exists
-sudo -u postgres psql -c "\l" | grep wordpress_node
+sudo -u postgres psql -c "\l" | grep nodepress
 ```
 
 ### Redis Connection Errors
@@ -1012,10 +1012,10 @@ free -h
 pm2 monit
 
 # Restart application to free memory
-pm2 restart wordpress-node
+pm2 restart NodePress
 
 # Check for memory leaks in logs
-pm2 logs wordpress-node | grep -i "memory\|heap"
+pm2 logs NodePress | grep -i "memory\|heap"
 ```
 
 ---
@@ -1081,17 +1081,17 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 
 ```bash
 # Set proper ownership
-sudo chown -R deploy:deploy /var/www/WordPress-Node
+sudo chown -R deploy:deploy /var/www/NodePress
 
 # Set proper permissions
-find /var/www/WordPress-Node -type d -exec chmod 755 {} \;
-find /var/www/WordPress-Node -type f -exec chmod 644 {} \;
+find /var/www/NodePress -type d -exec chmod 755 {} \;
+find /var/www/NodePress -type f -exec chmod 644 {} \;
 
 # Make scripts executable
-chmod +x /var/www/WordPress-Node/scripts/*.sh
+chmod +x /var/www/NodePress/scripts/*.sh
 
 # Protect .env file
-chmod 600 /var/www/WordPress-Node/.env
+chmod 600 /var/www/NodePress/.env
 ```
 
 ---
@@ -1156,8 +1156,8 @@ sudo systemctl restart redis-server
 For multi-core VPS, use cluster mode:
 
 ```bash
-pm2 delete wordpress-node
-pm2 start dist/main.js --name wordpress-node -i max
+pm2 delete NodePress
+pm2 start dist/main.js --name NodePress -i max
 pm2 save
 ```
 
@@ -1169,7 +1169,7 @@ pm2 save
 
 | Service | Start | Stop | Restart | Status |
 |---------|-------|------|---------|--------|
-| **App** | `pm2 start wordpress-node` | `pm2 stop wordpress-node` | `pm2 restart wordpress-node` | `pm2 status` |
+| **App** | `pm2 start NodePress` | `pm2 stop NodePress` | `pm2 restart NodePress` | `pm2 status` |
 | **Nginx** | `sudo systemctl start nginx` | `sudo systemctl stop nginx` | `sudo systemctl restart nginx` | `sudo systemctl status nginx` |
 | **PostgreSQL** | `sudo systemctl start postgresql` | `sudo systemctl stop postgresql` | `sudo systemctl restart postgresql` | `sudo systemctl status postgresql` |
 | **Redis** | `sudo systemctl start redis-server` | `sudo systemctl stop redis-server` | `sudo systemctl restart redis-server` | `sudo systemctl status redis-server` |
@@ -1178,12 +1178,12 @@ pm2 save
 
 | Item | Path |
 |------|------|
-| **Application** | `/var/www/WordPress-Node` |
+| **Application** | `/var/www/NodePress` |
 | **Nginx Config** | `/etc/nginx/sites-available/yourdomain.com` |
 | **SSL Certificates** | `/etc/letsencrypt/live/yourdomain.com/` |
 | **PM2 Logs** | `~/.pm2/logs/` |
-| **Backups** | `/var/backups/wordpress-node/` |
-| **Uploads** | `/var/www/WordPress-Node/uploads/` |
+| **Backups** | `/var/backups/NodePress/` |
+| **Uploads** | `/var/www/NodePress/uploads/` |
 
 ### Useful Commands
 
@@ -1204,10 +1204,10 @@ sudo nginx -t
 sudo certbot renew
 
 # Database backup
-pg_dump -U wordpress_node -d wordpress_node > backup.sql
+pg_dump -U nodepress -d nodepress > backup.sql
 
 # Update application
-/var/www/WordPress-Node/scripts/update.sh
+/var/www/NodePress/scripts/update.sh
 ```
 
 ---
@@ -1225,8 +1225,8 @@ pg_dump -U wordpress_node -d wordpress_node > backup.sql
 If you encounter issues:
 
 1. Check the [Troubleshooting](#troubleshooting) section
-2. Review PM2 logs: `pm2 logs wordpress-node`
+2. Review PM2 logs: `pm2 logs NodePress`
 3. Check Nginx logs: `sudo tail -f /var/log/nginx/error.log`
-4. Open an issue on [GitHub](https://github.com/syntex82/WordPress-Node/issues)
+4. Open an issue on [GitHub](https://github.com/syntex82/NodePress/issues)
 
 

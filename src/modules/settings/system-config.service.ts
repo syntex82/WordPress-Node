@@ -161,7 +161,7 @@ export class SystemConfigService implements OnModuleInit {
       fromEmail: await this.get('smtp_from', this.configService.get('SMTP_FROM', '')),
       fromName: await this.get(
         'smtp_from_name',
-        this.configService.get('SMTP_FROM_NAME', 'WordPress Node CMS'),
+        this.configService.get('SMTP_FROM_NAME', 'NodePress CMS'),
       ),
     };
   }
@@ -183,7 +183,7 @@ export class SystemConfigService implements OnModuleInit {
     await this.set('smtp_from', config.fromEmail || config.user, 'email', 'Default from email');
     await this.set(
       'smtp_from_name',
-      config.fromName || 'WordPress Node CMS',
+      config.fromName || 'NodePress CMS',
       'email',
       'Default from name',
     );
@@ -205,7 +205,7 @@ export class SystemConfigService implements OnModuleInit {
       supportEmail: await this.get('support_email', this.configService.get('SUPPORT_EMAIL', '')),
       siteName: await this.get(
         'site_name',
-        this.configService.get('SITE_NAME', 'WordPress Node CMS'),
+        this.configService.get('SITE_NAME', 'NodePress CMS'),
       ),
     };
   }

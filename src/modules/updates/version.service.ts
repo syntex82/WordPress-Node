@@ -38,7 +38,7 @@ export class VersionService {
 
   // Update server configuration - can be overridden via settings
   private readonly DEFAULT_UPDATE_SERVER =
-    'https://api.github.com/repos/syntex82/WordPress-Node/releases';
+    'https://api.github.com/repos/syntex82/NodePress/releases';
   private readonly MANIFEST_CACHE_DURATION = 3600000; // 1 hour in ms
 
   private manifestCache: UpdateManifest | null = null;
@@ -160,7 +160,7 @@ export class VersionService {
     return new Promise((resolve) => {
       const options = {
         headers: {
-          'User-Agent': 'WordPress-Node-CMS',
+          'User-Agent': 'NodePress-CMS',
           Accept: 'application/vnd.github.v3+json',
         },
       };
