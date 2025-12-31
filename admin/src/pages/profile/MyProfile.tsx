@@ -4,11 +4,12 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { profileApi, mediaApi, UserProfile, ProfileStats, ActivityItem } from '../../services/api';
+import { profileApi, mediaApi, timelineApi, UserProfile, ProfileStats, ActivityItem, TimelinePost } from '../../services/api';
 import {
   FiUser, FiEdit2, FiMapPin, FiBriefcase, FiCalendar, FiUsers, FiBook, FiAward,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiGlobe, FiCamera,
-  FiCheck, FiX, FiPlus, FiActivity
+  FiCheck, FiX, FiPlus, FiActivity, FiHeart, FiMessageCircle, FiShare2,
+  FiMoreHorizontal, FiTrash2, FiImage, FiSend
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -16,6 +17,7 @@ export default function MyProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [timelinePosts, setTimelinePosts] = useState<TimelinePost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -27,6 +29,11 @@ export default function MyProfile() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
+  const [postContent, setPostContent] = useState('');
+  const [postImage, setPostImage] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
+  const [openPostMenu, setOpenPostMenu] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -44,6 +51,16 @@ export default function MyProfile() {
       setStats(statsRes.data);
       setActivities(activityRes.data?.activities || []);
       setFormData(profileRes.data);
+
+      // Load timeline posts
+      if (profileRes.data?.id) {
+        try {
+          const postsRes = await timelineApi.getUserPosts(profileRes.data.id);
+          setTimelinePosts(postsRes.data?.data || []);
+        } catch (e) {
+          console.error('Error loading timeline:', e);
+        }
+      }
     } catch (err: any) {
       console.error('Error loading profile:', err);
       if (err.response?.status === 401) {
@@ -56,6 +73,74 @@ export default function MyProfile() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreatePost = async () => {
+    if (!postContent.trim()) {
+      toast.error('Please enter some content');
+      return;
+    }
+    setIsPosting(true);
+    try {
+      const media = postImage ? [{ type: 'IMAGE' as const, url: postImage }] : undefined;
+      const res = await timelineApi.createPost({
+        content: postContent.trim(),
+        media,
+      });
+      setTimelinePosts(prev => [res.data, ...prev]);
+      setPostContent('');
+      setPostImage('');
+      toast.success('Post shared to your timeline!');
+    } catch (err) {
+      console.error('Error creating post:', err);
+      toast.error('Failed to share post');
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await timelineApi.deletePost(postId);
+      setTimelinePosts(prev => prev.filter(p => p.id !== postId));
+      toast.success('Post deleted');
+    } catch (err) {
+      toast.error('Failed to delete post');
+    }
+    setOpenPostMenu(null);
+  };
+
+  const handleLikePost = async (postId: string) => {
+    try {
+      await timelineApi.likePost(postId);
+      setTimelinePosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, likesCount: p.likesCount + 1, isLiked: true } : p
+      ));
+    } catch (err) {
+      // Already liked - try unlike
+      try {
+        await timelineApi.unlikePost(postId);
+        setTimelinePosts(prev => prev.map(p =>
+          p.id === postId ? { ...p, likesCount: Math.max(0, p.likesCount - 1), isLiked: false } : p
+        ));
+      } catch (e) {
+        toast.error('Failed to update like');
+      }
+    }
+  };
+
+  const formatTimeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
   };
 
   const handleSave = async () => {
@@ -304,6 +389,157 @@ export default function MyProfile() {
         ))}
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-2 px-2 sm:px-6 mb-6">
+        <button
+          onClick={() => setActiveTab('posts')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
+            activeTab === 'posts' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+          }`}
+        >
+          <FiEdit2 className="w-4 h-4" /> Posts
+        </button>
+        <button
+          onClick={() => setActiveTab('about')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
+            activeTab === 'about' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+          }`}
+        >
+          <FiUser className="w-4 h-4" /> About
+        </button>
+      </div>
+
+      {activeTab === 'posts' ? (
+        <div className="px-2 sm:px-6 pb-6 sm:pb-8">
+          {/* Create Post Form */}
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-4 sm:p-6 border border-slate-700/50 mb-6">
+            <div className="flex gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                {profile.avatar ? (
+                  <img src={profile.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <span className="text-white font-bold">{profile.name?.charAt(0) || 'U'}</span>
+                )}
+              </div>
+              <div className="flex-1">
+                <textarea
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
+                  placeholder="What's on your mind?"
+                  rows={3}
+                  className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl p-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+                />
+                {postImage && (
+                  <div className="mt-2 relative inline-block">
+                    <img src={postImage} alt="Preview" className="h-20 rounded-lg" />
+                    <button onClick={() => setPostImage('')} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><FiX className="w-3 h-3" /></button>
+                  </div>
+                )}
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={postImage}
+                      onChange={(e) => setPostImage(e.target.value)}
+                      placeholder="Image URL (optional)"
+                      className="px-3 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                    <FiImage className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <button
+                    onClick={handleCreatePost}
+                    disabled={isPosting || !postContent.trim()}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    {isPosting ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <FiSend className="w-4 h-4" />
+                    )}
+                    Post
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Posts */}
+          <div className="space-y-4">
+            {timelinePosts.length === 0 ? (
+              <div className="bg-slate-800/50 backdrop-blur rounded-xl p-8 border border-slate-700/50 text-center">
+                <FiEdit2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-white mb-2">No posts yet</h3>
+                <p className="text-slate-400">Share what's on your mind above!</p>
+              </div>
+            ) : (
+              timelinePosts.map((post) => (
+                <div key={post.id} className="bg-slate-800/50 backdrop-blur rounded-xl p-4 sm:p-6 border border-slate-700/50">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {profile.avatar ? (
+                        <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white font-bold">{profile.name?.charAt(0) || 'U'}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-white">{profile.name}</span>
+                          <span className="text-slate-500 text-sm ml-2">{formatTimeAgo(post.createdAt)}</span>
+                        </div>
+                        <div className="relative">
+                          <button
+                            onClick={() => setOpenPostMenu(openPostMenu === post.id ? null : post.id)}
+                            className="p-1 text-slate-400 hover:text-white rounded"
+                          >
+                            <FiMoreHorizontal className="w-5 h-5" />
+                          </button>
+                          {openPostMenu === post.id && (
+                            <div className="absolute right-0 top-8 bg-slate-700 rounded-lg shadow-lg border border-slate-600 py-1 z-10">
+                              <button
+                                onClick={() => handleDeletePost(post.id)}
+                                className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-slate-600 w-full text-left"
+                              >
+                                <FiTrash2 className="w-4 h-4" /> Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-slate-300 mt-2 whitespace-pre-wrap">{post.content}</p>
+                      {post.media && post.media.length > 0 && (
+                        <div className="mt-3 grid gap-2">
+                          {post.media.map((m, idx) => (
+                            <img key={idx} src={m.url} alt={m.altText || ''} className="rounded-lg max-h-96 object-cover" />
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-700/50">
+                        <button
+                          onClick={() => handleLikePost(post.id)}
+                          className={`flex items-center gap-1.5 text-sm transition ${post.isLiked ? 'text-red-400' : 'text-slate-400 hover:text-red-400'}`}
+                        >
+                          <FiHeart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                          {post.likesCount || 0}
+                        </button>
+                        <span className="flex items-center gap-1.5 text-sm text-slate-400">
+                          <FiMessageCircle className="w-4 h-4" />
+                          {post.commentsCount || 0}
+                        </span>
+                        <button className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-blue-400 transition">
+                          <FiShare2 className="w-4 h-4" />
+                          Share
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-6 pb-6 sm:pb-8">
         {/* Left Column - About & Details */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
@@ -488,6 +724,7 @@ export default function MyProfile() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }
