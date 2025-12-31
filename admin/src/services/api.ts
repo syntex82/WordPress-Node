@@ -1475,7 +1475,7 @@ export interface FeedActivity {
   metadata?: Record<string, unknown>;
   isPublic: boolean;
   createdAt: string;
-  User: {
+  user: {
     id: string;
     name: string;
     username?: string;

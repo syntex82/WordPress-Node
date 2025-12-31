@@ -235,19 +235,19 @@ export default function ActivityFeed() {
                 {activities.map(activity => (
                   <div key={activity.id} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-start gap-4">
-                      <Link to={`/profile/${activity.User.username || activity.User.id}`}>
-                        {activity.User.avatar ? (
-                          <img src={activity.User.avatar} alt={activity.User.name} className="w-12 h-12 rounded-full object-cover" />
+                      <Link to={`/profile/${activity.user.username || activity.user.id}`}>
+                        {activity.user.avatar ? (
+                          <img src={activity.user.avatar} alt={activity.user.name} className="w-12 h-12 rounded-full object-cover" />
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                            {activity.User.name?.charAt(0) || '?'}
+                            {activity.user.name?.charAt(0) || '?'}
                           </div>
                         )}
                       </Link>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <Link to={`/profile/${activity.User.username || activity.User.id}`} className="font-medium text-gray-900 dark:text-white hover:text-blue-600">
-                            {activity.User.name}
+                          <Link to={`/profile/${activity.user.username || activity.user.id}`} className="font-medium text-gray-900 dark:text-white hover:text-blue-600">
+                            {activity.user.name}
                           </Link>
                           <span className="text-gray-400 dark:text-gray-500">•</span>
                           <span className="text-sm text-gray-500 dark:text-gray-400">{formatTimeAgo(activity.createdAt)}</span>
