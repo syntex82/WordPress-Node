@@ -1460,7 +1460,14 @@ export type FeedActivityType =
   | 'BADGE_EARNED'
   | 'PROFILE_UPDATED'
   | 'NEW_FOLLOWER'
-  | 'STARTED_FOLLOWING';
+  | 'STARTED_FOLLOWING'
+  | 'STATUS_UPDATE';
+
+export interface CreateTimelinePostDto {
+  content: string;
+  imageUrl?: string;
+  isPublic?: boolean;
+}
 
 export interface FeedActivity {
   id: string;
@@ -1575,6 +1582,10 @@ export const feedApi = {
   // Get my activities
   getMyActivities: (page?: number, limit?: number, type?: FeedActivityType) =>
     api.get<FeedResponse>('/feed/my-activities', { params: { page, limit, type } }),
+
+  // Create a timeline post (status update)
+  createPost: (dto: CreateTimelinePostDto) =>
+    api.post<FeedActivity>('/feed/posts', dto),
 
   // Delete an activity
   deleteActivity: (id: string) => api.delete(`/feed/activities/${id}`),

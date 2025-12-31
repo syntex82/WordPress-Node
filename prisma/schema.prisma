@@ -2072,6 +2072,7 @@ enum ActivityType {
   PROFILE_UPDATED
   NEW_FOLLOWER
   STARTED_FOLLOWING
+  STATUS_UPDATE
 }
 
 model VideoAsset {

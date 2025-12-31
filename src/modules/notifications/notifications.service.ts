@@ -3,9 +3,10 @@
  * Handles creating, retrieving, and managing user notifications
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationType } from '@prisma/client';
+import { NotificationsGateway } from './notifications.gateway';
 
 export interface CreateNotificationDto {
   userId: string;
@@ -27,13 +28,17 @@ export interface NotificationQueryDto {
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => NotificationsGateway))
+    private notificationsGateway: NotificationsGateway,
+  ) {}
 
   /**
-   * Create a new notification
+   * Create a new notification and send it in real-time
    */
   async create(dto: CreateNotificationDto) {
-    return this.prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data: {
         userId: dto.userId,
         type: dto.type || 'INFO',
@@ -45,6 +50,15 @@ export class NotificationsService {
         metadata: dto.metadata,
       },
     });
+
+    // Send real-time notification
+    this.notificationsGateway.sendNotificationToUser(dto.userId, notification);
+
+    // Update unread count
+    const unreadCount = await this.getUnreadCount(dto.userId);
+    this.notificationsGateway.sendUnreadCountToUser(dto.userId, unreadCount);
+
+    return notification;
   }
 
   /**

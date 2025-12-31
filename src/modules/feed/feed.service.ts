@@ -27,6 +27,12 @@ export interface CreateActivityDto {
   isPublic?: boolean;
 }
 
+export interface CreateTimelinePostDto {
+  content: string;
+  imageUrl?: string;
+  isPublic?: boolean;
+}
+
 @Injectable()
 export class FeedService {
   private readonly logger = new Logger(FeedService.name);
@@ -252,6 +258,46 @@ export class FeedService {
     });
 
     return users;
+  }
+
+  /**
+   * Create a timeline post (status update)
+   */
+  async createTimelinePost(userId: string, dto: CreateTimelinePostDto) {
+    // Get user info for the activity
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, username: true },
+    });
+
+    const activity = await this.prisma.activity.create({
+      data: {
+        userId,
+        type: 'STATUS_UPDATE',
+        targetType: 'timeline',
+        title: dto.content.substring(0, 100) + (dto.content.length > 100 ? '...' : ''),
+        description: dto.content,
+        imageUrl: dto.imageUrl,
+        link: `/profile/${user?.username || userId}`,
+        isPublic: dto.isPublic ?? true,
+        metadata: {
+          fullContent: dto.content,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatar: true,
+            headline: true,
+          },
+        },
+      },
+    });
+
+    return activity;
   }
 
   /**

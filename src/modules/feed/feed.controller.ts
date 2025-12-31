@@ -6,13 +6,15 @@
 import {
   Controller,
   Get,
+  Post,
   Delete,
+  Body,
   Param,
   Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { FeedService } from './feed.service';
+import { FeedService, CreateTimelinePostDto } from './feed.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ActivityType } from '@prisma/client';
 
@@ -88,6 +90,18 @@ export class FeedController {
       limit: parseInt(limit || '20'),
       type,
     });
+  }
+
+  /**
+   * Create a timeline post (status update)
+   * POST /api/feed/posts
+   */
+  @Post('posts')
+  async createTimelinePost(
+    @Request() req,
+    @Body() dto: CreateTimelinePostDto,
+  ) {
+    return this.feedService.createTimelinePost(req.user.id, dto);
   }
 
   /**

@@ -1,6 +1,7 @@
 /**
  * Notification Center Component
  * Bell icon with dropdown showing notifications
+ * Supports real-time updates via WebSocket
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -8,12 +9,15 @@ import { useNavigate } from 'react-router-dom';
 import {
   FiBell, FiCheck, FiCheckCircle, FiX, FiTrash2, FiAlertCircle,
   FiInfo, FiAlertTriangle, FiShield, FiFileText, FiUser, FiPackage,
-  FiSettings, FiLoader
+  FiSettings, FiLoader, FiUserPlus
 } from 'react-icons/fi';
 import { notificationsApi, Notification } from '../services/api';
+import { useAuthStore } from '../stores/authStore';
 import { formatDistanceToNow } from 'date-fns';
+import { io, Socket } from 'socket.io-client';
 
 export default function NotificationCenter() {
+  const { token } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -21,9 +25,49 @@ export default function NotificationCenter() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
   const navigate = useNavigate();
 
-  // Fetch unread count periodically
+  // Connect to WebSocket for real-time notifications
+  useEffect(() => {
+    if (!token) return;
+
+    // Use current origin for WebSocket connection
+    const wsUrl = window.location.origin;
+
+    socketRef.current = io(`${wsUrl}/notifications`, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('Connected to notifications gateway');
+    });
+
+    socketRef.current.on('notification:new', (notification: Notification) => {
+      setNotifications(prev => [notification, ...prev]);
+      // Play notification sound (optional)
+      try {
+        const audio = new Audio('/sounds/notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(() => {});
+      } catch {}
+    });
+
+    socketRef.current.on('notification:unread-count', (data: { count: number }) => {
+      setUnreadCount(data.count);
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('Disconnected from notifications gateway');
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [token]);
+
+  // Fetch initial unread count
   useEffect(() => {
     const fetchUnreadCount = async () => {
       try {
@@ -32,8 +76,6 @@ export default function NotificationCenter() {
       } catch { /* ignore */ }
     };
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   // Fetch notifications when dropdown opens
@@ -121,7 +163,7 @@ export default function NotificationCenter() {
   const getIcon = (notification: Notification) => {
     const iconMap: Record<string, React.ElementType> = {
       FiFileText, FiUser, FiPackage, FiShield, FiSettings,
-      FiInfo, FiCheckCircle, FiAlertTriangle, FiAlertCircle,
+      FiInfo, FiCheckCircle, FiAlertTriangle, FiAlertCircle, FiUserPlus,
     };
     const Icon = notification.icon ? iconMap[notification.icon] || FiBell : getTypeIcon(notification.type);
     return Icon;

@@ -6,9 +6,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { feedApi, profileApi, FeedActivity, FeedActivityType, SuggestedUser } from '../../services/api';
+import { useAuthStore } from '../../stores/authStore';
 import {
   FiUsers, FiCompass, FiTrendingUp, FiHeart, FiMessageCircle, FiBook, FiAward,
-  FiUserPlus, FiEdit, FiRefreshCw, FiFilter, FiChevronDown, FiExternalLink
+  FiUserPlus, FiEdit, FiRefreshCw, FiFilter, FiChevronDown, FiExternalLink, FiImage, FiSend
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -25,6 +26,7 @@ const activityTypeLabels: Record<FeedActivityType, string> = {
   PROFILE_UPDATED: 'Updated their profile',
   NEW_FOLLOWER: 'Has a new follower',
   STARTED_FOLLOWING: 'Started following',
+  STATUS_UPDATE: 'Shared an update',
 };
 
 const activityTypeIcons: Record<FeedActivityType, React.ReactNode> = {
@@ -38,9 +40,11 @@ const activityTypeIcons: Record<FeedActivityType, React.ReactNode> = {
   PROFILE_UPDATED: <FiUsers className="w-4 h-4" />,
   NEW_FOLLOWER: <FiUserPlus className="w-4 h-4" />,
   STARTED_FOLLOWING: <FiUserPlus className="w-4 h-4" />,
+  STATUS_UPDATE: <FiMessageCircle className="w-4 h-4" />,
 };
 
 export default function ActivityFeed() {
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('following');
   const [activities, setActivities] = useState<FeedActivity[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
@@ -50,6 +54,9 @@ export default function ActivityFeed() {
   const [hasMore, setHasMore] = useState(true);
   const [filterType, setFilterType] = useState<FeedActivityType | undefined>();
   const [showFilters, setShowFilters] = useState(false);
+  const [postContent, setPostContent] = useState('');
+  const [postImage, setPostImage] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
 
   const loadFeed = useCallback(async (reset = false) => {
     try {
@@ -108,6 +115,29 @@ export default function ActivityFeed() {
     }
   };
 
+  const handleCreatePost = async () => {
+    if (!postContent.trim()) {
+      toast.error('Please enter some content');
+      return;
+    }
+    setIsPosting(true);
+    try {
+      const res = await feedApi.createPost({
+        content: postContent.trim(),
+        imageUrl: postImage || undefined,
+      });
+      setActivities(prev => [res.data, ...prev]);
+      setPostContent('');
+      setPostImage('');
+      toast.success('Post shared!');
+    } catch (err) {
+      console.error('Error creating post:', err);
+      toast.error('Failed to share post');
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
   const formatTimeAgo = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -130,6 +160,68 @@ export default function ActivityFeed() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Activity Feed</h1>
           <p className="text-gray-600 dark:text-gray-400">Stay updated with your network's activities</p>
+        </div>
+
+        {/* Post Composer */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
+          <div className="flex items-start gap-3">
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                {user?.name?.charAt(0) || '?'}
+              </div>
+            )}
+            <div className="flex-1">
+              <textarea
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                placeholder="What's on your mind?"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+              />
+              {postImage && (
+                <div className="mt-2 relative inline-block">
+                  <img src={postImage} alt="Preview" className="h-20 rounded-lg object-cover" />
+                  <button
+                    onClick={() => setPostImage('')}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={postImage}
+                    onChange={(e) => setPostImage(e.target.value)}
+                    placeholder="Image URL (optional)"
+                    className="px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+                  />
+                  <FiImage className="w-4 h-4 text-gray-400" />
+                </div>
+                <button
+                  onClick={handleCreatePost}
+                  disabled={isPosting || !postContent.trim()}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  {isPosting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    <>
+                      <FiSend className="w-4 h-4" />
+                      Post
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
