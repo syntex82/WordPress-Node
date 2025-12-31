@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 
 public class UpdateChecker {
     private static final String TAG = "UpdateChecker";
-    private static final String VERSION_URL = "https://wordpressnode.co.uk/downloads/version.json";
+    private static final String VERSION_URL = "https://nodepress.co.uk/downloads/version.json";
     
     private final Activity activity;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -106,10 +106,10 @@ public class UpdateChecker {
     private void downloadAndInstall(String apkUrl) {
         try {
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(apkUrl));
-            request.setTitle("WP Node Update");
+            request.setTitle("NodePress Update");
             request.setDescription("Downloading update...");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "wpnode-update.apk");
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "nodepress-update.apk");
 
             DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
             downloadId = dm.enqueue(request);
@@ -131,7 +131,7 @@ public class UpdateChecker {
 
     private void installApk() {
         File apkFile = new File(Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_DOWNLOADS), "wpnode-update.apk");
+            Environment.DIRECTORY_DOWNLOADS), "nodepress-update.apk");
         
         Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri apkUri;

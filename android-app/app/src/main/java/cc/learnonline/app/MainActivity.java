@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private PermissionRequest pendingPermissionRequest;
     private static final int PERMISSION_REQUEST_CODE = 100;
-    private static final String URL = "https://wordpressnode.co.uk";
+    private static final String URL = "https://nodepress.co.uk";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

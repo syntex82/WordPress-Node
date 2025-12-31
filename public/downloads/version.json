@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "versionCode": 1,
-  "apkUrl": "https://nodepress.co.uk/downloads/learn-online.apk",
+  "apkUrl": "https://nodepress.co.uk/downloads/nodepress-v1.0.0.apk",
   "releaseNotes": "Initial release of NodePress Android app",
   "minAndroidVersion": 24,
   "forceUpdate": false

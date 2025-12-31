@@ -20,7 +20,7 @@ android {
         versionName "1.0.0"
 
         // Required for proper APK naming
-        archivesBaseName = "learn-online-v${versionName}"
+        archivesBaseName = "nodepress-v${versionName}"
     }
 
     signingConfigs {
