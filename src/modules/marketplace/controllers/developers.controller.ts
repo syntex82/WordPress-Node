@@ -19,7 +19,8 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { DevelopersService } from '../services/developers.service';
-import { CreateDeveloperDto, UpdateDeveloperDto, DeveloperStatus, DeveloperCategory } from '../dto';
+import { CreateDeveloperDto, UpdateDeveloperDto, DeveloperStatus } from '../dto';
+import { DeveloperCategory as PrismaDeveloperCategory } from '@prisma/client';
 
 @Controller('api/marketplace/developers')
 export class DevelopersController {
@@ -61,7 +62,7 @@ export class DevelopersController {
    */
   @Get()
   async findAll(
-    @Query('category') category?: DeveloperCategory,
+    @Query('category') category?: PrismaDeveloperCategory,
     @Query('skills') skills?: string,
     @Query('minRate') minRate?: string,
     @Query('maxRate') maxRate?: string,
@@ -74,7 +75,7 @@ export class DevelopersController {
   ) {
     return this.developersService.findAll({
       status: DeveloperStatus.ACTIVE,
-      category,
+      category: category as PrismaDeveloperCategory,
       skills: skills ? skills.split(',') : undefined,
       minRate: minRate ? parseFloat(minRate) : undefined,
       maxRate: maxRate ? parseFloat(maxRate) : undefined,
@@ -103,13 +104,16 @@ export class DevelopersController {
   async matchDevelopers(
     @Body()
     requirements: {
-      category?: DeveloperCategory;
+      category?: PrismaDeveloperCategory;
       skills?: string[];
       budget?: number;
       budgetType?: string;
     },
   ) {
-    return this.developersService.matchDevelopers(requirements);
+    return this.developersService.matchDevelopers({
+      ...requirements,
+      category: requirements.category as PrismaDeveloperCategory,
+    });
   }
 
   // ============ ADMIN ENDPOINTS ============
@@ -123,14 +127,14 @@ export class DevelopersController {
   @Roles('ADMIN')
   async adminFindAll(
     @Query('status') status?: DeveloperStatus,
-    @Query('category') category?: DeveloperCategory,
+    @Query('category') category?: PrismaDeveloperCategory,
     @Query('search') search?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     return this.developersService.findAll({
       status,
-      category,
+      category: category as PrismaDeveloperCategory,
       search,
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 20,
