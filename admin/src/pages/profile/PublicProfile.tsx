@@ -396,20 +396,36 @@ export default function PublicProfile() {
               <FiActivity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Activity
             </h2>
             <div className="space-y-3 sm:space-y-4">
-              {activities.slice(0, 5).map((activity, i) => (
-                <div key={i} className="flex items-start gap-2 sm:gap-3">
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    activity.type === 'post_published' ? 'bg-blue-500/20 text-blue-400' :
-                    activity.type === 'certificate_earned' ? 'bg-green-500/20 text-green-400' : 'bg-purple-500/20 text-purple-400'
-                  }`}>
-                    {activity.type === 'post_published' ? <FiBook className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <FiAward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm text-slate-300 truncate">{activity.title}</p>
-                    <p className="text-[10px] sm:text-xs text-slate-500">{new Date(activity.date).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              ))}
+              {activities.slice(0, 5).map((activity, i) => {
+                const getActivityStyle = () => {
+                  switch (activity.type) {
+                    case 'post_published':
+                      return { bg: 'bg-blue-500/20 text-blue-400', icon: <FiBook className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> };
+                    case 'timeline_post':
+                      return { bg: 'bg-cyan-500/20 text-cyan-400', icon: <FiEdit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> };
+                    case 'certificate_earned':
+                      return { bg: 'bg-green-500/20 text-green-400', icon: <FiAward className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> };
+                    case 'course_enrolled':
+                      return { bg: 'bg-orange-500/20 text-orange-400', icon: <FiBook className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> };
+                    case 'course_completed':
+                      return { bg: 'bg-emerald-500/20 text-emerald-400', icon: <FiAward className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> };
+                    default:
+                      return { bg: 'bg-purple-500/20 text-purple-400', icon: <FiActivity className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> };
+                  }
+                };
+                const style = getActivityStyle();
+                return (
+                  <Link key={i} to={activity.link || '#'} className="flex items-start gap-2 sm:gap-3 hover:bg-slate-700/30 rounded-lg p-1 -m-1 transition">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${style.bg}`}>
+                      {style.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-slate-300 truncate">{activity.title}</p>
+                      <p className="text-[10px] sm:text-xs text-slate-500">{new Date(activity.date).toLocaleDateString()}</p>
+                    </div>
+                  </Link>
+                );
+              })}
               {activities.length === 0 && <p className="text-slate-500 text-xs sm:text-sm">No recent activity</p>}
             </div>
           </div>

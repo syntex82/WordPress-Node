@@ -374,8 +374,8 @@ export class ProfilesService {
   async getActivity(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
 
-    // Get recent posts, enrollments, certificates
-    const [posts, enrollments, certificates] = await Promise.all([
+    // Get recent posts, timeline posts, enrollments, certificates
+    const [posts, timelinePosts, enrollments, certificates] = await Promise.all([
       this.prisma.post.findMany({
         where: { authorId: userId, status: 'PUBLISHED' },
         take: 10,
@@ -385,6 +385,17 @@ export class ProfilesService {
           title: true,
           slug: true,
           publishedAt: true,
+        },
+      }),
+      this.prisma.timelinePost.findMany({
+        where: { userId, isPublic: true },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          media: { select: { type: true }, take: 1 },
         },
       }),
       this.prisma.enrollment.findMany({
@@ -418,6 +429,19 @@ export class ProfilesService {
         link: `/post/${p.slug}`,
         date: p.publishedAt,
       })),
+      ...timelinePosts.map((tp) => {
+        const hasMedia = tp.media && tp.media.length > 0;
+        const mediaType = hasMedia ? tp.media[0].type : null;
+        const contentPreview = tp.content
+          ? (tp.content.length > 50 ? tp.content.substring(0, 50) + '...' : tp.content)
+          : (mediaType === 'VIDEO' ? 'Shared a video' : hasMedia ? 'Shared a photo' : 'Shared an update');
+        return {
+          type: 'timeline_post',
+          title: contentPreview,
+          link: `/activity-feed`,
+          date: tp.createdAt,
+        };
+      }),
       ...enrollments.map((e) => ({
         type: e.completedAt ? 'course_completed' : 'course_enrolled',
         title: e.completedAt ? `Completed "${e.course.title}"` : `Enrolled in "${e.course.title}"`,

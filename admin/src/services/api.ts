@@ -1443,7 +1443,7 @@ export interface ProfileStats {
 }
 
 export interface ActivityItem {
-  type: 'post_published' | 'course_enrolled' | 'course_completed' | 'certificate_earned';
+  type: 'post_published' | 'timeline_post' | 'course_enrolled' | 'course_completed' | 'certificate_earned';
   title: string;
   link: string;
   date: string;

@@ -39,6 +39,14 @@ export default function ActivityFeed() {
       const fetchFn = activeTab === 'following' ? timelineApi.getFeed : timelineApi.getDiscover;
       const res = await fetchFn(currentPage, 20);
 
+      // Debug: Log posts with media
+      console.log('Loaded posts:', res.data.data.map((p: any) => ({
+        id: p.id,
+        content: p.content?.substring(0, 30),
+        mediaCount: p.media?.length || 0,
+        media: p.media
+      })));
+
       if (reset) {
         setPosts(res.data.data);
       } else {
