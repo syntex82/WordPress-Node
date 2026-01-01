@@ -12,6 +12,7 @@ import {
   FiUserPlus, FiRefreshCw, FiShare2
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import PostMediaGallery from '../../components/PostMediaGallery';
 
 type TabType = 'following' | 'discover';
 
@@ -218,11 +219,16 @@ export default function ActivityFeed() {
                         </div>
                         <p className="text-gray-900 dark:text-white whitespace-pre-wrap mb-3">{post.content}</p>
                         {post.media && post.media.length > 0 && (
-                          <div className="grid gap-2 mb-3">
-                            {post.media.map((m, idx) => (
-                              <img key={idx} src={m.url} alt={m.altText || ''} className="rounded-lg max-h-96 object-cover" />
-                            ))}
-                          </div>
+                          <PostMediaGallery
+                            media={post.media.map(m => ({
+                              id: m.id,
+                              type: m.type,
+                              url: m.url,
+                              thumbnail: m.thumbnail,
+                              altText: m.altText,
+                            }))}
+                            className="mb-3"
+                          />
                         )}
                         <div className="flex items-center gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                           <button
