@@ -198,8 +198,11 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     const itemsToAdd = items.slice(0, remaining);
 
     for (const item of itemsToAdd) {
-      const isVideo = item.mimeType?.startsWith('video/');
       const url = item.path || item.url;
+      // Check mimeType or file extension for video detection
+      const isVideo = item.mimeType?.startsWith('video/') ||
+        /\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i.test(url);
+      console.log('Media library item:', { url, mimeType: item.mimeType, isVideo });
       setPreviewUrls((prev) => [...prev, url]);
       setMedia((prev) => [...prev, { type: isVideo ? 'VIDEO' : 'IMAGE', url }]);
     }
@@ -239,11 +242,13 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
     setIsSubmitting(true);
     try {
-      await timelineApi.createPost({
+      const postData = {
         content: content.trim() || undefined,
         isPublic,
         media: media.length > 0 ? media : undefined,
-      });
+      };
+      console.log('Creating post with data:', postData);
+      await timelineApi.createPost(postData);
       toast.success('Post created!');
       setContent('');
       setMedia([]);
