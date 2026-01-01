@@ -401,8 +401,13 @@ export default function MyProfile() {
           {/* Create Post Form - Using enhanced CreatePostForm component */}
           <CreatePostForm onPostCreated={handlePostCreated} />
 
+          {/* Click outside to close post menu */}
+          {openPostMenu && (
+            <div className="fixed inset-0 z-10" onClick={() => setOpenPostMenu(null)} />
+          )}
+
           {/* Timeline Posts */}
-          <div className="space-y-4">
+          <div className="space-y-4 relative">
             {timelinePosts.length === 0 ? (
               <div className="bg-slate-800/50 backdrop-blur rounded-xl p-8 border border-slate-700/50 text-center">
                 <FiEdit2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
@@ -429,15 +434,15 @@ export default function MyProfile() {
                         <div className="relative">
                           <button
                             onClick={() => setOpenPostMenu(openPostMenu === post.id ? null : post.id)}
-                            className="p-1 text-slate-400 hover:text-white rounded"
+                            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg touch-manipulation min-w-[36px] min-h-[36px] flex items-center justify-center"
                           >
                             <FiMoreHorizontal className="w-5 h-5" />
                           </button>
                           {openPostMenu === post.id && (
-                            <div className="absolute right-0 top-8 bg-slate-700 rounded-lg shadow-lg border border-slate-600 py-1 z-10">
+                            <div className="absolute right-0 top-10 bg-slate-700 rounded-lg shadow-xl border border-slate-600 py-1 z-20 min-w-[140px]">
                               <button
                                 onClick={() => handleDeletePost(post.id)}
-                                className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-slate-600 w-full text-left"
+                                className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-slate-600 w-full text-left touch-manipulation"
                               >
                                 <FiTrash2 className="w-4 h-4" /> Delete
                               </button>

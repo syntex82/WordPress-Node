@@ -257,38 +257,38 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
-      <div className="flex gap-3">
+    <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-3 sm:p-4 mb-4 sm:mb-6">
+      <div className="flex gap-2 sm:gap-3">
         {/* User Avatar */}
         {user?.avatar ? (
-          <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
+          <img src={user.avatar} alt={user.name} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0" />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm sm:text-lg flex-shrink-0">
             {user?.name?.charAt(0) || 'U'}
           </div>
         )}
 
         {/* Input Area */}
-        <div className="flex-1 relative">
+        <div className="flex-1 min-w-0 relative">
           <textarea
             ref={textareaRef}
             value={content}
             onChange={handleContentChange}
             onKeyDown={handleKeyDown}
-            placeholder="What's on your mind? Use @username to mention someone or #hashtag to tag topics"
-            className="w-full resize-none border-0 focus:ring-0 text-gray-800 dark:text-gray-200 bg-transparent placeholder-gray-400 text-lg"
-            rows={3}
+            placeholder="What's on your mind?"
+            className="w-full resize-none border-0 focus:ring-0 focus:outline-none text-white bg-transparent placeholder-slate-400 text-sm sm:text-base"
+            rows={2}
           />
 
           {/* Mention Autocomplete Dropdown */}
           {showMentionDropdown && (
-            <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 max-h-48 overflow-y-auto z-20">
+            <div className="absolute left-0 right-0 mt-1 bg-slate-700 rounded-lg shadow-lg border border-slate-600 max-h-48 overflow-y-auto z-20">
               {isLoadingMentions ? (
-                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                <div className="px-3 py-2 text-sm text-slate-400">
                   Searching...
                 </div>
               ) : mentionSuggestions.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                <div className="px-3 py-2 text-sm text-slate-400">
                   No users found
                 </div>
               ) : (
@@ -296,23 +296,23 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                   <button
                     key={suggestion.id}
                     onClick={() => insertMention(suggestion)}
-                    className={`w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 ${
-                      index === selectedSuggestionIndex ? 'bg-blue-50 dark:bg-blue-900/30' : ''
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-slate-600 ${
+                      index === selectedSuggestionIndex ? 'bg-blue-600/30' : ''
                     }`}
                   >
                     {suggestion.avatar ? (
-                      <img src={suggestion.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      <img src={suggestion.avatar} alt="" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold">
                         {suggestion.name.charAt(0)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 dark:text-white truncate">
+                      <div className="font-medium text-white text-sm truncate">
                         {suggestion.name}
                       </div>
                       {suggestion.username && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                        <div className="text-xs text-slate-400 truncate">
                           @{suggestion.username}
                         </div>
                       )}
@@ -325,45 +325,47 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
           {/* Upload Progress */}
           {isUploading && (
-            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-blue-900/20 rounded-lg">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex-1 h-1.5 sm:h-2 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-blue-500 transition-all" style={{ width: `${uploadProgress}%` }} />
                 </div>
-                <span className="text-sm text-blue-600 dark:text-blue-400 whitespace-nowrap">{uploadProgress}%</span>
+                <span className="text-xs sm:text-sm text-blue-400 whitespace-nowrap">{uploadProgress}%</span>
               </div>
             </div>
           )}
 
           {/* External URL Input */}
           {showUrlInput && (
-            <div className="mt-3 flex gap-2">
+            <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row gap-2">
               <input
                 type="url"
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
-                placeholder="Paste image/video URL (YouTube, Vimeo, or direct link)"
-                className="flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+                placeholder="Paste URL..."
+                className="flex-1 px-3 py-2 border border-slate-600 rounded-lg bg-slate-700 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onKeyDown={(e) => e.key === 'Enter' && handleAddExternalUrl()}
               />
-              <button
-                onClick={handleAddExternalUrl}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-              >
-                Add
-              </button>
-              <button
-                onClick={() => { setShowUrlInput(false); setExternalUrl(''); }}
-                className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-              >
-                <FiX className="w-5 h-5" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddExternalUrl}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                >
+                  Add
+                </button>
+                <button
+                  onClick={() => { setShowUrlInput(false); setExternalUrl(''); }}
+                  className="p-2 text-slate-400 hover:bg-slate-600 rounded-lg"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           )}
 
           {/* Media Previews */}
           {previewUrls.length > 0 && (
-            <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-2 sm:mt-3">
               {previewUrls.map((url, index) => {
                 const isVideo = media[index]?.type === 'VIDEO';
                 const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
@@ -371,12 +373,12 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 const isExternalVideo = isYouTube || isVimeo;
 
                 return (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-slate-700">
                     {isExternalVideo ? (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4">
-                        <FiPlay className="w-10 h-10 text-red-500 mb-2" />
-                        <span className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
-                          {isYouTube ? 'YouTube' : 'Vimeo'} Video
+                      <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4">
+                        <FiPlay className="w-8 h-8 sm:w-10 sm:h-10 text-red-500 mb-1 sm:mb-2" />
+                        <span className="text-xs text-slate-400 text-center truncate w-full">
+                          {isYouTube ? 'YouTube' : 'Vimeo'}
                         </span>
                       </div>
                     ) : isVideo ? (
@@ -386,12 +388,12 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                     )}
                     <button
                       onClick={() => removeMedia(index)}
-                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white hover:bg-black/70"
+                      className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 bg-black/50 rounded-full text-white hover:bg-black/70"
                     >
-                      <FiX className="w-4 h-4" />
+                      <FiX className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                     {isVideo && !isExternalVideo && (
-                      <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
+                      <div className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 bg-black/70 text-white text-xs px-1 sm:px-1.5 py-0.5 rounded">
                         Video
                       </div>
                     )}
@@ -402,8 +404,8 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between mt-4 pt-3 border-t dark:border-gray-700">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-700">
+            <div className="flex items-center justify-between sm:justify-start gap-0.5 sm:gap-1 flex-wrap">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -417,67 +419,67 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={media.length >= 4 || isUploading}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 disabled:opacity-50 transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-slate-700 rounded-full text-slate-400 disabled:opacity-50 transition-colors touch-manipulation"
                 title="Upload from device"
               >
-                <FiImage className="w-5 h-5" />
+                <FiImage className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* Video from device */}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={media.length >= 4 || isUploading}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 disabled:opacity-50 transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-slate-700 rounded-full text-slate-400 disabled:opacity-50 transition-colors touch-manipulation hidden sm:block"
                 title="Upload video"
               >
-                <FiVideo className="w-5 h-5" />
+                <FiVideo className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* Media Library */}
               <button
                 onClick={() => setShowMediaLibrary(true)}
                 disabled={media.length >= 4}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 disabled:opacity-50 transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-slate-700 rounded-full text-slate-400 disabled:opacity-50 transition-colors touch-manipulation"
                 title="Choose from media library"
               >
-                <FiFolder className="w-5 h-5" />
+                <FiFolder className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* External URL */}
               <button
                 onClick={() => setShowUrlInput(!showUrlInput)}
                 disabled={media.length >= 4}
-                className={`p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full disabled:opacity-50 transition-colors ${
-                  showUrlInput ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-500 dark:text-gray-400'
+                className={`p-1.5 sm:p-2 hover:bg-slate-700 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
+                  showUrlInput ? 'text-blue-400 bg-blue-900/30' : 'text-slate-400'
                 }`}
-                title="Add URL (YouTube, Vimeo, image)"
+                title="Add URL"
               >
-                <FiLink className="w-5 h-5" />
+                <FiLink className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* Emoji Picker */}
               <EmojiPicker onSelect={handleEmojiSelect} />
 
-              {/* Divider */}
-              <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
+              {/* Divider - hidden on mobile */}
+              <div className="hidden sm:block w-px h-5 bg-slate-700 mx-1" />
 
               {/* Visibility Toggle */}
               <button
                 onClick={() => setIsPublic(!isPublic)}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                className={`flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm transition-colors touch-manipulation ${
                   isPublic
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                    ? 'bg-green-900/30 text-green-400'
+                    : 'bg-slate-700 text-slate-400'
                 }`}
               >
-                {isPublic ? <FiGlobe className="w-4 h-4" /> : <FiLock className="w-4 h-4" />}
-                {isPublic ? 'Public' : 'Private'}
+                {isPublic ? <FiGlobe className="w-3 h-3 sm:w-4 sm:h-4" /> : <FiLock className="w-3 h-3 sm:w-4 sm:h-4" />}
+                <span className="hidden sm:inline">{isPublic ? 'Public' : 'Private'}</span>
               </button>
 
               {/* Media count indicator */}
               {media.length > 0 && (
-                <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">
-                  {media.length}/4 media
+                <span className="text-xs text-slate-500 ml-1 sm:ml-2">
+                  {media.length}/4
                 </span>
               )}
             </div>
@@ -485,7 +487,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || isUploading || (!content.trim() && media.length === 0)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg sm:rounded-full font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation text-sm sm:text-base"
             >
               {isSubmitting ? 'Posting...' : isUploading ? 'Uploading...' : 'Post'}
             </button>
