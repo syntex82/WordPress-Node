@@ -21,6 +21,9 @@ const USER_SELECT = {
   email: true,
   avatar: true,
   coverImage: true,
+  bio: true,
+  headline: true,
+  about: true,
   role: true,
   createdAt: true,
   accountLockedUntil: true,
@@ -30,7 +33,7 @@ const USER_SELECT = {
 
 /**
  * Helper to flatten user data into developer object for frontend compatibility
- * Ensures profileImage and coverImage fall back to user's avatar/coverImage
+ * Ensures profileImage, coverImage, bio, and headline fall back to user's data
  */
 function flattenDeveloperData(developer: any) {
   if (!developer) return null;
@@ -41,6 +44,9 @@ function flattenDeveloperData(developer: any) {
     avatar: developer.user?.avatar || developer.profileImage,
     profileImage: developer.profileImage || developer.user?.avatar,
     coverImage: developer.coverImage || developer.user?.coverImage,
+    // Sync bio and headline from user profile if developer's own is empty
+    bio: developer.bio || developer.user?.bio || developer.user?.about || '',
+    headline: developer.headline || developer.user?.headline || '',
   };
 }
 
