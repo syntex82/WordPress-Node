@@ -18,7 +18,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TimelineService, CreatePostDto, SharePostDto } from './timeline.service';
 
-@Controller('timeline')
+@Controller('api/timeline')
 export class TimelineController {
   constructor(private readonly timelineService: TimelineService) {}
 
