@@ -141,7 +141,7 @@ export default function Developers() {
       return;
     }
     try {
-      await api.delete(`/marketplace/developers/${id}`);
+      await developerMarketplaceApi.adminDelete(id);
       toast.success('Developer deleted successfully');
       fetchDevelopers();
     } catch (error: any) {

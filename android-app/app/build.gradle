@@ -9,11 +9,11 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace 'cc.learnonline.app'
+    namespace 'uk.co.nodepress.app'
     compileSdk 34
 
     defaultConfig {
-        applicationId "cc.learnonline.app"
+        applicationId "uk.co.nodepress.app"
         minSdk 24
         targetSdk 34
         versionCode 1

@@ -1905,6 +1905,10 @@ export const developerMarketplaceApi = {
   // Admin: Set featured status
   adminSetFeatured: (id: string, featured: boolean, days?: number) =>
     api.patch(`/marketplace/developers/${id}/featured`, { featured, days }),
+
+  // Admin: Delete developer permanently
+  adminDelete: (id: string) =>
+    api.delete(`/marketplace/developers/${id}`),
 };
 
 // Direct Messages API

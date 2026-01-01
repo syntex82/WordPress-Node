@@ -61,8 +61,10 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
       await timelineApi.deletePost(post.id);
       toast.success('Post deleted');
       onDelete?.(post.id);
-    } catch {
-      toast.error('Failed to delete post');
+    } catch (error: any) {
+      console.error('Failed to delete post:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete post';
+      toast.error(errorMessage);
     }
   };
 

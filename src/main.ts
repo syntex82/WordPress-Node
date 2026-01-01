@@ -345,9 +345,9 @@ async function bootstrap() {
   // The permissions_policy field is informational for Android WebView / TWA apps
   const generateManifest = (_req: any) => ({
     id: '/',
-    name: 'Learn Online',
-    short_name: 'LearnOnline',
-    description: 'Online learning platform with courses, quizzes, certificates, and real-time messaging',
+    name: 'NodePress',
+    short_name: 'NodePress',
+    description: 'Modern CMS platform with courses, e-commerce, messaging, and real-time collaboration',
     start_url: '/',
     scope: '/',
     display: 'standalone',

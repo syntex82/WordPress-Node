@@ -249,8 +249,10 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
       setMedia([]);
       setPreviewUrls([]);
       onPostCreated?.();
-    } catch {
-      toast.error('Failed to create post');
+    } catch (error: any) {
+      console.error('Failed to create post:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create post';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

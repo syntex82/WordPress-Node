@@ -91,8 +91,10 @@ export default function MyProfile() {
       await timelineApi.deletePost(postId);
       setTimelinePosts(prev => prev.filter(p => p.id !== postId));
       toast.success('Post deleted');
-    } catch (err) {
-      toast.error('Failed to delete post');
+    } catch (err: any) {
+      console.error('Failed to delete post:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to delete post';
+      toast.error(errorMessage);
     }
     setOpenPostMenu(null);
   };

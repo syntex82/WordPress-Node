@@ -1,4 +1,4 @@
-package cc.learnonline.app;
+package uk.co.nodepress.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;

@@ -2,9 +2,9 @@
  * PWA Plugin - Progressive Web App Support
  */
 var defaultSettings = {
-  appName: 'WordPress Node',
-  shortName: 'WP Node',
-  description: 'Modern WordPress Node CMS',
+  appName: 'NodePress',
+  shortName: 'NodePress',
+  description: 'Modern NodePress CMS platform',
   themeColor: '#4f46e5',
   backgroundColor: '#1e293b',
   display: 'standalone',

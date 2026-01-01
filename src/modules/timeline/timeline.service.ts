@@ -5,7 +5,7 @@
  * Integrates with Activity Feed for social visibility
  */
 
-import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TimelineGateway } from './timeline.gateway';
 import { FeedService } from '../feed/feed.service';
@@ -187,90 +187,95 @@ export class TimelineService {
   async createPost(userId: string, dto: CreatePostDto) {
     // Must have content or media
     if (!dto.content?.trim() && (!dto.media || dto.media.length === 0)) {
-      throw new Error('Post must have content or media');
+      throw new BadRequestException('Post must have content or media');
     }
 
     const content = dto.content?.trim() || null;
 
-    const post = await this.prisma.timelinePost.create({
-      data: {
-        userId,
-        content,
-        isPublic: dto.isPublic ?? true,
-        media: dto.media?.length
-          ? {
-              create: dto.media.map((m, index) => ({
-                type: m.type,
-                url: m.url,
-                thumbnail: m.thumbnail,
-                altText: m.altText,
-                width: m.width,
-                height: m.height,
-                duration: m.duration,
-                order: index,
-              })),
-            }
-          : undefined,
-      },
-      include: this.postInclude,
-    });
-
-    // Process hashtags and mentions
-    if (content) {
-      const hashtags = this.extractHashtags(content);
-      const mentions = this.extractMentions(content);
-
-      if (hashtags.length > 0) {
-        await this.processHashtags(post.id, hashtags);
-      }
-      if (mentions.length > 0) {
-        await this.processMentions(post.id, userId, mentions);
-      }
-    }
-
-    // Update user's post count
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { postsCount: { increment: 1 } },
-    });
-
-    // Refetch post with all relations
-    const updatedPost = await this.prisma.timelinePost.findUnique({
-      where: { id: post.id },
-      include: this.postInclude,
-    });
-
-    const formattedPost = await this.formatPost(updatedPost, userId);
-
-    // Create activity for the feed (so followers see the post in their activity feed)
-    if (updatedPost?.isPublic) {
-      const user = updatedPost.user;
-      const previewContent = content
-        ? content.length > 100 ? content.substring(0, 100) + '...' : content
-        : 'shared a post';
-
-      await this.feedService.createActivity({
-        userId,
-        type: ActivityType.STATUS_UPDATE,
-        targetType: 'TimelinePost',
-        targetId: post.id,
-        title: `${user.name || user.username} shared an update`,
-        description: previewContent,
-        link: `/profile/${user.username}`,
-        imageUrl: dto.media?.[0]?.url,
-        isPublic: true,
-        metadata: {
-          postId: post.id,
-          hasMedia: dto.media && dto.media.length > 0,
-          mediaCount: dto.media?.length || 0,
+    try {
+      const post = await this.prisma.timelinePost.create({
+        data: {
+          userId,
+          content,
+          isPublic: dto.isPublic ?? true,
+          media: dto.media?.length
+            ? {
+                create: dto.media.map((m, index) => ({
+                  type: m.type,
+                  url: m.url,
+                  thumbnail: m.thumbnail,
+                  altText: m.altText,
+                  width: m.width,
+                  height: m.height,
+                  duration: m.duration,
+                  order: index,
+                })),
+              }
+            : undefined,
         },
+        include: this.postInclude,
       });
 
-      // Broadcast new post to all connected users
-      this.timelineGateway.broadcastNewPost(formattedPost);
-    }
+      // Process hashtags and mentions
+      if (content) {
+        const hashtags = this.extractHashtags(content);
+        const mentions = this.extractMentions(content);
 
-    return formattedPost;
+        if (hashtags.length > 0) {
+          await this.processHashtags(post.id, hashtags);
+        }
+        if (mentions.length > 0) {
+          await this.processMentions(post.id, userId, mentions);
+        }
+      }
+
+      // Update user's post count
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { postsCount: { increment: 1 } },
+      });
+
+      // Refetch post with all relations
+      const updatedPost = await this.prisma.timelinePost.findUnique({
+        where: { id: post.id },
+        include: this.postInclude,
+      });
+
+      const formattedPost = await this.formatPost(updatedPost, userId);
+
+      // Create activity for the feed (so followers see the post in their activity feed)
+      if (updatedPost?.isPublic) {
+        const user = updatedPost.user;
+        const previewContent = content
+          ? content.length > 100 ? content.substring(0, 100) + '...' : content
+          : 'shared a post';
+
+        await this.feedService.createActivity({
+          userId,
+          type: ActivityType.STATUS_UPDATE,
+          targetType: 'TimelinePost',
+          targetId: post.id,
+          title: `${user.name || user.username} shared an update`,
+          description: previewContent,
+          link: `/profile/${user.username}`,
+          imageUrl: dto.media?.[0]?.url,
+          isPublic: true,
+          metadata: {
+            postId: post.id,
+            hasMedia: dto.media && dto.media.length > 0,
+            mediaCount: dto.media?.length || 0,
+          },
+        });
+
+        // Broadcast new post to all connected users
+        this.timelineGateway.broadcastNewPost(formattedPost);
+      }
+
+      return formattedPost;
+    } catch (error: any) {
+      console.error('Error creating post:', error);
+      throw new BadRequestException(error.message || 'Failed to create post');
+    }
   }
 
   /**
@@ -657,8 +662,20 @@ export class TimelineService {
     if (!post) throw new NotFoundException('Post not found');
     if (post.userId !== userId) throw new ForbiddenException('Not authorized');
 
-    await this.prisma.timelinePost.delete({ where: { id: postId } });
-    return { success: true };
+    try {
+      // Also decrement user's post count
+      await this.prisma.$transaction([
+        this.prisma.timelinePost.delete({ where: { id: postId } }),
+        this.prisma.user.update({
+          where: { id: userId },
+          data: { postsCount: { decrement: 1 } },
+        }),
+      ]);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error deleting post:', error);
+      throw new BadRequestException(error.message || 'Failed to delete post');
+    }
   }
 
   /**

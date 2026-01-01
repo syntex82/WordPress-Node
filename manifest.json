@@ -1,10 +1,10 @@
 {
   "id": "/",
-  "name": "Learn Online",
-  "short_name": "LearnOnline",
+  "name": "NodePress",
+  "short_name": "NodePress",
   "start_url": "/",
   "display": "standalone",
-  "description": "Online learning platform with courses, quizzes, certificates, and real-time messaging",
+  "description": "Modern CMS platform with courses, e-commerce, messaging, and real-time collaboration",
   "lang": "en",
   "dir": "ltr",
   "theme_color": "#4f46e5",
@@ -13,19 +13,19 @@
   "scope": "/",
   "icons": [
     {
-      "src": "https://learnonline.cc/api/pwa/icons/icon-512.svg",
+      "src": "https://nodepress.co.uk/api/pwa/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "https://learnonline.cc/api/pwa/icons/icon-512.svg",
+      "src": "https://nodepress.co.uk/api/pwa/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
     },
     {
-      "src": "https://learnonline.cc/api/pwa/icons/icon-192.svg",
+      "src": "https://nodepress.co.uk/api/pwa/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"

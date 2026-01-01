@@ -1,8 +1,8 @@
 {
-  "packageId": "cc.learnonline.app",
-  "host": "learnonline.cc",
-  "name": "Learn Online",
-  "launcherName": "Learn Online",
+  "packageId": "uk.co.nodepress.app",
+  "host": "nodepress.co.uk",
+  "name": "NodePress",
+  "launcherName": "NodePress",
   "display": "standalone",
   "themeColor": "#4f46e5",
   "navigationColor": "#0f172a",
@@ -12,9 +12,9 @@
   "backgroundColor": "#0f172a",
   "enableNotifications": true,
   "startUrl": "/",
-  "iconUrl": "https://learnonline.cc/api/pwa/icons/icon-512.svg",
-  "maskableIconUrl": "https://learnonline.cc/api/pwa/icons/icon-512-maskable.svg",
-  "monochromeIconUrl": "https://learnonline.cc/api/pwa/icons/icon-512.svg",
+  "iconUrl": "https://nodepress.co.uk/api/pwa/icons/icon-512.svg",
+  "maskableIconUrl": "https://nodepress.co.uk/api/pwa/icons/icon-512-maskable.svg",
+  "monochromeIconUrl": "https://nodepress.co.uk/api/pwa/icons/icon-512.svg",
   "splashScreenFadeOutDuration": 300,
   "signingMode": "new",
   "appVersionCode": 1,
@@ -40,7 +40,7 @@
     }
   ],
   "generatorApp": "PWABuilder",
-  "webManifestUrl": "https://learnonline.cc/api/pwa/manifest.json",
+  "webManifestUrl": "https://nodepress.co.uk/api/pwa/manifest.json",
   "fallbackType": "customtabs",
   "features": {
     "locationDelegation": {
@@ -53,7 +53,7 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://learnonline.cc/",
+  "fullScopeUrl": "https://nodepress.co.uk/",
   "minSdkVersion": 19,
   "orientation": "any",
   "fingerprints": []

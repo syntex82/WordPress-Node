@@ -1,4 +1,4 @@
-package cc.learnonline.app;
+package uk.co.nodepress.app;
 
 import android.Manifest;
 import android.content.pm.PackageManager;

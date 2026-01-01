@@ -322,12 +322,22 @@ export class DevelopersService {
     const existing = await this.prisma.developer.findUnique({ where: { id: developerId } });
     if (!existing) throw new NotFoundException('Developer not found');
 
-    // Delete the developer profile
-    await this.prisma.developer.delete({
-      where: { id: developerId },
-    });
+    try {
+      // Delete the developer profile (cascades to related records)
+      await this.prisma.developer.delete({
+        where: { id: developerId },
+      });
 
-    return { success: true, message: 'Developer deleted successfully' };
+      return { success: true, message: 'Developer deleted successfully' };
+    } catch (error: any) {
+      console.error('Error deleting developer:', error);
+      if (error.code === 'P2003') {
+        throw new BadRequestException(
+          'Cannot delete developer: there are related records that must be deleted first',
+        );
+      }
+      throw new BadRequestException(error.message || 'Failed to delete developer');
+    }
   }
 
   /**
