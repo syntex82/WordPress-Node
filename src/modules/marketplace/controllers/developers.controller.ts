@@ -20,7 +20,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { DevelopersService } from '../services/developers.service';
-import { CreateDeveloperDto, UpdateDeveloperDto, DeveloperStatus } from '../dto';
+import { CreateDeveloperDto, UpdateDeveloperDto, AdminUpdateDeveloperDto, DeveloperStatus } from '../dto';
 import { DeveloperCategory as PrismaDeveloperCategory } from '@prisma/client';
 
 @Controller('api/marketplace/developers')
@@ -259,13 +259,13 @@ export class DevelopersController {
   }
 
   /**
-   * Update developer (admin)
+   * Update developer (admin) - uses AdminUpdateDeveloperDto with extended fields
    */
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  async update(@Param('id') id: string, @Request() req, @Body() dto: UpdateDeveloperDto) {
-    return this.developersService.update(id, req.user.id, dto, true);
+  async update(@Param('id') id: string, @Request() req, @Body() dto: AdminUpdateDeveloperDto) {
+    return this.developersService.adminUpdate(id, dto);
   }
 
   /**

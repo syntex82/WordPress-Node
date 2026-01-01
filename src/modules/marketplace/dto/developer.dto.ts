@@ -180,4 +180,49 @@ export class UpdateDeveloperDto {
   @IsString()
   @IsOptional()
   timezone?: string;
+
+  @IsUrl()
+  @IsOptional()
+  websiteUrl?: string;
+
+  @IsUrl()
+  @IsOptional()
+  githubUrl?: string;
+
+  @IsUrl()
+  @IsOptional()
+  linkedinUrl?: string;
+}
+
+/**
+ * Admin Update Developer DTO
+ * Extended DTO for admin updates with additional fields
+ */
+import { IsBoolean } from 'class-validator';
+
+export class AdminUpdateDeveloperDto extends UpdateDeveloperDto {
+  @IsEnum(DeveloperStatus)
+  @IsOptional()
+  status?: DeveloperStatus;
+
+  @IsBoolean()
+  @IsOptional()
+  isVerified?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isFeatured?: boolean;
+
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  @IsOptional()
+  @Type(() => Number)
+  rating?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  @Type(() => Number)
+  reviewCount?: number;
 }

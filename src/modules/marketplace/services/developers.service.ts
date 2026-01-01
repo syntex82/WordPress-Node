@@ -347,6 +347,67 @@ export class DevelopersService {
   }
 
   /**
+   * Admin: Update developer profile with extended fields
+   */
+  async adminUpdate(developerId: string, dto: {
+    displayName?: string;
+    headline?: string;
+    bio?: string;
+    profileImage?: string;
+    category?: string;
+    skills?: string[];
+    languages?: string[];
+    frameworks?: string[];
+    tools?: string[];
+    spokenLanguages?: string[];
+    hourlyRate?: number;
+    minimumBudget?: number;
+    yearsOfExperience?: number;
+    portfolio?: any[];
+    education?: any[];
+    certifications?: any[];
+    availability?: string;
+    availableHours?: number;
+    timezone?: string;
+    websiteUrl?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+    status?: DeveloperStatus;
+    isVerified?: boolean;
+    isFeatured?: boolean;
+    rating?: number;
+    reviewCount?: number;
+  }) {
+    const existing = await this.prisma.developer.findUnique({ where: { id: developerId } });
+    if (!existing) throw new NotFoundException('Developer not found');
+
+    // Extract admin-only fields
+    const { status, isVerified, isFeatured, rating, reviewCount, websiteUrl, githubUrl, linkedinUrl, ...profileData } = dto;
+
+    const developer = await this.prisma.developer.update({
+      where: { id: developerId },
+      data: {
+        ...profileData,
+        category: profileData.category as PrismaDeveloperCategory,
+        portfolio: profileData.portfolio ? JSON.parse(JSON.stringify(profileData.portfolio)) : undefined,
+        education: profileData.education ? JSON.parse(JSON.stringify(profileData.education)) : undefined,
+        certifications: profileData.certifications ? JSON.parse(JSON.stringify(profileData.certifications)) : undefined,
+        websiteUrl,
+        githubUrl,
+        linkedinUrl,
+        status: status as DeveloperStatus,
+        isVerified,
+        isFeatured,
+        rating,
+        reviewCount,
+      },
+      include: { user: { select: USER_SELECT } },
+    });
+
+    return flattenDeveloperData(developer);
+  }
+
+  /**
    * Admin: Create developer profile directly for a user (bypasses application)
    */
   async adminCreateDeveloper(dto: {
