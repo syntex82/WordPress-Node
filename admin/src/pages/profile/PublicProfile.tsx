@@ -9,6 +9,7 @@ import { profileApi, timelineApi, UserProfile, ProfileStats, ActivityItem, Timel
 import { useAuthStore } from '../../stores/authStore';
 import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
+import CommentModal from '../../components/CommentModal';
 import {
   FiMapPin, FiCalendar, FiUsers, FiBook, FiAward, FiExternalLink,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiActivity, FiUserPlus, FiUserCheck,
@@ -28,6 +29,7 @@ export default function PublicProfile() {
   const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
   const [postsPage, setPostsPage] = useState(1);
   const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
   useEffect(() => {
@@ -265,6 +267,7 @@ export default function PublicProfile() {
                       key={post.id}
                       post={post}
                       onDelete={handlePostDeleted}
+                      onCommentClick={setCommentModalPostId}
                     />
                   ))}
                   {hasMorePosts && (
@@ -431,6 +434,20 @@ export default function PublicProfile() {
           </div>
         </div>
       </div>
+
+      {/* Comment Modal */}
+      <CommentModal
+        postId={commentModalPostId || ''}
+        isOpen={!!commentModalPostId}
+        onClose={() => setCommentModalPostId(null)}
+        onCommentAdded={() => {
+          setTimelinePosts(prev => prev.map(p =>
+            p.id === commentModalPostId
+              ? { ...p, commentsCount: p.commentsCount + 1 }
+              : p
+          ));
+        }}
+      />
     </div>
   );
 }

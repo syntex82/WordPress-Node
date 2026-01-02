@@ -9,6 +9,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { timelineApi, profileApi, TimelinePost, SuggestedUser } from '../../services/api';
 import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
+import CommentModal from '../../components/CommentModal';
 import { FiUsers, FiCompass, FiTrendingUp, FiRefreshCw, FiHash, FiBell } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
@@ -34,6 +35,7 @@ export default function Timeline() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [newPostsCount, setNewPostsCount] = useState(0);
+  const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const { token } = useAuthStore();
 
@@ -317,6 +319,7 @@ export default function Timeline() {
                     post={post}
                     onDelete={handlePostDeleted}
                     onHashtagClick={handleHashtagClick}
+                    onCommentClick={setCommentModalPostId}
                   />
                 ))}
 
@@ -411,6 +414,21 @@ export default function Timeline() {
           </div>
         </div>
       </div>
+
+      {/* Comment Modal */}
+      <CommentModal
+        postId={commentModalPostId || ''}
+        isOpen={!!commentModalPostId}
+        onClose={() => setCommentModalPostId(null)}
+        onCommentAdded={() => {
+          // Update comment count in the posts list
+          setPosts(prev => prev.map(p =>
+            p.id === commentModalPostId
+              ? { ...p, commentsCount: p.commentsCount + 1 }
+              : p
+          ));
+        }}
+      />
     </div>
   );
 }
