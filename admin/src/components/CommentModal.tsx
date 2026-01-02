@@ -40,8 +40,10 @@ export default function CommentModal({ postId, isOpen, onClose, onCommentAdded }
     try {
       setLoading(true);
       const res = await timelineApi.getComments(postId);
-      setComments(res.data.data);
-    } catch {
+      console.log('Comments response:', res.data);
+      setComments(res.data.data || []);
+    } catch (error) {
+      console.error('Failed to load comments:', error);
       toast.error('Failed to load comments');
     } finally {
       setLoading(false);
@@ -55,10 +57,11 @@ export default function CommentModal({ postId, isOpen, onClose, onCommentAdded }
     setSubmitting(true);
     try {
       const res = await timelineApi.addComment(postId, newComment.trim(), replyingTo || undefined);
+      console.log('Add comment response:', res.data);
       if (replyingTo) {
         // Add reply to parent comment
-        setComments(prev => prev.map(c => 
-          c.id === replyingTo 
+        setComments(prev => prev.map(c =>
+          c.id === replyingTo
             ? { ...c, replies: [...(c.replies || []), res.data] }
             : c
         ));
@@ -70,7 +73,8 @@ export default function CommentModal({ postId, isOpen, onClose, onCommentAdded }
       setReplyingTo(null);
       onCommentAdded?.();
       toast.success('Comment added!');
-    } catch {
+    } catch (error) {
+      console.error('Failed to add comment:', error);
       toast.error('Failed to add comment');
     } finally {
       setSubmitting(false);

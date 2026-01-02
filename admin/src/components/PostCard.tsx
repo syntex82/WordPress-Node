@@ -72,13 +72,16 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
     if (isSharing) return;
     setIsSharing(true);
     try {
+      console.log('Sharing post:', post.id, 'with comment:', shareComment.trim() || '(none)');
       const res = await timelineApi.sharePost(post.id, shareComment.trim() || undefined);
+      console.log('Share response:', res.data);
       setSharesCount((c) => c + 1);
       setShowShareModal(false);
       setShareComment('');
       toast.success('Post shared!');
       onPostShared?.(res.data);
-    } catch {
+    } catch (error) {
+      console.error('Failed to share post:', error);
       toast.error('Failed to share post');
     } finally {
       setIsSharing(false);
