@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import PostMediaGallery from '../../components/PostMediaGallery';
+import CommentModal from '../../components/CommentModal';
 
 type TabType = 'following' | 'discover';
 
@@ -25,6 +26,8 @@ export default function ActivityFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
+  const [sharingPostId, setSharingPostId] = useState<string | null>(null);
 
   const loadFeed = useCallback(async (reset = false) => {
     try {
@@ -107,6 +110,33 @@ export default function ActivityFeed() {
       } catch (e) {
         toast.error('Failed to update like');
       }
+    }
+  };
+
+  const handleOpenComments = (postId: string) => {
+    setCommentModalPostId(postId);
+  };
+
+  const handleCommentAdded = (postId: string) => {
+    setPosts(prev => prev.map(p =>
+      p.id === postId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p
+    ));
+  };
+
+  const handleSharePost = async (postId: string) => {
+    try {
+      setSharingPostId(postId);
+      await timelineApi.sharePost(postId);
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, sharesCount: (p.sharesCount || 0) + 1 } : p
+      ));
+      toast.success('Post shared to your timeline!');
+    } catch (err: any) {
+      console.error('Share error:', err);
+      const message = err.response?.data?.message || 'Failed to share post';
+      toast.error(message);
+    } finally {
+      setSharingPostId(null);
     }
   };
 
@@ -246,13 +276,20 @@ export default function ActivityFeed() {
                             <FiHeart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
                             {post.likesCount || 0}
                           </button>
-                          <span className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <button
+                            onClick={() => handleOpenComments(post.id)}
+                            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-500 transition"
+                          >
                             <FiMessageCircle className="w-4 h-4" />
                             {post.commentsCount || 0}
-                          </span>
-                          <button className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-500 transition">
-                            <FiShare2 className="w-4 h-4" />
-                            Share
+                          </button>
+                          <button
+                            onClick={() => handleSharePost(post.id)}
+                            disabled={sharingPostId === post.id}
+                            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-500 transition disabled:opacity-50"
+                          >
+                            <FiShare2 className={`w-4 h-4 ${sharingPostId === post.id ? 'animate-spin' : ''}`} />
+                            {sharingPostId === post.id ? 'Sharing...' : 'Share'}
                           </button>
                         </div>
                       </div>
@@ -320,6 +357,16 @@ export default function ActivityFeed() {
           </div>
         </div>
       </div>
+
+      {/* Comment Modal */}
+      {commentModalPostId && (
+        <CommentModal
+          postId={commentModalPostId}
+          isOpen={!!commentModalPostId}
+          onClose={() => setCommentModalPostId(null)}
+          onCommentAdded={() => handleCommentAdded(commentModalPostId)}
+        />
+      )}
     </div>
   );
 }
