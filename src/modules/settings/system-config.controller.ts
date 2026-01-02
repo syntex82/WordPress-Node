@@ -68,6 +68,8 @@ export class SystemConfigController {
     // Support both 'pass' and 'password' field names from frontend
     const pass = config.pass || config.password;
 
+    console.log(`[SMTP Save] Received config: host=${config.host}, user=${config.user}, hasPass=${!!pass}`);
+
     // Validate required fields
     if (!config.host || !config.user) {
       throw new HttpException('Host and user are required', HttpStatus.BAD_REQUEST);
@@ -80,9 +82,11 @@ export class SystemConfigController {
     };
 
     await this.systemConfig.saveSmtpConfig(configToSave);
+    console.log('[SMTP Save] Config saved to database');
 
     // Reload the email service transporter with new config
     await this.emailService.reloadConfig();
+    console.log('[SMTP Save] Email service reloaded');
 
     return { success: true, message: 'Email settings saved successfully' };
   }

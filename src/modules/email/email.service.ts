@@ -57,8 +57,10 @@ export class EmailService implements OnModuleInit {
     try {
       // Try to get config from database first
       this.smtpConfig = await this.systemConfig.getSmtpConfig();
-    } catch {
+      this.logger.log(`SMTP config loaded from DB: host=${this.smtpConfig.host}, user=${this.smtpConfig.user}, hasPass=${!!this.smtpConfig.pass}`);
+    } catch (error) {
       // Database not ready yet, use env config
+      this.logger.warn(`Failed to load SMTP config from DB: ${error}`);
       this.smtpConfig = {
         host: this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com'),
         port: parseInt(this.configService.get<string>('SMTP_PORT', '587'), 10),
@@ -74,7 +76,7 @@ export class EmailService implements OnModuleInit {
     this.defaultFromName = this.smtpConfig.fromName;
 
     if (!this.smtpConfig.user || !this.smtpConfig.pass) {
-      this.logger.warn('SMTP credentials not configured. Email sending will fail.');
+      this.logger.warn(`SMTP credentials not configured: user="${this.smtpConfig.user}", hasPass=${!!this.smtpConfig.pass}`);
       this.transporter = null;
       return;
     }
@@ -87,7 +89,7 @@ export class EmailService implements OnModuleInit {
     });
 
     this.logger.log(
-      `Email transporter initialized: ${this.smtpConfig.host}:${this.smtpConfig.port}`,
+      `Email transporter initialized: ${this.smtpConfig.host}:${this.smtpConfig.port} (user: ${this.smtpConfig.user})`,
     );
   }
 
@@ -95,7 +97,9 @@ export class EmailService implements OnModuleInit {
    * Reload SMTP configuration from database
    */
   async reloadConfig(): Promise<void> {
+    this.logger.log('Reloading SMTP configuration...');
     await this.initializeTransporter();
+    this.logger.log(`Reload complete. Transporter active: ${!!this.transporter}`);
   }
 
   /**
