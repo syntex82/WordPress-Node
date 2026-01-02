@@ -170,23 +170,25 @@ export class SystemConfigService implements OnModuleInit {
    * Save SMTP configuration
    */
   async saveSmtpConfig(config: SmtpConfig): Promise<void> {
-    await this.set('smtp_host', config.host, 'email', 'SMTP server hostname');
+    // Trim all string values to prevent whitespace issues
+    const host = config.host?.trim() || '';
+    const user = config.user?.trim() || '';
+    const pass = config.pass?.trim() || '';
+    const fromEmail = config.fromEmail?.trim() || '';
+    const fromName = config.fromName?.trim() || '';
+
+    await this.set('smtp_host', host, 'email', 'SMTP server hostname');
     await this.set('smtp_port', config.port.toString(), 'email', 'SMTP server port');
     await this.set('smtp_secure', config.secure.toString(), 'email', 'Use TLS/SSL');
-    await this.set('smtp_user', config.user, 'email', 'SMTP username');
+    await this.set('smtp_user', user, 'email', 'SMTP username');
 
     // Only update password if provided (not empty) - allows keeping existing password
-    if (config.pass) {
-      await this.set('smtp_pass', config.pass, 'email', 'SMTP password (encrypted)');
+    if (pass) {
+      await this.set('smtp_pass', pass, 'email', 'SMTP password (encrypted)');
     }
 
-    await this.set('smtp_from', config.fromEmail || config.user, 'email', 'Default from email');
-    await this.set(
-      'smtp_from_name',
-      config.fromName || 'NodePress CMS',
-      'email',
-      'Default from name',
-    );
+    await this.set('smtp_from', fromEmail || user, 'email', 'Default from email');
+    await this.set('smtp_from_name', fromName || 'NodePress CMS', 'email', 'Default from name');
   }
 
   /**
