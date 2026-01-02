@@ -303,9 +303,11 @@ export class TimelineService {
       include: this.postInclude,
     });
 
-    // Create share record
-    await this.prisma.postShare.create({
-      data: { postId: originalPostId, userId },
+    // Create share record (upsert to handle if user shared before)
+    await this.prisma.postShare.upsert({
+      where: { postId_userId: { postId: originalPostId, userId } },
+      create: { postId: originalPostId, userId },
+      update: {}, // No update needed, just confirming they shared
     });
 
     // Update share count on original post
@@ -561,7 +563,7 @@ export class TimelineService {
   async addComment(postId: string, userId: string, content: string, parentId?: string) {
     // Validate content
     if (!content || !content.trim()) {
-      throw new Error('Comment content is required');
+      throw new BadRequestException('Comment content is required');
     }
 
     const post = await this.prisma.timelinePost.findUnique({ where: { id: postId } });
