@@ -12,8 +12,9 @@ import {
   Min,
   ValidateNested,
   IsInt,
+  ValidateIf,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export enum ProductStatus {
   DRAFT = 'DRAFT',
@@ -235,8 +236,10 @@ export class CreateProductDto {
   metaDescription?: string;
 
   @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @ValidateIf((o) => o.categoryId !== undefined && o.categoryId !== null && o.categoryId !== '')
   @IsUUID()
-  categoryId?: string;
+  categoryId?: string | null;
 
   @IsOptional()
   @IsArray()

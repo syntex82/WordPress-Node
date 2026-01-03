@@ -120,7 +120,10 @@ export class ProductsService {
       }
     }
 
-    const { variants, tags, variantOptions, ...productData } = dto;
+    const { variants, tags, variantOptions, categoryId, ...productData } = dto;
+
+    // Sanitize categoryId - convert empty string to null
+    const sanitizedCategoryId = categoryId && categoryId.trim() !== '' ? categoryId : null;
 
     // Build variant create data with proper clothing fields
     const variantCreateData = variants?.map((v, index) => ({
@@ -147,6 +150,7 @@ export class ProductsService {
       data: {
         ...productData,
         slug,
+        categoryId: sanitizedCategoryId,
         price: dto.price,
         salePrice: dto.salePrice,
         costPrice: dto.costPrice,
@@ -249,7 +253,10 @@ export class ProductsService {
     const existing = await this.prisma.product.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Product not found');
 
-    const { variants, tags, slug: dtoSlug, ...productData } = dto;
+    const { variants, tags, slug: dtoSlug, categoryId, ...productData } = dto;
+
+    // Sanitize categoryId - convert empty string to null
+    const sanitizedCategoryId = categoryId && categoryId.trim() !== '' ? categoryId : null;
 
     // Handle slug update
     let slug = existing.slug;
@@ -301,6 +308,7 @@ export class ProductsService {
       data: {
         ...productData,
         slug,
+        categoryId: sanitizedCategoryId,
         hasVariants: dto.hasVariants ?? (variants && variants.length > 0),
         variantOptions: dto.variantOptions as any,
         variants: variantCreateData
