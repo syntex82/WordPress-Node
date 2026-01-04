@@ -14,6 +14,7 @@ import { EnrollmentsService } from './services/enrollments.service';
 import { ProgressService } from './services/progress.service';
 import { CertificatesService } from './services/certificates.service';
 import { CertificateGeneratorService } from './services/certificate-generator.service';
+import { CertificateTemplateService } from './services/certificate-template.service';
 import { CoursePlaceholderService } from './services/course-placeholder.service';
 
 // Controllers
@@ -24,6 +25,7 @@ import { QuizzesController } from './controllers/quizzes.controller';
 import { EnrollmentsController } from './controllers/enrollments.controller';
 import { LearningController } from './controllers/learning.controller';
 import { CertificatesController } from './controllers/certificates.controller';
+import { CertificateTemplatesController } from './controllers/certificate-templates.controller';
 
 // Guards
 import { CourseOwnershipGuard } from './guards/course-ownership.guard';
@@ -40,6 +42,7 @@ import { FeatureGuard } from '../../common/guards/feature.guard';
     EnrollmentsController,
     LearningController,
     CertificatesController,
+    CertificateTemplatesController,
   ],
   providers: [
     CoursesService,
@@ -50,6 +53,7 @@ import { FeatureGuard } from '../../common/guards/feature.guard';
     ProgressService,
     CertificatesService,
     CertificateGeneratorService,
+    CertificateTemplateService,
     CoursePlaceholderService,
     CourseOwnershipGuard,
     FeatureGuard,
@@ -62,6 +66,7 @@ import { FeatureGuard } from '../../common/guards/feature.guard';
     EnrollmentsService,
     ProgressService,
     CertificatesService,
+    CertificateTemplateService,
     CoursePlaceholderService,
   ],
 })

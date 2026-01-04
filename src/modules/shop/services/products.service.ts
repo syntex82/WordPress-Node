@@ -303,27 +303,40 @@ export class ProductsService {
       sortOrder: v.sortOrder ?? index,
     }));
 
+    // Prepare update data with explicit handling of variant options
+    const updateData: any = {
+      ...productData,
+      slug,
+      categoryId: sanitizedCategoryId,
+      hasVariants: dto.hasVariants ?? (variants && variants.length > 0),
+    };
+
+    // Explicitly set variantOptions if provided, or clear it if hasVariants is false
+    if (dto.variantOptions !== undefined) {
+      updateData.variantOptions = dto.variantOptions;
+    } else if (dto.hasVariants === false) {
+      updateData.variantOptions = null;
+    }
+
+    // Handle variants
+    if (variantCreateData) {
+      updateData.variants = { create: variantCreateData };
+    }
+
+    // Handle tags
+    if (tags) {
+      updateData.tags = {
+        set: [],
+        connectOrCreate: tags.map((tag) => ({
+          where: { slug: this.generateSlug(tag) },
+          create: { name: tag, slug: this.generateSlug(tag) },
+        })),
+      };
+    }
+
     const product = await this.prisma.product.update({
       where: { id },
-      data: {
-        ...productData,
-        slug,
-        categoryId: sanitizedCategoryId,
-        hasVariants: dto.hasVariants ?? (variants && variants.length > 0),
-        variantOptions: dto.variantOptions as any,
-        variants: variantCreateData
-          ? { create: variantCreateData }
-          : undefined,
-        tags: tags
-          ? {
-              set: [],
-              connectOrCreate: tags.map((tag) => ({
-                where: { slug: this.generateSlug(tag) },
-                create: { name: tag, slug: this.generateSlug(tag) },
-              })),
-            }
-          : undefined,
-      },
+      data: updateData,
       include: { category: true, variants: { orderBy: { sortOrder: 'asc' } }, tags: true },
     });
 

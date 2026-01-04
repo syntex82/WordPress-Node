@@ -186,6 +186,39 @@ model Certificate {
   @@index([verificationHash])
 }
 
+model CertificateTemplate {
+  id String @id @default(cuid())
+  name              String
+  isDefault         Boolean  @default(false)
+  logoUrl           String?
+  primaryColor      String   @default("#6366f1")
+  secondaryColor    String   @default("#a5b4fc")
+  backgroundColor   String   @default("#f8fafc")
+  textColor         String   @default("#1e293b")
+  accentColor       String   @default("#6366f1")
+  titleFont         String   @default("Helvetica-Bold")
+  bodyFont          String   @default("Helvetica")
+  titleFontSize     Int      @default(42)
+  nameFontSize      Int      @default(36)
+  courseFontSize    Int      @default(28)
+  bodyFontSize      Int      @default(14)
+  titleText         String   @default("Certificate of Completion")
+  subtitleText      String   @default("This is to certify that")
+  completionText    String   @default("has successfully completed the course")
+  brandingText      String   @default("NodePress LMS")
+  showBorder        Boolean  @default(true)
+  showLogo          Boolean  @default(true)
+  showBranding      Boolean  @default(true)
+  borderWidth       Int      @default(3)
+  borderStyle       String   @default("double")
+  customCSS         String?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isDefault])
+}
+
 model ContentType {
   id String @id @default(cuid())
   name        String   @unique

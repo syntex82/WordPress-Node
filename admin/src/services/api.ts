@@ -1348,6 +1348,15 @@ export const lmsAdminApi = {
 
   // Certificates
   revokeCertificate: (id: string, reason: string) => api.put(`/lms/admin/certificates/${id}/revoke`, { reason }),
+
+  // Certificate Templates
+  getCertificateTemplates: () => api.get('/lms/admin/certificate-templates'),
+  getCertificateTemplate: (id: string) => api.get(`/lms/admin/certificate-templates/${id}`),
+  getDefaultCertificateTemplate: () => api.get('/lms/admin/certificate-templates/default'),
+  createCertificateTemplate: (data: any) => api.post('/lms/admin/certificate-templates', data),
+  updateCertificateTemplate: (id: string, data: any) => api.put(`/lms/admin/certificate-templates/${id}`, data),
+  deleteCertificateTemplate: (id: string) => api.delete(`/lms/admin/certificate-templates/${id}`),
+  setDefaultCertificateTemplate: (id: string) => api.patch(`/lms/admin/certificate-templates/${id}/set-default`),
 };
 
 // LMS Student API

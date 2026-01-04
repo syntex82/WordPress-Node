@@ -199,15 +199,29 @@ export class CoursesService {
 
     const { slug: _slugFromDto, ...restDto } = dto;
 
+    // Prepare update data with explicit handling of price fields
+    const updateData: any = {
+      ...restDto,
+      slug,
+      whatYouLearn: dto.whatYouLearn || undefined,
+      requirements: dto.requirements || undefined,
+    };
+
+    // Explicitly handle priceAmount based on priceType
+    if (dto.priceType === 'PAID') {
+      // For PAID courses, ensure priceAmount is set (default to 0 if not provided)
+      updateData.priceAmount = dto.priceAmount !== undefined ? dto.priceAmount : 0;
+    } else if (dto.priceType === 'FREE') {
+      // For FREE courses, set priceAmount to null
+      updateData.priceAmount = null;
+    } else if (dto.priceAmount !== undefined) {
+      // If priceType is not specified but priceAmount is, update it
+      updateData.priceAmount = dto.priceAmount;
+    }
+
     return this.prisma.course.update({
       where: { id },
-      data: {
-        ...restDto,
-        slug,
-        priceAmount: dto.priceAmount !== undefined ? dto.priceAmount : undefined,
-        whatYouLearn: dto.whatYouLearn || undefined,
-        requirements: dto.requirements || undefined,
-      },
+      data: updateData,
       include: {
         instructor: { select: { id: true, name: true, avatar: true } },
         _count: { select: { lessons: true, enrollments: true } },

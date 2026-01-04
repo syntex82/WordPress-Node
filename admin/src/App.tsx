@@ -81,6 +81,8 @@ const LmsLessons = lazy(() => import('./pages/lms/Lessons'));
 const LmsQuizzes = lazy(() => import('./pages/lms/Quizzes'));
 const LmsQuizQuestions = lazy(() => import('./pages/lms/QuizQuestions'));
 const LmsCurriculumBuilder = lazy(() => import('./pages/lms/CurriculumBuilder'));
+const CertificateTemplates = lazy(() => import('./pages/lms/CertificateTemplates'));
+const CertificateTemplateEditor = lazy(() => import('./pages/lms/CertificateTemplateEditor'));
 
 // Lazy-loaded pages - LMS Student
 const LmsCourseCatalog = lazy(() => import('./pages/lms/CourseCatalog'));
@@ -221,6 +223,8 @@ function App() {
                 {/* LMS Admin - IMPORTANT: specific routes MUST come before parameterized routes */}
                 <Route path="lms" element={<ProtectedRoute feature="lms"><LmsAdminDashboard /></ProtectedRoute>} />
                 <Route path="lms/categories" element={<ProtectedRoute feature="lms"><LmsCourseCategories /></ProtectedRoute>} />
+                <Route path="lms/certificate-templates" element={<ProtectedRoute feature="lms"><CertificateTemplates /></ProtectedRoute>} />
+                <Route path="lms/certificate-templates/:id" element={<ProtectedRoute feature="lms"><CertificateTemplateEditor /></ProtectedRoute>} />
                 <Route path="lms/catalog" element={<LmsCourseCatalog />} />
                 <Route path="lms/dashboard" element={<LmsStudentDashboard />} />
                 <Route path="lms/courses" element={<ProtectedRoute feature="lms"><LmsCourses /></ProtectedRoute>} />
