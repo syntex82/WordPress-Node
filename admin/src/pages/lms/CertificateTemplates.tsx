@@ -87,17 +87,18 @@ export default function CertificateTemplates() {
   }
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Certificate Templates</h1>
-          <p className="text-slate-400 mt-1">Customize certificate designs and branding</p>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Certificate Templates</h1>
+          <p className="text-sm text-slate-400 mt-1">Customize certificate designs and branding</p>
         </div>
         <Link
           to="/lms/certificate-templates/new"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl hover:from-blue-500 hover:to-blue-400 flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20"
         >
-          <FiPlus className="w-5 h-5" />
+          <FiPlus size={18} />
           New Template
         </Link>
       </div>
@@ -166,9 +167,9 @@ export default function CertificateTemplates() {
           <p className="text-slate-400">No certificate templates found</p>
           <Link
             to="/lms/certificate-templates/new"
-            className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 mt-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/20"
           >
-            <FiPlus className="w-5 h-5" />
+            <FiPlus size={18} />
             Create Your First Template
           </Link>
         </div>

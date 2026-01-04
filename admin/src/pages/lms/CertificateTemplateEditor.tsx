@@ -83,33 +83,38 @@ export default function CertificateTemplateEditor() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-700 border-t-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate('/lms/certificate-templates')}
-          className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
-        >
-          <FiArrowLeft className="w-5 h-5 text-slate-400" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">
-            {isNew ? 'New Certificate Template' : 'Edit Certificate Template'}
-          </h1>
-          <p className="text-slate-400 mt-1">Customize certificate design and branding</p>
+    <div className="min-h-screen bg-slate-900 p-4 md:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3 md:gap-4">
+          <button
+            onClick={() => navigate('/lms/certificate-templates')}
+            className="p-2 hover:bg-slate-700/50 rounded-xl transition-colors text-slate-400 hover:text-white"
+          >
+            <FiArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+              {isNew ? 'New Certificate Template' : 'Edit Certificate Template'}
+            </h1>
+            {!isNew && template.name && (
+              <p className="text-sm text-slate-400 mt-1 line-clamp-1">{template.name}</p>
+            )}
+          </div>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-lg transition-colors"
+          className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl hover:from-blue-500 hover:to-blue-400 flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FiSave className="w-5 h-5" />
+          <FiSave size={18} />
           {saving ? 'Saving...' : 'Save Template'}
         </button>
       </div>
@@ -166,8 +171,8 @@ export default function CertificateTemplateEditor() {
         {/* Colors */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Colors</h2>
-          
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { key: 'primaryColor', label: 'Primary Color' },
               { key: 'secondaryColor', label: 'Secondary Color' },
@@ -201,7 +206,7 @@ export default function CertificateTemplateEditor() {
           <h2 className="text-lg font-semibold text-white mb-4">Typography</h2>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Title Font</label>
                 <select
@@ -235,7 +240,7 @@ export default function CertificateTemplateEditor() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
                 { key: 'titleFontSize', label: 'Title Size', min: 20, max: 72 },
                 { key: 'nameFontSize', label: 'Name Size', min: 16, max: 60 },
@@ -324,7 +329,7 @@ export default function CertificateTemplateEditor() {
             </div>
 
             {template.showBorder && (
-              <div className="grid grid-cols-2 gap-4 ml-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Border Width</label>
                   <input
