@@ -240,6 +240,7 @@ export default function Layout() {
     { name: 'Dashboard', path: '/lms', icon: FiBarChart2, tooltipKey: 'lmsDashboard' },
     { name: 'Courses', path: '/lms/courses', icon: FiBook, tooltipKey: 'courses' },
     { name: 'Categories', path: '/lms/categories', icon: FiTag, tooltipKey: 'lmsCategories' },
+    { name: 'Certificates', path: '/lms/certificate-templates', icon: FiAward, tooltipKey: 'certificates' },
     { name: 'Course Catalog', path: '/lms/catalog', icon: FiBook, tooltipKey: 'catalog' },
   ];
 

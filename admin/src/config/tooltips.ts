@@ -89,6 +89,10 @@ export const NAV_TOOLTIPS = {
     title: 'Course Catalog',
     content: 'Public course catalog where students can browse and enroll in available courses.',
   },
+  certificates: {
+    title: 'Certificate Templates',
+    content: 'Design and customize certificate templates for course completions. Set colors, fonts, logos, and branding.',
+  },
 
   // Marketplace
   marketplaceDashboard: {
