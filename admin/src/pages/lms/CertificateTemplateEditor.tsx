@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { lmsAdminApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import { FiSave, FiArrowLeft, FiUpload } from 'react-icons/fi';
+import MediaPickerModal from '../../components/MediaPickerModal';
 
 export default function CertificateTemplateEditor() {
   const { id } = useParams();
@@ -11,6 +12,7 @@ export default function CertificateTemplateEditor() {
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [showLogoPicker, setShowLogoPicker] = useState(false);
   const [template, setTemplate] = useState({
     name: '',
     isDefault: false,
@@ -159,11 +161,25 @@ export default function CertificateTemplateEditor() {
                   className="flex-1 bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   placeholder="/uploads/logo.png"
                 />
-                <button className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-xl transition-colors">
-                  <FiUpload className="w-5 h-5" />
+                <button
+                  type="button"
+                  onClick={() => setShowLogoPicker(true)}
+                  className="px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-xl transition-all shadow-lg shadow-blue-500/20"
+                >
+                  <FiUpload size={18} />
                 </button>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Upload logo to Media Library and paste URL here</p>
+              {template.logoUrl && (
+                <div className="mt-2">
+                  <img
+                    src={template.logoUrl}
+                    alt="Logo preview"
+                    className="h-12 object-contain rounded border border-slate-600/50"
+                    onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
+                  />
+                </div>
+              )}
+              <p className="text-xs text-slate-500 mt-1">Click the upload button to select from Media Library</p>
             </div>
           </div>
         </div>
@@ -384,6 +400,18 @@ export default function CertificateTemplateEditor() {
           </div>
         </div>
       </div>
+
+      {/* Media Picker Modal */}
+      {showLogoPicker && (
+        <MediaPickerModal
+          type="image"
+          onClose={() => setShowLogoPicker(false)}
+          onSelect={(media) => {
+            setTemplate({ ...template, logoUrl: media.path || media.url });
+            setShowLogoPicker(false);
+          }}
+        />
+      )}
     </div>
   );
 }
