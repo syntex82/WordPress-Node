@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { lmsAdminApi } from '../../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2, Star, StarOff } from 'lucide-react';
+import { FiPlus, FiEdit2, FiTrash2, FiStar } from 'react-icons/fi';
 
 interface CertificateTemplate {
   id: string;
@@ -97,7 +97,7 @@ export default function CertificateTemplates() {
           to="/lms/certificate-templates/new"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
-          <Plus className="w-5 h-5" />
+          <FiPlus className="w-5 h-5" />
           New Template
         </Link>
       </div>
@@ -113,7 +113,7 @@ export default function CertificateTemplates() {
                 <h3 className="text-lg font-semibold text-white">{template.name}</h3>
                 {template.isDefault && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full mt-2">
-                    <Star className="w-3 h-3" />
+                    <FiStar className="w-3 h-3 fill-current" />
                     Default
                   </span>
                 )}
@@ -136,7 +136,7 @@ export default function CertificateTemplates() {
                 to={`/lms/certificate-templates/${template.id}`}
                 className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition-colors"
               >
-                <Edit className="w-4 h-4" />
+                <FiEdit2 className="w-4 h-4" />
                 Edit
               </Link>
               {!template.isDefault && (
@@ -146,13 +146,13 @@ export default function CertificateTemplates() {
                     className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition-colors"
                     title="Set as default"
                   >
-                    <StarOff className="w-4 h-4" />
+                    <FiStar className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(template.id, template.name)}
                     className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <FiTrash2 className="w-4 h-4" />
                   </button>
                 </>
               )}
@@ -168,7 +168,7 @@ export default function CertificateTemplates() {
             to="/lms/certificate-templates/new"
             className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
-            <Plus className="w-5 h-5" />
+            <FiPlus className="w-5 h-5" />
             Create Your First Template
           </Link>
         </div>

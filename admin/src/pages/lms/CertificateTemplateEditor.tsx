@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { lmsAdminApi } from '../../services/api';
 import toast from 'react-hot-toast';
-import { Save, ArrowLeft, Upload } from 'lucide-react';
+import { FiSave, FiArrowLeft, FiUpload } from 'react-icons/fi';
 
 export default function CertificateTemplateEditor() {
   const { id } = useParams();
@@ -96,7 +96,7 @@ export default function CertificateTemplateEditor() {
           onClick={() => navigate('/lms/certificate-templates')}
           className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+          <FiArrowLeft className="w-5 h-5 text-slate-400" />
         </button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-white">
@@ -109,7 +109,7 @@ export default function CertificateTemplateEditor() {
           disabled={saving}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-lg transition-colors"
         >
-          <Save className="w-5 h-5" />
+          <FiSave className="w-5 h-5" />
           {saving ? 'Saving...' : 'Save Template'}
         </button>
       </div>
@@ -155,7 +155,7 @@ export default function CertificateTemplateEditor() {
                   placeholder="/uploads/logo.png"
                 />
                 <button className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-xl transition-colors">
-                  <Upload className="w-5 h-5" />
+                  <FiUpload className="w-5 h-5" />
                 </button>
               </div>
               <p className="text-xs text-slate-500 mt-1">Upload logo to Media Library and paste URL here</p>
