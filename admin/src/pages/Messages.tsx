@@ -578,7 +578,7 @@ export default function Messages() {
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800">
+    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 overflow-hidden">
       {/* Conversations Sidebar - Full width on mobile when no active conversation */}
       <div className={`${activeConversation ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 bg-slate-800/50 backdrop-blur-xl border-r border-slate-700/30 flex-col`}>
         {/* Header with gradient */}
@@ -769,7 +769,7 @@ export default function Messages() {
       </div>
 
       {/* Chat Panel - Full width on mobile, hidden when no active conversation on mobile */}
-      <div className={`${activeConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-slate-900/50`}>
+      <div className={`${activeConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-slate-900/50 min-w-0 overflow-hidden`}>
         {!activeConversation ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center px-6">
@@ -878,9 +878,9 @@ export default function Messages() {
                           const isOwn = message.senderId === user?.id;
                           const showAvatar = idx === 0 || group.messages[idx - 1].senderId !== message.senderId;
                           return (
-                            <div key={message.id} className={`group/msg flex ${isOwn ? 'justify-end' : 'justify-start'} ${!showAvatar ? (isOwn ? 'pr-12' : 'pl-12') : ''}`}>
+                            <div key={message.id} className={`group/msg flex ${isOwn ? 'justify-end' : 'justify-start'} ${!showAvatar ? (isOwn ? 'pr-10 sm:pr-12' : 'pl-10 sm:pl-12') : ''}`}>
                               {!isOwn && showAvatar && (
-                                <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(message.sender.name)} flex items-center justify-center text-white text-sm font-semibold mr-3 flex-shrink-0 shadow-lg ring-2 ring-white/10`}>
+                                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${getAvatarColor(message.sender.name)} flex items-center justify-center text-white text-xs sm:text-sm font-semibold mr-2 sm:mr-3 flex-shrink-0 shadow-lg ring-2 ring-white/10`}>
                                   {message.sender.avatar ? (
                                     <img src={message.sender.avatar} alt="" className="w-full h-full rounded-full object-cover" />
                                   ) : (
@@ -888,8 +888,8 @@ export default function Messages() {
                                   )}
                                 </div>
                               )}
-                              <div className="max-w-[75%] sm:max-w-[65%] relative">
-                                <div className={`px-4 py-2.5 rounded-2xl shadow-sm ${
+                              <div className="max-w-[80%] sm:max-w-[70%] md:max-w-[65%] relative min-w-0">
+                                <div className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl shadow-sm ${
                                   isOwn
                                     ? 'bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 text-white rounded-br-md shadow-indigo-500/20'
                                     : 'bg-slate-800/80 backdrop-blur-sm text-slate-200 border border-slate-700/30 rounded-bl-md'
@@ -900,28 +900,28 @@ export default function Messages() {
                                       {(message.media as MediaAttachment[]).map((media, idx) => (
                                         <div key={idx} className="cursor-pointer group/media" onClick={() => setLightboxMedia(media)}>
                                           {media.type === 'image' ? (
-                                            <img src={media.url} alt={media.filename} className="max-w-[200px] max-h-[200px] rounded-lg object-cover group-hover/media:opacity-90 transition-opacity" />
+                                            <img src={media.url} alt={media.filename} className="max-w-[150px] sm:max-w-[200px] max-h-[150px] sm:max-h-[200px] rounded-lg object-cover group-hover/media:opacity-90 transition-opacity" />
                                           ) : (
-                                            <video src={media.url} className="max-w-[200px] max-h-[200px] rounded-lg" controls />
+                                            <video src={media.url} className="max-w-[150px] sm:max-w-[200px] max-h-[150px] sm:max-h-[200px] rounded-lg" controls />
                                           )}
                                         </div>
                                       ))}
                                     </div>
                                   )}
-                                  {message.content && <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>}
+                                  {message.content && <p className="text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>}
                                 </div>
-                                <div className={`flex items-center gap-1.5 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                                  <span className="text-[11px] text-slate-500">{formatTime(message.createdAt)}</span>
-                                  {isOwn && (message.isRead ? <FiCheckCircle className="text-indigo-400" size={12} /> : <FiCheck className="text-slate-500" size={12} />)}
+                                <div className={`flex items-center gap-1 sm:gap-1.5 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                                  <span className="text-[10px] sm:text-[11px] text-slate-500">{formatTime(message.createdAt)}</span>
+                                  {isOwn && (message.isRead ? <FiCheckCircle className="text-indigo-400" size={11} /> : <FiCheck className="text-slate-500" size={11} />)}
                                   {isOwn && (
                                     <button onClick={() => handleDeleteMessage(message.id)} className="ml-1 opacity-0 group-hover/msg:opacity-100 text-slate-500 hover:text-red-400 transition-all" title="Delete message">
-                                      <FiTrash2 size={12} />
+                                      <FiTrash2 size={11} />
                                     </button>
                                   )}
                                 </div>
                               </div>
                               {isOwn && showAvatar && (
-                                <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarColor(user?.name || '')} flex items-center justify-center text-white text-sm font-semibold ml-3 flex-shrink-0 shadow-lg ring-2 ring-white/10`}>
+                                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${getAvatarColor(user?.name || '')} flex items-center justify-center text-white text-xs sm:text-sm font-semibold ml-2 sm:ml-3 flex-shrink-0 shadow-lg ring-2 ring-white/10`}>
                                   {user?.name?.charAt(0).toUpperCase()}
                                 </div>
                               )}

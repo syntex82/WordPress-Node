@@ -3,9 +3,11 @@
  * Modern, responsive audio/video recording inspired by TikTok and LinkedIn
  * Works seamlessly across mobile, tablet, and desktop devices
  * Features: beautiful animations, proper aspect ratios, waveform visualization
+ * Uses React Portal to render at document body level for proper z-index layering
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FiVideo, FiMic, FiSquare, FiPause, FiPlay, FiX, FiCheck,
   FiRefreshCw, FiVolume2, FiUpload
@@ -393,10 +395,10 @@ export default function MobileMediaRecorder({
     return Math.max(0.1, Math.min(1, animatedHeight));
   });
 
-  // Permission request screen
+  // Permission request screen - rendered via portal to document.body
   if (permissionState === 'checking' || permissionState === 'prompt' || permissionState === 'denied') {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center">
         <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={handleClose} />
         <div className="relative w-full h-full sm:w-[90vw] sm:h-auto sm:max-w-md sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 sm:shadow-2xl sm:border sm:border-slate-700/50 flex flex-col items-center justify-center p-6 sm:p-8">
 
@@ -475,12 +477,14 @@ export default function MobileMediaRecorder({
             </>
           )}
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  // Main recorder UI - rendered via portal to document.body
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop with blur */}
       <div
         className="absolute inset-0 bg-black/90 backdrop-blur-xl"
@@ -730,7 +734,8 @@ export default function MobileMediaRecorder({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
