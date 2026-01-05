@@ -132,78 +132,105 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
     );
   };
 
-  // Grid layout based on number of media items
+  // Grid layout based on number of media items - enhanced for mobile
   const getGridClass = () => {
     switch (media.length) {
       case 1: return 'grid-cols-1';
-      case 2: return 'grid-cols-2';
-      case 3: return 'grid-cols-2';
+      case 2: return 'grid-cols-1 sm:grid-cols-2'; // Stack on mobile, side by side on larger
+      case 3: return 'grid-cols-1 sm:grid-cols-2';
       case 4: return 'grid-cols-2';
-      default: return 'grid-cols-2 sm:grid-cols-3';
+      default: return 'grid-cols-2';
     }
+  };
+
+  // Get aspect ratio class based on media count and screen size
+  const getAspectClass = (index: number) => {
+    if (media.length === 1) {
+      // Single image: larger aspect ratio for better mobile viewing
+      return 'aspect-[4/3] sm:aspect-video';
+    }
+    if (media.length === 2) {
+      // Two images: taller on mobile when stacked
+      return 'aspect-[4/3] sm:aspect-square';
+    }
+    if (media.length === 3 && index === 0) {
+      // First of three: spans full width on mobile
+      return 'aspect-[16/9] sm:aspect-square sm:row-span-2';
+    }
+    // Default square for grids
+    return 'aspect-square';
   };
 
   return (
     <>
-      <div className={`grid ${getGridClass()} gap-1 rounded-xl overflow-hidden ${className}`}>
+      <div className={`grid ${getGridClass()} gap-1 sm:gap-1.5 rounded-xl sm:rounded-2xl overflow-hidden ${className}`}>
         {media.slice(0, 4).map((item, index) => (
           <div
             key={item.id || index}
             onClick={() => openLightbox(index)}
-            className={`relative cursor-pointer overflow-hidden ${
-              media.length === 3 && index === 0 ? 'row-span-2' : ''
-            } ${media.length === 1 ? 'aspect-video' : 'aspect-square'}`}
+            className={`relative cursor-pointer overflow-hidden ${getAspectClass(index)}
+              ${media.length === 3 && index === 0 ? 'col-span-full sm:col-span-1 sm:row-span-2' : ''}
+              hover:opacity-95 transition-opacity`}
           >
             {renderMedia(item, index)}
             {index === 3 && media.length > 4 && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="text-white text-2xl font-bold">+{media.length - 4}</span>
+                <span className="text-white text-xl sm:text-2xl font-bold">+{media.length - 4}</span>
+              </div>
+            )}
+            {/* Expand icon for single images on mobile */}
+            {media.length === 1 && (
+              <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 p-1.5 sm:p-2 bg-black/50 rounded-full opacity-70 hover:opacity-100 transition-opacity">
+                <FiMaximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* Lightbox */}
+      {/* Lightbox - Enhanced for mobile */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-2 sm:p-4"
           onClick={closeLightbox}
         >
-          {/* Close button */}
+          {/* Close button - larger touch target on mobile */}
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white z-10"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-2 text-white/80 hover:text-white z-10 bg-black/30 rounded-full"
           >
-            <FiX className="w-8 h-8" />
+            <FiX className="w-6 h-6 sm:w-8 sm:h-8" />
           </button>
 
-          {/* Navigation */}
+          {/* Navigation - positioned for mobile touch */}
           {media.length > 1 && (
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-4 p-3 text-white/80 hover:text-white bg-black/30 rounded-full"
+                className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 text-white/80 hover:text-white bg-black/40 sm:bg-black/30 rounded-full z-10"
               >
-                <FiChevronLeft className="w-8 h-8" />
+                <FiChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-4 p-3 text-white/80 hover:text-white bg-black/30 rounded-full"
+                className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 text-white/80 hover:text-white bg-black/40 sm:bg-black/30 rounded-full z-10"
               >
-                <FiChevronRight className="w-8 h-8" />
+                <FiChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
             </>
           )}
 
-          {/* Content */}
-          <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center">
+          {/* Content - full width on mobile */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center w-full h-full max-w-[95vw] sm:max-w-[90vw] max-h-[85vh] sm:max-h-[90vh]"
+          >
             {renderMedia(media[lightboxIndex], lightboxIndex, true)}
           </div>
 
-          {/* Counter */}
+          {/* Counter - better visibility on mobile */}
           {media.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80 text-sm">
+            <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 text-white/90 text-xs sm:text-sm bg-black/50 px-3 py-1 rounded-full">
               {lightboxIndex + 1} / {media.length}
             </div>
           )}

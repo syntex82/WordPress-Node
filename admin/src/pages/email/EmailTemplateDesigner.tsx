@@ -63,7 +63,9 @@ export interface EmailDesign {
 interface MediaItem {
   id: string;
   filename: string;
-  url: string;
+  originalName?: string;
+  url?: string;
+  path?: string;
   mimeType: string;
 }
 
@@ -277,7 +279,14 @@ export default function EmailTemplateDesigner() {
   const loadMedia = useCallback(async () => {
     try {
       const response = await mediaApi.getAll({ limit: 50 });
-      setMediaItems(response.data.data || response.data || []);
+      const rawItems = response.data.data || response.data || [];
+      // Normalize media items - backend returns 'path' but we need 'url'
+      const normalizedItems = rawItems.map((item: any) => ({
+        ...item,
+        url: item.url || item.path, // Use url if available, fallback to path
+        filename: item.filename || item.originalName,
+      }));
+      setMediaItems(normalizedItems);
     } catch (error) {
       console.error('Failed to load media:', error);
     }
@@ -1077,26 +1086,57 @@ ${blocks.map(renderBlock).join('')}
                             />
                           )}
                         </div>
+                        {/* Remove Platform Button */}
+                        <button
+                          onClick={() => {
+                            const newLinks = content.links.filter((_: SocialLink, i: number) => i !== idx);
+                            updateBlockContent(block.id, { links: newLinks });
+                          }}
+                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Remove platform"
+                        >
+                          <FiTrash2 size={14} />
+                        </button>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <button
-                onClick={() => {
-                  const existingPlatforms = (content.links || []).map((l: SocialLink) => l.platform);
-                  const availablePlatforms = Object.keys(SOCIAL_PLATFORMS).filter(p => !existingPlatforms.includes(p as SocialPlatform));
-                  if (availablePlatforms.length > 0) {
-                    const newPlatform = availablePlatforms[0] as SocialPlatform;
-                    updateBlockContent(block.id, {
-                      links: [...(content.links || []), { platform: newPlatform, url: `https://${newPlatform}.com/`, enabled: true }]
-                    });
-                  }
-                }}
-                className="mt-2 w-full p-2 border border-dashed border-slate-600/50 rounded-lg text-slate-400 text-sm hover:border-violet-500/50 hover:text-violet-400 transition-colors flex items-center justify-center gap-2"
-              >
-                <FiPlus size={14} /> Add Platform
-              </button>
+
+              {/* Add Platform Dropdown */}
+              {(() => {
+                const existingPlatforms = (content.links || []).map((l: SocialLink) => l.platform);
+                const availablePlatforms = Object.keys(SOCIAL_PLATFORMS).filter(p => !existingPlatforms.includes(p as SocialPlatform)) as SocialPlatform[];
+
+                if (availablePlatforms.length === 0) return null;
+
+                return (
+                  <div className="mt-3 space-y-2">
+                    <label className="block text-xs font-medium text-slate-500">Add New Platform</label>
+                    <div className="flex gap-2">
+                      <select
+                        id={`social-platform-select-${block.id}`}
+                        className="flex-1 p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white"
+                        defaultValue=""
+                        onChange={(e) => {
+                          const newPlatform = e.target.value as SocialPlatform;
+                          if (newPlatform) {
+                            updateBlockContent(block.id, {
+                              links: [...(content.links || []), { platform: newPlatform, url: `https://${newPlatform}.com/`, enabled: true }]
+                            });
+                            e.target.value = ''; // Reset select
+                          }
+                        }}
+                      >
+                        <option value="" disabled>Select a platform...</option>
+                        {availablePlatforms.map(p => (
+                          <option key={p} value={p}>{SOCIAL_PLATFORMS[p].name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             <div>

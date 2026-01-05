@@ -238,62 +238,67 @@ export default function ActivityFeed() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {posts.map(post => (
-                  <div key={post.id} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-4">
-                      <Link to={`/profile/${post.user.username || post.user.id}`}>
+                  <div key={post.id} className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-2.5 sm:gap-4">
+                      <Link to={`/profile/${post.user.username || post.user.id}`} className="flex-shrink-0">
                         {post.user.avatar ? (
-                          <img src={post.user.avatar} alt={post.user.name} className="w-12 h-12 rounded-full object-cover" />
+                          <img src={post.user.avatar} alt={post.user.name} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover" />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm sm:text-base">
                             {post.user.name?.charAt(0) || '?'}
                           </div>
                         )}
                       </Link>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Link to={`/profile/${post.user.username || post.user.id}`} className="font-medium text-gray-900 dark:text-white hover:text-blue-600">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+                          <Link to={`/profile/${post.user.username || post.user.id}`} className="font-medium text-sm sm:text-base text-gray-900 dark:text-white hover:text-blue-600 truncate max-w-[150px] sm:max-w-none">
                             {post.user.name}
                           </Link>
-                          <span className="text-gray-400 dark:text-gray-500">•</span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400">{formatTimeAgo(post.createdAt)}</span>
+                          <span className="text-gray-400 dark:text-gray-500 hidden sm:inline">•</span>
+                          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{formatTimeAgo(post.createdAt)}</span>
                         </div>
-                        <p className="text-gray-900 dark:text-white whitespace-pre-wrap mb-3">{post.content}</p>
+                        <p className="text-sm sm:text-base text-gray-900 dark:text-white whitespace-pre-wrap mb-2 sm:mb-3">{post.content}</p>
+
+                        {/* Media Gallery - Enhanced for mobile with full-width display */}
                         {post.media && post.media.length > 0 && (
-                          <PostMediaGallery
-                            media={post.media.map(m => ({
-                              id: m.id,
-                              type: m.type,
-                              url: m.url,
-                              thumbnail: m.thumbnail,
-                              altText: m.altText,
-                            }))}
-                            className="mb-3"
-                          />
+                          <div className="-mx-3 sm:mx-0 mb-2 sm:mb-3">
+                            <PostMediaGallery
+                              media={post.media.map(m => ({
+                                id: m.id,
+                                type: m.type,
+                                url: m.url,
+                                thumbnail: m.thumbnail,
+                                altText: m.altText,
+                              }))}
+                              className="sm:rounded-xl"
+                            />
+                          </div>
                         )}
-                        <div className="flex items-center gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+
+                        <div className="flex items-center gap-3 sm:gap-4 pt-2 sm:pt-3 border-t border-gray-200 dark:border-gray-700">
                           <button
                             onClick={() => handleLikePost(post.id)}
-                            className={`flex items-center gap-1.5 text-sm transition ${post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+                            className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm transition ${post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
                           >
-                            <FiHeart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
-                            {post.likesCount || 0}
+                            <FiHeart className={`w-4 h-4 sm:w-4 sm:h-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                            <span>{post.likesCount || 0}</span>
                           </button>
                           <button
                             onClick={() => handleOpenComments(post.id)}
-                            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-500 transition"
+                            className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-gray-500 hover:text-blue-500 transition"
                           >
-                            <FiMessageCircle className="w-4 h-4" />
-                            {post.commentsCount || 0}
+                            <FiMessageCircle className="w-4 h-4 sm:w-4 sm:h-4" />
+                            <span>{post.commentsCount || 0}</span>
                           </button>
                           <button
                             onClick={() => handleSharePost(post.id)}
                             disabled={sharingPostId === post.id}
-                            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-500 transition disabled:opacity-50"
+                            className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-gray-500 hover:text-blue-500 transition disabled:opacity-50 ml-auto sm:ml-0"
                           >
-                            <FiShare2 className={`w-4 h-4 ${sharingPostId === post.id ? 'animate-spin' : ''}`} />
-                            {sharingPostId === post.id ? 'Sharing...' : 'Share'}
+                            <FiShare2 className={`w-4 h-4 sm:w-4 sm:h-4 ${sharingPostId === post.id ? 'animate-spin' : ''}`} />
+                            <span className="hidden sm:inline">{sharingPostId === post.id ? 'Sharing...' : 'Share'}</span>
                           </button>
                         </div>
                       </div>
