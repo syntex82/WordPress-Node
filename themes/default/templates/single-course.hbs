@@ -218,8 +218,8 @@
         </div>
       </div>
       <div class="enroll-card">
-        {{#if course.price}}
-        <div class="enroll-price">${{course.price}}</div>
+        {{#if (eq course.priceType 'PAID')}}
+        <div class="enroll-price">${{course.priceAmount}}</div>
         {{else}}
         <div class="enroll-price free">Free</div>
         {{/if}}

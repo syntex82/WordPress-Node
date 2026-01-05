@@ -170,8 +170,8 @@
           {{else}}
           <img src="/api/lms/courses/placeholder-image" alt="{{title}}">
           {{/if}}
-          {{#if price}}
-          <span class="course-price">${{price}}</span>
+          {{#if (eq priceType 'PAID')}}
+          <span class="course-price">${{priceAmount}}</span>
           {{else}}
           <span class="course-price free">Free</span>
           {{/if}}
