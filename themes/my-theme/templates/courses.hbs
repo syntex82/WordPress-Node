@@ -98,8 +98,8 @@
           <img src="/api/lms/courses/placeholder-image" alt="{{title}}" class="course-image">
           {{/if}}
           {{#if level}}<span class="course-level">{{level}}</span>{{/if}}
-          <span class="course-price-badge {{#if (eq priceType 'FREE')}}free{{else}}paid{{/if}}">
-            {{#if (eq priceType 'FREE')}}Free{{else}}${{price}}{{/if}}
+          <span class="course-price-badge {{#if (eq priceType 'PAID')}}paid{{else}}free{{/if}}">
+            {{#if (eq priceType 'PAID')}}${{priceAmount}}{{else}}Free{{/if}}
           </span>
         </div>
         <div class="course-content">
@@ -117,7 +117,7 @@
             </div>
             {{/if}}
             <a href="/courses/{{slug}}" class="btn btn-primary btn-sm enroll-btn">
-              {{#if (eq priceType 'FREE')}}Start Learning{{else}}Enroll Now{{/if}}
+              {{#if (eq priceType 'PAID')}}Enroll Now{{else}}Start Learning{{/if}}
             </a>
           </div>
         </div>
