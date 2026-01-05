@@ -45,7 +45,7 @@ export default function ImmersivePostCard({
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const isOwner = currentUser?.id === post.user.id;
   const hasVideo = post.media?.some(m => m.type === 'VIDEO');
