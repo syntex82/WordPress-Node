@@ -274,11 +274,14 @@ export default function MyProfile() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-0">
+    <div className="max-w-6xl mx-auto px-4 sm:px-0 relative">
+      {/* Hidden file input for cover upload */}
+      <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
+
       {/* Cover Image - Premium Design */}
-      <div className="relative h-44 sm:h-60 md:h-80 z-10">
+      <div className="relative h-44 sm:h-60 md:h-80 z-30">
         {/* Cover image container with overflow-hidden for rounded corners */}
-        <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden pointer-events-none">
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden">
             <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
@@ -286,15 +289,14 @@ export default function MyProfile() {
           {profile.coverImage && (
             <img src={profile.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
         </div>
-        {/* Change Cover Button - Outside overflow-hidden container */}
-        <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
+
+        {/* Change Cover Button - Outside the overflow-hidden, clickable */}
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+          onClick={() => {
+            console.log('Cover button clicked');
             coverInputRef.current?.click();
           }}
           disabled={uploadingCover}
