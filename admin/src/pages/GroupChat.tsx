@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiSend, FiArrowLeft, FiUsers, FiLogOut, FiSearch, FiCheck, FiShield, FiStar, FiHash, FiMessageSquare, FiTrash2, FiPaperclip, FiVideo, FiX, FiSmile, FiMic, FiMonitor } from 'react-icons/fi';
+import { FiSend, FiArrowLeft, FiUsers, FiLogOut, FiSearch, FiCheck, FiShield, FiStar, FiHash, FiMessageSquare, FiTrash2, FiPaperclip, FiVideo, FiX, FiSmile, FiMic, FiMonitor, FiImage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
@@ -118,7 +118,7 @@ export default function GroupChat() {
   const [showMediaRecorder, setShowMediaRecorder] = useState(false);
   const [mediaRecorderMode, setMediaRecorderMode] = useState<'video' | 'audio' | 'screen'>('video');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -717,111 +717,134 @@ export default function GroupChat() {
           </div>
         )}
 
-        {/* Message Input */}
-        <form onSubmit={handleSendMessage} className="bg-slate-800/70 backdrop-blur-xl border-t border-slate-700/30 p-3 sm:p-4 pb-safe flex-shrink-0">
+        {/* Message Input - Improved Layout */}
+        <form onSubmit={handleSendMessage} className="bg-slate-800/70 backdrop-blur-xl border-t border-slate-700/30 pb-safe flex-shrink-0">
           {/* Pending Media Preview */}
           {pendingMedia.length > 0 && (
-            <div className="flex flex-wrap gap-2 sm:gap-2.5 mb-3 p-2 bg-slate-700/30 rounded-xl">
+            <div className="flex flex-wrap gap-2 p-3 bg-slate-700/30 border-b border-slate-700/30">
               {pendingMedia.map((media, idx) => (
                 <div key={idx} className="relative group">
                   {media.type === 'image' ? (
-                    <img src={media.url} alt={media.filename} className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg border border-slate-600/50 shadow-lg" />
+                    <img src={media.url} alt={media.filename} className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-lg border border-slate-600/50 shadow-lg" />
                   ) : (
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-700 rounded-lg border border-slate-600/50 flex items-center justify-center shadow-lg">
-                      <FiVideo className="text-slate-400" size={20} />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-slate-700 rounded-lg border border-slate-600/50 flex items-center justify-center shadow-lg">
+                      <FiVideo className="text-slate-400" size={18} />
                     </div>
                   )}
                   <button
                     type="button"
                     onClick={() => removePendingMedia(idx)}
-                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-red-600 transition-colors"
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-red-600 transition-colors"
                   >
                     <FiX size={12} />
                   </button>
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[8px] sm:text-[10px] text-white text-center truncate px-1 rounded-b-lg backdrop-blur-sm">{formatFileSize(media.size)}</span>
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[8px] text-white text-center truncate px-0.5 rounded-b-lg backdrop-blur-sm">{formatFileSize(media.size)}</span>
                 </div>
               ))}
             </div>
           )}
-          <div className="flex items-center gap-1 sm:gap-2 bg-slate-700/50 rounded-2xl px-1.5 sm:px-3 py-1.5 border border-slate-600/30 relative shadow-lg">
-            {/* File Upload Button */}
+
+          {/* Action Bar - Above text input */}
+          <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-slate-700/30 bg-slate-800/50 relative">
             <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple onChange={handleFileSelect} className="hidden" />
+
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingMedia}
-              className="p-2 sm:p-2.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center active:scale-95 flex-shrink-0"
-              title="Attach media"
+              className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-600/50 rounded-lg transition-all flex items-center justify-center active:scale-95"
+              title="Attach photo/video"
             >
               {uploadingMedia ? (
                 <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <FiPaperclip size={18} className="sm:w-5 sm:h-5" />
+                <FiImage size={20} />
               )}
             </button>
 
-            {/* Mobile Recording Buttons */}
             <button
               type="button"
               onClick={() => { setMediaRecorderMode('video'); setShowMediaRecorder(true); }}
-              className="p-2 sm:hidden text-slate-400 hover:text-red-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center active:scale-95 flex-shrink-0"
+              className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-600/50 rounded-lg transition-all flex items-center justify-center active:scale-95"
               title="Record video"
             >
-              <FiVideo size={18} />
+              <FiVideo size={20} />
             </button>
+
             <button
               type="button"
               onClick={() => { setMediaRecorderMode('audio'); setShowMediaRecorder(true); }}
-              className="p-2 sm:hidden text-slate-400 hover:text-purple-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center active:scale-95 flex-shrink-0"
+              className="p-2 text-slate-400 hover:text-purple-400 hover:bg-slate-600/50 rounded-lg transition-all flex items-center justify-center active:scale-95"
               title="Record audio"
             >
-              <FiMic size={18} />
+              <FiMic size={20} />
             </button>
 
-            {/* Desktop Screen Share Button */}
             <button
               type="button"
               onClick={() => { setMediaRecorderMode('screen'); setShowMediaRecorder(true); }}
-              className="p-2.5 text-slate-400 hover:text-blue-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] hidden sm:flex items-center justify-center active:scale-95"
+              className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-600/50 rounded-lg transition-all hidden sm:flex items-center justify-center active:scale-95"
               title="Share screen"
             >
               <FiMonitor size={20} />
             </button>
 
-            {/* Emoji Picker Button */}
+            <div className="w-px h-5 bg-slate-600/50 mx-1"></div>
+
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="p-2 sm:p-2.5 text-slate-400 hover:text-yellow-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center active:scale-95 flex-shrink-0"
+              className={`p-2 hover:bg-slate-600/50 rounded-lg transition-all flex items-center justify-center active:scale-95 ${showEmojiPicker ? 'text-yellow-400 bg-slate-600/50' : 'text-slate-400 hover:text-yellow-400'}`}
               title="Add emoji"
             >
-              <FiSmile size={18} className="sm:w-5 sm:h-5" />
+              <FiSmile size={20} />
             </button>
+
             {/* Emoji Picker Popup */}
             {showEmojiPicker && (
-              <div ref={emojiPickerRef} className="absolute bottom-14 sm:bottom-16 left-0 z-50 shadow-2xl rounded-xl overflow-hidden">
+              <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50 shadow-2xl rounded-xl overflow-hidden">
                 <EmojiPicker
                   theme={Theme.DARK}
                   onEmojiClick={handleEmojiSelect}
-                  width={300}
-                  height={380}
+                  width={280}
+                  height={320}
                   emojiStyle={EmojiStyle.NATIVE}
                 />
               </div>
             )}
-            <input
-              ref={inputRef}
-              type="text"
-              value={newMessage}
-              onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-              placeholder="Message..."
-              className="flex-1 bg-transparent py-2.5 text-white placeholder-slate-500 focus:outline-none text-[15px] sm:text-[15px] min-w-[50px] w-0"
-              disabled={sending}
-            />
+          </div>
+
+          {/* Text Input Row - Clean and focused */}
+          <div className="flex items-end gap-2 p-2 sm:p-3">
+            <div className="flex-1 bg-slate-700/50 rounded-2xl border border-slate-600/30 overflow-hidden">
+              <textarea
+                ref={inputRef}
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  handleTyping();
+                  // Auto-resize textarea
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (newMessage.trim() || pendingMedia.length > 0) {
+                      handleSendMessage(e as unknown as React.FormEvent);
+                    }
+                  }
+                }}
+                placeholder="Type your message..."
+                className="w-full bg-transparent px-4 py-2.5 text-white placeholder-slate-400 focus:outline-none text-[15px] resize-none min-h-[40px] max-h-[100px]"
+                disabled={sending}
+                rows={1}
+              />
+            </div>
             <button
               type="submit"
               disabled={(!newMessage.trim() && pendingMedia.length === 0) || sending}
-              className={`p-2.5 sm:p-3 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center flex-shrink-0 ${
+              className={`p-2.5 sm:p-3 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0 ${
                 (newMessage.trim() || pendingMedia.length > 0) && !sending
                   ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:scale-105 active:scale-95'
                   : 'bg-slate-600/50 text-slate-500'

@@ -11,6 +11,7 @@ import { useAuthStore } from '../../stores/authStore';
 import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
 import CommentModal from '../../components/CommentModal';
+import FollowersModal from '../../components/FollowersModal';
 import { useSiteTheme } from '../../contexts/SiteThemeContext';
 import {
   FiMapPin, FiCalendar, FiUsers, FiBook, FiAward, FiExternalLink,
@@ -37,6 +38,8 @@ export default function PublicProfile() {
   const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
   const [commentModalPost, setCommentModalPost] = useState<TimelinePost | null>(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
 
   useEffect(() => {
     if (identifier) loadProfile();
@@ -238,19 +241,24 @@ export default function PublicProfile() {
       {/* Stats Cards - Premium Design */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 px-3 sm:px-6 mb-8">
         {[
-          { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20' },
-          { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20' },
-          { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
-          { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20' },
-          { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20' },
+          { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20', action: () => { setFollowersModalType('followers'); setFollowersModalOpen(true); } },
+          { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20', action: () => { setFollowersModalType('following'); setFollowersModalOpen(true); } },
+          { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20', action: () => setActiveTab('posts') },
+          { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20', action: undefined },
+          { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20', action: undefined },
         ].map((stat, i) => (
-          <div key={i} className="group bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 cursor-default">
+          <button
+            key={i}
+            onClick={stat.action}
+            disabled={!stat.action}
+            className={`group bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 text-left ${stat.action ? 'cursor-pointer' : 'cursor-default'}`}
+          >
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
               <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div className="text-xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
             <div className="text-xs sm:text-sm text-slate-400 font-medium">{stat.label}</div>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -485,6 +493,16 @@ export default function PublicProfile() {
               : p
           ));
         }}
+      />
+
+      {/* Followers/Following Modal */}
+      <FollowersModal
+        isOpen={followersModalOpen}
+        onClose={() => setFollowersModalOpen(false)}
+        userId={profile.id}
+        username={profile.username}
+        type={followersModalType}
+        isOwnProfile={isOwnProfile}
       />
     </div>
   );

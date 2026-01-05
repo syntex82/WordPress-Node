@@ -271,8 +271,12 @@ export default function ActivityFeed() {
                                 url: m.url,
                                 thumbnail: m.thumbnail,
                                 altText: m.altText,
+                                width: m.width,
+                                height: m.height,
+                                duration: m.duration,
                               }))}
                               className="sm:rounded-xl"
+                              immersive={true}
                             />
                           </div>
                         )}

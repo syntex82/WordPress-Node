@@ -15,6 +15,7 @@ import {
 import toast from 'react-hot-toast';
 import CreatePostForm from '../../components/CreatePostForm';
 import PostMediaGallery from '../../components/PostMediaGallery';
+import FollowersModal from '../../components/FollowersModal';
 import { useSiteTheme } from '../../contexts/SiteThemeContext';
 
 export default function MyProfile() {
@@ -38,6 +39,8 @@ export default function MyProfile() {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
   const [openPostMenu, setOpenPostMenu] = useState<string | null>(null);
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
 
   useEffect(() => {
     loadProfile();
@@ -273,24 +276,26 @@ export default function MyProfile() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-0">
       {/* Cover Image - Premium Design */}
-      <div className="relative h-44 sm:h-60 md:h-80 rounded-2xl sm:rounded-3xl shadow-2xl">
+      <div className="relative h-44 sm:h-60 md:h-80 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden">
           <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
         </div>
         {profile.coverImage && (
-          <img src={profile.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover rounded-2xl sm:rounded-3xl" />
+          <img src={profile.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none rounded-2xl sm:rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none" />
         <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
         <button
+          type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            console.log('Cover button clicked');
             coverInputRef.current?.click();
           }}
           disabled={uploadingCover}
-          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-10 bg-slate-900/80 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/10 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
+          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-20 bg-slate-900/90 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/20 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
         >
           {uploadingCover ? (
             <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span className="hidden sm:inline">Uploading...</span></>
@@ -407,19 +412,23 @@ export default function MyProfile() {
       <div className="px-3 sm:px-6 mb-8 -mx-3 sm:mx-0">
         <div className="flex sm:grid sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 overflow-x-auto sm:overflow-visible pb-3 sm:pb-0 px-3 sm:px-0 scrollbar-hide snap-x snap-mandatory">
           {[
-            { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20' },
-            { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20' },
-            { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
-            { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20' },
-            { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20' },
+            { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20', action: () => { setFollowersModalType('followers'); setFollowersModalOpen(true); } },
+            { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20', action: () => { setFollowersModalType('following'); setFollowersModalOpen(true); } },
+            { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20', action: () => setActiveTab('posts') },
+            { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20', action: () => window.location.href = '/lms/my-learning' },
+            { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20', action: () => window.location.href = '/lms/my-learning' },
           ].map((stat, i) => (
-            <div key={i} className="group flex-shrink-0 w-[140px] sm:w-auto snap-start bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 cursor-default">
+            <button
+              key={i}
+              onClick={stat.action}
+              className="group flex-shrink-0 w-[140px] sm:w-auto snap-start bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 cursor-pointer text-left"
+            >
               <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
                 <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div className="text-xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
               <div className="text-xs sm:text-sm text-slate-400 font-medium">{stat.label}</div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -736,6 +745,16 @@ export default function MyProfile() {
         </div>
       </div>
       )}
+
+      {/* Followers/Following Modal */}
+      <FollowersModal
+        isOpen={followersModalOpen}
+        onClose={() => setFollowersModalOpen(false)}
+        userId={profile.id}
+        username={profile.username}
+        type={followersModalType}
+        isOwnProfile={true}
+      />
     </div>
   );
 }

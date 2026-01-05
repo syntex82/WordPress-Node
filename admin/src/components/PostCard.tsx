@@ -7,8 +7,8 @@
 import { useState, useCallback, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiTrash2, FiPlay, FiRepeat, FiX } from 'react-icons/fi';
-import { TimelinePost, timelineApi } from '../services/api';
+import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiTrash2, FiPlay, FiRepeat, FiX, FiCopy, FiCheck, FiImage, FiVideo } from 'react-icons/fi';
+import { TimelinePost, timelineApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { useSiteTheme } from '../contexts/SiteThemeContext';
 import toast from 'react-hot-toast';
@@ -35,9 +35,22 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
   const [shareComment, setShareComment] = useState('');
   const [isLiking, setIsLiking] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const isOwner = currentUser?.id === post.user.id;
   const isSharedPost = !!post.originalPost;
+  const postUrl = `${window.location.origin}/post/${post.id}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      setCopied(true);
+      toast.success('Link copied!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy link');
+    }
+  };
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -139,20 +152,22 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
     if (!post.media || post.media.length === 0) return null;
 
     return (
-      <PostMediaGallery
-        media={post.media.map(m => ({
-          id: m.id,
-          type: m.type,
-          url: m.url,
-          thumbnail: m.thumbnail,
-          altText: m.altText,
-          width: m.width,
-          height: m.height,
-          duration: m.duration,
-        }))}
-        className="mt-3"
-        immersive={true}
-      />
+      <div className="-mx-4 sm:mx-0 mt-3">
+        <PostMediaGallery
+          media={post.media.map(m => ({
+            id: m.id,
+            type: m.type,
+            url: m.url,
+            thumbnail: m.thumbnail,
+            altText: m.altText,
+            width: m.width,
+            height: m.height,
+            duration: m.duration,
+          }))}
+          className="sm:rounded-xl"
+          immersive={true}
+        />
+      </div>
     );
   };
 
@@ -310,8 +325,8 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className={`rounded-xl shadow-xl max-w-lg w-full p-6 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowShareModal(false)}>
+          <div className={`rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto ${isDark ? 'bg-slate-800' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Share Post</h3>
               <button
@@ -322,39 +337,90 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
               </button>
             </div>
 
-            {/* Preview of post being shared */}
-            <div className={`border rounded-lg p-3 mb-4 ${
-              isDark ? 'border-slate-700 bg-slate-900/50' : 'border-gray-200 bg-gray-50'
-            }`}>
-              <div className="flex items-center gap-2 mb-2">
+            {/* Full post preview */}
+            <div className={`border rounded-lg p-4 mb-4 ${isDark ? 'border-slate-700 bg-slate-900/50' : 'border-gray-200 bg-gray-50'}`}>
+              {/* Author info */}
+              <div className="flex items-center gap-3 mb-3">
                 {post.user.avatar ? (
-                  <img src={post.user.avatar} alt="" className="w-6 h-6 rounded-full" />
+                  <img src={post.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
                 ) : (
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
                     {post.user.name.charAt(0)}
                   </div>
                 )}
-                <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{post.user.name}</span>
+                <div>
+                  <span className={`font-medium block ${isDark ? 'text-white' : 'text-gray-900'}`}>{post.user.name}</span>
+                  {post.user.headline && (
+                    <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{post.user.headline}</span>
+                  )}
+                </div>
               </div>
-              <p className={`text-sm line-clamp-2 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
-                {post.content || 'Shared a post'}
-              </p>
+
+              {/* Post content */}
+              {post.content && (
+                <p className={`text-sm mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                  {post.content.length > 200 ? `${post.content.slice(0, 200)}...` : post.content}
+                </p>
+              )}
+
+              {/* Media preview */}
+              {post.media && post.media.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {post.media.slice(0, 4).map((m, idx) => (
+                    <div key={m.id} className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-700">
+                      {m.type === 'VIDEO' ? (
+                        <>
+                          <img src={m.thumbnail || m.url} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <FiVideo className="w-5 h-5 text-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <img src={m.url} alt={m.altText || ''} className="w-full h-full object-cover" />
+                      )}
+                      {idx === 3 && post.media!.length > 4 && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white font-medium text-sm">
+                          +{post.media!.length - 4}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Comment input */}
-            <textarea
-              value={shareComment}
-              onChange={(e) => setShareComment(e.target.value)}
-              placeholder="Add a comment (optional)..."
-              className={`w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            {/* Copy link button */}
+            <button
+              onClick={handleCopyLink}
+              className={`w-full mb-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors ${
                 isDark
-                  ? 'border-slate-700 bg-slate-900 text-white placeholder-slate-400'
-                  : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400'
+                  ? 'bg-slate-700 hover:bg-slate-600 text-slate-300'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
-              rows={3}
-            />
+            >
+              {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
+              {copied ? 'Link Copied!' : 'Copy Link'}
+            </button>
 
-            <div className="flex justify-end gap-3 mt-4">
+            {/* Comment input */}
+            <div className="mb-4">
+              <label className={`text-sm font-medium mb-2 block ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                Share to your timeline
+              </label>
+              <textarea
+                value={shareComment}
+                onChange={(e) => setShareComment(e.target.value)}
+                placeholder="Add a comment to share with your followers..."
+                className={`w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  isDark
+                    ? 'border-slate-700 bg-slate-900 text-white placeholder-slate-400'
+                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400'
+                }`}
+                rows={3}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowShareModal(false)}
                 className={`px-4 py-2 rounded-lg ${
@@ -366,10 +432,10 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
               <button
                 onClick={handleShare}
                 disabled={isSharing}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                className="px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 flex items-center gap-2 font-medium transition-all"
               >
                 <FiShare2 className="w-4 h-4" />
-                {isSharing ? 'Sharing...' : 'Share'}
+                {isSharing ? 'Sharing...' : 'Share to Timeline'}
               </button>
             </div>
           </div>
