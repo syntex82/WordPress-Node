@@ -8,6 +8,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TimelineService } from './timeline.service';
 import { TimelineGateway } from './timeline.gateway';
 import { PrismaService } from '../../database/prisma.service';
+import { FeedService } from '../feed/feed.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('TimelineService', () => {
@@ -44,6 +45,10 @@ describe('TimelineService', () => {
     broadcastPostShare: jest.fn(),
   };
 
+  const mockFeedService = {
+    createActivity: jest.fn(),
+  };
+
   const mockPrismaService = {
     timelinePost: {
       create: jest.fn(),
@@ -68,6 +73,7 @@ describe('TimelineService', () => {
     },
     postShare: {
       create: jest.fn(),
+      upsert: jest.fn(),
       findUnique: jest.fn(),
     },
     postHashtag: {
@@ -106,6 +112,7 @@ describe('TimelineService', () => {
         TimelineService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: TimelineGateway, useValue: mockTimelineGateway },
+        { provide: FeedService, useValue: mockFeedService },
       ],
     }).compile();
 
@@ -356,7 +363,7 @@ describe('TimelineService', () => {
       mockPrismaService.timelinePost.findUnique.mockResolvedValue(mockPost);
       mockPrismaService.postShare.findUnique.mockResolvedValue(null);
       mockPrismaService.timelinePost.create.mockResolvedValue(sharedPost);
-      mockPrismaService.postShare.create.mockResolvedValue({
+      mockPrismaService.postShare.upsert.mockResolvedValue({
         postId: 'post-1',
         userId: 'user-2',
       });
