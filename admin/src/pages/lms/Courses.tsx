@@ -253,10 +253,10 @@ export default function Courses() {
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(course.status)}</td>
                     <td className="px-6 py-4">
-                      {course.priceType === 'FREE' ? (
-                        <span className="text-green-400 font-medium">Free</span>
-                      ) : (
+                      {course.priceType === 'PAID' ? (
                         <span className="font-medium text-white">${Number(course.priceAmount || 0).toFixed(2)}</span>
+                      ) : (
+                        <span className="text-green-400 font-medium">Free</span>
                       )}
                     </td>
                     <td className="px-6 py-4">

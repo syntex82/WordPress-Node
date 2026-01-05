@@ -116,10 +116,10 @@ export default function CourseCatalog() {
                         {course._count?.lessons || 0} lessons
                       </div>
                       <div className="font-bold text-lg">
-                        {course.priceType === 'FREE' ? (
-                          <span className="text-green-400">Free</span>
+                        {course.priceType === 'PAID' ? (
+                          <span className="text-white">${Number(course.priceAmount || 0).toFixed(2)}</span>
                         ) : (
-                          <span className="text-white">${course.priceAmount?.toFixed(2)}</span>
+                          <span className="text-green-400">Free</span>
                         )}
                       </div>
                     </div>

@@ -130,7 +130,7 @@ export default function CourseLanding() {
                 onError={(e) => { (e.target as HTMLImageElement).src = '/api/lms/courses/placeholder-image'; }}
               />
               <div className="text-2xl md:text-3xl font-bold mb-4">
-                {course.priceType === 'FREE' ? 'Free' : `$${course.priceAmount?.toFixed(2)}`}
+                {course.priceType === 'PAID' ? `$${Number(course.priceAmount || 0).toFixed(2)}` : 'Free'}
               </div>
               {isEnrolled ? (
                 <button onClick={() => navigate(`/lms/learn/${course.id}`)}
