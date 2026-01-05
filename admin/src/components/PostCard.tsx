@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiTrash2, FiPlay, FiRepeat, FiX } from 'react-icons/fi';
 import { TimelinePost, timelineApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+import { useSiteTheme } from '../contexts/SiteThemeContext';
 import toast from 'react-hot-toast';
 import PostMediaGallery from './PostMediaGallery';
 
@@ -22,6 +23,9 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, onDelete, onCommentClick, onHashtagClick, onPostShared }: PostCardProps) {
+  const { resolvedTheme } = useSiteTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const { user: currentUser } = useAuthStore();
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
@@ -102,7 +106,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
           <button
             key={index}
             onClick={() => onHashtagClick?.(tag)}
-            className="text-purple-600 dark:text-purple-400 hover:underline font-medium"
+            className={`hover:underline font-medium ${isDark ? 'text-purple-400' : 'text-purple-600'}`}
           >
             {part}
           </button>
@@ -119,17 +123,17 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
             <Link
               key={index}
               to={`/profile/${mentionedUser.username || mentionedUser.id}`}
-              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+              className={`hover:underline font-medium ${isDark ? 'text-blue-400' : 'text-blue-600'}`}
             >
               {part}
             </Link>
           );
         }
-        return <span key={index} className="text-blue-600 dark:text-blue-400">{part}</span>;
+        return <span key={index} className={isDark ? 'text-blue-400' : 'text-blue-600'}>{part}</span>;
       }
       return <Fragment key={index}>{part}</Fragment>;
     });
-  }, [post.mentions, onHashtagClick]);
+  }, [post.mentions, onHashtagClick, isDark]);
 
   const renderMedia = () => {
     if (!post.media || post.media.length === 0) return null;
@@ -149,7 +153,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-4">
+    <div className={`rounded-xl shadow-sm p-4 mb-4 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -165,14 +169,14 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
           <div>
             <Link
               to={`/admin/profile/${post.user.username || post.user.id}`}
-              className="font-semibold text-gray-900 dark:text-white hover:underline"
+              className={`font-semibold hover:underline ${isDark ? 'text-white' : 'text-gray-900'}`}
             >
               {post.user.name}
             </Link>
             {post.user.headline && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{post.user.headline}</p>
+              <p className={`text-sm line-clamp-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{post.user.headline}</p>
             )}
-            <p className="text-xs text-gray-400">
+            <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
             </p>
           </div>
@@ -183,15 +187,17 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+              className={`p-2 rounded-full ${isDark ? 'hover:bg-slate-700' : 'hover:bg-gray-100'}`}
             >
-              <FiMoreHorizontal className="w-5 h-5 text-gray-500" />
+              <FiMoreHorizontal className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-gray-500'}`} />
             </button>
             {showMenu && (
-              <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 z-10">
+              <div className={`absolute right-0 mt-1 w-48 rounded-lg shadow-lg border z-10 ${
+                isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-200'
+              }`}>
                 <button
                   onClick={handleDelete}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className={`w-full flex items-center gap-2 px-4 py-2 text-red-600 ${isDark ? 'hover:bg-slate-600' : 'hover:bg-gray-100'}`}
                 >
                   <FiTrash2 className="w-4 h-4" />
                   Delete Post
@@ -204,7 +210,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
 
       {/* Share indicator for shared posts */}
       {isSharedPost && (
-        <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className={`mt-2 flex items-center gap-2 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
           <FiRepeat className="w-4 h-4" />
           <span>Shared a post</span>
         </div>
@@ -212,14 +218,16 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
 
       {/* Share comment */}
       {post.shareComment && (
-        <p className="mt-3 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+        <p className={`mt-3 whitespace-pre-wrap ${isDark ? 'text-slate-200' : 'text-gray-800'}`}>
           {renderContent(post.shareComment)}
         </p>
       )}
 
       {/* Original post (for shares) */}
       {isSharedPost && post.originalPost && (
-        <div className="mt-3 border dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-900/50">
+        <div className={`mt-3 border rounded-xl p-4 ${
+          isDark ? 'border-slate-700 bg-slate-900/50' : 'border-gray-200 bg-gray-50'
+        }`}>
           <div className="flex items-center gap-3 mb-2">
             <Link to={`/profile/${post.originalPost.user.username || post.originalPost.user.id}`}>
               {post.originalPost.user.avatar ? (
@@ -237,17 +245,17 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
             <div>
               <Link
                 to={`/profile/${post.originalPost.user.username || post.originalPost.user.id}`}
-                className="font-semibold text-sm text-gray-900 dark:text-white hover:underline"
+                className={`font-semibold text-sm hover:underline ${isDark ? 'text-white' : 'text-gray-900'}`}
               >
                 {post.originalPost.user.name}
               </Link>
-              <p className="text-xs text-gray-400">
+              <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
                 {formatDistanceToNow(new Date(post.originalPost.createdAt), { addSuffix: true })}
               </p>
             </div>
           </div>
           {post.originalPost.content && (
-            <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap text-sm">
+            <p className={`whitespace-pre-wrap text-sm ${isDark ? 'text-slate-200' : 'text-gray-800'}`}>
               {post.originalPost.content}
             </p>
           )}
@@ -256,7 +264,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
 
       {/* Content */}
       {post.content && !isSharedPost && (
-        <p className="mt-3 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+        <p className={`mt-3 whitespace-pre-wrap ${isDark ? 'text-slate-200' : 'text-gray-800'}`}>
           {renderContent(post.content)}
         </p>
       )}
@@ -265,12 +273,12 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
       {renderMedia()}
 
       {/* Actions */}
-      <div className="mt-4 flex items-center gap-6 pt-3 border-t dark:border-gray-700">
+      <div className={`mt-4 flex items-center gap-6 pt-3 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
         <button
           onClick={handleLike}
           disabled={isLiking}
           className={`flex items-center gap-2 transition-colors ${
-            isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+            isLiked ? 'text-red-500' : `${isDark ? 'text-slate-400' : 'text-gray-500'} hover:text-red-500`
           }`}
         >
           <FiHeart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -279,7 +287,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
 
         <button
           onClick={() => onCommentClick?.(post.id)}
-          className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors"
+          className={`flex items-center gap-2 transition-colors ${isDark ? 'text-slate-400' : 'text-gray-500'} hover:text-blue-500`}
         >
           <FiMessageCircle className="w-5 h-5" />
           <span className="text-sm">{post.commentsCount}</span>
@@ -288,7 +296,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
         <button
           onClick={() => setShowShareModal(true)}
           className={`flex items-center gap-2 transition-colors ${
-            post.isShared ? 'text-green-500' : 'text-gray-500 hover:text-green-500'
+            post.isShared ? 'text-green-500' : `${isDark ? 'text-slate-400' : 'text-gray-500'} hover:text-green-500`
           }`}
         >
           <FiShare2 className="w-5 h-5" />
@@ -299,19 +307,21 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6">
+          <div className={`rounded-xl shadow-xl max-w-lg w-full p-6 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Share Post</h3>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Share Post</h3>
               <button
                 onClick={() => setShowShareModal(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                className={`p-2 rounded-full ${isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-600'}`}
               >
                 <FiX className="w-5 h-5" />
               </button>
             </div>
 
             {/* Preview of post being shared */}
-            <div className="border dark:border-gray-700 rounded-lg p-3 mb-4 bg-gray-50 dark:bg-gray-900/50">
+            <div className={`border rounded-lg p-3 mb-4 ${
+              isDark ? 'border-slate-700 bg-slate-900/50' : 'border-gray-200 bg-gray-50'
+            }`}>
               <div className="flex items-center gap-2 mb-2">
                 {post.user.avatar ? (
                   <img src={post.user.avatar} alt="" className="w-6 h-6 rounded-full" />
@@ -320,9 +330,9 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
                     {post.user.name.charAt(0)}
                   </div>
                 )}
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{post.user.name}</span>
+                <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{post.user.name}</span>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+              <p className={`text-sm line-clamp-2 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
                 {post.content || 'Shared a post'}
               </p>
             </div>
@@ -332,14 +342,20 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
               value={shareComment}
               onChange={(e) => setShareComment(e.target.value)}
               placeholder="Add a comment (optional)..."
-              className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isDark
+                  ? 'border-slate-700 bg-slate-900 text-white placeholder-slate-400'
+                  : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400'
+              }`}
               rows={3}
             />
 
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => setShowShareModal(false)}
-                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className={`px-4 py-2 rounded-lg ${
+                  isDark ? 'text-slate-400 hover:bg-slate-700' : 'text-gray-600 hover:bg-gray-100'
+                }`}
               >
                 Cancel
               </button>

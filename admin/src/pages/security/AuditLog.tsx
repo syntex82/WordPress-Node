@@ -6,11 +6,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { securityApi } from '../../services/api';
+import { useThemeClasses } from '../../contexts/SiteThemeContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiFilter, FiDownload } from 'react-icons/fi';
 
 export default function AuditLog() {
+  const theme = useThemeClasses();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<any[]>([]);
   const [filter, setFilter] = useState('all');
@@ -93,8 +95,8 @@ export default function AuditLog() {
         </Link>
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Audit Log</h1>
-            <p className="text-slate-400 mt-1">Complete security event history and forensics</p>
+            <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Audit Log</h1>
+            <p className={`mt-1 ${theme.textMuted}`}>Complete security event history and forensics</p>
           </div>
           <button
             onClick={exportLog}
@@ -107,12 +109,12 @@ export default function AuditLog() {
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-4 mb-6">
+      <div className={`backdrop-blur rounded-xl border p-4 mb-6 ${theme.card}`}>
         <div className="flex items-center flex-wrap gap-2">
-          <FiFilter className="text-slate-400 mr-2" size={20} />
+          <FiFilter className={`mr-2 ${theme.icon}`} size={20} />
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50'}`}
+            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'all' ? 'bg-blue-500 text-white' : theme.isDark ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
           >
             All Events
           </button>
@@ -120,7 +122,7 @@ export default function AuditLog() {
             <button
               key={type}
               onClick={() => setFilter(type)}
-              className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === type ? 'bg-blue-500 text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50'}`}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === type ? 'bg-blue-500 text-white' : theme.isDark ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             >
               {formatEventType(type)}
             </button>
@@ -129,42 +131,42 @@ export default function AuditLog() {
       </div>
 
       {/* Events Table */}
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
-        <div className="p-6 border-b border-slate-700/50">
-          <h2 className="text-xl font-bold text-white">Security Events ({events.length})</h2>
+      <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
+        <div className={`p-6 border-b ${theme.border}`}>
+          <h2 className={`text-xl font-bold ${theme.textPrimary}`}>Security Events ({events.length})</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-700/50">
-            <thead className="bg-slate-700/30">
+          <table className={`min-w-full divide-y ${theme.border}`}>
+            <thead className={theme.tableHeader}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   Timestamp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   Event Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   IP Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   Details
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
+            <tbody className={`divide-y ${theme.border}`}>
               {events.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={5} className={`px-6 py-8 text-center ${theme.textMuted}`}>
                     No security events found
                   </td>
                 </tr>
               ) : (
                 events.map((event) => (
-                  <tr key={event.id} className="hover:bg-slate-700/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                  <tr key={event.id} className={theme.tableRow}>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme.textMuted}`}>
                       {new Date(event.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -172,17 +174,17 @@ export default function AuditLog() {
                         {formatEventType(event.type)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme.textPrimary}`}>
                       {event.user?.email || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-300">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${theme.textSecondary}`}>
                       {event.ip || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-400">
+                    <td className={`px-6 py-4 text-sm ${theme.textMuted}`}>
                       {event.metadata && Object.keys(event.metadata).length > 0 ? (
                         <details className="cursor-pointer">
                           <summary className="text-blue-400 hover:text-blue-300 transition-colors">View Details</summary>
-                          <pre className="mt-2 text-xs bg-slate-900/50 p-2 rounded-lg overflow-x-auto text-slate-300">
+                          <pre className={`mt-2 text-xs p-2 rounded-lg overflow-x-auto ${theme.isDark ? 'bg-slate-900/50 text-slate-300' : 'bg-gray-100 text-gray-700'}`}>
                             {JSON.stringify(event.metadata, null, 2)}
                           </pre>
                         </details>

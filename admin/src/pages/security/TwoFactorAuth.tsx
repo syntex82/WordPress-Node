@@ -6,11 +6,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { securityApi } from '../../services/api';
+import { useThemeClasses } from '../../contexts/SiteThemeContext';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiKey, FiShield, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
 
 export default function TwoFactorAuth() {
+  const theme = useThemeClasses();
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState('');
@@ -79,8 +81,8 @@ export default function TwoFactorAuth() {
           <FiArrowLeft className="mr-2" size={18} />
           Back to Security Center
         </Link>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Two-Factor Authentication</h1>
-        <p className="text-slate-400 mt-1">Add an extra layer of security to your account</p>
+        <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Two-Factor Authentication</h1>
+        <p className={`mt-1 ${theme.textMuted}`}>Add an extra layer of security to your account</p>
       </div>
 
       {/* Status Card */}
@@ -91,7 +93,7 @@ export default function TwoFactorAuth() {
               <FiCheckCircle className="text-emerald-400 mr-4 mt-1" size={24} />
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-emerald-400">2FA is Enabled</h3>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className={`text-sm mt-1 ${theme.textMuted}`}>
                   Your account is protected with two-factor authentication. You'll need to enter a code from your authenticator app when logging in.
                 </p>
                 <button
@@ -108,7 +110,7 @@ export default function TwoFactorAuth() {
               <FiAlertTriangle className="text-amber-400 mr-4 mt-1" size={24} />
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-amber-400">2FA is Not Enabled</h3>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className={`text-sm mt-1 ${theme.textMuted}`}>
                   Enable two-factor authentication to add an extra layer of security to your account.
                 </p>
                 <button
@@ -126,17 +128,17 @@ export default function TwoFactorAuth() {
 
       {/* Setup Instructions */}
       {showSetup && (
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6 mb-6">
-          <h2 className="text-xl font-bold text-white mb-4">Setup Two-Factor Authentication</h2>
+        <div className={`backdrop-blur rounded-xl border p-6 mb-6 ${theme.card}`}>
+          <h2 className={`text-xl font-bold mb-4 ${theme.textPrimary}`}>Setup Two-Factor Authentication</h2>
 
           <div className="space-y-6">
             {/* Step 1 */}
             <div>
-              <h3 className="font-semibold text-white mb-2">Step 1: Install an Authenticator App</h3>
-              <p className="text-sm text-slate-400 mb-2">
+              <h3 className={`font-semibold mb-2 ${theme.textPrimary}`}>Step 1: Install an Authenticator App</h3>
+              <p className={`text-sm mb-2 ${theme.textMuted}`}>
                 Download and install an authenticator app on your mobile device:
               </p>
-              <ul className="list-disc list-inside text-sm text-slate-400 space-y-1">
+              <ul className={`list-disc list-inside text-sm space-y-1 ${theme.textMuted}`}>
                 <li>Google Authenticator (iOS, Android)</li>
                 <li>Microsoft Authenticator (iOS, Android)</li>
                 <li>Authy (iOS, Android, Desktop)</li>
@@ -145,8 +147,8 @@ export default function TwoFactorAuth() {
 
             {/* Step 2 */}
             <div>
-              <h3 className="font-semibold text-white mb-2">Step 2: Scan QR Code</h3>
-              <p className="text-sm text-slate-400 mb-4">
+              <h3 className={`font-semibold mb-2 ${theme.textPrimary}`}>Step 2: Scan QR Code</h3>
+              <p className={`text-sm mb-4 ${theme.textMuted}`}>
                 Open your authenticator app and scan this QR code:
               </p>
               {qrCode && (
@@ -154,16 +156,16 @@ export default function TwoFactorAuth() {
                   <img src={qrCode} alt="2FA QR Code" className="w-64 h-64" />
                 </div>
               )}
-              <p className="text-xs text-slate-500 mt-2">
-                Or manually enter this secret key: <code className="bg-slate-700/50 px-2 py-1 rounded text-slate-300">{secret}</code>
+              <p className={`text-xs mt-2 ${theme.isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                Or manually enter this secret key: <code className={`px-2 py-1 rounded ${theme.isDark ? 'bg-slate-700/50 text-slate-300' : 'bg-gray-100 text-gray-700'}`}>{secret}</code>
               </p>
             </div>
 
             {/* Step 3 */}
             <div>
-              <h3 className="font-semibold text-white mb-2">Step 3: Verify Code</h3>
+              <h3 className={`font-semibold mb-2 ${theme.textPrimary}`}>Step 3: Verify Code</h3>
               <form onSubmit={handleEnable2FA} className="max-w-md">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}>
                   Enter the 6-digit code from your authenticator app:
                 </label>
                 <input
@@ -171,7 +173,7 @@ export default function TwoFactorAuth() {
                   value={token}
                   onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="000000"
-                  className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white text-center text-2xl font-mono tracking-widest placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className={`w-full px-4 py-2 rounded-xl text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${theme.input}`}
                   maxLength={6}
                   required
                 />
@@ -189,7 +191,7 @@ export default function TwoFactorAuth() {
                       setShowSetup(false);
                       setToken('');
                     }}
-                    className="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all"
+                    className={`px-4 py-2 rounded-xl transition-all ${theme.isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                   >
                     Cancel
                   </button>
@@ -207,16 +209,16 @@ export default function TwoFactorAuth() {
             <FiKey className="text-orange-400 mr-3 mt-1" size={24} />
             <div>
               <h3 className="text-lg font-semibold text-orange-400">Save Your Recovery Codes</h3>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className={`text-sm mt-1 ${theme.textMuted}`}>
                 Store these recovery codes in a safe place. You can use them to access your account if you lose your authenticator device.
                 Each code can only be used once.
               </p>
             </div>
           </div>
-          <div className="bg-slate-800/50 rounded-xl p-4 font-mono text-sm">
+          <div className={`rounded-xl p-4 font-mono text-sm ${theme.isDark ? 'bg-slate-800/50' : 'bg-gray-100'}`}>
             <div className="grid grid-cols-2 gap-2">
               {recoveryCodes.map((code, index) => (
-                <div key={index} className="bg-slate-700/50 px-3 py-2 rounded-lg border border-slate-600/50 text-slate-300">
+                <div key={index} className={`px-3 py-2 rounded-lg border ${theme.isDark ? 'bg-slate-700/50 border-slate-600/50 text-slate-300' : 'bg-white border-gray-200 text-gray-700'}`}>
                   {code}
                 </div>
               ))}
@@ -237,7 +239,7 @@ export default function TwoFactorAuth() {
           <FiShield className="text-blue-400 mr-3 mt-1" size={20} />
           <div>
             <h3 className="font-semibold text-blue-400">About Two-Factor Authentication</h3>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className={`text-sm mt-1 ${theme.textMuted}`}>
               Two-factor authentication (2FA) adds an extra layer of security by requiring a verification code from your mobile device
               in addition to your password. This makes it much harder for attackers to gain access to your account, even if they know your password.
             </p>

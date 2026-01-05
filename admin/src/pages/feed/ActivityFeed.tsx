@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { timelineApi, profileApi, TimelinePost, SuggestedUser } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
+import { useSiteTheme } from '../../contexts/SiteThemeContext';
 import {
   FiUsers, FiCompass, FiHeart, FiMessageCircle, FiTrendingUp,
   FiUserPlus, FiRefreshCw, FiShare2
@@ -18,6 +19,9 @@ import CommentModal from '../../components/CommentModal';
 type TabType = 'following' | 'discover';
 
 export default function ActivityFeed() {
+  const { resolvedTheme } = useSiteTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('following');
   const [posts, setPosts] = useState<TimelinePost[]>([]);

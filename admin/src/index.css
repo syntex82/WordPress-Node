@@ -2,6 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==================== SITE-WIDE THEME SYSTEM ==================== */
+
+/* Light mode variables (default) */
+:root,
+:root.light,
+[data-theme="light"] {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-tertiary: #f3f4f6;
+  --color-bg-card: #ffffff;
+  --color-bg-hover: #f3f4f6;
+  --color-bg-active: #e5e7eb;
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #374151;
+  --color-text-tertiary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-text-inverse: #ffffff;
+
+  --color-border-primary: #e5e7eb;
+  --color-border-secondary: #d1d5db;
+  --color-border-focus: #3b82f6;
+
+  --color-accent-primary: #3b82f6;
+  --color-accent-secondary: #8b5cf6;
+  --color-accent-success: #10b981;
+  --color-accent-warning: #f59e0b;
+  --color-accent-error: #ef4444;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Dark mode variables */
+:root.dark,
+[data-theme="dark"] {
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-bg-card: #1e293b;
+  --color-bg-hover: #334155;
+  --color-bg-active: #475569;
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #e2e8f0;
+  --color-text-tertiary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-inverse: #0f172a;
+
+  --color-border-primary: #334155;
+  --color-border-secondary: #475569;
+  --color-border-focus: #3b82f6;
+
+  --color-accent-primary: #3b82f6;
+  --color-accent-secondary: #8b5cf6;
+  --color-accent-success: #10b981;
+  --color-accent-warning: #f59e0b;
+  --color-accent-error: #ef4444;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+/* Theme transition for smooth switching */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Disable transitions for specific elements that shouldn't animate */
+.no-theme-transition,
+.no-theme-transition * {
+  transition: none !important;
+}
+
+/* Theme utility classes */
+.theme-bg-primary { background-color: var(--color-bg-primary); }
+.theme-bg-secondary { background-color: var(--color-bg-secondary); }
+.theme-bg-tertiary { background-color: var(--color-bg-tertiary); }
+.theme-bg-card { background-color: var(--color-bg-card); }
+
+.theme-text-primary { color: var(--color-text-primary); }
+.theme-text-secondary { color: var(--color-text-secondary); }
+.theme-text-tertiary { color: var(--color-text-tertiary); }
+.theme-text-muted { color: var(--color-text-muted); }
+
+.theme-border { border-color: var(--color-border-primary); }
+.theme-border-secondary { border-color: var(--color-border-secondary); }
+
 /* ==================== MOBILE-FIRST RESPONSIVE DESIGN ==================== */
 
 /* Mobile Safe Area Support for Notched Devices (iPhone X+, etc.) */
@@ -440,12 +532,71 @@ code {
   background-color: #4b5563;
 }
 
-/* YouTube Embed */
-.ProseMirror iframe[data-youtube-video] {
+/* YouTube Embed - Responsive Container */
+.ProseMirror div[data-youtube-video] {
+  position: relative;
+  width: 100%;
   max-width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
   margin: 1.5em 0;
   border-radius: 0.75em;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.ProseMirror div[data-youtube-video] iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0.75em;
+}
+
+/* Fallback for direct iframe embed */
+.ProseMirror iframe[data-youtube-video],
+.ProseMirror iframe[src*="youtube"],
+.ProseMirror iframe[src*="youtu.be"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  margin: 1.5em 0;
+  border-radius: 0.75em;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: none;
+}
+
+/* All embedded iframes - responsive */
+.ProseMirror iframe {
+  display: block;
+  max-width: 100%;
+  margin: 1.5em 0;
+  border-radius: 0.75em;
+}
+
+/* Video embeds */
+.ProseMirror video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5em 0;
+  border-radius: 0.75em;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Images - responsive */
+.ProseMirror img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5em auto;
+  border-radius: 0.75em;
 }
 
 /* Blockquote - Beautiful styled */

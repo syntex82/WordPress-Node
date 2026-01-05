@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from 'react';
 import { usersApi } from '../services/api';
+import { useThemeClasses } from '../contexts/SiteThemeContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import toast from 'react-hot-toast';
@@ -31,6 +32,8 @@ interface UserFormData {
 }
 
 export default function Users() {
+  const theme = useThemeClasses();
+
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -156,9 +159,9 @@ export default function Users() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Users</h1>
+          <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Users</h1>
           <Tooltip title="About Users" content="Manage user accounts and permissions. Assign roles to control what each user can access and modify." position="right" variant="help">
-            <button className="p-1 text-slate-400 hover:text-blue-400">
+            <button className={`p-1 ${theme.icon} hover:text-blue-400`}>
               <FiHelpCircle size={18} />
             </button>
           </Tooltip>
@@ -174,37 +177,37 @@ export default function Users() {
         </Tooltip>
       </div>
 
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
-        <table className="min-w-full divide-y divide-slate-700/50">
-          <thead className="bg-slate-900/50">
+      <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
+        <table className={`min-w-full divide-y ${theme.border}`}>
+          <thead className={theme.tableHeader}>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Joined</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Actions</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Name</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Email</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Role</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Joined</th>
+              <th className={`px-6 py-3 text-right text-xs font-medium uppercase ${theme.textMuted}`}>Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700/50">
+          <tbody className={`divide-y ${theme.border}`}>
             {users.map((user) => (
-              <tr key={user.id} className="hover:bg-slate-700/30 transition-colors">
+              <tr key={user.id} className={theme.tableRow}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-white">{user.name}</div>
+                  <div className={`text-sm font-medium ${theme.textPrimary}`}>{user.name}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-400">{user.email}</div>
+                  <div className={`text-sm ${theme.textMuted}`}>{user.email}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.role === 'ADMIN' ? 'bg-purple-500/20 text-purple-400' :
-                    user.role === 'EDITOR' ? 'bg-blue-500/20 text-blue-400' :
-                    user.role === 'AUTHOR' ? 'bg-emerald-500/20 text-emerald-400' :
-                    'bg-slate-500/20 text-slate-400'
+                    user.role === 'ADMIN' ? (theme.isDark ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-700') :
+                    user.role === 'EDITOR' ? theme.badgeInfo :
+                    user.role === 'AUTHOR' ? theme.badgeSuccess :
+                    theme.badgeDefault
                   }`}>
                     {user.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme.textMuted}`}>
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -234,24 +237,24 @@ export default function Users() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4 px-2">
-          <p className="text-sm text-slate-400">
+          <p className={`text-sm ${theme.textMuted}`}>
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} users
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1.5 text-sm rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={`px-3 py-1.5 text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${theme.buttonSecondary}`}
             >
               Previous
             </button>
-            <span className="px-3 py-1.5 text-sm text-slate-400">
+            <span className={`px-3 py-1.5 text-sm ${theme.textMuted}`}>
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1.5 text-sm rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={`px-3 py-1.5 text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${theme.buttonSecondary}`}
             >
               Next
             </button>
@@ -263,68 +266,68 @@ export default function Users() {
       {showModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
-            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseModal}></div>
+            <div className={`fixed inset-0 backdrop-blur-sm ${theme.isDark ? 'bg-black/70' : 'bg-black/50'}`} onClick={handleCloseModal}></div>
 
-            <div className="relative bg-slate-800 border border-slate-700/50 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div className={`relative rounded-2xl max-w-md w-full p-6 shadow-2xl ${theme.modal}`}>
               <button
                 onClick={handleCloseModal}
-                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                className={`absolute top-4 right-4 transition-colors ${theme.icon} ${theme.iconHover}`}
               >
                 <FiX size={24} />
               </button>
 
-              <h2 className="text-2xl font-bold text-white mb-6">
+              <h2 className={`text-2xl font-bold mb-6 ${theme.textPrimary}`}>
                 {editingUser ? 'Edit User' : 'Create New User'}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${theme.textMuted}`}>
                     Name *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                    className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.input}`}
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${theme.textMuted}`}>
                     Email *
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                    className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.input}`}
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${theme.textMuted}`}>
                     Password {editingUser ? '(leave blank to keep current)' : '*'}
                   </label>
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                    className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.input}`}
                     required={!editingUser}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${theme.textMuted}`}>
                     Role *
                   </label>
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                    className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.select}`}
                   >
                     <option value="ADMIN">Admin</option>
                     <option value="EDITOR">Editor</option>
@@ -337,7 +340,7 @@ export default function Users() {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="flex-1 px-4 py-2.5 border border-slate-700/50 text-slate-400 rounded-lg hover:bg-slate-700/50 hover:text-white transition-all"
+                    className={`flex-1 px-4 py-2.5 rounded-lg transition-all ${theme.buttonSecondary}`}
                   >
                     Cancel
                   </button>

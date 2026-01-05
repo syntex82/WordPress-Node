@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from 'react';
 import { analyticsApi } from '../services/api';
+import { useThemeClasses } from '../contexts/SiteThemeContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { FiUsers, FiEye, FiClock, FiTrendingUp, FiMonitor, FiSmartphone, FiTablet, FiRefreshCw, FiHelpCircle } from 'react-icons/fi';
@@ -51,6 +52,7 @@ interface DeviceData {
 }
 
 export default function Analytics() {
+  const theme = useThemeClasses();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('week');
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -116,9 +118,9 @@ export default function Analytics() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Analytics Dashboard</h1>
+          <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Analytics Dashboard</h1>
           <Tooltip title="About Analytics" content="Track your site's performance with detailed visitor statistics, page views, and device breakdowns." position="right" variant="help">
-            <button className="p-1 text-slate-400 hover:text-blue-400">
+            <button className={`p-1 ${theme.icon} hover:text-blue-400`}>
               <FiHelpCircle size={18} />
             </button>
           </Tooltip>
@@ -128,7 +130,7 @@ export default function Analytics() {
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500/50"
+              className={`rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500/50 ${theme.select}`}
             >
               <option value="today">Today</option>
               <option value="yesterday">Yesterday</option>
@@ -138,7 +140,7 @@ export default function Analytics() {
             </select>
           </Tooltip>
           <Tooltip title={ANALYTICS_TOOLTIPS.refresh.title} content={ANALYTICS_TOOLTIPS.refresh.content} position="left">
-            <button onClick={fetchAnalytics} className="p-2 border border-slate-700/50 rounded-lg text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+            <button onClick={fetchAnalytics} className={`p-2 border rounded-lg transition-all ${theme.border} ${theme.icon} ${theme.iconHover}`}>
               <FiRefreshCw size={20} />
             </button>
           </Tooltip>
@@ -169,11 +171,11 @@ export default function Analytics() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Page Views Chart */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Page Views Over Time</h3>
+        <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
+          <h3 className={`text-lg font-semibold mb-4 ${theme.textPrimary}`}>Page Views Over Time</h3>
           <div className="h-48 flex items-end gap-1">
             {pageViews.length === 0 ? (
-              <p className="text-slate-400 text-center w-full">No data available</p>
+              <p className={`text-center w-full ${theme.textMuted}`}>No data available</p>
             ) : (
               pageViews.map((pv, i) => {
                 const maxViews = Math.max(...pageViews.map(p => p.views), 1);
@@ -191,7 +193,7 @@ export default function Analytics() {
             )}
           </div>
           {pageViews.length > 0 && (
-            <div className="flex justify-between text-xs text-slate-500 mt-2">
+            <div className={`flex justify-between text-xs mt-2 ${theme.textMuted}`}>
               <span>{pageViews[0]?.date}</span>
               <span>{pageViews[pageViews.length - 1]?.date}</span>
             </div>
@@ -199,10 +201,10 @@ export default function Analytics() {
         </div>
 
         {/* Device Breakdown */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Devices</h3>
+        <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
+          <h3 className={`text-lg font-semibold mb-4 ${theme.textPrimary}`}>Devices</h3>
           {devices.length === 0 ? (
-            <p className="text-slate-400 text-center py-8">No data available</p>
+            <p className={`text-center py-8 ${theme.textMuted}`}>No data available</p>
           ) : (
             <div className="space-y-4">
               {devices.map((d) => (
@@ -210,10 +212,10 @@ export default function Analytics() {
                   <div className="text-2xl">{getDeviceIcon(d.device)}</div>
                   <div className="flex-1">
                     <div className="flex justify-between mb-1">
-                      <span className="font-medium text-white capitalize">{d.device}</span>
-                      <span className="text-slate-400">{d.count} ({d.percentage}%)</span>
+                      <span className={`font-medium capitalize ${theme.textPrimary}`}>{d.device}</span>
+                      <span className={theme.textMuted}>{d.count} ({d.percentage}%)</span>
                     </div>
-                    <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                    <div className={`h-2 rounded-full overflow-hidden ${theme.isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
                       <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full" style={{ width: `${d.percentage}%` }} />
                     </div>
                   </div>
@@ -225,29 +227,29 @@ export default function Analytics() {
       </div>
 
       {/* Top Pages Table */}
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-slate-700/50">
-          <h3 className="text-lg font-semibold text-white">Top Pages</h3>
+      <div className={`backdrop-blur rounded-xl border overflow-hidden mb-8 ${theme.card}`}>
+        <div className={`px-6 py-4 border-b ${theme.border}`}>
+          <h3 className={`text-lg font-semibold ${theme.textPrimary}`}>Top Pages</h3>
         </div>
         {topPages.length === 0 ? (
-          <p className="text-slate-400 text-center py-8">No data available</p>
+          <p className={`text-center py-8 ${theme.textMuted}`}>No data available</p>
         ) : (
-          <table className="min-w-full divide-y divide-slate-700/50">
-            <thead className="bg-slate-900/50">
+          <table className={`min-w-full divide-y ${theme.border}`}>
+            <thead className={theme.tableHeader}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Page</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Views</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Avg. Time</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Page</th>
+                <th className={`px-6 py-3 text-right text-xs font-medium uppercase ${theme.textMuted}`}>Views</th>
+                <th className={`px-6 py-3 text-right text-xs font-medium uppercase ${theme.textMuted}`}>Avg. Time</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
+            <tbody className={`divide-y ${theme.border}`}>
               {topPages.map((page, i) => (
-                <tr key={i} className="hover:bg-slate-700/30 transition-colors">
+                <tr key={i} className={theme.tableRow}>
                   <td className="px-6 py-4">
-                    <span className="font-medium text-white">{page.path}</span>
+                    <span className={`font-medium ${theme.textPrimary}`}>{page.path}</span>
                   </td>
-                  <td className="px-6 py-4 text-right text-slate-400">{page.views.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-right text-slate-400">{formatDuration(page.avgDuration)}</td>
+                  <td className={`px-6 py-4 text-right ${theme.textMuted}`}>{page.views.toLocaleString()}</td>
+                  <td className={`px-6 py-4 text-right ${theme.textMuted}`}>{formatDuration(page.avgDuration)}</td>
                 </tr>
               ))}
             </tbody>
@@ -257,16 +259,16 @@ export default function Analytics() {
 
       {/* Recent Activity */}
       {realtime && realtime.recentPages.length > 0 && (
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-700/50 flex items-center gap-2">
+        <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
+          <div className={`px-6 py-4 border-b flex items-center gap-2 ${theme.border}`}>
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <h3 className="text-lg font-semibold text-white">Live Activity</h3>
+            <h3 className={`text-lg font-semibold ${theme.textPrimary}`}>Live Activity</h3>
           </div>
-          <div className="divide-y divide-slate-700/50">
+          <div className={`divide-y ${theme.border}`}>
             {realtime.recentPages.map((page, i) => (
-              <div key={i} className="px-6 py-3 flex justify-between items-center hover:bg-slate-700/30 transition-colors">
-                <span className="text-white">{page.path}</span>
-                <span className="text-sm text-slate-400">
+              <div key={i} className={`px-6 py-3 flex justify-between items-center ${theme.tableRow}`}>
+                <span className={theme.textPrimary}>{page.path}</span>
+                <span className={`text-sm ${theme.textMuted}`}>
                   {new Date(page.createdAt).toLocaleTimeString()}
                 </span>
               </div>
@@ -279,6 +281,8 @@ export default function Analytics() {
 }
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
+  const { useThemeClasses } = require('../contexts/SiteThemeContext');
+  const theme = useThemeClasses();
   const colors: Record<string, string> = {
     blue: 'bg-blue-500/20 text-blue-400',
     green: 'bg-emerald-500/20 text-emerald-400',
@@ -287,12 +291,12 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
     red: 'bg-red-500/20 text-red-400',
   };
   return (
-    <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-4">
+    <div className={`backdrop-blur rounded-xl border p-4 ${theme.card}`}>
       <div className="flex items-center gap-3">
         <div className={`p-3 rounded-lg ${colors[color]}`}>{icon}</div>
         <div>
-          <p className="text-sm text-slate-400">{label}</p>
-          <p className="text-2xl font-bold text-white">{value}</p>
+          <p className={`text-sm ${theme.textMuted}`}>{label}</p>
+          <p className={`text-2xl font-bold ${theme.textPrimary}`}>{value}</p>
         </div>
       </div>
     </div>

@@ -364,11 +364,13 @@ export default function CourseEditor() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-1">Full Description</label>
-                  <RichTextEditor
-                    content={course.description || ''}
-                    onChange={(content) => setCourse({ ...course, description: content })}
-                    placeholder="Write a detailed course description..."
-                  />
+                  <div className="overflow-hidden rounded-xl">
+                    <RichTextEditor
+                      content={course.description || ''}
+                      onChange={(content) => setCourse({ ...course, description: content })}
+                      placeholder="Write a detailed course description..."
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -86,12 +86,15 @@ export class OrdersService {
 
     // Calculate totals
     let subtotal = new Decimal(0);
-    const orderItems = productItems.map((item) => {
+
+    // Create order items for products
+    const productOrderItems = productItems.map((item) => {
       const price = item.variant?.price || item.product!.salePrice || item.product!.price;
       const total = new Decimal(price).times(item.quantity);
       subtotal = subtotal.plus(total);
 
       return {
+        itemType: 'PRODUCT' as const,
         product: { connect: { id: item.productId! } },
         variant: item.variantId ? { connect: { id: item.variantId } } : undefined,
         name: item.product!.name + (item.variant ? ` - ${item.variant.name}` : ''),
@@ -103,12 +106,23 @@ export class OrdersService {
       };
     });
 
-    // Add course prices to subtotal
-    for (const item of courseItems) {
-      if (item.course?.priceAmount) {
-        subtotal = subtotal.plus(item.course.priceAmount);
-      }
-    }
+    // Create order items for courses
+    const courseOrderItems = courseItems.map((item) => {
+      const price = item.course!.priceAmount || new Decimal(0);
+      subtotal = subtotal.plus(price);
+
+      return {
+        itemType: 'COURSE' as const,
+        course: { connect: { id: item.courseId! } },
+        name: item.course!.title,
+        price,
+        quantity: 1, // Courses always have quantity 1
+        total: price,
+      };
+    });
+
+    // Combine all order items
+    const orderItems = [...productOrderItems, ...courseOrderItems];
 
     // Get shipping cost
     let shipping = new Decimal(0);
@@ -210,28 +224,7 @@ export class OrdersService {
       }
     }
 
-    // Create course enrollments for purchased courses
-    if (userId && courseItems.length > 0) {
-      for (const item of courseItems) {
-        if (item.courseId) {
-          // Check if already enrolled
-          const existingEnrollment = await this.prisma.enrollment.findUnique({
-            where: { courseId_userId: { courseId: item.courseId, userId } },
-          });
-
-          if (!existingEnrollment) {
-            await this.prisma.enrollment.create({
-              data: {
-                courseId: item.courseId,
-                userId,
-                status: 'ACTIVE',
-                paymentId: order.id, // Link to order
-              },
-            });
-          }
-        }
-      }
-    }
+    // Note: Course enrollments are created after payment succeeds in stripe.service.ts
 
     // Clear cart
     await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });

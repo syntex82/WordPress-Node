@@ -8,6 +8,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { FiImage, FiVideo, FiX, FiGlobe, FiLock, FiHash, FiAtSign, FiLink, FiPlay, FiFolder } from 'react-icons/fi';
 import { timelineApi, mediaApi, CreatePostMediaDto, TimelinePostUser } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+import { useSiteTheme } from '../contexts/SiteThemeContext';
 import toast from 'react-hot-toast';
 import EmojiPicker from './EmojiPicker';
 import MediaLibraryPicker from './MediaLibraryPicker';
@@ -17,6 +18,9 @@ interface CreatePostFormProps {
 }
 
 export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
+  const { resolvedTheme } = useSiteTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const { user } = useAuthStore();
   const [content, setContent] = useState('');
   const [isPublic, setIsPublic] = useState(true);
@@ -264,7 +268,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
   };
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-3 sm:p-4 mb-4 sm:mb-6">
+    <div className={`backdrop-blur rounded-xl border p-3 sm:p-4 mb-4 sm:mb-6 ${
+      isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-gray-200 shadow-sm'
+    }`}>
       <div className="flex gap-2 sm:gap-3">
         {/* User Avatar */}
         {user?.avatar ? (
@@ -283,19 +289,23 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
             onChange={handleContentChange}
             onKeyDown={handleKeyDown}
             placeholder="What's on your mind?"
-            className="w-full resize-none border-0 focus:ring-0 focus:outline-none text-white bg-transparent placeholder-slate-400 text-sm sm:text-base"
+            className={`w-full resize-none border-0 focus:ring-0 focus:outline-none bg-transparent text-sm sm:text-base ${
+              isDark ? 'text-white placeholder-slate-400' : 'text-gray-900 placeholder-gray-400'
+            }`}
             rows={2}
           />
 
           {/* Mention Autocomplete Dropdown */}
           {showMentionDropdown && (
-            <div className="absolute left-0 right-0 mt-1 bg-slate-700 rounded-lg shadow-lg border border-slate-600 max-h-48 overflow-y-auto z-20">
+            <div className={`absolute left-0 right-0 mt-1 rounded-lg shadow-lg border max-h-48 overflow-y-auto z-20 ${
+              isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-200'
+            }`}>
               {isLoadingMentions ? (
-                <div className="px-3 py-2 text-sm text-slate-400">
+                <div className={`px-3 py-2 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                   Searching...
                 </div>
               ) : mentionSuggestions.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-slate-400">
+                <div className={`px-3 py-2 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                   No users found
                 </div>
               ) : (
@@ -303,9 +313,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                   <button
                     key={suggestion.id}
                     onClick={() => insertMention(suggestion)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-slate-600 ${
-                      index === selectedSuggestionIndex ? 'bg-blue-600/30' : ''
-                    }`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left ${
+                      isDark ? 'hover:bg-slate-600' : 'hover:bg-gray-100'
+                    } ${index === selectedSuggestionIndex ? 'bg-blue-600/30' : ''}`}
                   >
                     {suggestion.avatar ? (
                       <img src={suggestion.avatar} alt="" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover" />
@@ -315,11 +325,11 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-white text-sm truncate">
+                      <div className={`font-medium text-sm truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {suggestion.name}
                       </div>
                       {suggestion.username && (
-                        <div className="text-xs text-slate-400 truncate">
+                        <div className={`text-xs truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                           @{suggestion.username}
                         </div>
                       )}
@@ -332,12 +342,12 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
           {/* Upload Progress */}
           {isUploading && (
-            <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-blue-900/20 rounded-lg">
+            <div className={`mt-2 sm:mt-3 p-2 sm:p-3 rounded-lg ${isDark ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex-1 h-1.5 sm:h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div className={`flex-1 h-1.5 sm:h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-gray-200'}`}>
                   <div className="h-full bg-blue-500 transition-all" style={{ width: `${uploadProgress}%` }} />
                 </div>
-                <span className="text-xs sm:text-sm text-blue-400 whitespace-nowrap">{uploadProgress}%</span>
+                <span className="text-xs sm:text-sm text-blue-500 whitespace-nowrap">{uploadProgress}%</span>
               </div>
             </div>
           )}
@@ -350,7 +360,11 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
                 placeholder="Paste URL..."
-                className="flex-1 px-3 py-2 border border-slate-600 rounded-lg bg-slate-700 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  isDark
+                    ? 'border-slate-600 bg-slate-700 text-white placeholder-slate-400'
+                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400'
+                }`}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddExternalUrl()}
               />
               <div className="flex gap-2">
@@ -362,7 +376,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 </button>
                 <button
                   onClick={() => { setShowUrlInput(false); setExternalUrl(''); }}
-                  className="p-2 text-slate-400 hover:bg-slate-600 rounded-lg"
+                  className={`p-2 rounded-lg ${isDark ? 'text-slate-400 hover:bg-slate-600' : 'text-gray-500 hover:bg-gray-100'}`}
                 >
                   <FiX className="w-5 h-5" />
                 </button>
@@ -380,11 +394,11 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 const isExternalVideo = isYouTube || isVimeo;
 
                 return (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-slate-700">
+                  <div key={index} className={`relative aspect-square rounded-lg overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-gray-100'}`}>
                     {isExternalVideo ? (
                       <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4">
                         <FiPlay className="w-8 h-8 sm:w-10 sm:h-10 text-red-500 mb-1 sm:mb-2" />
-                        <span className="text-xs text-slate-400 text-center truncate w-full">
+                        <span className={`text-xs text-center truncate w-full ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                           {isYouTube ? 'YouTube' : 'Vimeo'}
                         </span>
                       </div>
@@ -411,7 +425,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
           )}
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-700">
+          <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t ${
+            isDark ? 'border-slate-700' : 'border-gray-200'
+          }`}>
             <div className="flex items-center justify-between sm:justify-start gap-0.5 sm:gap-1 flex-wrap">
               <input
                 ref={fileInputRef}
@@ -426,7 +442,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={media.length >= 4 || isUploading}
-                className="p-1.5 sm:p-2 hover:bg-slate-700 rounded-full text-slate-400 disabled:opacity-50 transition-colors touch-manipulation"
+                className={`p-1.5 sm:p-2 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
+                  isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-500'
+                }`}
                 title="Upload from device"
               >
                 <FiImage className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -436,7 +454,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={media.length >= 4 || isUploading}
-                className="p-1.5 sm:p-2 hover:bg-slate-700 rounded-full text-slate-400 disabled:opacity-50 transition-colors touch-manipulation hidden sm:block"
+                className={`p-1.5 sm:p-2 rounded-full disabled:opacity-50 transition-colors touch-manipulation hidden sm:block ${
+                  isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-500'
+                }`}
                 title="Upload video"
               >
                 <FiVideo className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -446,7 +466,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
               <button
                 onClick={() => setShowMediaLibrary(true)}
                 disabled={media.length >= 4}
-                className="p-1.5 sm:p-2 hover:bg-slate-700 rounded-full text-slate-400 disabled:opacity-50 transition-colors touch-manipulation"
+                className={`p-1.5 sm:p-2 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
+                  isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-500'
+                }`}
                 title="Choose from media library"
               >
                 <FiFolder className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -456,8 +478,10 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
               <button
                 onClick={() => setShowUrlInput(!showUrlInput)}
                 disabled={media.length >= 4}
-                className={`p-1.5 sm:p-2 hover:bg-slate-700 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
-                  showUrlInput ? 'text-blue-400 bg-blue-900/30' : 'text-slate-400'
+                className={`p-1.5 sm:p-2 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
+                  showUrlInput
+                    ? 'text-blue-400 bg-blue-900/30'
+                    : isDark ? 'text-slate-400 hover:bg-slate-700' : 'text-gray-500 hover:bg-gray-100'
                 }`}
                 title="Add URL"
               >
@@ -468,7 +492,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
               <EmojiPicker onSelect={handleEmojiSelect} />
 
               {/* Divider - hidden on mobile */}
-              <div className="hidden sm:block w-px h-5 bg-slate-700 mx-1" />
+              <div className={`hidden sm:block w-px h-5 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-200'}`} />
 
               {/* Visibility Toggle */}
               <button
@@ -476,7 +500,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 className={`flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm transition-colors touch-manipulation ${
                   isPublic
                     ? 'bg-green-900/30 text-green-400'
-                    : 'bg-slate-700 text-slate-400'
+                    : isDark ? 'bg-slate-700 text-slate-400' : 'bg-gray-100 text-gray-500'
                 }`}
               >
                 {isPublic ? <FiGlobe className="w-3 h-3 sm:w-4 sm:h-4" /> : <FiLock className="w-3 h-3 sm:w-4 sm:h-4" />}
@@ -485,7 +509,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
               {/* Media count indicator */}
               {media.length > 0 && (
-                <span className="text-xs text-slate-500 ml-1 sm:ml-2">
+                <span className={`text-xs ml-1 sm:ml-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
                   {media.length}/4
                 </span>
               )}

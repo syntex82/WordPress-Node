@@ -296,6 +296,7 @@ model Course {
   enrollments         Enrollment[]
   lessons             Lesson[]
   LessonProgress      LessonProgress[]
+  OrderItem           OrderItem[]
   quizzes             Quiz[]
   QuizAttempt         QuizAttempt[]
 
@@ -991,8 +992,10 @@ model Order {
 model OrderItem {
   id String @id @default(cuid())
   orderId        String
-  productId      String
+  productId      String?
   variantId      String?
+  courseId       String?
+  itemType       CartItemType    @default(PRODUCT)
   name           String
   sku            String?
   price          Decimal         @db.Decimal(10, 2)
@@ -1001,11 +1004,13 @@ model OrderItem {
   options        Json?
   createdAt      DateTime        @default(now())
   order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product        Product         @relation(fields: [productId], references: [id])
+  product        Product?        @relation(fields: [productId], references: [id])
   ProductVariant ProductVariant? @relation(fields: [variantId], references: [id])
+  course         Course?         @relation(fields: [courseId], references: [id])
 
   @@index([orderId])
   @@index([productId])
+  @@index([courseId])
 }
 
 model Page {

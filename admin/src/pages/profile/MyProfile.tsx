@@ -14,8 +14,12 @@ import {
 import toast from 'react-hot-toast';
 import CreatePostForm from '../../components/CreatePostForm';
 import PostMediaGallery from '../../components/PostMediaGallery';
+import { useSiteTheme } from '../../contexts/SiteThemeContext';
 
 export default function MyProfile() {
+  const { resolvedTheme } = useSiteTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -222,7 +226,7 @@ export default function MyProfile() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500"></div>
+        <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-blue-500 ${isDark ? 'border-slate-700' : 'border-gray-200'}`}></div>
       </div>
     );
   }
@@ -230,15 +234,15 @@ export default function MyProfile() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
-          <p className="text-red-400 text-lg mb-4">{error}</p>
-          <button onClick={loadProfile} className="text-red-400 hover:text-red-300 transition-colors">Try Again</button>
+        <div className={`border rounded-xl p-6 text-center ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
+          <p className={`text-lg mb-4 ${isDark ? 'text-red-400' : 'text-red-600'}`}>{error}</p>
+          <button onClick={loadProfile} className={`transition-colors ${isDark ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-500'}`}>Try Again</button>
         </div>
       </div>
     );
   }
 
-  if (!profile) return <div className="p-4 sm:p-6 text-slate-400">Profile not found</div>;
+  if (!profile) return <div className={`p-4 sm:p-6 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Profile not found</div>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-0">

@@ -8,18 +8,21 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
+import { SiteThemeProvider, useSiteTheme } from './contexts/SiteThemeContext';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Loading component for lazy-loaded routes
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-100">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Loading...</p>
+// Loading component for lazy-loaded routes - now theme-aware
+const PageLoader = () => {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-slate-900 transition-colors">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600 dark:text-slate-400">Loading...</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Auth pages (loaded eagerly as they're entry points)
 import Login from './pages/Login';
@@ -123,19 +126,12 @@ const Subscription = lazy(() => import('./pages/Subscription'));
 
 
 
-function App() {
+function AppContent() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // Wait for Zustand to rehydrate from localStorage before rendering auth-dependent routes
   if (!_hasHydrated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
@@ -299,6 +295,15 @@ function App() {
         </Suspense>
       </BrowserRouter>
     </>
+  );
+}
+
+// Main App component wrapped with SiteThemeProvider
+function App() {
+  return (
+    <SiteThemeProvider>
+      <AppContent />
+    </SiteThemeProvider>
   );
 }
 

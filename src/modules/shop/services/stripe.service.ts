@@ -194,6 +194,14 @@ export class StripeService implements OnModuleInit {
       },
     });
 
+    // Get order with items to process course enrollments
+    const order = await this.prisma.order.findUnique({
+      where: { id: payment.orderId },
+      include: { items: true },
+    });
+
+    if (!order) return;
+
     // Update order status
     await this.prisma.order.update({
       where: { id: payment.orderId },
@@ -202,6 +210,30 @@ export class StripeService implements OnModuleInit {
         status: 'CONFIRMED',
       },
     });
+
+    // Enroll user in purchased courses after payment succeeds
+    if (order.userId) {
+      const courseItems = order.items.filter((item) => item.courseId);
+      for (const item of courseItems) {
+        if (item.courseId) {
+          // Check if already enrolled
+          const existingEnrollment = await this.prisma.enrollment.findUnique({
+            where: { courseId_userId: { courseId: item.courseId, userId: order.userId } },
+          });
+
+          if (!existingEnrollment) {
+            await this.prisma.enrollment.create({
+              data: {
+                courseId: item.courseId,
+                userId: order.userId,
+                status: 'ACTIVE',
+                paymentId: order.id,
+              },
+            });
+          }
+        }
+      }
+    }
   }
 
   // Handle failed payment

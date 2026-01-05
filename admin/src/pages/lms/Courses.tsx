@@ -5,10 +5,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { lmsAdminApi, Course } from '../../services/api';
+import { useThemeClasses } from '../../contexts/SiteThemeContext';
 import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiList, FiHelpCircle, FiUsers, FiBook, FiFolder } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function Courses() {
+  const theme = useThemeClasses();
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,12 +120,12 @@ export default function Courses() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 p-6">
+    <div className={`min-h-screen p-6 ${theme.background}`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Courses</h1>
-          <p className="text-sm text-slate-400 mt-1">{total} courses total</p>
+          <h1 className={`text-2xl font-bold ${theme.titleGradient}`}>Courses</h1>
+          <p className={`text-sm mt-1 ${theme.textMuted}`}>{total} courses total</p>
         </div>
         <Link
           to="/lms/courses/new"
@@ -135,22 +137,22 @@ export default function Courses() {
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-4 mb-6">
+      <div className={`backdrop-blur rounded-xl border p-4 mb-6 ${theme.card}`}>
         <form onSubmit={handleSearch} className="flex gap-4 flex-wrap">
           <div className="flex-1 min-w-[200px] relative">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <FiSearch className={`absolute left-3 top-1/2 -translate-y-1/2 ${theme.textMuted}`} />
             <input
               type="text"
               placeholder="Search courses by title, description, or instructor..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl pl-10 pr-3 py-2 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={`w-full rounded-xl pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${theme.input}`}
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className={`rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${theme.select}`}
           >
             <option value="">All Status</option>
             <option value="DRAFT">Draft</option>
@@ -160,7 +162,7 @@ export default function Courses() {
           <select
             value={categoryFilter}
             onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-            className="bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className={`rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${theme.select}`}
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -169,7 +171,7 @@ export default function Courses() {
           </select>
           <button
             type="submit"
-            className="bg-slate-700/50 border border-slate-600/50 text-slate-300 px-4 py-2 rounded-xl hover:bg-slate-600/50 transition-colors"
+            className={`px-4 py-2 rounded-xl transition-colors ${theme.buttonSecondary}`}
           >
             Search
           </button>
@@ -178,7 +180,7 @@ export default function Courses() {
 
       {/* Courses Table */}
       {loading ? (
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-8 flex justify-center">
+        <div className={`backdrop-blur rounded-xl border p-8 flex justify-center ${theme.card}`}>
           <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-700 border-t-blue-500"></div>
         </div>
       ) : error ? (
@@ -187,10 +189,10 @@ export default function Courses() {
           <button onClick={loadCourses} className="mt-3 text-red-300 hover:text-red-200 font-medium">Try Again</button>
         </div>
       ) : courses.length === 0 ? (
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-12 text-center">
-          <FiBook className="mx-auto text-slate-600 mb-4" size={48} />
-          <h3 className="text-lg font-medium text-white mb-2">No courses found</h3>
-          <p className="text-slate-400 mb-4">
+        <div className={`backdrop-blur rounded-xl border p-12 text-center ${theme.card}`}>
+          <FiBook className={`mx-auto mb-4 ${theme.textMuted}`} size={48} />
+          <h3 className={`text-lg font-medium mb-2 ${theme.textPrimary}`}>No courses found</h3>
+          <p className={`mb-4 ${theme.textMuted}`}>
             {search || statusFilter || categoryFilter
               ? 'Try adjusting your filters or search terms'
               : 'Get started by creating your first course'}
@@ -203,26 +205,26 @@ export default function Courses() {
           )}
         </div>
       ) : (
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
+        <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-700/50">
-              <thead className="bg-slate-700/30">
+            <table className={`min-w-full divide-y ${theme.border}`}>
+              <thead className={theme.tableHeader}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Course</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Instructor</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Price</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Content</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Enrollments</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>Course</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>Instructor</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>Status</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>Price</th>
+                  <th className={`px-6 py-3 text-center text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>Content</th>
+                  <th className={`px-6 py-3 text-center text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>Enrollments</th>
+                  <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className={`divide-y ${theme.border}`}>
                 {courses.map((course) => (
-                  <tr key={course.id} className="hover:bg-slate-700/30 transition-colors">
+                  <tr key={course.id} className={theme.tableRow}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 w-14 h-10 rounded-lg overflow-hidden bg-slate-700">
+                        <div className={`flex-shrink-0 w-14 h-10 rounded-lg overflow-hidden ${theme.isDark ? 'bg-slate-700' : 'bg-gray-200'}`}>
                           <img
                             src={course.featuredImage || '/api/lms/courses/placeholder-image'}
                             alt=""
@@ -231,9 +233,9 @@ export default function Courses() {
                           />
                         </div>
                         <div className="ml-4">
-                          <div className="font-medium text-white">{course.title}</div>
+                          <div className={`font-medium ${theme.textPrimary}`}>{course.title}</div>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-slate-400">{course.category || 'Uncategorized'}</span>
+                            <span className={`text-xs ${theme.textMuted}`}>{course.category || 'Uncategorized'}</span>
                             {course.level && getLevelBadge(course.level)}
                           </div>
                         </div>
@@ -245,22 +247,22 @@ export default function Courses() {
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-medium mr-2">
                             {course.instructor.name?.charAt(0).toUpperCase() || '?'}
                           </div>
-                          <span className="text-sm text-white">{course.instructor.name}</span>
+                          <span className={`text-sm ${theme.textPrimary}`}>{course.instructor.name}</span>
                         </div>
                       ) : (
-                        <span className="text-sm text-slate-500">No instructor</span>
+                        <span className={`text-sm ${theme.textMuted}`}>No instructor</span>
                       )}
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(course.status)}</td>
                     <td className="px-6 py-4">
                       {course.priceType === 'PAID' ? (
-                        <span className="font-medium text-white">${Number(course.priceAmount || 0).toFixed(2)}</span>
+                        <span className={`font-medium ${theme.textPrimary}`}>${Number(course.priceAmount || 0).toFixed(2)}</span>
                       ) : (
                         <span className="text-green-400 font-medium">Free</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-4 text-sm text-slate-400">
+                      <div className={`flex items-center justify-center gap-4 text-sm ${theme.textMuted}`}>
                         <div className="flex items-center gap-1" title="Lessons">
                           <FiList size={14} />
                           <span>{course._count?.lessons || 0}</span>
@@ -272,7 +274,7 @@ export default function Courses() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-1 text-slate-400">
+                      <div className={`flex items-center justify-center gap-1 ${theme.textMuted}`}>
                         <FiUsers size={14} />
                         <span className="font-medium">{course._count?.enrollments || 0}</span>
                       </div>
@@ -324,15 +326,15 @@ export default function Courses() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="px-6 py-4 border-t border-slate-700/50 bg-slate-700/30 flex items-center justify-between">
-              <p className="text-sm text-slate-400">
+            <div className={`px-6 py-4 border-t flex items-center justify-between ${theme.border} ${theme.tableHeader}`}>
+              <p className={`text-sm ${theme.textMuted}`}>
                 Showing {((page - 1) * 10) + 1} to {Math.min(page * 10, total)} of {total} courses
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-600/50 transition-colors"
+                  className={`px-4 py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${theme.buttonSecondary}`}
                 >
                   Previous
                 </button>
@@ -349,7 +351,7 @@ export default function Courses() {
                         className={`w-10 h-10 rounded-xl transition-colors ${
                           page === pageNum
                             ? 'bg-blue-600 text-white'
-                            : 'hover:bg-slate-600/50 border border-slate-600/50 text-slate-300'
+                            : theme.buttonSecondary
                         }`}
                       >
                         {pageNum}
@@ -360,7 +362,7 @@ export default function Courses() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-600/50 transition-colors"
+                  className={`px-4 py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${theme.buttonSecondary}`}
                 >
                   Next
                 </button>

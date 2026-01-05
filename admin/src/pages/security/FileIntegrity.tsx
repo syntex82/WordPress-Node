@@ -6,10 +6,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { securityApi } from '../../services/api';
+import { useThemeClasses } from '../../contexts/SiteThemeContext';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiFileText, FiAlertTriangle, FiCheckCircle, FiRefreshCw, FiDatabase } from 'react-icons/fi';
 
 export default function FileIntegrity() {
+  const theme = useThemeClasses();
   const [scanning, setScanning] = useState(false);
   const [generatingBaseline, setGeneratingBaseline] = useState(false);
   const [scanResults, setScanResults] = useState<any>(null);
@@ -60,14 +62,14 @@ export default function FileIntegrity() {
         </Link>
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">File Integrity Monitor</h1>
-            <p className="text-slate-400 mt-1">Detect unauthorized modifications to core files</p>
+            <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>File Integrity Monitor</h1>
+            <p className={`mt-1 ${theme.textMuted}`}>Detect unauthorized modifications to core files</p>
           </div>
           <div className="flex gap-3">
             <button
               onClick={handleGenerateBaseline}
               disabled={generatingBaseline}
-              className="flex items-center bg-slate-700 text-white px-4 py-2 rounded-xl hover:bg-slate-600 disabled:opacity-50 transition-colors"
+              className={`flex items-center px-4 py-2 rounded-xl disabled:opacity-50 transition-colors ${theme.isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
             >
               <FiDatabase className={`mr-2 ${generatingBaseline ? 'animate-spin' : ''}`} size={18} />
               {generatingBaseline ? 'Generating...' : 'Generate Baseline'}
@@ -104,10 +106,10 @@ export default function FileIntegrity() {
         <div className="space-y-6">
           {/* Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+            <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-400">New Files</p>
+                  <p className={`text-sm font-medium ${theme.textMuted}`}>New Files</p>
                   <p className="text-3xl font-bold text-blue-400 mt-2">{scanResults.new.length}</p>
                 </div>
                 <div className="bg-blue-500/20 text-blue-400 p-3 rounded-xl">
@@ -116,10 +118,10 @@ export default function FileIntegrity() {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+            <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-400">Modified Files</p>
+                  <p className={`text-sm font-medium ${theme.textMuted}`}>Modified Files</p>
                   <p className="text-3xl font-bold text-orange-400 mt-2">{scanResults.modified.length}</p>
                 </div>
                 <div className="bg-orange-500/20 text-orange-400 p-3 rounded-xl">
@@ -128,10 +130,10 @@ export default function FileIntegrity() {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+            <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-400">Deleted Files</p>
+                  <p className={`text-sm font-medium ${theme.textMuted}`}>Deleted Files</p>
                   <p className="text-3xl font-bold text-red-400 mt-2">{scanResults.deleted.length}</p>
                 </div>
                 <div className="bg-red-500/20 text-red-400 p-3 rounded-xl">
@@ -141,14 +143,14 @@ export default function FileIntegrity() {
             </div>
           </div>
 
-          <div className="text-sm text-slate-500">
+          <div className={`text-sm ${theme.isDark ? 'text-slate-500' : 'text-gray-400'}`}>
             Last scanned: {new Date(scanResults.scannedAt).toLocaleString()}
           </div>
 
           {/* New Files */}
           {scanResults.new.length > 0 && (
-            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
-              <div className="p-6 border-b border-slate-700/50 bg-blue-500/10">
+            <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
+              <div className={`p-6 border-b bg-blue-500/10 ${theme.border}`}>
                 <h2 className="text-xl font-bold text-blue-400 flex items-center">
                   <FiFileText className="mr-2" size={20} />
                   New Files ({scanResults.new.length})
@@ -157,7 +159,7 @@ export default function FileIntegrity() {
               <div className="p-6">
                 <ul className="space-y-2">
                   {scanResults.new.map((file: string, index: number) => (
-                    <li key={index} className="flex items-center text-sm text-slate-300 font-mono">
+                    <li key={index} className={`flex items-center text-sm font-mono ${theme.textSecondary}`}>
                       <FiCheckCircle className="text-blue-400 mr-2" size={16} />
                       {file}
                     </li>
@@ -169,8 +171,8 @@ export default function FileIntegrity() {
 
           {/* Modified Files */}
           {scanResults.modified.length > 0 && (
-            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
-              <div className="p-6 border-b border-slate-700/50 bg-orange-500/10">
+            <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
+              <div className={`p-6 border-b bg-orange-500/10 ${theme.border}`}>
                 <h2 className="text-xl font-bold text-orange-400 flex items-center">
                   <FiAlertTriangle className="mr-2" size={20} />
                   Modified Files ({scanResults.modified.length})
@@ -179,7 +181,7 @@ export default function FileIntegrity() {
               <div className="p-6">
                 <ul className="space-y-2">
                   {scanResults.modified.map((file: string, index: number) => (
-                    <li key={index} className="flex items-center text-sm text-slate-300 font-mono">
+                    <li key={index} className={`flex items-center text-sm font-mono ${theme.textSecondary}`}>
                       <FiAlertTriangle className="text-orange-400 mr-2" size={16} />
                       {file}
                     </li>
@@ -191,8 +193,8 @@ export default function FileIntegrity() {
 
           {/* Deleted Files */}
           {scanResults.deleted.length > 0 && (
-            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
-              <div className="p-6 border-b border-slate-700/50 bg-red-500/10">
+            <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
+              <div className={`p-6 border-b bg-red-500/10 ${theme.border}`}>
                 <h2 className="text-xl font-bold text-red-400 flex items-center">
                   <FiAlertTriangle className="mr-2" size={20} />
                   Deleted Files ({scanResults.deleted.length})
@@ -201,7 +203,7 @@ export default function FileIntegrity() {
               <div className="p-6">
                 <ul className="space-y-2">
                   {scanResults.deleted.map((file: string, index: number) => (
-                    <li key={index} className="flex items-center text-sm text-slate-300 font-mono">
+                    <li key={index} className={`flex items-center text-sm font-mono ${theme.textSecondary}`}>
                       <FiAlertTriangle className="text-red-400 mr-2" size={16} />
                       {file}
                     </li>

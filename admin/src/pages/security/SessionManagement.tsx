@@ -6,11 +6,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { securityApi } from '../../services/api';
+import { useThemeClasses } from '../../contexts/SiteThemeContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiMonitor, FiTrash2, FiRefreshCw, FiUsers } from 'react-icons/fi';
 
 export default function SessionManagement() {
+  const theme = useThemeClasses();
   const [loading, setLoading] = useState(true);
   const [sessions, setSessions] = useState<any[]>([]);
 
@@ -110,12 +112,12 @@ export default function SessionManagement() {
         </Link>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Session Management</h1>
-            <p className="text-slate-400 mt-2">View and manage active user sessions</p>
+            <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Session Management</h1>
+            <p className={`mt-2 ${theme.textMuted}`}>View and manage active user sessions</p>
           </div>
           <button
             onClick={handleCleanup}
-            className="bg-slate-700 text-white px-4 py-2 rounded-xl hover:bg-slate-600 flex items-center gap-2 transition-all"
+            className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${theme.isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
           >
             <FiRefreshCw /> Cleanup Expired
           </button>
@@ -124,11 +126,11 @@ export default function SessionManagement() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+        <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-400">Total Sessions</p>
-              <p className="text-3xl font-bold text-white">{sessions.length}</p>
+              <p className={`text-sm ${theme.textMuted}`}>Total Sessions</p>
+              <p className={`text-3xl font-bold ${theme.textPrimary}`}>{sessions.length}</p>
             </div>
             <div className="bg-blue-500/20 text-blue-400 p-3 rounded-lg">
               <FiMonitor size={24} />
@@ -136,11 +138,11 @@ export default function SessionManagement() {
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+        <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-400">Active Users</p>
-              <p className="text-3xl font-bold text-white">{Object.keys(sessionsByUser).length}</p>
+              <p className={`text-sm ${theme.textMuted}`}>Active Users</p>
+              <p className={`text-3xl font-bold ${theme.textPrimary}`}>{Object.keys(sessionsByUser).length}</p>
             </div>
             <div className="bg-emerald-500/20 text-emerald-400 p-3 rounded-lg">
               <FiUsers size={24} />
@@ -154,11 +156,11 @@ export default function SessionManagement() {
         {Object.entries(sessionsByUser).map(([userId, data]: [string, any]) => {
           const { user, sessions: userSessions } = data;
           return (
-          <div key={userId} className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50">
-            <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
+          <div key={userId} className={`backdrop-blur rounded-xl border ${theme.card}`}>
+            <div className={`p-6 border-b flex items-center justify-between ${theme.border}`}>
               <div>
-                <h2 className="text-xl font-bold text-white">{user.name || user.email}</h2>
-                <p className="text-sm text-slate-400">
+                <h2 className={`text-xl font-bold ${theme.textPrimary}`}>{user.name || user.email}</h2>
+                <p className={`text-sm ${theme.textMuted}`}>
                   {user.email} • {user.role} • {userSessions.length} session(s)
                 </p>
               </div>
@@ -174,32 +176,32 @@ export default function SessionManagement() {
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-700/30">
+                <thead className={theme.tableHeader}>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">IP Address</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Browser</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Last Activity</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Created</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Expires</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Actions</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>IP Address</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Browser</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Last Activity</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Created</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Expires</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${theme.textMuted}`}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/50">
+                <tbody className={`divide-y ${theme.border}`}>
                   {userSessions.map((session: any) => (
-                    <tr key={session.id} className="hover:bg-slate-700/30">
-                      <td className="px-6 py-4 text-sm font-mono text-white">
+                    <tr key={session.id} className={theme.tableRow}>
+                      <td className={`px-6 py-4 text-sm font-mono ${theme.textPrimary}`}>
                         {session.ip || 'Unknown'}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
+                      <td className={`px-6 py-4 text-sm ${theme.textMuted}`}>
                         {getUserAgent(session.userAgent)}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
+                      <td className={`px-6 py-4 text-sm ${theme.textMuted}`}>
                         {formatLastActivity(session.lastActivity)}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
+                      <td className={`px-6 py-4 text-sm ${theme.textMuted}`}>
                         {new Date(session.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
+                      <td className={`px-6 py-4 text-sm ${theme.textMuted}`}>
                         {new Date(session.expiresAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
@@ -221,9 +223,9 @@ export default function SessionManagement() {
         })}
 
         {sessions.length === 0 && (
-          <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-12 text-center">
-            <FiMonitor className="mx-auto text-slate-500 mb-4" size={48} />
-            <p className="text-slate-400">No active sessions found</p>
+          <div className={`backdrop-blur rounded-xl border p-12 text-center ${theme.card}`}>
+            <FiMonitor className={`mx-auto mb-4 ${theme.isDark ? 'text-slate-500' : 'text-gray-400'}`} size={48} />
+            <p className={theme.textMuted}>No active sessions found</p>
           </div>
         )}
       </div>

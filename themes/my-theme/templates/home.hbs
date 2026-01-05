@@ -152,7 +152,7 @@
           <h3><a href="/courses/{{slug}}">{{title}}</a></h3>
           <p>{{shortDescription}}</p>
           <div class="content-card-footer">
-            <span class="content-card-price">{{#if (eq priceType 'FREE')}}Free{{else}}${{price}}{{/if}}</span>
+            <span class="content-card-price">{{#if (eq priceType 'PAID')}}${{priceAmount}}{{else}}Free{{/if}}</span>
             <span class="content-card-meta">{{level}}</span>
           </div>
         </div>

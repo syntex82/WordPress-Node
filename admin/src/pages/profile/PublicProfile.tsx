@@ -10,6 +10,7 @@ import { useAuthStore } from '../../stores/authStore';
 import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
 import CommentModal from '../../components/CommentModal';
+import { useSiteTheme } from '../../contexts/SiteThemeContext';
 import {
   FiMapPin, FiCalendar, FiUsers, FiBook, FiAward, FiExternalLink,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiActivity, FiUserPlus, FiUserCheck,
@@ -17,6 +18,9 @@ import {
 } from 'react-icons/fi';
 
 export default function PublicProfile() {
+  const { resolvedTheme } = useSiteTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const { identifier } = useParams<{ identifier: string }>();
   const { user: currentUser } = useAuthStore();
   const [profile, setProfile] = useState<UserProfile | null>(null);

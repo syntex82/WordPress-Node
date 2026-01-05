@@ -1,0 +1,220 @@
+{{> header}}
+<style>
+  .success-section {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    padding: 120px 20px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .success-container {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+  }
+  .success-card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 3rem 2rem;
+  }
+  .success-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 3rem;
+    animation: pop 0.5s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  .success-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.75rem;
+  }
+  .success-message {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+  .order-details {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+  }
+  .order-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    color: #94a3b8;
+  }
+  .order-row span:last-child {
+    color: white;
+    font-weight: 500;
+  }
+  .order-row.total {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-size: 1.1rem;
+  }
+  .order-row.total span:last-child {
+    color: #10b981;
+    font-weight: 700;
+  }
+  .success-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 0.875rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .action-btn.primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+  }
+  .action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+  }
+  .action-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  .action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
+
+  /* Mobile Styles */
+  @media (max-width: 600px) {
+    .success-section { padding: 80px 15px 40px; }
+    .success-card { padding: 2rem 1.5rem; border-radius: 16px; }
+    .success-icon { width: 80px; height: 80px; font-size: 2.5rem; }
+    .success-title { font-size: 1.5rem; }
+    .success-message { font-size: 1rem; }
+    .order-details { padding: 1rem; }
+    .success-actions { flex-direction: column; }
+    .action-btn { width: 100%; text-align: center; }
+  }
+</style>
+
+<section class="success-section">
+  <div class="success-container">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <h1 class="success-title">Order Confirmed! 🎉</h1>
+      <p class="success-message">
+        Thank you for your purchase! Your order has been successfully processed.
+        {{#if order}}You will receive a confirmation email shortly.{{/if}}
+      </p>
+
+      {{#if order}}
+      <div class="order-details">
+        <div class="order-row">
+          <span>Order Number</span>
+          <span>{{order.orderNumber}}</span>
+        </div>
+        <div class="order-row">
+          <span>Date</span>
+          <span>{{formatDate order.createdAt}}</span>
+        </div>
+        <div class="order-row">
+          <span>Items</span>
+          <span>{{order.items.length}} item(s)</span>
+        </div>
+        <div class="order-row total">
+          <span>Total Paid</span>
+          <span>${{order.total}}</span>
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="success-actions">
+        {{#if user}}
+        <a href="/my-courses" class="action-btn primary">📚 Go to My Courses</a>
+        {{else}}
+        <a href="/courses" class="action-btn primary">📚 Browse Courses</a>
+        {{/if}}
+        <a href="/shop" class="action-btn secondary">🛍️ Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ========== GOOGLE ADS CONVERSION TRACKING ==========
+// Track purchase conversion for PPC campaigns
+window.dataLayer = window.dataLayer || [];
+{{#if order}}
+dataLayer.push({
+  'event': 'purchase',
+  'transaction_id': '{{order.orderNumber}}',
+  'value': {{order.total}},
+  'currency': 'USD',
+  'items': [
+    {{#each order.items}}
+    {
+      'item_id': '{{this.productId}}',
+      'item_name': '{{this.name}}',
+      'price': {{this.price}},
+      'quantity': {{this.quantity}}
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ]
+});
+
+// Google Ads Conversion (replace AW-XXXXXXXXX with your Google Ads ID)
+// gtag('event', 'conversion', {
+//   'send_to': 'AW-XXXXXXXXX/CONVERSION_LABEL',
+//   'value': {{order.total}},
+//   'currency': 'USD',
+//   'transaction_id': '{{order.orderNumber}}'
+// });
+{{/if}}
+
+// ========== FACEBOOK PIXEL PURCHASE EVENT ==========
+// Uncomment and add your Pixel ID to header.hbs first
+// fbq('track', 'Purchase', {
+//   value: {{#if order}}{{order.total}}{{else}}0{{/if}},
+//   currency: 'USD'
+// });
+
+// Simple confetti effect
+(function() {
+  var colors = ['#10b981', '#8b5cf6', '#6366f1', '#f59e0b', '#ec4899'];
+  for (var i = 0; i < 50; i++) {
+    var confetti = document.createElement('div');
+    confetti.style.cssText = 'position:fixed;width:10px;height:10px;background:' + colors[i % 5] + ';' +
+      'left:' + Math.random() * 100 + '%;top:-10px;border-radius:50%;pointer-events:none;z-index:1000;' +
+      'animation:fall ' + (2 + Math.random() * 2) + 's ease-out forwards;animation-delay:' + (Math.random() * 0.5) + 's;';
+    document.body.appendChild(confetti);
+    setTimeout(function(el) { el.remove(); }.bind(null, confetti), 4000);
+  }
+  var style = document.createElement('style');
+  style.textContent = '@keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }';
+  document.head.appendChild(style);
+})();
+</script>
+{{> footer}}
+

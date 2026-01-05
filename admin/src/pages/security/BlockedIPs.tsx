@@ -6,11 +6,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { securityApi } from '../../services/api';
+import { useThemeClasses } from '../../contexts/SiteThemeContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiShield, FiTrash2, FiPlus, FiX } from 'react-icons/fi';
 
 export default function BlockedIPs() {
+  const theme = useThemeClasses();
   const [loading, setLoading] = useState(true);
   const [blockedIps, setBlockedIps] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -79,8 +81,8 @@ export default function BlockedIPs() {
         </Link>
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">IP Blocking</h1>
-            <p className="text-slate-400 mt-1">Block malicious IP addresses from accessing your site</p>
+            <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>IP Blocking</h1>
+            <p className={`mt-1 ${theme.textMuted}`}>Block malicious IP addresses from accessing your site</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -93,54 +95,54 @@ export default function BlockedIPs() {
       </div>
 
       {/* Blocked IPs Table */}
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 overflow-hidden">
-        <div className="p-6 border-b border-slate-700/50">
-          <h2 className="text-xl font-bold text-white">Blocked IP Addresses ({blockedIps.length})</h2>
+      <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
+        <div className={`p-6 border-b ${theme.border}`}>
+          <h2 className={`text-xl font-bold ${theme.textPrimary}`}>Blocked IP Addresses ({blockedIps.length})</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-700/50">
-            <thead className="bg-slate-700/30">
+          <table className={`min-w-full divide-y ${theme.border}`}>
+            <thead className={theme.tableHeader}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   IP Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   Reason
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   Blocked At
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   Expires At
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${theme.textMuted}`}>
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
+            <tbody className={`divide-y ${theme.border}`}>
               {blockedIps.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={5} className={`px-6 py-8 text-center ${theme.textMuted}`}>
                     No blocked IP addresses
                   </td>
                 </tr>
               ) : (
                 blockedIps.map((blocked) => (
-                  <tr key={blocked.id} className="hover:bg-slate-700/30 transition-colors">
+                  <tr key={blocked.id} className={theme.tableRow}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <FiShield className="text-red-400 mr-2" size={18} />
-                        <span className="font-mono font-semibold text-white">{blocked.ip}</span>
+                        <span className={`font-mono font-semibold ${theme.textPrimary}`}>{blocked.ip}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-slate-300">{blocked.reason}</span>
+                      <span className={`text-sm ${theme.textSecondary}`}>{blocked.reason}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme.textMuted}`}>
                       {new Date(blocked.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme.textMuted}`}>
                       {blocked.expiresAt ? new Date(blocked.expiresAt).toLocaleString() : 'Never'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -162,16 +164,16 @@ export default function BlockedIPs() {
       {/* Add IP Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-6 max-w-md w-full mx-4 shadow-2xl">
+          <div className={`rounded-2xl border p-6 max-w-md w-full mx-4 shadow-2xl ${theme.isDark ? 'bg-slate-800 border-slate-700/50' : 'bg-white border-gray-200'}`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-white">Block IP Address</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white transition-colors">
+              <h3 className={`text-xl font-bold ${theme.textPrimary}`}>Block IP Address</h3>
+              <button onClick={() => setShowAddModal(false)} className={`${theme.icon} ${theme.iconHover} transition-colors`}>
                 <FiX size={24} />
               </button>
             </div>
             <form onSubmit={handleBlockIp}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}>
                   IP Address *
                 </label>
                 <input
@@ -179,40 +181,40 @@ export default function BlockedIPs() {
                   value={newIp}
                   onChange={(e) => setNewIp(e.target.value)}
                   placeholder="192.168.1.1"
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className={`w-full px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${theme.input}`}
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}>
                   Reason *
                 </label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Suspicious activity, brute force attempts, etc."
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className={`w-full px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${theme.input}`}
                   rows={3}
                   required
                 />
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}>
                   Expires At (Optional)
                 </label>
                 <input
                   type="datetime-local"
                   value={expiresAt}
                   onChange={(e) => setExpiresAt(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className={`w-full px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${theme.input}`}
                 />
-                <p className="text-xs text-slate-500 mt-1">Leave empty for permanent block</p>
+                <p className={`text-xs mt-1 ${theme.isDark ? 'text-slate-500' : 'text-gray-400'}`}>Leave empty for permanent block</p>
               </div>
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-colors"
+                  className={`px-4 py-2 border rounded-xl transition-colors ${theme.border} ${theme.textSecondary} ${theme.isDark ? 'hover:bg-slate-700/50' : 'hover:bg-gray-100'}`}
                 >
                   Cancel
                 </button>

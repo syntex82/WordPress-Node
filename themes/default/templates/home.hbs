@@ -1163,8 +1163,8 @@
         {{else}}
         <div class="wp-course-placeholder">📚</div>
         {{/if}}
-        {{#if price}}
-        <span class="wp-course-price">${{price}}</span>
+        {{#if (eq priceType 'PAID')}}
+        <span class="wp-course-price">${{priceAmount}}</span>
         {{else}}
         <span class="wp-course-price wp-free">Free</span>
         {{/if}}

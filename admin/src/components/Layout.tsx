@@ -16,6 +16,8 @@ import { NAV_TOOLTIPS } from '../config/tooltips';
 import CommandPalette from './CommandPalette';
 import NotificationCenter from './NotificationCenter';
 import VideoCall from './VideoCall';
+import ThemeToggle from './ThemeToggle';
+import { useSiteTheme, useThemeClasses } from '../contexts/SiteThemeContext';
 
 // Get the frontend URL - in production it's same origin (without /admin), in development uses domain config
 const getFrontendUrl = async (): Promise<string> => {
@@ -42,6 +44,8 @@ interface IncomingCall {
 export default function Layout() {
   const location = useLocation();
   const { user, logout, token } = useAuthStore();
+  const theme = useThemeClasses();
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showRoleInfo, setShowRoleInfo] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -283,13 +287,22 @@ export default function Layout() {
     window.location.href = '/admin/customize';
   };
 
+  const { resolvedTheme } = useSiteTheme();
+  const isDark = resolvedTheme === 'dark';
+
   return (
-    <div className="flex h-screen bg-slate-900">
+    <div className={`flex h-screen ${isDark ? 'bg-slate-900' : 'bg-gray-50'}`}>
       {/* Mobile Header - Only visible on small screens */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-b border-slate-800/50 px-4 py-3 flex items-center justify-between safe-area-inset">
+      <div className={`lg:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-lg px-4 py-3 flex items-center justify-between safe-area-inset ${
+        isDark ? 'bg-slate-900/95 border-b border-slate-800/50' : 'bg-white/95 border-b border-gray-200'
+      }`}>
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className={`p-2.5 rounded-xl border transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center ${
+            isDark
+              ? 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+              : 'bg-gray-100 border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+          }`}
           aria-label="Open menu"
         >
           <FiMenu size={22} />
@@ -298,9 +311,10 @@ export default function Layout() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <span className="text-white font-bold text-sm">W</span>
           </div>
-          <span className="text-sm font-semibold text-white">Admin</span>
+          <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Admin</span>
         </div>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <NotificationCenter />
           <div className="relative">
             <button
@@ -366,9 +380,13 @@ export default function Layout() {
       )}
 
       {/* Mobile Sidebar Drawer */}
-      <aside className={`lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white flex flex-col border-r border-slate-800/50 transform transition-transform duration-300 ease-out safe-area-inset ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] flex flex-col border-r transform transition-transform duration-300 ease-out safe-area-inset ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} ${
+        isDark
+          ? 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white border-slate-800/50'
+          : 'bg-gradient-to-b from-white via-gray-50 to-white text-gray-900 border-gray-200'
+      }`}>
         {/* Mobile Sidebar Header */}
-        <div className="relative p-4 border-b border-slate-800/50 flex items-center justify-between">
+        <div className={`relative p-4 border-b flex items-center justify-between ${isDark ? 'border-slate-800/50' : 'border-gray-200'}`}>
           <div className="flex items-center gap-3">
             <img
               src="/images/nodepress-icon.svg"
@@ -376,8 +394,8 @@ export default function Layout() {
               className="w-10 h-10 rounded-xl shadow-lg shadow-blue-500/20"
             />
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">NodePress</h1>
-              <p className="text-xs text-slate-500">Admin Panel</p>
+              <h1 className={`text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent ${isDark ? 'from-white to-slate-300' : 'from-gray-900 to-gray-600'}`}>NodePress</h1>
+              <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-500'}`}>Admin Panel</p>
             </div>
           </div>
           <button
@@ -706,12 +724,12 @@ export default function Layout() {
       </aside>
 
       {/* Desktop Sidebar - Hidden on mobile */}
-      <aside className={`hidden lg:flex ${sidebarCollapsed ? 'w-20' : 'w-64'} bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white flex-col border-r border-slate-800/50 transition-all duration-300 relative`}>
+      <aside className={`hidden lg:flex ${sidebarCollapsed ? 'w-20' : 'w-64'} flex-col border-r transition-all duration-300 relative ${theme.sidebar}`}>
         {/* Decorative gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-purple-600/5 pointer-events-none" />
+        <div className={`absolute inset-0 bg-gradient-to-br pointer-events-none ${theme.isDark ? 'from-blue-600/5 via-transparent to-purple-600/5' : 'from-blue-500/5 via-transparent to-purple-500/5'}`} />
 
         {/* Header with Logo */}
-        <div className="relative p-4 border-b border-slate-800/50">
+        <div className={`relative p-4 border-b ${theme.border}`}>
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
               <img
@@ -721,14 +739,14 @@ export default function Layout() {
               />
               {!sidebarCollapsed && (
                 <div>
-                  <h1 className="text-lg font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">NodePress</h1>
-                  <p className="text-xs text-slate-500">Admin Panel</p>
+                  <h1 className={`text-lg font-bold ${theme.titleGradient}`}>NodePress</h1>
+                  <p className={`text-xs ${theme.textMuted}`}>Admin Panel</p>
                 </div>
               )}
             </div>
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors ${sidebarCollapsed ? 'absolute -right-3 top-6 bg-slate-800 border border-slate-700' : ''}`}
+              className={`p-1.5 rounded-lg transition-colors ${theme.buttonGhost} ${sidebarCollapsed ? `absolute -right-3 top-6 ${theme.cardSolid}` : ''}`}
             >
               {sidebarCollapsed ? <FiChevronRight size={14} /> : <FiX size={14} />}
             </button>
@@ -736,16 +754,22 @@ export default function Layout() {
         </div>
 
         {/* Search Button */}
-        <div className="p-4 border-b border-slate-800/50">
+        <div className={`p-4 border-b ${theme.border}`}>
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-700/50 hover:border-slate-600 transition-all ${sidebarCollapsed ? 'justify-center' : ''}`}
+            className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border transition-all ${sidebarCollapsed ? 'justify-center' : ''} ${
+              theme.isDark
+                ? 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-700/50 hover:border-slate-600'
+                : 'bg-slate-100/80 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-200/80 hover:border-slate-300'
+            }`}
           >
             <FiSearch size={16} />
             {!sidebarCollapsed && (
               <>
                 <span className="flex-1 text-left text-sm">Search...</span>
-                <kbd className="hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-700/50 rounded text-xs text-slate-500">
+                <kbd className={`hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs ${
+                  theme.isDark ? 'bg-slate-700/50 text-slate-500' : 'bg-slate-200 text-slate-500'
+                }`}>
                   <FiCommand size={10} />K
                 </kbd>
               </>
@@ -753,7 +777,7 @@ export default function Layout() {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 relative custom-scrollbar">
+        <nav className={`flex-1 overflow-y-auto py-4 relative custom-scrollbar ${theme.scrollbar}`}>
           {/* Role Badge */}
           {!sidebarCollapsed && (
             <div className="px-4 mb-4">
@@ -766,9 +790,11 @@ export default function Layout() {
                 <FiInfo size={12} />
               </button>
               {showRoleInfo && (
-                <div className="mt-2 p-3 bg-slate-800/80 backdrop-blur rounded-lg text-xs text-slate-300 border border-slate-700/50">
+                <div className={`mt-2 p-3 backdrop-blur rounded-lg text-xs border ${
+                  theme.isDark ? 'bg-slate-800/80 text-slate-300 border-slate-700/50' : 'bg-white/90 text-slate-600 border-slate-200'
+                }`}>
                   <p className="font-medium mb-1">{roleInfo.description}</p>
-                  <p className="text-slate-500 mt-2">You can only see menu items you have access to.</p>
+                  <p className={theme.textMuted}>You can only see menu items you have access to.</p>
                 </div>
               )}
             </div>
@@ -795,10 +821,12 @@ export default function Layout() {
                     className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                       active
                         ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30'
-                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                        : theme.isDark
+                          ? 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                          : 'text-slate-600 hover:bg-blue-50/80 hover:text-blue-700'
                     } ${sidebarCollapsed ? 'justify-center' : ''}`}
                   >
-                    <Icon size={18} className={active ? 'text-white' : 'text-slate-500 group-hover:text-blue-400 transition-colors'} />
+                    <Icon size={18} className={active ? 'text-white' : `${theme.isDark ? 'text-slate-500' : 'text-slate-400'} group-hover:text-blue-500 transition-colors`} />
                     {!sidebarCollapsed && (
                       <>
                         <span className="flex-1">{item.name}</span>
@@ -818,10 +846,14 @@ export default function Layout() {
             <div className="mt-4 px-3 space-y-2">
               {/* Content Section */}
               {filteredContentNav.length > 0 && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('content')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <FiFileText size={14} className="text-blue-400" />
@@ -841,11 +873,11 @@ export default function Layout() {
                               to={item.path}
                               className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 active
-                                  ? 'bg-blue-500/20 text-blue-300 border-l-2 border-blue-500'
-                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                  ? theme.isDark ? 'bg-blue-500/20 text-blue-300 border-l-2 border-blue-500' : 'bg-blue-100 text-blue-700 border-l-2 border-blue-500'
+                                  : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
                               }`}
                             >
-                              <Icon size={16} className={active ? 'text-blue-400' : 'text-slate-500'} />
+                              <Icon size={16} className={active ? 'text-blue-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                               {item.name}
                             </Link>
                           </Tooltip>
@@ -858,10 +890,14 @@ export default function Layout() {
 
               {/* Communication Section - Messages & Groups (All roles) */}
               {filteredCommunicationNav.length > 0 && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('communication')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <FiMail size={14} className="text-green-400" />
@@ -881,11 +917,11 @@ export default function Layout() {
                               to={item.path}
                               className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 active
-                                  ? 'bg-green-500/20 text-green-200 border-l-2 border-green-400'
-                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                  ? theme.isDark ? 'bg-green-500/20 text-green-200 border-l-2 border-green-400' : 'bg-green-100 text-green-700 border-l-2 border-green-500'
+                                  : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-green-50 hover:text-green-700'
                               }`}
                             >
-                              <Icon size={16} className={active ? 'text-green-300' : 'text-slate-500'} />
+                              <Icon size={16} className={active ? 'text-green-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                               {item.name}
                               {item.badge !== undefined && item.badge > 0 && (
                                 <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">{item.badge}</span>
@@ -901,13 +937,17 @@ export default function Layout() {
 
               {/* System Section (ADMIN only) */}
               {filteredSystemNav.length > 0 && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('system')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
-                      <FiSettings size={14} className="text-slate-400" />
+                      <FiSettings size={14} className={theme.isDark ? 'text-slate-400' : 'text-slate-500'} />
                       <span>System</span>
                     </div>
                     {expandedSections.system ? <FiChevronDown size={14} /> : <FiChevronRight size={14} />}
@@ -924,11 +964,11 @@ export default function Layout() {
                               to={item.path}
                               className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 active
-                                  ? 'bg-slate-500/20 text-slate-200 border-l-2 border-slate-400'
-                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                  ? theme.isDark ? 'bg-slate-500/20 text-slate-200 border-l-2 border-slate-400' : 'bg-slate-200 text-slate-700 border-l-2 border-slate-500'
+                                  : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
                               }`}
                             >
-                              <Icon size={16} className={active ? 'text-slate-300' : 'text-slate-500'} />
+                              <Icon size={16} className={active ? (theme.isDark ? 'text-slate-300' : 'text-slate-600') : (theme.isDark ? 'text-slate-500' : 'text-slate-400')} />
                               {item.name}
                               {item.badge !== undefined && item.badge > 0 && (
                                 <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">{item.badge}</span>
@@ -944,10 +984,14 @@ export default function Layout() {
 
               {/* Shop Section */}
               {canViewShop && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('shop')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <FiShoppingCart size={14} className="text-orange-400" />
@@ -967,11 +1011,11 @@ export default function Layout() {
                               to={item.path}
                               className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 active
-                                  ? 'bg-orange-500/20 text-orange-300 border-l-2 border-orange-500'
-                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                  ? theme.isDark ? 'bg-orange-500/20 text-orange-300 border-l-2 border-orange-500' : 'bg-orange-100 text-orange-700 border-l-2 border-orange-500'
+                                  : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-orange-50 hover:text-orange-700'
                               }`}
                             >
-                              <Icon size={16} className={active ? 'text-orange-400' : 'text-slate-500'} />
+                              <Icon size={16} className={active ? 'text-orange-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                               {item.name}
                             </Link>
                           </Tooltip>
@@ -984,10 +1028,14 @@ export default function Layout() {
 
               {/* LMS Section */}
               {canViewLms && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('lms')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <FiBook size={14} className="text-green-400" />
@@ -1007,11 +1055,11 @@ export default function Layout() {
                               to={item.path}
                               className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 active
-                                  ? 'bg-green-500/20 text-green-300 border-l-2 border-green-500'
-                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                  ? theme.isDark ? 'bg-green-500/20 text-green-300 border-l-2 border-green-500' : 'bg-green-100 text-green-700 border-l-2 border-green-500'
+                                  : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-green-50 hover:text-green-700'
                               }`}
                             >
-                              <Icon size={16} className={active ? 'text-green-400' : 'text-slate-500'} />
+                              <Icon size={16} className={active ? 'text-green-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                               {item.name}
                             </Link>
                           </Tooltip>
@@ -1024,10 +1072,14 @@ export default function Layout() {
 
               {/* Email Section */}
               {canViewEmail && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('email')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <FiMail size={14} className="text-purple-400" />
@@ -1047,11 +1099,11 @@ export default function Layout() {
                               to={item.path}
                               className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 active
-                                  ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500'
-                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                  ? theme.isDark ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500' : 'bg-purple-100 text-purple-700 border-l-2 border-purple-500'
+                                  : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
                               }`}
                             >
-                              <Icon size={16} className={active ? 'text-purple-400' : 'text-slate-500'} />
+                              <Icon size={16} className={active ? 'text-purple-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                               {item.name}
                             </Link>
                           </Tooltip>
@@ -1064,10 +1116,14 @@ export default function Layout() {
 
               {/* Developer Marketplace Section */}
               {canViewMarketplace && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('devMarketplace')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <FiUsers size={14} className="text-teal-400" />
@@ -1087,11 +1143,11 @@ export default function Layout() {
                               to={item.path}
                               className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 active
-                                  ? 'bg-teal-500/20 text-teal-300 border-l-2 border-teal-500'
-                                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                  ? theme.isDark ? 'bg-teal-500/20 text-teal-300 border-l-2 border-teal-500' : 'bg-teal-100 text-teal-700 border-l-2 border-teal-500'
+                                  : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-teal-50 hover:text-teal-700'
                               }`}
                             >
-                              <Icon size={16} className={active ? 'text-teal-400' : 'text-slate-500'} />
+                              <Icon size={16} className={active ? 'text-teal-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                               {item.name}
                             </Link>
                           </Tooltip>
@@ -1104,10 +1160,14 @@ export default function Layout() {
 
               {/* Theme Section */}
               {canCustomize && (
-                <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <div className={`rounded-xl overflow-hidden ${
+                  theme.isDark ? 'bg-slate-800/30 border border-slate-700/30' : 'bg-slate-100/60 border border-slate-200/60'
+                }`}>
                   <button
                     onClick={() => toggleSection('theme')}
-                    className="flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors"
+                    className={`flex items-center justify-between w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      theme.isDark ? 'text-slate-400 hover:bg-slate-800/50' : 'text-slate-500 hover:bg-slate-200/50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <FiEdit3 size={14} className="text-pink-400" />
@@ -1122,11 +1182,11 @@ export default function Layout() {
                           to="/customize"
                           className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                             isActive('/customize')
-                              ? 'bg-pink-500/20 text-pink-300 border-l-2 border-pink-500'
-                              : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                              ? theme.isDark ? 'bg-pink-500/20 text-pink-300 border-l-2 border-pink-500' : 'bg-pink-100 text-pink-700 border-l-2 border-pink-500'
+                              : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-pink-50 hover:text-pink-700'
                           }`}
                         >
-                          <FiLayout size={16} className={isActive('/customize') ? 'text-pink-400' : 'text-slate-500'} />
+                          <FiLayout size={16} className={isActive('/customize') ? 'text-pink-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                           Style Customizer
                         </Link>
                       </Tooltip>
@@ -1135,11 +1195,11 @@ export default function Layout() {
                           to="/theme-content"
                           className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                             isActive('/theme-content')
-                              ? 'bg-pink-500/20 text-pink-300 border-l-2 border-pink-500'
-                              : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                              ? theme.isDark ? 'bg-pink-500/20 text-pink-300 border-l-2 border-pink-500' : 'bg-pink-100 text-pink-700 border-l-2 border-pink-500'
+                              : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-pink-50 hover:text-pink-700'
                           }`}
                         >
-                          <FiImage size={16} className={isActive('/theme-content') ? 'text-pink-400' : 'text-slate-500'} />
+                          <FiImage size={16} className={isActive('/theme-content') ? 'text-pink-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                           Content Manager
                         </Link>
                       </Tooltip>
@@ -1149,11 +1209,11 @@ export default function Layout() {
                             to="/marketplace"
                             className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                               isActive('/marketplace')
-                                ? 'bg-pink-500/20 text-pink-300 border-l-2 border-pink-500'
-                                : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                                ? theme.isDark ? 'bg-pink-500/20 text-pink-300 border-l-2 border-pink-500' : 'bg-pink-100 text-pink-700 border-l-2 border-pink-500'
+                                : theme.isDark ? 'text-slate-400 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-pink-50 hover:text-pink-700'
                             }`}
                           >
-                            <FiPackage size={16} className={isActive('/marketplace') ? 'text-pink-400' : 'text-slate-500'} />
+                            <FiPackage size={16} className={isActive('/marketplace') ? 'text-pink-400' : theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                             Marketplace
                           </Link>
                         </Tooltip>
@@ -1166,13 +1226,15 @@ export default function Layout() {
           )}
 
           {/* Quick Actions */}
-          <div className={`mt-4 px-3 pb-4 border-t border-slate-800/50 pt-4 ${sidebarCollapsed ? 'hidden' : ''}`}>
+          <div className={`mt-4 px-3 pb-4 border-t pt-4 ${theme.border} ${sidebarCollapsed ? 'hidden' : ''}`}>
             <Tooltip title={NAV_TOOLTIPS.viewWebsite.title} content={NAV_TOOLTIPS.viewWebsite.content} position="right" variant="info">
               <button
                 onClick={handleViewWebsite}
-                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all"
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  theme.isDark ? 'text-slate-400 hover:bg-slate-800/50 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
+                }`}
               >
-                <FiExternalLink size={18} className="text-slate-500" />
+                <FiExternalLink size={18} className={theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                 View Website
               </button>
             </Tooltip>
@@ -1180,9 +1242,13 @@ export default function Layout() {
               <Tooltip title={NAV_TOOLTIPS.customizeTheme.title} content={NAV_TOOLTIPS.customizeTheme.content} position="right" variant="help">
                 <button
                   onClick={handleCustomize}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 hover:from-blue-600/30 hover:to-purple-600/30 transition-all border border-blue-500/20"
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                    theme.isDark
+                      ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 hover:from-blue-600/30 hover:to-purple-600/30 border-blue-500/20'
+                      : 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 hover:from-blue-100 hover:to-purple-100 border-blue-200'
+                  }`}
                 >
-                  <FiEdit3 size={18} className="text-blue-400" />
+                  <FiEdit3 size={18} className={theme.isDark ? 'text-blue-400' : 'text-blue-500'} />
                   Customize Theme
                 </button>
               </Tooltip>
@@ -1191,46 +1257,62 @@ export default function Layout() {
         </nav>
 
         {/* User Profile Section */}
-        <div className="relative border-t border-slate-800/50 bg-gradient-to-r from-slate-900 to-slate-800">
+        <div className={`relative border-t ${
+          theme.isDark ? 'border-slate-800/50 bg-gradient-to-r from-slate-900 to-slate-800' : 'border-slate-200 bg-gradient-to-r from-slate-50 to-white'
+        }`}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className={`flex items-center w-full p-3 hover:bg-slate-800/50 transition-all ${sidebarCollapsed ? 'justify-center' : ''}`}
+            className={`flex items-center w-full p-3 transition-all ${sidebarCollapsed ? 'justify-center' : ''} ${
+              theme.isDark ? 'hover:bg-slate-800/50' : 'hover:bg-slate-100'
+            }`}
           >
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20 ring-2 ring-slate-700">
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20 ring-2 ${
+                theme.isDark ? 'ring-slate-700' : 'ring-slate-200'
+              }`}>
                 <FiUser size={18} />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
+              <div className={`absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 ${
+                theme.isDark ? 'border-slate-900' : 'border-white'
+              }`}></div>
             </div>
             {!sidebarCollapsed && (
               <div className="text-left ml-3 flex-1">
-                <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-                <p className="text-xs text-slate-500">{user?.role}</p>
+                <p className={`text-sm font-medium truncate ${theme.isDark ? 'text-white' : 'text-slate-800'}`}>{user?.name}</p>
+                <p className={`text-xs ${theme.textMuted}`}>{user?.role}</p>
               </div>
             )}
           </button>
 
           {/* User Dropdown Menu */}
           {showUserMenu && (
-            <div className="absolute bottom-full left-0 w-full bg-slate-800 border border-slate-700/50 rounded-t-xl shadow-2xl overflow-hidden">
-              <div className="p-3 border-b border-slate-700/50 bg-slate-800/50">
-                <p className="text-xs text-slate-400">Signed in as</p>
-                <p className="text-sm font-medium text-white truncate">{user?.email}</p>
+            <div className={`absolute bottom-full left-0 w-full rounded-t-xl shadow-2xl overflow-hidden ${
+              theme.isDark ? 'bg-slate-800 border border-slate-700/50' : 'bg-white border border-slate-200'
+            }`}>
+              <div className={`p-3 border-b ${
+                theme.isDark ? 'border-slate-700/50 bg-slate-800/50' : 'border-slate-200 bg-slate-50'
+              }`}>
+                <p className={`text-xs ${theme.textMuted}`}>Signed in as</p>
+                <p className={`text-sm font-medium truncate ${theme.isDark ? 'text-white' : 'text-slate-800'}`}>{user?.email}</p>
               </div>
               <Link
                 to="/profile"
                 onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors"
+                className={`flex items-center gap-3 w-full px-4 py-3 text-sm transition-colors ${
+                  theme.isDark ? 'text-slate-300 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
+                }`}
               >
-                <FiUser size={16} className="text-slate-500" />
+                <FiUser size={16} className={theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                 My Profile
               </Link>
               <Link
                 to="/lms/dashboard"
                 onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors"
+                className={`flex items-center gap-3 w-full px-4 py-3 text-sm transition-colors ${
+                  theme.isDark ? 'text-slate-300 hover:bg-slate-700/50 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
+                }`}
               >
-                <FiAward size={16} className="text-slate-500" />
+                <FiAward size={16} className={theme.isDark ? 'text-slate-500' : 'text-slate-400'} />
                 My Learning
               </Link>
               <button
@@ -1238,7 +1320,9 @@ export default function Layout() {
                   setShowUserMenu(false);
                   logout();
                 }}
-                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors border-t border-slate-700/50"
+                className={`flex items-center gap-3 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors border-t ${
+                  theme.isDark ? 'border-slate-700/50' : 'border-slate-200'
+                }`}
               >
                 <FiLogOut size={16} />
                 Logout
@@ -1249,24 +1333,27 @@ export default function Layout() {
 
         {/* About & Copyright */}
         {!sidebarCollapsed && (
-          <div className="px-4 py-3 bg-slate-950/50 border-t border-slate-800/30">
-            <p className="text-xs text-slate-600">
+          <div className={`px-4 py-3 border-t ${
+            theme.isDark ? 'bg-slate-950/50 border-slate-800/30' : 'bg-slate-100/50 border-slate-200/50'
+          }`}>
+            <p className={`text-xs ${theme.isDark ? 'text-slate-600' : 'text-slate-500'}`}>
               © {new Date().getFullYear()} NodePress
             </p>
-            <p className="text-xs text-slate-700 mt-0.5">
-              By <span className="text-blue-400/70">Michael James Blenkinsop</span>
+            <p className={`text-xs mt-0.5 ${theme.isDark ? 'text-slate-700' : 'text-slate-400'}`}>
+              By <span className={theme.isDark ? 'text-blue-400/70' : 'text-blue-600/70'}>Michael James Blenkinsop</span>
             </p>
           </div>
         )}
       </aside>
 
-      {/* Main Content Area with Dark Theme */}
-      <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 lg:pt-0 pt-[60px]">
+      {/* Main Content Area - Theme Aware */}
+      <main className={`flex-1 overflow-y-auto lg:pt-0 pt-[60px] ${theme.page}`}>
         {/* Top Bar with Notifications - Hidden on mobile (using mobile header instead) */}
-        <div className="hidden lg:flex sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3 bg-slate-900/80 backdrop-blur-lg border-b border-slate-800/50 items-center justify-end gap-4">
+        <div className={`hidden lg:flex sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3 backdrop-blur-xl border-b items-center justify-end gap-4 ${theme.header}`}>
+          <ThemeToggle />
           <NotificationCenter />
-          <div className="w-px h-6 bg-slate-700/50" />
-          <div className="flex items-center gap-2 text-sm text-slate-400">
+          <div className={`w-px h-6 ${theme.divider}`} />
+          <div className={`flex items-center gap-2 text-sm ${theme.textMuted}`}>
             <span>{user?.name}</span>
           </div>
         </div>

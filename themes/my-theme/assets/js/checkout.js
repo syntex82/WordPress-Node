@@ -174,7 +174,7 @@
 
         // Payment successful!
         load.textContent = 'Payment successful!';
-        window.location.href = '/my-courses';
+        window.location.href = '/order-success?order=' + orderId;
 
       } catch (e) {
         console.error('Checkout error:', e);

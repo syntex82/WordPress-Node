@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiFileText, FiFile, FiUsers, FiImage, FiSettings, FiLayout, FiPlus, FiExternalLink, FiHelpCircle, FiTrendingUp, FiClock, FiZap, FiBookOpen, FiShoppingBag, FiMail, FiShield } from 'react-icons/fi';
 import { postsApi, pagesApi, usersApi, systemConfigApi } from '../services/api';
+import { useSiteTheme } from '../contexts/SiteThemeContext';
 import toast from 'react-hot-toast';
 import Tooltip from '../components/Tooltip';
 
@@ -34,6 +35,9 @@ const DASHBOARD_TOOLTIPS = {
 };
 
 export default function Dashboard() {
+  const { resolvedTheme } = useSiteTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const [stats, setStats] = useState({ posts: 0, pages: 0, users: 0 });
   const [loading, setLoading] = useState(true);
   const [frontendUrl, setFrontendUrl] = useState<string>(window.location.origin);
@@ -92,11 +96,17 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-start sm:items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent truncate">Dashboard</h1>
-          <p className="text-slate-400 mt-1 text-sm sm:text-base">Welcome back! Here's what's happening with your site.</p>
+          <h1 className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent truncate ${
+            isDark ? 'from-white to-slate-300' : 'from-gray-900 to-gray-600'
+          }`}>Dashboard</h1>
+          <p className={`mt-1 text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Welcome back! Here's what's happening with your site.</p>
         </div>
         <Tooltip title={DASHBOARD_TOOLTIPS.helpCenter.title} content={DASHBOARD_TOOLTIPS.helpCenter.content} position="left" variant="help">
-          <button className="flex-shrink-0 p-2.5 sm:p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 hover:bg-slate-700/50 transition-all text-slate-400 hover:text-blue-400 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation">
+          <button className={`flex-shrink-0 p-2.5 sm:p-3 rounded-xl border transition-all min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation ${
+            isDark
+              ? 'bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/50 text-slate-400 hover:text-blue-400'
+              : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-500 hover:text-blue-500 shadow-sm'
+          }`}>
             <FiHelpCircle size={20} className="sm:w-[22px] sm:h-[22px]" />
           </button>
         </Tooltip>
@@ -111,16 +121,20 @@ export default function Dashboard() {
             <Tooltip key={stat.name} title={tooltip.title} content={tooltip.content} position="top" variant="info">
               <Link
                 to={stat.link}
-                className={`group bg-slate-800/50 backdrop-blur rounded-xl sm:rounded-2xl border border-slate-700/50 p-5 sm:p-6 hover:border-slate-600/50 transition-all hover:-translate-y-1 shadow-xl ${stat.bgGlow} touch-manipulation active:scale-95`}
+                className={`group backdrop-blur rounded-xl sm:rounded-2xl border p-5 sm:p-6 transition-all hover:-translate-y-1 shadow-xl ${stat.bgGlow} touch-manipulation active:scale-95 ${
+                  isDark
+                    ? 'bg-slate-800/50 border-slate-700/50 hover:border-slate-600/50'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                }`}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-slate-400 truncate">{stat.name}</p>
-                    <p className="text-3xl sm:text-4xl font-bold text-white mt-1.5 sm:mt-2 tabular-nums">
-                      {loading ? <span className="animate-pulse text-slate-500">...</span> : stat.value}
+                    <p className={`text-xs sm:text-sm font-medium truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{stat.name}</p>
+                    <p className={`text-3xl sm:text-4xl font-bold mt-1.5 sm:mt-2 tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {loading ? <span className={`animate-pulse ${isDark ? 'text-slate-500' : 'text-gray-300'}`}>...</span> : stat.value}
                     </p>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-1.5 sm:mt-2 flex items-center gap-1">
-                      <FiTrendingUp size={12} className="text-emerald-400 sm:w-[14px] sm:h-[14px] flex-shrink-0" />
+                    <p className={`text-xs sm:text-sm mt-1.5 sm:mt-2 flex items-center gap-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                      <FiTrendingUp size={12} className="text-emerald-500 sm:w-[14px] sm:h-[14px] flex-shrink-0" />
                       <span className="truncate">Click to manage</span>
                     </p>
                   </div>
@@ -135,14 +149,16 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl sm:rounded-2xl border border-slate-700/50 p-4 sm:p-6">
+      <div className={`backdrop-blur rounded-xl sm:rounded-2xl border p-4 sm:p-6 ${
+        isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-gray-200 shadow-sm'
+      }`}>
         <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           <div className="p-1.5 sm:p-2 bg-indigo-500/20 rounded-lg flex-shrink-0">
             <FiZap className="text-indigo-400" size={18} />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-base sm:text-lg font-bold text-white truncate">Quick Actions</h2>
-            <p className="text-xs sm:text-sm text-slate-400 truncate">Create content and manage your site</p>
+            <h2 className={`text-base sm:text-lg font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>Quick Actions</h2>
+            <p className={`text-xs sm:text-sm truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Create content and manage your site</p>
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
@@ -178,14 +194,16 @@ export default function Dashboard() {
       {/* Features & Getting Started */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Built-in Features */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl sm:rounded-2xl border border-slate-700/50 p-4 sm:p-6">
+        <div className={`backdrop-blur rounded-xl sm:rounded-2xl border p-4 sm:p-6 ${
+          isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-gray-200 shadow-sm'
+        }`}>
           <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <div className="p-1.5 sm:p-2 bg-purple-500/20 rounded-lg flex-shrink-0">
               <FiPlus className="text-purple-400" size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-base sm:text-lg font-bold text-white truncate">Built-in Features</h2>
-              <p className="text-xs sm:text-sm text-slate-400 truncate">Explore powerful capabilities</p>
+              <h2 className={`text-base sm:text-lg font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>Built-in Features</h2>
+              <p className={`text-xs sm:text-sm truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Explore powerful capabilities</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -195,12 +213,14 @@ export default function Dashboard() {
                 <Tooltip key={feature.name} content={feature.desc} position="top">
                   <Link
                     to={feature.link}
-                    className={`flex items-center gap-3 p-3 sm:p-4 rounded-lg sm:rounded-xl ${feature.bg} hover:bg-slate-700/50 transition-colors group border border-slate-700/30 touch-manipulation active:scale-95 min-h-[64px]`}
+                    className={`flex items-center gap-3 p-3 sm:p-4 rounded-lg sm:rounded-xl ${feature.bg} transition-colors group border touch-manipulation active:scale-95 min-h-[64px] ${
+                      isDark ? 'hover:bg-slate-700/50 border-slate-700/30' : 'hover:bg-gray-50 border-gray-200'
+                    }`}
                   >
                     <Icon size={20} className={`${feature.color} flex-shrink-0 sm:w-[22px] sm:h-[22px]`} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-white text-sm sm:text-base truncate">{feature.name}</p>
-                      <p className="text-xs text-slate-400 truncate">{feature.desc}</p>
+                      <p className={`font-medium text-sm sm:text-base truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{feature.name}</p>
+                      <p className={`text-xs truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{feature.desc}</p>
                     </div>
                   </Link>
                 </Tooltip>
@@ -239,13 +259,15 @@ export default function Dashboard() {
       </div>
 
       {/* Pro Tip */}
-      <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-3 sm:p-4 flex items-start sm:items-center gap-3 border border-slate-700/50">
+      <div className={`backdrop-blur rounded-lg sm:rounded-xl p-3 sm:p-4 flex items-start sm:items-center gap-3 border ${
+        isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-gray-200 shadow-sm'
+      }`}>
         <div className="p-1.5 sm:p-2 bg-amber-500/20 rounded-lg flex-shrink-0">
           <FiClock className="text-amber-400 w-4 h-4 sm:w-[18px] sm:h-[18px]" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-white text-sm sm:text-base">Pro Tip</p>
-          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">Hover over any button or menu item to see helpful tooltips explaining what it does!</p>
+          <p className={`font-medium text-sm sm:text-base ${isDark ? 'text-white' : 'text-gray-900'}`}>Pro Tip</p>
+          <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Hover over any button or menu item to see helpful tooltips explaining what it does!</p>
         </div>
       </div>
     </div>

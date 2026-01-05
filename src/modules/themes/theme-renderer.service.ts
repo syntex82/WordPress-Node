@@ -237,10 +237,23 @@ export class ThemeRendererService {
       // Register partials for this theme
       await this.registerPartials(activeTheme.slug);
 
-      const templatePath = this.themesService.getTemplatePath(activeTheme.slug, template);
+      // Try active theme first, fall back to default theme
+      let templatePath = this.themesService.getTemplatePath(activeTheme.slug, template);
+      let templateContent: string;
 
-      // Read template file
-      const templateContent = await fs.readFile(templatePath, 'utf-8');
+      try {
+        templateContent = await fs.readFile(templatePath, 'utf-8');
+      } catch {
+        // Template not found in active theme, try default theme
+        if (activeTheme.slug !== 'default') {
+          templatePath = this.themesService.getTemplatePath('default', template);
+          templateContent = await fs.readFile(templatePath, 'utf-8');
+          // Also register default theme partials for fallback templates
+          await this.registerPartials('default');
+        } else {
+          throw new Error(`Template "${template}" not found`);
+        }
+      }
 
       // Compile template
       const compiledTemplate = Handlebars.compile(templateContent);

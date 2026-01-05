@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { securityApi } from '../../services/api';
+import { useThemeClasses } from '../../contexts/SiteThemeContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiSave, FiShield } from 'react-icons/fi';
@@ -23,6 +24,7 @@ interface PasswordPolicy {
 }
 
 export default function PasswordPolicy() {
+  const theme = useThemeClasses();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [policy, setPolicy] = useState<PasswordPolicy>({
@@ -77,8 +79,8 @@ export default function PasswordPolicy() {
         </Link>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Password Policy</h1>
-            <p className="text-slate-400 mt-2">Configure password strength requirements and security policies</p>
+            <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Password Policy</h1>
+            <p className={`mt-2 ${theme.textMuted}`}>Configure password strength requirements and security policies</p>
           </div>
           <button
             onClick={handleSave}
@@ -90,12 +92,12 @@ export default function PasswordPolicy() {
         </div>
       </div>
 
-      <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6 space-y-6">
+      <div className={`backdrop-blur rounded-xl border p-6 space-y-6 ${theme.card}`}>
         {/* Enable/Disable Policy */}
-        <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+        <div className={`flex items-center justify-between p-4 rounded-lg ${theme.isDark ? 'bg-slate-700/30' : 'bg-gray-100'}`}>
           <div>
-            <h3 className="font-semibold text-white">Enable Password Policy</h3>
-            <p className="text-sm text-slate-400">Enforce password requirements for all users</p>
+            <h3 className={`font-semibold ${theme.textPrimary}`}>Enable Password Policy</h3>
+            <p className={`text-sm ${theme.textMuted}`}>Enforce password requirements for all users</p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -110,7 +112,7 @@ export default function PasswordPolicy() {
 
         {/* Minimum Length */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}>
             Minimum Password Length
           </label>
           <input
@@ -119,14 +121,14 @@ export default function PasswordPolicy() {
             max="128"
             value={policy.minLength}
             onChange={(e) => setPolicy({ ...policy, minLength: parseInt(e.target.value) || 8 })}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+            className={`w-full px-4 py-2 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent ${theme.input}`}
           />
-          <p className="text-sm text-slate-500 mt-1">Recommended: 8 or more characters</p>
+          <p className={`text-sm mt-1 ${theme.isDark ? 'text-slate-500' : 'text-gray-400'}`}>Recommended: 8 or more characters</p>
         </div>
 
         {/* Character Requirements */}
         <div>
-          <h3 className="font-semibold text-white mb-3">Character Requirements</h3>
+          <h3 className={`font-semibold mb-3 ${theme.textPrimary}`}>Character Requirements</h3>
           <div className="space-y-3">
             <label className="flex items-center">
               <input
@@ -135,7 +137,7 @@ export default function PasswordPolicy() {
                 onChange={(e) => setPolicy({ ...policy, requireUppercase: e.target.checked })}
                 className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500/50"
               />
-              <span className="ml-2 text-slate-300">Require at least one uppercase letter (A-Z)</span>
+              <span className={`ml-2 ${theme.textSecondary}`}>Require at least one uppercase letter (A-Z)</span>
             </label>
 
             <label className="flex items-center">
@@ -145,7 +147,7 @@ export default function PasswordPolicy() {
                 onChange={(e) => setPolicy({ ...policy, requireLowercase: e.target.checked })}
                 className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500/50"
               />
-              <span className="ml-2 text-slate-300">Require at least one lowercase letter (a-z)</span>
+              <span className={`ml-2 ${theme.textSecondary}`}>Require at least one lowercase letter (a-z)</span>
             </label>
 
             <label className="flex items-center">
@@ -155,7 +157,7 @@ export default function PasswordPolicy() {
                 onChange={(e) => setPolicy({ ...policy, requireNumbers: e.target.checked })}
                 className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500/50"
               />
-              <span className="ml-2 text-slate-300">Require at least one number (0-9)</span>
+              <span className={`ml-2 ${theme.textSecondary}`}>Require at least one number (0-9)</span>
             </label>
 
             <label className="flex items-center">
@@ -165,14 +167,14 @@ export default function PasswordPolicy() {
                 onChange={(e) => setPolicy({ ...policy, requireSpecialChars: e.target.checked })}
                 className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500/50"
               />
-              <span className="ml-2 text-slate-300">Require at least one special character (!@#$%^&*)</span>
+              <span className={`ml-2 ${theme.textSecondary}`}>Require at least one special character (!@#$%^&*)</span>
             </label>
           </div>
         </div>
 
         {/* Password Expiration */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}>
             Password Expiration (days)
           </label>
           <input
@@ -181,14 +183,14 @@ export default function PasswordPolicy() {
             value={policy.expirationDays || ''}
             onChange={(e) => setPolicy({ ...policy, expirationDays: e.target.value ? parseInt(e.target.value) : null })}
             placeholder="Never expires"
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+            className={`w-full px-4 py-2 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent ${theme.input}`}
           />
-          <p className="text-sm text-slate-500 mt-1">Leave empty for no expiration. Recommended: 90 days</p>
+          <p className={`text-sm mt-1 ${theme.isDark ? 'text-slate-500' : 'text-gray-400'}`}>Leave empty for no expiration. Recommended: 90 days</p>
         </div>
 
         {/* Password Reuse Prevention */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}>
             Prevent Password Reuse
           </label>
           <input
@@ -197,9 +199,9 @@ export default function PasswordPolicy() {
             max="24"
             value={policy.preventReuse}
             onChange={(e) => setPolicy({ ...policy, preventReuse: parseInt(e.target.value) || 0 })}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+            className={`w-full px-4 py-2 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent ${theme.input}`}
           />
-          <p className="text-sm text-slate-500 mt-1">
+          <p className={`text-sm mt-1 ${theme.isDark ? 'text-slate-500' : 'text-gray-400'}`}>
             Number of previous passwords to check. Set to 0 to disable. Recommended: 5
           </p>
         </div>
@@ -214,7 +216,7 @@ export default function PasswordPolicy() {
           />
           <div className="ml-3">
             <h3 className="font-semibold text-amber-400">Check Against Breached Passwords</h3>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className={`text-sm mt-1 ${theme.textMuted}`}>
               Verify passwords against the Have I Been Pwned database to prevent use of compromised passwords.
               This feature makes an external API call.
             </p>
@@ -227,7 +229,7 @@ export default function PasswordPolicy() {
             <FiShield className="text-blue-400 mt-1 mr-3" size={20} />
             <div>
               <h3 className="font-semibold text-blue-400">Password Policy Best Practices</h3>
-              <ul className="text-sm text-slate-400 mt-2 space-y-1 list-disc list-inside">
+              <ul className={`text-sm mt-2 space-y-1 list-disc list-inside ${theme.textMuted}`}>
                 <li>Minimum 8 characters (12+ recommended for high security)</li>
                 <li>Require a mix of uppercase, lowercase, numbers, and special characters</li>
                 <li>Expire passwords every 90 days for sensitive systems</li>

@@ -41,10 +41,10 @@
     if (!container) return;
 
     container.innerHTML = items.map(function(item) {
-      var isCourse = item.type === 'COURSE';
+      var isCourse = item.itemType === 'COURSE' || item.courseId;
       var img = item.product?.images?.[0] || item.course?.featuredImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
       var title = item.product?.name || item.course?.title || 'Item';
-      var price = item.product?.salePrice || item.product?.price || item.course?.price || 0;
+      var price = item.product?.salePrice || item.product?.price || item.course?.priceAmount || 0;
 
       var qtyHtml = isCourse ? '' :
         '<div class="qty-controls">' +
@@ -70,7 +70,7 @@
 
   function updateSummary(cart) {
     var subtotal = cart.items.reduce(function(sum, item) {
-      var price = item.product?.salePrice || item.product?.price || item.course?.price || 0;
+      var price = item.product?.salePrice || item.product?.price || item.course?.priceAmount || 0;
       return sum + (parseFloat(price) * item.quantity);
     }, 0);
     var tax = subtotal * 0.1;
