@@ -22,6 +22,8 @@ interface MobileMediaRecorderProps {
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'preview';
 
+type PermissionState = 'prompt' | 'granted' | 'denied' | 'checking';
+
 export default function MobileMediaRecorder({
   isOpen,
   onClose,
@@ -35,6 +37,8 @@ export default function MobileMediaRecorder({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [permissionState, setPermissionState] = useState<PermissionState>('checking');
+  const [permissionError, setPermissionError] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -76,8 +80,101 @@ export default function MobileMediaRecorder({
     }
   }, []);
 
-  // Initialize camera/microphone
+  // Check permissions on mount
+  const checkPermissions = useCallback(async () => {
+    setPermissionState('checking');
+    setPermissionError(null);
+
+    try {
+      // Check if permissions API is available
+      if (navigator.permissions) {
+        const cameraPermission = mode === 'video'
+          ? await navigator.permissions.query({ name: 'camera' as PermissionName })
+          : null;
+        const micPermission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+
+        const cameraState = cameraPermission?.state || 'granted';
+        const micState = micPermission?.state || 'prompt';
+
+        if (cameraState === 'denied' || micState === 'denied') {
+          setPermissionState('denied');
+          setPermissionError(
+            cameraState === 'denied' && micState === 'denied'
+              ? 'Camera and microphone access denied'
+              : cameraState === 'denied'
+              ? 'Camera access denied'
+              : 'Microphone access denied'
+          );
+          return;
+        }
+
+        if (cameraState === 'granted' && (mode === 'audio' || micState === 'granted')) {
+          setPermissionState('granted');
+          return;
+        }
+      }
+
+      // Default to prompt if we can't check
+      setPermissionState('prompt');
+    } catch (e) {
+      // Permissions API not fully supported, show prompt
+      setPermissionState('prompt');
+    }
+  }, [mode]);
+
+  // Request permissions and initialize media
+  const requestPermissions = useCallback(async () => {
+    setPermissionState('checking');
+    setPermissionError(null);
+
+    try {
+      const constraints: MediaStreamConstraints = mode === 'video'
+        ? {
+            video: {
+              facingMode,
+              width: { ideal: 1920, max: 1920 },
+              height: { ideal: 1080, max: 1080 },
+              aspectRatio: { ideal: 16/9 }
+            },
+            audio: true
+          }
+        : { audio: { echoCancellation: true, noiseSuppression: true } };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+      setPermissionState('granted');
+
+      if (videoRef.current && mode === 'video') {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+
+      if (mode === 'audio') {
+        startAudioMonitoring(stream);
+      }
+    } catch (error: any) {
+      console.error('Failed to access media devices:', error);
+
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        setPermissionState('denied');
+        setPermissionError('Permission denied. Please allow access in your browser settings.');
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        setPermissionState('denied');
+        setPermissionError(mode === 'video' ? 'No camera found on this device.' : 'No microphone found.');
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        setPermissionState('denied');
+        setPermissionError('Camera/microphone is already in use by another app.');
+      } else {
+        setPermissionState('denied');
+        setPermissionError('Unable to access camera/microphone. Please check permissions.');
+      }
+    }
+  }, [mode, facingMode, startAudioMonitoring]);
+
+  // Initialize camera/microphone (for camera switching)
   const initializeMedia = useCallback(async () => {
+    if (permissionState !== 'granted') return;
+
     try {
       const constraints: MediaStreamConstraints = mode === 'video'
         ? {
@@ -104,16 +201,23 @@ export default function MobileMediaRecorder({
       }
     } catch (error) {
       console.error('Failed to access media devices:', error);
-      toast.error('Unable to access camera/microphone. Please check permissions.');
-      onClose();
+      toast.error('Unable to access camera/microphone.');
     }
-  }, [mode, facingMode, onClose, startAudioMonitoring]);
+  }, [mode, facingMode, startAudioMonitoring, permissionState]);
+
+  // Check permissions when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      checkPermissions();
+    } else {
+      // Reset state when closed
+      setPermissionState('checking');
+      setPermissionError(null);
+    }
+  }, [isOpen, checkPermissions]);
 
   // Cleanup on unmount
   useEffect(() => {
-    if (isOpen) {
-      initializeMedia();
-    }
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -123,7 +227,7 @@ export default function MobileMediaRecorder({
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (audioContextRef.current) audioContextRef.current.close();
     };
-  }, [isOpen, initializeMedia]);
+  }, [previewUrl]);
 
   // Switch camera
   const switchCamera = async () => {
@@ -288,6 +392,92 @@ export default function MobileMediaRecorder({
       : baseHeight * 0.3;
     return Math.max(0.1, Math.min(1, animatedHeight));
   });
+
+  // Permission request screen
+  if (permissionState === 'checking' || permissionState === 'prompt' || permissionState === 'denied') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={handleClose} />
+        <div className="relative w-full h-full sm:w-[90vw] sm:h-auto sm:max-w-md sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 sm:shadow-2xl sm:border sm:border-slate-700/50 flex flex-col items-center justify-center p-6 sm:p-8">
+
+          {/* Close button */}
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition-all"
+          >
+            <FiX size={20} />
+          </button>
+
+          {permissionState === 'checking' ? (
+            <>
+              {/* Loading spinner */}
+              <div className="w-20 h-20 rounded-full border-4 border-slate-700 border-t-purple-500 animate-spin mb-6" />
+              <p className="text-white text-lg">Checking permissions...</p>
+            </>
+          ) : permissionState === 'denied' ? (
+            <>
+              {/* Denied state */}
+              <div className="w-24 h-24 rounded-full bg-red-500/20 flex items-center justify-center mb-6">
+                <FiX className="w-12 h-12 text-red-400" />
+              </div>
+              <h3 className="text-white text-xl font-bold mb-3 text-center">Permission Denied</h3>
+              <p className="text-slate-400 text-center mb-6 max-w-xs">
+                {permissionError || 'Camera and microphone access is required to record.'}
+              </p>
+              <p className="text-slate-500 text-sm text-center mb-6">
+                Please enable permissions in your browser settings and try again.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleClose}
+                  className="px-6 py-3 rounded-xl bg-slate-700 text-white font-medium hover:bg-slate-600 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={requestPermissions}
+                  className="px-6 py-3 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-500 transition-all"
+                >
+                  Try Again
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Prompt state - ask for permission */}
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mb-6">
+                {mode === 'video' ? (
+                  <FiVideo className="w-12 h-12 text-purple-400" />
+                ) : (
+                  <FiMic className="w-12 h-12 text-purple-400" />
+                )}
+              </div>
+              <h3 className="text-white text-xl font-bold mb-3 text-center">
+                {mode === 'video' ? 'Camera & Microphone Access' : 'Microphone Access'}
+              </h3>
+              <p className="text-slate-400 text-center mb-8 max-w-xs">
+                {mode === 'video'
+                  ? 'Allow access to your camera and microphone to record videos.'
+                  : 'Allow access to your microphone to record audio.'}
+              </p>
+              <button
+                onClick={requestPermissions}
+                className="w-full max-w-xs px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-lg hover:from-purple-500 hover:to-pink-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/25"
+              >
+                Allow Access
+              </button>
+              <button
+                onClick={handleClose}
+                className="mt-4 px-6 py-2 text-slate-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

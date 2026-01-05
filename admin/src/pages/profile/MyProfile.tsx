@@ -403,23 +403,25 @@ export default function MyProfile() {
         </div>
       </div>
 
-      {/* Stats Cards - Premium Design */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 px-3 sm:px-6 mb-8">
-        {[
-          { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20' },
-          { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20' },
-          { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
-          { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20' },
-          { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20' },
-        ].map((stat, i) => (
-          <div key={i} className="group bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 cursor-default">
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
-              <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      {/* Stats Cards - Premium Design - Horizontal scroll on mobile */}
+      <div className="px-3 sm:px-6 mb-8 -mx-3 sm:mx-0">
+        <div className="flex sm:grid sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 overflow-x-auto sm:overflow-visible pb-3 sm:pb-0 px-3 sm:px-0 scrollbar-hide snap-x snap-mandatory">
+          {[
+            { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20' },
+            { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20' },
+            { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
+            { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20' },
+            { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20' },
+          ].map((stat, i) => (
+            <div key={i} className="group flex-shrink-0 w-[140px] sm:w-auto snap-start bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 cursor-default">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
+                <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="text-xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
+              <div className="text-xs sm:text-sm text-slate-400 font-medium">{stat.label}</div>
             </div>
-            <div className="text-xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
-            <div className="text-xs sm:text-sm text-slate-400 font-medium">{stat.label}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Tabs - Premium Design */}
