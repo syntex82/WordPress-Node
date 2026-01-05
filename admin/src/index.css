@@ -280,12 +280,12 @@ code {
     monospace;
 }
 
-/* Rich Text Editor Styles - Beautiful Dark Theme */
+/* Rich Text Editor Styles - Theme Aware */
 .ProseMirror {
   outline: none;
   padding: 1.5rem;
   min-height: 300px;
-  color: #e2e8f0;
+  color: var(--color-text-secondary);
   font-size: 1.05rem;
   line-height: 1.8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -297,13 +297,13 @@ code {
 
 .ProseMirror p {
   margin: 0.75em 0;
-  color: #cbd5e1;
+  color: var(--color-text-secondary);
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #64748b;
+  color: var(--color-text-muted);
   pointer-events: none;
   height: 0;
 }
@@ -311,7 +311,7 @@ code {
 .ProseMirror h1 {
   font-size: 2em;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 1.5em 0 0.75em;
   line-height: 1.3;
 }
@@ -319,7 +319,7 @@ code {
 .ProseMirror h2 {
   font-size: 1.65em;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 1.25em 0 0.6em;
   padding-bottom: 0.4em;
   border-bottom: 2px solid rgba(99, 102, 241, 0.3);
@@ -328,7 +328,7 @@ code {
 .ProseMirror h3 {
   font-size: 1.35em;
   font-weight: 600;
-  color: #a5b4fc;
+  color: #6366f1;
   margin: 1em 0 0.5em;
 }
 
@@ -355,7 +355,7 @@ code {
 
 .ProseMirror li {
   margin: 0.35em 0;
-  color: #cbd5e1;
+  color: var(--color-text-secondary);
 }
 
 .ProseMirror li p {
@@ -363,12 +363,12 @@ code {
 }
 
 .ProseMirror strong {
-  color: #fff;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
 .ProseMirror em {
-  color: #94a3b8;
+  color: var(--color-text-tertiary);
   font-style: italic;
 }
 
@@ -607,7 +607,7 @@ code {
   padding: 1.25em 1.5em;
   margin: 1.5em 0;
   font-style: italic;
-  color: #e2e8f0;
+  color: var(--color-text-secondary);
   position: relative;
 }
 
@@ -623,7 +623,7 @@ code {
 }
 
 .ProseMirror blockquote p {
-  color: #e2e8f0;
+  color: var(--color-text-secondary);
   margin: 0.5em 0;
 }
 

@@ -44,6 +44,7 @@ import {
   SocialConfigModal, CardConfigModal, TestimonialConfigModal, AccordionConfigModal,
   ProgressConfigModal, CountdownConfigModal, MapConfigModal
 } from './BlockConfigModals';
+import { useThemeClasses } from '../contexts/SiteThemeContext';
 
 interface RichTextEditorProps {
   content: string;
@@ -54,6 +55,7 @@ interface RichTextEditorProps {
 type BlockConfigModal = 'alert' | 'button' | 'divider' | 'cta' | 'social' | 'card' | 'testimonial' | 'accordion' | 'progress' | 'countdown' | 'map' | null;
 
 export default function RichTextEditor({ content, onChange }: RichTextEditorProps) {
+  const theme = useThemeClasses();
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [mediaPickerType, setMediaPickerType] = useState<'image' | 'video' | 'audio' | 'gallery'>('image');
   const [showShopLinkPicker, setShowShopLinkPicker] = useState(false);
@@ -242,16 +244,16 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     }
   };
 
-  // Dark mode toolbar button styling
-  const toolbarBtnClass = (isActive: boolean) => `p-2 rounded-lg transition-all hover:bg-slate-600 ${isActive ? 'bg-blue-600/30 text-blue-400 ring-1 ring-blue-500/50' : 'text-slate-300 hover:text-white'}`;
+  // Theme-aware toolbar button styling
+  const toolbarBtnClass = (isActive: boolean) => `p-2 rounded-lg transition-all ${theme.isDark ? 'hover:bg-slate-600' : 'hover:bg-slate-200'} ${isActive ? 'bg-blue-600/30 text-blue-400 ring-1 ring-blue-500/50' : `${theme.textSecondary} ${theme.isDark ? 'hover:text-white' : 'hover:text-slate-900'}`}`;
 
-  const dividerClass = 'w-px h-6 bg-slate-600/50 mx-1 self-center';
+  const dividerClass = `w-px h-6 ${theme.isDark ? 'bg-slate-600/50' : 'bg-slate-300'} mx-1 self-center`;
 
   return (
     <>
-      <div className="border border-slate-600/50 rounded-xl overflow-hidden bg-slate-800/80 backdrop-blur">
+      <div className={`border ${theme.border} rounded-xl overflow-hidden ${theme.bgCard} backdrop-blur`}>
         {/* Toolbar */}
-        <div className="border-b border-slate-700/50 p-2 flex flex-wrap items-center gap-1 bg-slate-900/60">
+        <div className={`border-b ${theme.border} p-2 flex flex-wrap items-center gap-1 ${theme.isDark ? 'bg-slate-900/60' : 'bg-slate-50'}`}>
           {/* Text Formatting */}
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}

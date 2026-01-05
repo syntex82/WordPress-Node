@@ -1,6 +1,7 @@
 /**
- * My Profile Page
- * View and edit user profile with stunning design
+ * My Profile Page - Premium LinkedIn-Style Design
+ * View and edit user profile with glass-morphism, gradients, and smooth animations
+ * Features: Modern card design, animated stats, responsive layout
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -9,7 +10,7 @@ import {
   FiUser, FiEdit2, FiMapPin, FiBriefcase, FiCalendar, FiUsers, FiBook, FiAward,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiGlobe, FiCamera,
   FiCheck, FiX, FiPlus, FiActivity, FiHeart, FiMessageCircle, FiShare2,
-  FiMoreHorizontal, FiTrash2, FiImage, FiSend
+  FiMoreHorizontal, FiTrash2, FiImage, FiSend, FiStar
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CreatePostForm from '../../components/CreatePostForm';
@@ -225,33 +226,62 @@ export default function MyProfile() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-blue-500 ${isDark ? 'border-slate-700' : 'border-gray-200'}`}></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-spin"></div>
+            <div className={`absolute inset-1 rounded-full ${isDark ? 'bg-slate-900' : 'bg-gray-100'}`}></div>
+            <div className="absolute inset-2 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-50 animate-pulse"></div>
+          </div>
+          <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Loading your profile...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className={`border rounded-xl p-6 text-center ${isDark ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
-          <p className={`text-lg mb-4 ${isDark ? 'text-red-400' : 'text-red-600'}`}>{error}</p>
-          <button onClick={loadProfile} className={`transition-colors ${isDark ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-500'}`}>Try Again</button>
+      <div className="p-6 max-w-lg mx-auto">
+        <div className={`border rounded-2xl p-8 text-center shadow-xl ${isDark ? 'bg-red-500/10 border-red-500/20 backdrop-blur-xl' : 'bg-red-50 border-red-200'}`}>
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FiX className="w-8 h-8 text-red-400" />
+          </div>
+          <p className={`text-lg font-medium mb-2 ${isDark ? 'text-red-400' : 'text-red-600'}`}>Oops! Something went wrong</p>
+          <p className={`text-sm mb-6 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{error}</p>
+          <button
+            onClick={loadProfile}
+            className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-red-500/25 transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
 
-  if (!profile) return <div className={`p-4 sm:p-6 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Profile not found</div>;
+  if (!profile) return (
+    <div className="p-6 max-w-lg mx-auto text-center">
+      <div className={`rounded-2xl p-8 border ${isDark ? 'bg-slate-800/50 border-slate-700/50 backdrop-blur-xl' : 'bg-white border-gray-200'}`}>
+        <div className="w-16 h-16 bg-slate-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FiUser className="w-8 h-8 text-slate-400" />
+        </div>
+        <p className={`text-lg font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>Profile not found</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-0">
-      {/* Cover Image */}
-      <div className="relative h-40 sm:h-56 md:h-80 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
+      {/* Cover Image - Premium Design */}
+      <div className="relative h-44 sm:h-60 md:h-80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+        </div>
         {profile.coverImage && (
-          <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover" />
+          <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover relative z-10" />
         )}
-        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none z-20" />
         <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
         <button
           onClick={(e) => {
@@ -260,40 +290,40 @@ export default function MyProfile() {
             coverInputRef.current?.click();
           }}
           disabled={uploadingCover}
-          className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl flex items-center gap-1.5 sm:gap-2 transition disabled:opacity-50 cursor-pointer shadow-lg border border-slate-600/50 text-xs sm:text-sm"
+          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-30 bg-slate-900/80 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/10 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
         >
           {uploadingCover ? (
-            <><div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span className="hidden sm:inline">Uploading...</span></>
+            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span className="hidden sm:inline">Uploading...</span></>
           ) : (
-            <><FiCamera className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Change Cover</span></>
+            <><FiCamera className="w-4 h-4" /> <span className="hidden sm:inline">Change Cover</span></>
           )}
         </button>
       </div>
 
-      {/* Profile Header */}
-      <div className="relative px-2 sm:px-6 pb-4 sm:pb-6">
-        <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-12 sm:-mt-20 md:-mt-24">
-          {/* Avatar */}
+      {/* Profile Header - Premium Card */}
+      <div className="relative px-3 sm:px-6 pb-6">
+        <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-14 sm:-mt-20 md:-mt-24">
+          {/* Avatar with Premium Ring */}
           <div className="relative group mx-auto md:mx-0">
-            <div className="w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-xl sm:rounded-2xl border-3 sm:border-4 border-slate-800 bg-slate-800 shadow-xl overflow-hidden">
+            <div className="w-28 h-28 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl sm:rounded-3xl border-4 border-slate-900 bg-slate-900 shadow-2xl overflow-hidden ring-4 ring-white/10">
               {profile.avatar ? (
                 <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-3xl sm:text-5xl font-bold text-white">{profile.name.charAt(0)}</span>
+                <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                  <span className="text-4xl sm:text-6xl font-bold text-white drop-shadow-lg">{profile.name.charAt(0)}</span>
                 </div>
               )}
               {/* Hover overlay for upload */}
               <div
                 onClick={() => avatarInputRef.current?.click()}
-                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity"
+                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-all duration-200 backdrop-blur-sm"
               >
                 {uploadingAvatar ? (
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <div className="text-center text-white">
-                    <FiCamera className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1" />
-                    <span className="text-xs sm:text-sm font-medium">Change Photo</span>
+                    <FiCamera className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2" />
+                    <span className="text-sm font-medium">Change Photo</span>
                   </div>
                 )}
               </div>
@@ -302,28 +332,28 @@ export default function MyProfile() {
             <button
               onClick={() => avatarInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white p-1.5 sm:p-2.5 rounded-full shadow-lg shadow-blue-500/20 transition disabled:opacity-50"
+              className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white p-2 sm:p-3 rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 hover:scale-110 active:scale-95"
             >
               {uploadingAvatar ? (
-                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <FiCamera className="w-3 h-3 sm:w-4 sm:h-4" />
+                <FiCamera className="w-4 h-4" />
               )}
             </button>
           </div>
 
           {/* Name & Actions */}
-          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 text-center md:text-left">
+          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4 text-center md:text-left">
             <div className="min-w-0">
               {editing ? (
                 <input
                   type="text"
                   value={formData.name || ''}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="text-xl sm:text-2xl md:text-3xl font-bold bg-transparent border-b-2 border-blue-500 focus:outline-none text-white w-full"
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none text-white w-full"
                 />
               ) : (
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent truncate">{profile.name}</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-white to-slate-300 bg-clip-text text-transparent truncate">{profile.name}</h1>
               )}
               {editing ? (
                 <input
@@ -331,31 +361,41 @@ export default function MyProfile() {
                   value={formData.headline || ''}
                   onChange={e => setFormData({ ...formData, headline: e.target.value })}
                   placeholder="Your headline..."
-                  className="text-sm sm:text-base md:text-lg text-slate-400 bg-transparent border-b border-slate-600 focus:outline-none focus:border-blue-500 w-full mt-1"
+                  className="text-base sm:text-lg text-slate-400 bg-transparent border-b border-slate-600 focus:outline-none focus:border-indigo-500 w-full mt-2"
                 />
               ) : (
-                profile.headline && <p className="text-sm sm:text-base md:text-lg text-slate-400 mt-1 truncate">{profile.headline}</p>
+                profile.headline && <p className="text-base sm:text-lg md:text-xl text-slate-400 mt-2 truncate">{profile.headline}</p>
               )}
-              <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-slate-500 flex-wrap">
+              <div className="flex items-center justify-center md:justify-start gap-3 sm:gap-5 mt-3 text-sm text-slate-500 flex-wrap">
                 {profile.location && (
-                  <span className="flex items-center gap-1"><FiMapPin className="w-3 h-3 sm:w-4 sm:h-4" /> {profile.location}</span>
+                  <span className="flex items-center gap-1.5 hover:text-slate-400 transition-colors"><FiMapPin className="w-4 h-4" /> {profile.location}</span>
                 )}
-                <span className="flex items-center gap-1"><FiCalendar className="w-3 h-3 sm:w-4 sm:h-4" /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
+                <span className="flex items-center gap-1.5"><FiCalendar className="w-4 h-4" /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
-            <div className="flex gap-2 sm:gap-3 justify-center md:justify-end">
+            <div className="flex gap-3 justify-center md:justify-end">
               {editing ? (
                 <>
-                  <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/20 transition disabled:opacity-50 text-sm sm:text-base">
-                    <FiCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {saving ? 'Saving...' : 'Save'}
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base font-medium hover:scale-105 active:scale-95"
+                  >
+                    <FiCheck className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
                   </button>
-                  <button onClick={() => { setEditing(false); setFormData(profile); }} className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 border border-slate-600/50 text-slate-300 rounded-lg sm:rounded-xl hover:bg-slate-700/50 transition text-sm sm:text-base">
-                    <FiX className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Cancel
+                  <button
+                    onClick={() => { setEditing(false); setFormData(profile); }}
+                    className="flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 bg-slate-800/80 backdrop-blur border border-slate-700/50 text-slate-300 rounded-xl hover:bg-slate-700/80 transition-all duration-200 text-sm sm:text-base font-medium hover:scale-105 active:scale-95"
+                  >
+                    <FiX className="w-4 h-4" /> Cancel
                   </button>
                 </>
               ) : (
-                <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/20 transition text-sm sm:text-base">
-                  <FiEdit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Edit Profile
+                <button
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-200 text-sm sm:text-base font-medium hover:scale-105 active:scale-95"
+                >
+                  <FiEdit2 className="w-4 h-4" /> Edit Profile
                 </button>
               )}
             </div>
@@ -363,47 +403,53 @@ export default function MyProfile() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 px-2 sm:px-6 mb-6 sm:mb-8">
+      {/* Stats Cards - Premium Design */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 px-3 sm:px-6 mb-8">
         {[
-          { label: 'Followers', value: profile.followersCount, icon: FiUsers, color: 'bg-blue-500' },
-          { label: 'Following', value: profile.followingCount, icon: FiUsers, color: 'bg-green-500' },
-          { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, color: 'bg-purple-500' },
-          { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, color: 'bg-orange-500' },
-          { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiAward, color: 'bg-pink-500' },
+          { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20' },
+          { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20' },
+          { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
+          { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20' },
+          { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20' },
         ].map((stat, i) => (
-          <div key={i} className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-700/50 hover:bg-slate-700/50 transition">
-            <div className={`w-8 h-8 sm:w-10 sm:h-10 ${stat.color} rounded-lg flex items-center justify-center mb-2 sm:mb-3`}>
-              <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          <div key={i} className="group bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 cursor-default">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
+              <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div className="text-lg sm:text-2xl font-bold text-white">{stat.value}</div>
-            <div className="text-xs sm:text-sm text-slate-400">{stat.label}</div>
+            <div className="text-xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
+            <div className="text-xs sm:text-sm text-slate-400 font-medium">{stat.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 px-2 sm:px-6 mb-6">
-        <button
-          onClick={() => setActiveTab('posts')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-            activeTab === 'posts' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-          }`}
-        >
-          <FiEdit2 className="w-4 h-4" /> Posts
-        </button>
-        <button
-          onClick={() => setActiveTab('about')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-            activeTab === 'about' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-          }`}
-        >
-          <FiUser className="w-4 h-4" /> About
-        </button>
+      {/* Tabs - Premium Design */}
+      <div className="px-3 sm:px-6 mb-6">
+        <div className="flex gap-1 bg-slate-800/50 backdrop-blur-xl rounded-2xl p-1.5 border border-slate-700/30">
+          <button
+            onClick={() => setActiveTab('posts')}
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'posts'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <FiEdit2 className="w-4 h-4" /> Posts
+          </button>
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'about'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <FiUser className="w-4 h-4" /> About
+          </button>
+        </div>
       </div>
 
       {activeTab === 'posts' ? (
-        <div className="px-2 sm:px-6 pb-6 sm:pb-8">
+        <div className="px-3 sm:px-6 pb-8">
           {/* Create Post Form - Using enhanced CreatePostForm component */}
           <div className="relative z-20">
             <CreatePostForm onPostCreated={handlePostCreated} />
@@ -417,9 +463,11 @@ export default function MyProfile() {
           {/* Timeline Posts */}
           <div className="space-y-4 relative z-10">
             {timelinePosts.length === 0 ? (
-              <div className="bg-slate-800/50 rounded-xl p-8 border border-slate-700/50 text-center">
-                <FiEdit2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-white mb-2">No posts yet</h3>
+              <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-10 border border-slate-700/30 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <FiEdit2 className="w-8 h-8 text-indigo-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">No posts yet</h3>
                 <p className="text-slate-400">Share what's on your mind above!</p>
               </div>
             ) : (
@@ -495,13 +543,16 @@ export default function MyProfile() {
           </div>
         </div>
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-6 pb-6 sm:pb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-3 sm:px-6 pb-8">
         {/* Left Column - About & Details */}
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        <div className="lg:col-span-2 space-y-5">
           {/* About Section */}
-          <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
-            <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-              <FiUser className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> About
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-5 sm:p-6 border border-slate-700/30 hover:border-slate-600/50 transition-colors">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                <FiUser className="w-4 h-4 text-white" />
+              </div>
+              About
             </h2>
             {editing ? (
               <textarea
@@ -509,47 +560,50 @@ export default function MyProfile() {
                 onChange={e => setFormData({ ...formData, bio: e.target.value })}
                 placeholder="Write a short bio..."
                 rows={4}
-                className="w-full p-2.5 sm:p-3 bg-slate-700/50 border border-slate-600/50 rounded-lg sm:rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base"
+                className="w-full p-4 bg-slate-700/50 border border-slate-600/30 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 text-base transition-all"
               />
             ) : (
-              <p className="text-slate-300 leading-relaxed text-sm sm:text-base">{profile.bio || 'No bio yet.'}</p>
+              <p className="text-slate-300 leading-relaxed text-base">{profile.bio || 'No bio yet.'}</p>
             )}
           </div>
 
           {/* Work & Education */}
-          <div className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-700/50">
-            <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-              <FiBriefcase className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> Work
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-5 sm:p-6 border border-slate-700/30 hover:border-slate-600/50 transition-colors">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <FiBriefcase className="w-4 h-4 text-white" />
+              </div>
+              Work
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Job Title</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="group">
+                <label className="block text-sm font-medium text-slate-400 mb-2">Job Title</label>
                 {editing ? (
-                  <input type="text" value={formData.jobTitle || ''} onChange={e => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base" />
+                  <input type="text" value={formData.jobTitle || ''} onChange={e => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-3 bg-slate-700/50 border border-slate-600/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 text-base transition-all" />
                 ) : (
-                  <p className="text-slate-400 text-sm sm:text-base">{profile.jobTitle || '-'}</p>
+                  <p className="text-white font-medium">{profile.jobTitle || '-'}</p>
                 )}
               </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Company</label>
+              <div className="group">
+                <label className="block text-sm font-medium text-slate-400 mb-2">Company</label>
                 {editing ? (
-                  <input type="text" value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base" />
+                  <input type="text" value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} className="w-full p-3 bg-slate-700/50 border border-slate-600/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 text-base transition-all" />
                 ) : (
-                  <p className="text-slate-400 text-sm sm:text-base">{profile.company || '-'}</p>
+                  <p className="text-white font-medium">{profile.company || '-'}</p>
                 )}
               </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Location</label>
+              <div className="group">
+                <label className="block text-sm font-medium text-slate-400 mb-2">Location</label>
                 {editing ? (
-                  <input type="text" value={formData.location || ''} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base" />
+                  <input type="text" value={formData.location || ''} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full p-3 bg-slate-700/50 border border-slate-600/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 text-base transition-all" />
                 ) : (
-                  <p className="text-slate-400 text-sm sm:text-base">{profile.location || '-'}</p>
+                  <p className="text-white font-medium">{profile.location || '-'}</p>
                 )}
               </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Website</label>
+              <div className="group">
+                <label className="block text-sm font-medium text-slate-400 mb-2">Website</label>
                 {editing ? (
-                  <input type="url" value={formData.website || ''} onChange={e => setFormData({ ...formData, website: e.target.value })} className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base" />
+                  <input type="url" value={formData.website || ''} onChange={e => setFormData({ ...formData, website: e.target.value })} className="w-full p-3 bg-slate-700/50 border border-slate-600/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 text-base transition-all" />
                 ) : (
                   profile.website ? <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors text-sm sm:text-base break-all">{profile.website}</a> : <p className="text-slate-400 text-sm sm:text-base">-</p>
                 )}

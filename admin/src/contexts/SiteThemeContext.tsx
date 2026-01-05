@@ -116,6 +116,16 @@ export function useThemeClasses() {
     isDark,
 
     // ═══════════════════════════════════════════════════════════════
+    // BASIC BACKGROUNDS (simple, non-gradient)
+    // ═══════════════════════════════════════════════════════════════
+    bgPrimary: isDark ? 'bg-slate-900' : 'bg-white',
+    bgSecondary: isDark ? 'bg-slate-800' : 'bg-slate-50',
+    bgTertiary: isDark ? 'bg-slate-700' : 'bg-slate-100',
+    bgCard: isDark ? 'bg-slate-800/50' : 'bg-white',
+    inputBg: isDark ? 'bg-slate-700/50' : 'bg-white',
+    hoverBg: isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100',
+
+    // ═══════════════════════════════════════════════════════════════
     // PAGE & LAYOUT
     // ═══════════════════════════════════════════════════════════════
     page: isDark

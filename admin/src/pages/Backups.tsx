@@ -11,8 +11,10 @@ import {
 } from 'react-icons/fi';
 import { backupsApi, Backup } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
+import { useThemeClasses } from '../contexts/SiteThemeContext';
 
 export default function Backups() {
+  const theme = useThemeClasses();
   const [backups, setBackups] = useState<Backup[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -153,10 +155,10 @@ export default function Backups() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED': return 'bg-emerald-500/20 text-emerald-400';
-      case 'FAILED': return 'bg-red-500/20 text-red-400';
-      case 'IN_PROGRESS': return 'bg-blue-500/20 text-blue-400';
-      default: return 'bg-amber-500/20 text-amber-400';
+      case 'COMPLETED': return theme.isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700';
+      case 'FAILED': return theme.isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-700';
+      case 'IN_PROGRESS': return theme.isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700';
+      default: return theme.isDark ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700';
     }
   };
 
@@ -175,13 +177,13 @@ export default function Backups() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl">
+          <h1 className={`text-3xl font-bold ${theme.textPrimary} flex items-center gap-3`}>
+            <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl text-white">
               <FiHardDrive size={24} />
             </div>
             Backups
           </h1>
-          <p className="text-slate-400 mt-1">Manage system backups and restore points</p>
+          <p className={`${theme.textMuted} mt-1`}>Manage system backups and restore points</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -220,14 +222,14 @@ export default function Backups() {
             { label: 'In Progress', value: stats.inProgress, icon: FiLoader, color: 'blue' },
             { label: 'Total Size', value: formatFileSize(stats.totalSize), icon: FiHardDrive, color: 'purple' },
           ].map((stat, i) => (
-            <div key={i} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+            <div key={i} className={`${theme.bgCard} rounded-xl p-4 ${theme.border} border`}>
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg bg-${stat.color}-500/20`}>
                   <stat.icon className={`text-${stat.color}-400`} size={20} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-sm text-slate-400">{stat.label}</p>
+                  <p className={`text-2xl font-bold ${theme.textPrimary}`}>{stat.value}</p>
+                  <p className={`text-sm ${theme.textMuted}`}>{stat.label}</p>
                 </div>
               </div>
             </div>
@@ -236,10 +238,10 @@ export default function Backups() {
       )}
 
       {/* Backups Table */}
-      <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Backup History</h2>
-          <button onClick={fetchBackups} className="text-slate-400 hover:text-white transition-colors">
+      <div className={`${theme.bgCard} rounded-xl ${theme.border} border overflow-hidden`}>
+        <div className={`px-6 py-4 ${theme.border} border-b flex items-center justify-between`}>
+          <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>Backup History</h2>
+          <button onClick={fetchBackups} className={`${theme.textMuted} hover:${theme.textPrimary} transition-colors`}>
             <FiRefreshCw size={18} />
           </button>
         </div>
@@ -249,36 +251,36 @@ export default function Backups() {
             <FiLoader className="animate-spin text-violet-400 mx-auto" size={32} />
           </div>
         ) : backups.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
+          <div className={`p-8 text-center ${theme.textMuted}`}>
             <FiArchive size={48} className="mx-auto mb-3 opacity-50" />
             <p>No backups yet. Create your first backup!</p>
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-slate-900/50">
+            <thead className={theme.tableHeader}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Backup</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Size</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Created</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Actions</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textMuted} uppercase`}>Backup</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textMuted} uppercase`}>Type</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textMuted} uppercase`}>Status</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textMuted} uppercase`}>Size</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium ${theme.textMuted} uppercase`}>Created</th>
+                <th className={`px-6 py-3 text-right text-xs font-medium ${theme.textMuted} uppercase`}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
+            <tbody className={`divide-y ${theme.border}`}>
               {backups.map((backup) => (
-                <tr key={backup.id} className="hover:bg-slate-700/20 transition-colors">
+                <tr key={backup.id} className={theme.tableRow}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {getTypeIcon(backup.type)}
                       <div>
-                        <p className="font-medium text-white">{backup.name}</p>
-                        {backup.description && <p className="text-sm text-slate-400">{backup.description}</p>}
+                        <p className={`font-medium ${theme.textPrimary}`}>{backup.name}</p>
+                        {backup.description && <p className={`text-sm ${theme.textMuted}`}>{backup.description}</p>}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-slate-700/50 text-slate-300 rounded text-xs">{backup.type}</span>
+                    <span className={`px-2 py-1 ${theme.bgTertiary} ${theme.textSecondary} rounded text-xs`}>{backup.type}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 w-fit ${getStatusColor(backup.status)}`}>
@@ -286,8 +288,8 @@ export default function Backups() {
                       {backup.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-slate-300">{formatFileSize(backup.fileSize)}</td>
-                  <td className="px-6 py-4 text-slate-400 text-sm">
+                  <td className={`px-6 py-4 ${theme.textSecondary}`}>{formatFileSize(backup.fileSize)}</td>
+                  <td className={`px-6 py-4 ${theme.textMuted} text-sm`}>
                     {formatDistanceToNow(new Date(backup.createdAt), { addSuffix: true })}
                   </td>
                   <td className="px-6 py-4">
@@ -296,14 +298,14 @@ export default function Backups() {
                         <>
                           <button
                             onClick={() => openRestoreModal(backup)}
-                            className="p-2 text-slate-400 hover:text-violet-400 transition-colors"
+                            className={`p-2 ${theme.textMuted} hover:text-violet-400 transition-colors`}
                             title="Restore"
                           >
                             <FiRotateCcw size={16} />
                           </button>
                           <a
                             href={backupsApi.getDownloadUrl(backup.id)}
-                            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
+                            className={`p-2 ${theme.textMuted} hover:text-emerald-400 transition-colors`}
                             title="Download"
                           >
                             <FiDownload size={16} />
@@ -312,7 +314,7 @@ export default function Backups() {
                       )}
                       <button
                         onClick={() => handleDelete(backup.id)}
-                        className="p-2 text-slate-400 hover:text-red-400 transition-colors"
+                        className={`p-2 ${theme.textMuted} hover:text-red-400 transition-colors`}
                         title="Delete"
                       >
                         <FiTrash2 size={16} />
@@ -327,12 +329,12 @@ export default function Backups() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-slate-700/50 flex items-center justify-center gap-2">
+          <div className={`px-6 py-4 border-t ${theme.border} flex items-center justify-center gap-2`}>
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
                 onClick={() => setPage(i + 1)}
-                className={`px-3 py-1 rounded ${page === i + 1 ? 'bg-violet-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                className={`px-3 py-1 rounded ${page === i + 1 ? 'bg-violet-600 text-white' : `${theme.bgTertiary} ${theme.textSecondary} hover:opacity-80`}`}
               >
                 {i + 1}
               </button>
@@ -343,40 +345,40 @@ export default function Backups() {
 
       {/* Create Backup Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-lg p-6">
+        <div className={theme.overlay + " fixed inset-0 flex items-center justify-center z-50"}>
+          <div className={`${theme.modal} rounded-xl w-full max-w-lg p-6`}>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Create Custom Backup</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-white">
+              <h3 className={`text-xl font-bold ${theme.textPrimary}`}>Create Custom Backup</h3>
+              <button onClick={() => setShowCreateModal(false)} className={`${theme.textMuted} hover:${theme.textPrimary}`}>
                 <FiX size={20} />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Backup Name *</label>
+                <label className={`block text-sm font-medium ${theme.textSecondary} mb-1`}>Backup Name *</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 ${theme.input} rounded-lg`}
                   placeholder="My Backup"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+                <label className={`block text-sm font-medium ${theme.textSecondary} mb-1`}>Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 ${theme.input} rounded-lg`}
                   rows={2}
                   placeholder="Optional description..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Include in Backup</label>
+                <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>Include in Backup</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { key: 'includesDatabase', label: 'Database', icon: FiDatabase },
@@ -388,8 +390,8 @@ export default function Backups() {
                       key={item.key}
                       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                         formData[item.key as keyof typeof formData]
-                          ? 'bg-violet-500/20 border-violet-500/50 text-white'
-                          : 'bg-slate-700/50 border-slate-600 text-slate-400'
+                          ? `bg-violet-500/20 border-violet-500/50 ${theme.textPrimary}`
+                          : `${theme.bgTertiary} ${theme.border} ${theme.textMuted}`
                       }`}
                     >
                       <input
@@ -410,7 +412,7 @@ export default function Backups() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                className={theme.buttonSecondary + " px-4 py-2 rounded-lg"}
               >
                 Cancel
               </button>
@@ -429,14 +431,14 @@ export default function Backups() {
 
       {/* Restore Backup Modal */}
       {showRestoreModal && selectedBackup && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-lg p-6">
+        <div className={theme.overlay + " fixed inset-0 flex items-center justify-center z-50"}>
+          <div className={`${theme.modal} rounded-xl w-full max-w-lg p-6`}>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <h3 className={`text-xl font-bold ${theme.textPrimary} flex items-center gap-2`}>
                 <FiRotateCcw className="text-violet-400" />
                 Restore Backup
               </h3>
-              <button onClick={() => { setShowRestoreModal(false); setSelectedBackup(null); }} className="text-slate-400 hover:text-white">
+              <button onClick={() => { setShowRestoreModal(false); setSelectedBackup(null); }} className={`${theme.textMuted} hover:${theme.textPrimary}`}>
                 <FiX size={20} />
               </button>
             </div>
@@ -446,7 +448,7 @@ export default function Backups() {
                 <FiAlertCircle className="text-amber-400 mt-0.5" size={20} />
                 <div>
                   <p className="text-amber-400 font-medium">Warning</p>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className={`text-sm ${theme.textMuted} mt-1`}>
                     Restoring a backup will overwrite existing data. This action cannot be undone.
                     Make sure you have a current backup before proceeding.
                   </p>
@@ -455,17 +457,17 @@ export default function Backups() {
             </div>
 
             <div className="mb-6">
-              <p className="text-slate-300 mb-2">Restoring from:</p>
-              <div className="bg-slate-700/50 rounded-lg p-3">
-                <p className="text-white font-medium">{selectedBackup.name}</p>
-                <p className="text-sm text-slate-400">
+              <p className={`${theme.textSecondary} mb-2`}>Restoring from:</p>
+              <div className={`${theme.bgTertiary} rounded-lg p-3`}>
+                <p className={`${theme.textPrimary} font-medium`}>{selectedBackup.name}</p>
+                <p className={`text-sm ${theme.textMuted}`}>
                   Created {formatDistanceToNow(new Date(selectedBackup.createdAt), { addSuffix: true })}
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <label className="block text-sm font-medium text-slate-300 mb-2">Select what to restore:</label>
+              <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>Select what to restore:</label>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { key: 'restoreDatabase', label: 'Database', icon: FiDatabase, available: selectedBackup.includesDatabase },
@@ -477,10 +479,10 @@ export default function Backups() {
                     key={item.key}
                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       !item.available
-                        ? 'bg-slate-800/50 border-slate-700 text-slate-600 cursor-not-allowed'
+                        ? `${theme.bgSecondary} ${theme.border} ${theme.textSubtle} cursor-not-allowed`
                         : restoreOptions[item.key as keyof typeof restoreOptions]
-                          ? 'bg-violet-500/20 border-violet-500/50 text-white'
-                          : 'bg-slate-700/50 border-slate-600 text-slate-400'
+                          ? `bg-violet-500/20 border-violet-500/50 ${theme.textPrimary}`
+                          : `${theme.bgTertiary} ${theme.border} ${theme.textMuted}`
                     }`}
                   >
                     <input
@@ -495,7 +497,7 @@ export default function Backups() {
                     {item.available && restoreOptions[item.key as keyof typeof restoreOptions] && (
                       <FiCheck className="ml-auto text-violet-400" />
                     )}
-                    {!item.available && <span className="ml-auto text-xs text-slate-600">N/A</span>}
+                    {!item.available && <span className={`ml-auto text-xs ${theme.textSubtle}`}>N/A</span>}
                   </label>
                 ))}
               </div>
@@ -504,7 +506,7 @@ export default function Backups() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => { setShowRestoreModal(false); setSelectedBackup(null); }}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                className={theme.buttonSecondary + " px-4 py-2 rounded-lg"}
               >
                 Cancel
               </button>

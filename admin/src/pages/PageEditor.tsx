@@ -9,10 +9,12 @@ import { pagesApi } from '../services/api';
 import RichTextEditor from '../components/RichTextEditor';
 import toast from 'react-hot-toast';
 import { FiSave, FiEye, FiArrowLeft } from 'react-icons/fi';
+import { useThemeClasses } from '../contexts/SiteThemeContext';
 
 export default function PageEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const theme = useThemeClasses();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -83,23 +85,23 @@ export default function PageEditor() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className={`min-h-screen ${theme.bgPrimary}`}>
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center">
           <button
             onClick={() => navigate('/pages')}
-            className="mr-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all"
+            className={`mr-4 p-2 rounded-xl ${theme.textMuted} hover:${theme.textPrimary} ${theme.hoverBg} transition-all`}
           >
             <FiArrowLeft size={24} />
           </button>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+          <h1 className={`text-3xl font-bold ${theme.textPrimary}`}>
             {id ? 'Edit Page' : 'Create New Page'}
           </h1>
         </div>
         <div className="flex gap-3">
           <button
             onClick={handlePreview}
-            className="flex items-center px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all"
+            className={`flex items-center px-4 py-2 ${theme.border} border rounded-xl ${theme.textSecondary} ${theme.hoverBg} transition-all`}
           >
             <FiEye className="mr-2" size={18} />
             Preview
@@ -116,14 +118,14 @@ export default function PageEditor() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
+        <div className={`${theme.bgCard} backdrop-blur rounded-xl ${theme.border} border p-6`}>
           <div className="mb-6">
             <input
               type="text"
               placeholder="Page title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full text-3xl font-bold bg-transparent border-none focus:ring-0 focus:outline-none text-white placeholder-slate-500"
+              className={`w-full text-3xl font-bold bg-transparent border-none focus:ring-0 focus:outline-none ${theme.textPrimary} ${theme.isDark ? 'placeholder-slate-500' : 'placeholder-gray-400'}`}
               required
             />
           </div>
@@ -137,31 +139,31 @@ export default function PageEditor() {
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-white">Page Settings</h2>
+        <div className={`${theme.bgCard} backdrop-blur rounded-xl ${theme.border} border p-6`}>
+          <h2 className={`text-lg font-semibold mb-4 ${theme.textPrimary}`}>Page Settings</h2>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>
                 Slug
               </label>
               <input
                 type="text"
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className={`w-full px-4 py-3 ${theme.inputBg} ${theme.border} border rounded-xl ${theme.textPrimary} ${theme.isDark ? 'placeholder-slate-500' : 'placeholder-gray-400'} focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                 placeholder="page-url-slug"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>
                 Status
               </label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className={`w-full px-4 py-3 ${theme.inputBg} ${theme.border} border rounded-xl ${theme.textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
               >
                 <option value="DRAFT">Draft</option>
                 <option value="PUBLISHED">Published</option>

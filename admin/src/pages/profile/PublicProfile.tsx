@@ -1,6 +1,7 @@
 /**
- * Public Profile Page
- * View another user's profile with follow functionality and timeline
+ * Public Profile Page - Premium LinkedIn-Style Design
+ * View another user's profile with follow functionality, timeline, and modern UI
+ * Features: Glass-morphism, gradients, smooth animations, responsive layout
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -14,7 +15,7 @@ import { useSiteTheme } from '../../contexts/SiteThemeContext';
 import {
   FiMapPin, FiCalendar, FiUsers, FiBook, FiAward, FiExternalLink,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiActivity, FiUserPlus, FiUserCheck,
-  FiEdit3, FiMessageCircle
+  FiEdit3, FiMessageCircle, FiStar, FiUser
 } from 'react-icons/fi';
 
 export default function PublicProfile() {
@@ -132,79 +133,100 @@ export default function PublicProfile() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-slate-700 border-t-blue-500"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-spin"></div>
+            <div className={`absolute inset-1 rounded-full ${isDark ? 'bg-slate-900' : 'bg-gray-100'}`}></div>
+            <div className="absolute inset-2 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-50 animate-pulse"></div>
+          </div>
+          <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Loading profile...</p>
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-96 px-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Profile Not Found</h2>
-        <p className="text-slate-400 text-sm sm:text-base text-center">This profile doesn't exist or is private.</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
+        <div className={`rounded-2xl p-10 border text-center max-w-md ${isDark ? 'bg-slate-800/50 border-slate-700/30 backdrop-blur-xl' : 'bg-white border-gray-200'}`}>
+          <div className="w-20 h-20 bg-gradient-to-br from-slate-500/20 to-slate-600/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <FiUser className="w-10 h-10 text-slate-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Profile Not Found</h2>
+          <p className="text-slate-400">This profile doesn't exist or is private.</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-0">
-      {/* Cover Image */}
-      <div className="relative h-40 sm:h-56 md:h-80 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
+      {/* Cover Image - Premium Design */}
+      <div className="relative h-44 sm:h-60 md:h-80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+        </div>
         {profile.coverImage && (
-          <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover" />
+          <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover relative z-10" />
         )}
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none z-20" />
       </div>
 
-      {/* Profile Header */}
-      <div className="relative px-2 sm:px-6 pb-4 sm:pb-6">
-        <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-12 sm:-mt-20 md:-mt-24">
-          {/* Avatar */}
-          <div className="w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-xl sm:rounded-2xl border-3 sm:border-4 border-slate-800 bg-slate-800 shadow-xl overflow-hidden mx-auto md:mx-0">
+      {/* Profile Header - Premium Card */}
+      <div className="relative px-3 sm:px-6 pb-6">
+        <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-14 sm:-mt-20 md:-mt-24">
+          {/* Avatar with Premium Ring */}
+          <div className="w-28 h-28 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl sm:rounded-3xl border-4 border-slate-900 bg-slate-900 shadow-2xl overflow-hidden mx-auto md:mx-0 ring-4 ring-white/10">
             {profile.avatar ? (
               <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-3xl sm:text-5xl font-bold text-white">{profile.name.charAt(0)}</span>
+              <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                <span className="text-4xl sm:text-6xl font-bold text-white drop-shadow-lg">{profile.name.charAt(0)}</span>
               </div>
             )}
           </div>
 
           {/* Name & Actions */}
-          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 text-center md:text-left">
+          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4 text-center md:text-left">
             <div className="min-w-0">
-              <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-3">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent truncate">{profile.name}</h1>
+              <div className="flex items-center justify-center md:justify-start gap-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-white to-slate-300 bg-clip-text text-transparent truncate">{profile.name}</h1>
                 {profile.role === 'ADMIN' && (
-                  <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-semibold rounded-full flex-shrink-0">Admin</span>
+                  <span className="px-2.5 py-1 bg-gradient-to-r from-red-500/20 to-pink-500/20 text-red-400 text-xs font-semibold rounded-full flex-shrink-0 border border-red-500/20">Admin</span>
                 )}
               </div>
-              {profile.headline && <p className="text-sm sm:text-base md:text-lg text-slate-400 mt-1 truncate">{profile.headline}</p>}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-slate-500">
+              {profile.headline && <p className="text-base sm:text-lg md:text-xl text-slate-400 mt-2 truncate">{profile.headline}</p>}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-5 mt-3 text-sm text-slate-500">
                 {profile.location && (
-                  <span className="flex items-center gap-1"><FiMapPin className="w-3 h-3 sm:w-4 sm:h-4" /> {profile.location}</span>
+                  <span className="flex items-center gap-1.5 hover:text-slate-400 transition-colors"><FiMapPin className="w-4 h-4" /> {profile.location}</span>
                 )}
                 {profile.company && (
-                  <span className="flex items-center gap-1">@ {profile.company}</span>
+                  <span className="flex items-center gap-1.5 hover:text-slate-400 transition-colors">@ {profile.company}</span>
                 )}
-                <span className="flex items-center gap-1"><FiCalendar className="w-3 h-3 sm:w-4 sm:h-4" /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
+                <span className="flex items-center gap-1.5"><FiCalendar className="w-4 h-4" /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
-            <div className="flex gap-2 sm:gap-3 justify-center md:justify-end">
+            <div className="flex gap-3 justify-center md:justify-end">
               {isOwnProfile ? (
-                <Link to="/profile" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-blue-600 transition text-sm sm:text-base">
-                  Edit Profile
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-200 text-sm sm:text-base font-medium hover:scale-105 active:scale-95"
+                >
+                  <FiEdit3 className="w-4 h-4" /> Edit Profile
                 </Link>
               ) : currentUser && (
                 <button
                   onClick={handleFollow}
                   disabled={followLoading}
-                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl transition disabled:opacity-50 text-sm sm:text-base ${
-                    isFollowing ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 border border-slate-600/50' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600'
+                  className={`flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl transition-all duration-200 disabled:opacity-50 text-sm sm:text-base font-medium hover:scale-105 active:scale-95 ${
+                    isFollowing
+                      ? 'bg-slate-800/80 backdrop-blur text-slate-300 hover:bg-slate-700/80 border border-slate-600/50'
+                      : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:shadow-xl hover:shadow-purple-500/25'
                   }`}
                 >
-                  {isFollowing ? <><FiUserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Following</> : <><FiUserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Follow</>}
+                  {isFollowing ? <><FiUserCheck className="w-4 h-4" /> Following</> : <><FiUserPlus className="w-4 h-4" /> Follow</>}
                 </button>
               )}
             </div>
@@ -212,40 +234,44 @@ export default function PublicProfile() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 px-2 sm:px-6 mb-6 sm:mb-8">
+      {/* Stats Cards - Premium Design */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 px-3 sm:px-6 mb-8">
         {[
-          { label: 'Followers', value: profile.followersCount, icon: FiUsers, color: 'bg-blue-500' },
-          { label: 'Following', value: profile.followingCount, icon: FiUsers, color: 'bg-green-500' },
-          { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, color: 'bg-purple-500' },
-          { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, color: 'bg-orange-500' },
-          { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiAward, color: 'bg-pink-500' },
+          { label: 'Followers', value: profile.followersCount, icon: FiUsers, gradient: 'from-blue-500 to-cyan-500', shadow: 'shadow-blue-500/20' },
+          { label: 'Following', value: profile.followingCount, icon: FiUsers, gradient: 'from-emerald-500 to-green-500', shadow: 'shadow-emerald-500/20' },
+          { label: 'Posts', value: stats?.postsPublished || 0, icon: FiBook, gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
+          { label: 'Courses', value: stats?.coursesCompleted || 0, icon: FiAward, gradient: 'from-orange-500 to-amber-500', shadow: 'shadow-orange-500/20' },
+          { label: 'Certificates', value: stats?.certificatesEarned || 0, icon: FiStar, gradient: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/20' },
         ].map((stat, i) => (
-          <div key={i} className="bg-slate-800/50 backdrop-blur rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-700/50 hover:bg-slate-700/50 transition">
-            <div className={`w-8 h-8 sm:w-10 sm:h-10 ${stat.color} rounded-lg flex items-center justify-center mb-2 sm:mb-3`}>
-              <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          <div key={i} className="group bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 cursor-default">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
+              <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div className="text-lg sm:text-2xl font-bold text-white">{stat.value}</div>
-            <div className="text-xs sm:text-sm text-slate-400">{stat.label}</div>
+            <div className="text-xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
+            <div className="text-xs sm:text-sm text-slate-400 font-medium">{stat.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Profile Tabs */}
-      <div className="px-2 sm:px-6 mb-4">
-        <div className="flex gap-1 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
+      {/* Profile Tabs - Premium Design */}
+      <div className="px-3 sm:px-6 mb-6">
+        <div className="flex gap-1 bg-slate-800/50 backdrop-blur-xl rounded-2xl p-1.5 border border-slate-700/30">
           <button
             onClick={() => setActiveTab('posts')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-              activeTab === 'posts' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'posts'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
             }`}
           >
             <FiEdit3 className="w-4 h-4" /> Posts
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-              activeTab === 'about' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'about'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
             }`}
           >
             <FiBook className="w-4 h-4" /> About
@@ -253,9 +279,9 @@ export default function PublicProfile() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-6 pb-6 sm:pb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-3 sm:px-6 pb-8">
         {/* Left Column - Main Content */}
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        <div className="lg:col-span-2 space-y-5">
           {activeTab === 'posts' ? (
             <>
               {/* Create Post (only on own profile) */}
@@ -278,14 +304,14 @@ export default function PublicProfile() {
                     <button
                       onClick={loadMorePosts}
                       disabled={loadingPosts}
-                      className="w-full py-3 bg-slate-800/50 text-slate-400 rounded-xl hover:bg-slate-700/50 transition disabled:opacity-50"
+                      className="w-full py-4 bg-slate-800/50 backdrop-blur-xl text-slate-400 rounded-2xl hover:bg-slate-700/50 transition-all duration-200 disabled:opacity-50 border border-slate-700/30 hover:border-slate-600/50 font-medium hover:text-white"
                     >
                       {loadingPosts ? 'Loading...' : 'Load More Posts'}
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="bg-slate-800/50 backdrop-blur rounded-xl p-8 border border-slate-700/50 text-center">
+                <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-10 border border-slate-700/30 text-center">
                   <FiMessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                   <p className="text-slate-400">No posts yet</p>
                   {isOwnProfile && <p className="text-slate-500 text-sm mt-1">Share what's on your mind!</p>}
