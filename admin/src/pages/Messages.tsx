@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2, FiVideo, FiPaperclip, FiPhone, FiSmile, FiBell, FiArrowLeft, FiRefreshCw, FiAlertCircle, FiMic, FiMoreVertical } from 'react-icons/fi';
+import { FiSend, FiSearch, FiMessageSquare, FiCheck, FiCheckCircle, FiPlus, FiX, FiTrash2, FiVideo, FiPaperclip, FiPhone, FiSmile, FiBell, FiArrowLeft, FiRefreshCw, FiAlertCircle, FiMic, FiMoreVertical, FiMonitor } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
@@ -101,7 +101,7 @@ export default function Messages() {
   const [notificationPermission, setNotificationPermission] = useState<string>('default');
   const [mediaPermission, setMediaPermission] = useState<PermissionStatus>('prompt');
   const [showMediaRecorder, setShowMediaRecorder] = useState(false);
-  const [mediaRecorderMode, setMediaRecorderMode] = useState<'video' | 'audio'>('video');
+  const [mediaRecorderMode, setMediaRecorderMode] = useState<'video' | 'audio' | 'screen'>('video');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1009,6 +1009,16 @@ export default function Messages() {
                   title="Record audio"
                 >
                   <FiMic size={20} />
+                </button>
+
+                {/* Desktop Screen Share Button */}
+                <button
+                  type="button"
+                  onClick={() => { setMediaRecorderMode('screen'); setShowMediaRecorder(true); }}
+                  className="p-2.5 text-slate-400 hover:text-blue-400 hover:bg-slate-600/50 rounded-xl transition-all min-w-[44px] min-h-[44px] hidden sm:flex items-center justify-center active:scale-95"
+                  title="Share screen"
+                >
+                  <FiMonitor size={20} />
                 </button>
 
                 {/* Emoji Picker Button */}

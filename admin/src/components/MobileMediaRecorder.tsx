@@ -10,7 +10,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   FiVideo, FiMic, FiSquare, FiPause, FiPlay, FiX, FiCheck,
-  FiRefreshCw, FiVolume2, FiUpload
+  FiRefreshCw, FiVolume2, FiUpload, FiMonitor
 } from 'react-icons/fi';
 import { mediaApi } from '../services/api';
 import toast from 'react-hot-toast';
@@ -19,7 +19,7 @@ interface MobileMediaRecorderProps {
   isOpen: boolean;
   onClose: () => void;
   onMediaCaptured: (media: { type: 'VIDEO' | 'AUDIO'; url: string; thumbnail?: string }) => void;
-  mode?: 'video' | 'audio';
+  mode?: 'video' | 'audio' | 'screen';
 }
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'preview';
@@ -87,6 +87,12 @@ export default function MobileMediaRecorder({
     setPermissionState('checking');
     setPermissionError(null);
 
+    // Screen capture doesn't need pre-permission check - goes straight to prompt
+    if (mode === 'screen') {
+      setPermissionState('prompt');
+      return;
+    }
+
     try {
       // Check if permissions API is available
       if (navigator.permissions) {
@@ -130,23 +136,52 @@ export default function MobileMediaRecorder({
     setPermissionError(null);
 
     try {
-      const constraints: MediaStreamConstraints = mode === 'video'
-        ? {
-            video: {
-              facingMode,
-              width: { ideal: 1920, max: 1920 },
-              height: { ideal: 1080, max: 1080 },
-              aspectRatio: { ideal: 16/9 }
-            },
-            audio: true
-          }
-        : { audio: { echoCancellation: true, noiseSuppression: true } };
+      let stream: MediaStream;
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (mode === 'screen') {
+        // Screen capture using getDisplayMedia
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            width: { ideal: 1920, max: 1920 },
+            height: { ideal: 1080, max: 1080 },
+            frameRate: { ideal: 30, max: 60 }
+          },
+          audio: true // Capture system audio if available
+        });
+
+        // Also get microphone audio for commentary
+        try {
+          const audioStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true }
+          });
+          // Combine screen video with microphone audio
+          audioStream.getAudioTracks().forEach(track => stream.addTrack(track));
+        } catch (audioError) {
+          console.warn('Could not get microphone for screen recording:', audioError);
+          // Continue without mic - screen audio might be available
+        }
+      } else if (mode === 'video') {
+        const constraints: MediaStreamConstraints = {
+          video: {
+            facingMode,
+            width: { ideal: 1920, max: 1920 },
+            height: { ideal: 1080, max: 1080 },
+            aspectRatio: { ideal: 16/9 }
+          },
+          audio: true
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } else {
+        // Audio only
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true }
+        });
+      }
+
       streamRef.current = stream;
       setPermissionState('granted');
 
-      if (videoRef.current && mode === 'video') {
+      if (videoRef.current && (mode === 'video' || mode === 'screen')) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
@@ -154,28 +189,46 @@ export default function MobileMediaRecorder({
       if (mode === 'audio') {
         startAudioMonitoring(stream);
       }
+
+      // Handle screen share ending (user clicks "Stop sharing")
+      if (mode === 'screen') {
+        stream.getVideoTracks()[0]?.addEventListener('ended', () => {
+          handleClose();
+          toast('Screen sharing stopped');
+        });
+      }
     } catch (error: any) {
       console.error('Failed to access media devices:', error);
 
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
         setPermissionState('denied');
-        setPermissionError('Permission denied. Please allow access in your browser settings.');
+        setPermissionError(mode === 'screen'
+          ? 'Screen sharing was cancelled or denied.'
+          : 'Permission denied. Please allow access in your browser settings.');
       } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
         setPermissionState('denied');
         setPermissionError(mode === 'video' ? 'No camera found on this device.' : 'No microphone found.');
       } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
         setPermissionState('denied');
         setPermissionError('Camera/microphone is already in use by another app.');
+      } else if (error.name === 'AbortError') {
+        // User cancelled screen picker
+        handleClose();
+        return;
       } else {
         setPermissionState('denied');
-        setPermissionError('Unable to access camera/microphone. Please check permissions.');
+        setPermissionError(mode === 'screen'
+          ? 'Unable to capture screen. Please try again.'
+          : 'Unable to access camera/microphone. Please check permissions.');
       }
     }
   }, [mode, facingMode, startAudioMonitoring]);
 
-  // Initialize camera/microphone (for camera switching)
+  // Initialize camera/microphone (for camera switching - not used for screen mode)
   const initializeMedia = useCallback(async () => {
     if (permissionState !== 'granted') return;
+    // Screen mode doesn't support reinitializing - user would need to restart
+    if (mode === 'screen') return;
 
     try {
       const constraints: MediaStreamConstraints = mode === 'video'
@@ -252,7 +305,8 @@ export default function MobileMediaRecorder({
     triggerHaptic('medium');
 
     chunksRef.current = [];
-    const mimeType = mode === 'video'
+    const isVideoMode = mode === 'video' || mode === 'screen';
+    const mimeType = isVideoMode
       ? (MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
          MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4')
       : (MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
@@ -260,7 +314,7 @@ export default function MobileMediaRecorder({
 
     const mediaRecorder = new MediaRecorder(streamRef.current, {
       mimeType,
-      videoBitsPerSecond: mode === 'video' ? 2500000 : undefined,
+      videoBitsPerSecond: isVideoMode ? 2500000 : undefined,
       audioBitsPerSecond: 128000
     });
     mediaRecorderRef.current = mediaRecorder;
@@ -353,11 +407,12 @@ export default function MobileMediaRecorder({
       const mediaUrl = uploadRes.data.url || uploadRes.data.path;
 
       onMediaCaptured({
-        type: mode === 'video' ? 'VIDEO' : 'AUDIO',
+        type: mode === 'audio' ? 'AUDIO' : 'VIDEO', // Screen recordings are video
         url: mediaUrl,
       });
 
-      toast.success(`${mode === 'video' ? 'Video' : 'Audio'} saved successfully!`);
+      const modeLabel = mode === 'video' ? 'Video' : mode === 'screen' ? 'Screen recording' : 'Audio';
+      toast.success(`${modeLabel} saved successfully!`);
       handleClose();
     } catch (error) {
       console.error('Upload failed:', error);
@@ -450,23 +505,27 @@ export default function MobileMediaRecorder({
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mb-6">
                 {mode === 'video' ? (
                   <FiVideo className="w-12 h-12 text-purple-400" />
+                ) : mode === 'screen' ? (
+                  <FiMonitor className="w-12 h-12 text-purple-400" />
                 ) : (
                   <FiMic className="w-12 h-12 text-purple-400" />
                 )}
               </div>
               <h3 className="text-white text-xl font-bold mb-3 text-center">
-                {mode === 'video' ? 'Camera & Microphone Access' : 'Microphone Access'}
+                {mode === 'video' ? 'Camera & Microphone Access' : mode === 'screen' ? 'Screen Sharing' : 'Microphone Access'}
               </h3>
               <p className="text-slate-400 text-center mb-8 max-w-xs">
                 {mode === 'video'
                   ? 'Allow access to your camera and microphone to record videos.'
+                  : mode === 'screen'
+                  ? 'Select a window, tab, or your entire screen to share.'
                   : 'Allow access to your microphone to record audio.'}
               </p>
               <button
                 onClick={requestPermissions}
                 className="w-full max-w-xs px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-lg hover:from-purple-500 hover:to-pink-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/25"
               >
-                Allow Access
+                {mode === 'screen' ? 'Share Screen' : 'Allow Access'}
               </button>
               <button
                 onClick={handleClose}
@@ -522,7 +581,7 @@ export default function MobileMediaRecorder({
             </div>
           )}
 
-          {/* Camera switch - only for video in idle/recording state */}
+          {/* Camera switch - only for video camera mode in idle/recording state (not screen mode) */}
           {mode === 'video' && (recordingState === 'idle' || recordingState === 'recording') && (
             <button
               onClick={switchCamera}
@@ -534,14 +593,14 @@ export default function MobileMediaRecorder({
           )}
 
           {/* Placeholder for alignment when no camera switch */}
-          {(mode === 'audio' || recordingState === 'preview') && (
+          {(mode === 'audio' || mode === 'screen' || recordingState === 'preview') && (
             <div className="w-12" />
           )}
         </div>
 
         {/* Preview Area */}
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-          {mode === 'video' ? (
+          {(mode === 'video' || mode === 'screen') ? (
             recordingState === 'preview' && previewUrl ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black p-4">
                 <video
@@ -561,14 +620,14 @@ export default function MobileMediaRecorder({
                   muted
                   playsInline
                   className="w-full h-full object-cover"
-                  style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
+                  style={{ transform: mode === 'video' && facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
                 />
-                {/* Camera overlay gradient */}
+                {/* Camera/Screen overlay gradient */}
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
                 {/* Recording frame indicator */}
                 {recordingState === 'recording' && (
-                  <div className="absolute inset-4 sm:inset-8 border-2 border-red-500/50 rounded-2xl pointer-events-none animate-pulse" />
+                  <div className={`absolute inset-4 sm:inset-8 border-2 ${mode === 'screen' ? 'border-blue-500/50' : 'border-red-500/50'} rounded-2xl pointer-events-none animate-pulse`} />
                 )}
               </div>
             )
@@ -726,9 +785,9 @@ export default function MobileMediaRecorder({
           {/* Mode indicator */}
           <div className="flex justify-center mt-5">
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-              {mode === 'video' ? <FiVideo size={16} className="text-slate-400" /> : <FiMic size={16} className="text-slate-400" />}
+              {mode === 'video' ? <FiVideo size={16} className="text-slate-400" /> : mode === 'screen' ? <FiMonitor size={16} className="text-slate-400" /> : <FiMic size={16} className="text-slate-400" />}
               <span className="text-slate-400 text-sm font-medium">
-                {mode === 'video' ? 'Video' : 'Audio'}
+                {mode === 'video' ? 'Video' : mode === 'screen' ? 'Screen Recording' : 'Audio'}
               </span>
             </div>
           </div>
