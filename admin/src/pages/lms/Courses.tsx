@@ -120,7 +120,7 @@ export default function Courses() {
   };
 
   return (
-    <div className={`min-h-screen p-6 ${theme.background}`}>
+    <div className={`min-h-screen p-6 ${theme.page}`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
