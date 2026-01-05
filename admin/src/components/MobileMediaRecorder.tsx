@@ -349,13 +349,14 @@ export default function MobileMediaRecorder({
         <div className="flex-1 flex items-center justify-center relative overflow-hidden">
           {mode === 'video' ? (
             recordingState === 'preview' && previewUrl ? (
-              <div className="relative w-full h-full flex items-center justify-center bg-black">
+              <div className="absolute inset-0 flex items-center justify-center bg-black p-4">
                 <video
                   src={previewUrl}
                   controls
                   autoPlay
                   loop
-                  className="max-w-full max-h-full object-contain rounded-lg sm:rounded-2xl"
+                  className="w-auto h-auto max-w-full max-h-full rounded-lg sm:rounded-2xl"
+                  style={{ objectFit: 'contain' }}
                 />
               </div>
             ) : (
