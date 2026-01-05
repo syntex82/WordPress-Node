@@ -537,9 +537,9 @@ export default function GroupChat() {
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800">
+    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 overflow-hidden">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <div className="bg-slate-800/70 backdrop-blur-xl border-b border-slate-700/30 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
@@ -614,7 +614,7 @@ export default function GroupChat() {
         )}
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4 bg-gradient-to-b from-slate-900/50 to-slate-900">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-3 sm:py-4 bg-gradient-to-b from-slate-900/50 to-slate-900">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="relative">
@@ -648,13 +648,13 @@ export default function GroupChat() {
                       const showAvatar = idx === 0 || msgGroup.messages[idx - 1].sender.id !== message.sender.id;
                       const canDelete = isOwn || group?.owner?.id === user?.id;
                       return (
-                        <div key={message.id} className={`group/msg flex ${isOwn ? 'justify-end' : 'justify-start'} ${!showAvatar ? (isOwn ? 'pr-10 sm:pr-12' : 'pl-10 sm:pl-12') : ''}`}>
+                        <div key={message.id} className={`group/msg flex w-full ${isOwn ? 'justify-end' : 'justify-start'} ${!showAvatar ? (isOwn ? 'pr-10 sm:pr-12' : 'pl-10 sm:pl-12') : ''}`}>
                           {!isOwn && showAvatar && (
                             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${getAvatarColor(message.sender.name)} flex items-center justify-center text-white text-xs sm:text-sm font-semibold mr-2 sm:mr-3 flex-shrink-0 shadow-lg ring-2 ring-white/10`}>
                               {message.sender.avatar ? <img src={message.sender.avatar} alt="" className="w-full h-full rounded-xl object-cover" /> : message.sender.name.charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <div className={`max-w-[80%] sm:max-w-[65%] ${isOwn ? 'items-end' : 'items-start'}`}>
+                          <div className={`max-w-[75%] sm:max-w-[65%] min-w-0 ${isOwn ? 'items-end' : 'items-start'}`}>
                             {!isOwn && showAvatar && <p className="text-[10px] sm:text-xs font-semibold text-slate-400 mb-1 sm:mb-1.5 ml-1">{message.sender.name}</p>}
                             <div className={`px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl shadow-lg ${isOwn ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white rounded-br-md' : 'bg-slate-800/80 backdrop-blur-sm text-slate-200 border border-slate-700/30 rounded-bl-md'}`}>
                               {/* Media Attachments */}
@@ -718,7 +718,7 @@ export default function GroupChat() {
         )}
 
         {/* Message Input */}
-        <form onSubmit={handleSendMessage} className="bg-slate-800/70 backdrop-blur-xl border-t border-slate-700/30 p-3 sm:p-4">
+        <form onSubmit={handleSendMessage} className="bg-slate-800/70 backdrop-blur-xl border-t border-slate-700/30 p-3 sm:p-4 pb-safe flex-shrink-0">
           {/* Pending Media Preview */}
           {pendingMedia.length > 0 && (
             <div className="flex flex-wrap gap-2 sm:gap-2.5 mb-3 p-2 bg-slate-700/30 rounded-xl">

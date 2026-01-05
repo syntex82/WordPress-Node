@@ -848,7 +848,7 @@ export default function Messages() {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-3 md:px-6 py-4 bg-gradient-to-b from-slate-900/50 to-slate-900 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-6 py-4 bg-gradient-to-b from-slate-900/50 to-slate-900 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
               {loadingMessages ? (
                 <div className="flex flex-col items-center justify-center py-20">
                   <div className="relative">
@@ -878,7 +878,7 @@ export default function Messages() {
                           const isOwn = message.senderId === user?.id;
                           const showAvatar = idx === 0 || group.messages[idx - 1].senderId !== message.senderId;
                           return (
-                            <div key={message.id} className={`group/msg flex ${isOwn ? 'justify-end' : 'justify-start'} ${!showAvatar ? (isOwn ? 'pr-10 sm:pr-12' : 'pl-10 sm:pl-12') : ''}`}>
+                            <div key={message.id} className={`group/msg flex w-full ${isOwn ? 'justify-end' : 'justify-start'} ${!showAvatar ? (isOwn ? 'pr-10 sm:pr-12' : 'pl-10 sm:pl-12') : ''}`}>
                               {!isOwn && showAvatar && (
                                 <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${getAvatarColor(message.sender.name)} flex items-center justify-center text-white text-xs sm:text-sm font-semibold mr-2 sm:mr-3 flex-shrink-0 shadow-lg ring-2 ring-white/10`}>
                                   {message.sender.avatar ? (
@@ -888,7 +888,7 @@ export default function Messages() {
                                   )}
                                 </div>
                               )}
-                              <div className="max-w-[80%] sm:max-w-[70%] md:max-w-[65%] relative min-w-0">
+                              <div className="max-w-[75%] sm:max-w-[70%] md:max-w-[65%] relative min-w-0">
                                 <div className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl shadow-sm ${
                                   isOwn
                                     ? 'bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 text-white rounded-br-md shadow-indigo-500/20'
