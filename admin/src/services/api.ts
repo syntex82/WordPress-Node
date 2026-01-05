@@ -77,6 +77,10 @@ export const pagesApi = {
 // Media API
 export const mediaApi = {
   getAll: (params?: any) => api.get('/media', { params }),
+  getByUser: (userId: string, params?: any) => api.get('/media', { params: { ...params, userId } }),
+  getAllMedia: (params?: any) => api.get('/media', { params: { ...params, showAll: 'true' } }),
+  getMyStorageStats: () => api.get('/media/storage/me'),
+  getAllStorageStats: () => api.get('/media/storage/all'),
   upload: (file: File, onProgress?: (progress: number) => void) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -92,6 +96,7 @@ export const mediaApi = {
     });
   },
   delete: (id: string) => api.delete(`/media/${id}`),
+  update: (id: string, data: { alt?: string; caption?: string }) => api.patch(`/media/${id}`, data),
 };
 
 // Users API
@@ -126,6 +131,8 @@ export interface DomainConfig {
   adminUrl: string;
   supportEmail: string;
   siteName: string;
+  siteLogo?: string;
+  siteTagline?: string;
 }
 
 export interface SetupStatus {

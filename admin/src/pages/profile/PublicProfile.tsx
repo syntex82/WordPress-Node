@@ -35,6 +35,7 @@ export default function PublicProfile() {
   const [postsPage, setPostsPage] = useState(1);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
+  const [commentModalPost, setCommentModalPost] = useState<TimelinePost | null>(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
   useEffect(() => {
@@ -297,7 +298,10 @@ export default function PublicProfile() {
                       key={post.id}
                       post={post}
                       onDelete={handlePostDeleted}
-                      onCommentClick={setCommentModalPostId}
+                      onCommentClick={(postId, postData) => {
+                        setCommentModalPostId(postId);
+                        setCommentModalPost(postData);
+                      }}
                     />
                   ))}
                   {hasMorePosts && (
@@ -468,8 +472,12 @@ export default function PublicProfile() {
       {/* Comment Modal */}
       <CommentModal
         postId={commentModalPostId || ''}
+        post={commentModalPost || undefined}
         isOpen={!!commentModalPostId}
-        onClose={() => setCommentModalPostId(null)}
+        onClose={() => {
+          setCommentModalPostId(null);
+          setCommentModalPost(null);
+        }}
         onCommentAdded={() => {
           setTimelinePosts(prev => prev.map(p =>
             p.id === commentModalPostId

@@ -576,6 +576,19 @@ export class ThemeRendererService {
   }
 
   /**
+   * Render documentation page
+   */
+  async renderDocs(user?: { id: string; role: string; name?: string } | null) {
+    return this.render(
+      'docs',
+      {
+        user,
+      },
+      user,
+    );
+  }
+
+  /**
    * Render order success page
    */
   async renderOrderSuccess(order: any, user?: { id: string; role: string; name?: string } | null) {

@@ -36,6 +36,7 @@ export default function Timeline() {
   const [hasMore, setHasMore] = useState(true);
   const [newPostsCount, setNewPostsCount] = useState(0);
   const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
+  const [commentModalPost, setCommentModalPost] = useState<TimelinePost | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const { token } = useAuthStore();
 
@@ -319,7 +320,10 @@ export default function Timeline() {
                     post={post}
                     onDelete={handlePostDeleted}
                     onHashtagClick={handleHashtagClick}
-                    onCommentClick={setCommentModalPostId}
+                    onCommentClick={(postId, postData) => {
+                      setCommentModalPostId(postId);
+                      setCommentModalPost(postData);
+                    }}
                   />
                 ))}
 
@@ -418,8 +422,12 @@ export default function Timeline() {
       {/* Comment Modal */}
       <CommentModal
         postId={commentModalPostId || ''}
+        post={commentModalPost || undefined}
         isOpen={!!commentModalPostId}
-        onClose={() => setCommentModalPostId(null)}
+        onClose={() => {
+          setCommentModalPostId(null);
+          setCommentModalPost(null);
+        }}
         onCommentAdded={() => {
           // Update comment count in the posts list
           setPosts(prev => prev.map(p =>

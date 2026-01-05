@@ -24,6 +24,8 @@ export interface DomainConfig {
   adminUrl: string;
   supportEmail: string;
   siteName: string;
+  siteLogo?: string;
+  siteTagline?: string;
 }
 
 export interface MarketplaceConfig {
@@ -198,16 +200,27 @@ export class SystemConfigService implements OnModuleInit {
     return {
       frontendUrl: await this.get(
         'frontend_url',
-        this.configService.get('FRONTEND_URL', 'http://localhost:3000'),
+        this.configService.get('FRONTEND_URL', 'https://nodepress.co.uk'),
       ),
       adminUrl: await this.get(
         'admin_url',
-        this.configService.get('ADMIN_URL', 'http://localhost:3000/admin'),
+        this.configService.get('ADMIN_URL', 'https://nodepress.co.uk/admin'),
       ),
-      supportEmail: await this.get('support_email', this.configService.get('SUPPORT_EMAIL', '')),
+      supportEmail: await this.get(
+        'support_email',
+        this.configService.get('SUPPORT_EMAIL', 'support@nodepress.co.uk'),
+      ),
       siteName: await this.get(
         'site_name',
-        this.configService.get('SITE_NAME', 'NodePress CMS'),
+        this.configService.get('SITE_NAME', 'NodePress'),
+      ),
+      siteLogo: await this.get(
+        'site_logo',
+        this.configService.get('SITE_LOGO', ''),
+      ),
+      siteTagline: await this.get(
+        'site_tagline',
+        this.configService.get('SITE_TAGLINE', 'Modern Content Management System'),
       ),
     };
   }
@@ -220,6 +233,12 @@ export class SystemConfigService implements OnModuleInit {
     await this.set('admin_url', config.adminUrl, 'domain', 'Admin panel URL');
     await this.set('support_email', config.supportEmail, 'domain', 'Support email address');
     await this.set('site_name', config.siteName, 'domain', 'Site name');
+    if (config.siteLogo !== undefined) {
+      await this.set('site_logo', config.siteLogo || '', 'domain', 'Site logo URL for emails');
+    }
+    if (config.siteTagline !== undefined) {
+      await this.set('site_tagline', config.siteTagline || '', 'domain', 'Site tagline');
+    }
   }
 
   /**

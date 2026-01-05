@@ -1016,13 +1016,14 @@ async function main() {
       content: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: process.env.SITE_NAME || 'My Website',
-        url: process.env.SITE_URL || 'http://localhost:3000',
+        name: process.env.SITE_NAME || 'NodePress',
+        url: process.env.SITE_URL || 'https://nodepress.co.uk',
+        description: 'A modern, powerful CMS built with Node.js',
         potentialAction: {
           '@type': 'SearchAction',
           target: {
             '@type': 'EntryPoint',
-            urlTemplate: `${process.env.SITE_URL || 'http://localhost:3000'}/search?q={search_term_string}`,
+            urlTemplate: `${process.env.SITE_URL || 'https://nodepress.co.uk'}/search?q={search_term_string}`,
           },
           'query-input': 'required name=search_term_string',
         },

@@ -1,6 +1,7 @@
 /**
  * Newsletter Email Template
  * Beautiful newsletter template with featured items and social links
+ * Configured for NodePress - https://nodepress.co.uk
  */
 
 import { getBaseEmailTemplate } from './base-template';
@@ -11,10 +12,10 @@ export function getNewsletterTemplate(): string {
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
   <tr>
     <td style="padding-bottom: 24px;">
-      <h2 style="margin: 0 0 12px; font-size: 24px; font-weight: 800; color: #111827;">
+      <h2 style="margin: 0 0 12px; font-size: 24px; font-weight: 800; color: #f1f5f9;">
         {{newsletter.title}}
       </h2>
-      <p style="margin: 0; font-size: 16px; color: #6b7280;">
+      <p style="margin: 0; font-size: 16px; color: #94a3b8;">
         {{newsletter.subtitle}}
       </p>
     </td>
@@ -25,11 +26,11 @@ export function getNewsletterTemplate(): string {
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
   <tr>
     <td style="padding-bottom: 32px;">
-      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.8; color: #374151;">
+      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.8; color: #cbd5e1;">
         Hi {{user.firstName}},
       </p>
       <!-- Dynamic content inserted here -->
-      <div style="font-size: 16px; line-height: 1.8; color: #374151;">
+      <div style="font-size: 16px; line-height: 1.8; color: #cbd5e1;">
         {{{content}}}
       </div>
     </td>
@@ -40,11 +41,11 @@ export function getNewsletterTemplate(): string {
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
   <tr>
     <td style="padding-bottom: 32px;">
-      <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700; color: #111827;">✨ Featured This Week</h3>
+      <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 700; color: #f1f5f9;">✨ Featured This Week</h3>
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
         {{#each featuredItems}}
         <tr>
-          <td style="padding: 20px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 12px; margin-bottom: 16px; border: 1px solid #e5e7eb; transition: all 0.3s ease;">
+          <td style="padding: 20px; background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%); border-radius: 12px; margin-bottom: 16px; border: 1px solid #334155; transition: all 0.3s ease;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
               <tr>
                 {{#if this.image}}
@@ -53,11 +54,11 @@ export function getNewsletterTemplate(): string {
                 </td>
                 {{/if}}
                 <td style="vertical-align: top;">
-                  <h4 style="margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #111827;">
-                    <a href="{{this.url}}" style="color: #111827; text-decoration: none; border-bottom: 2px solid #6366f1;">{{this.title}}</a>
+                  <h4 style="margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #f1f5f9;">
+                    <a href="{{this.url}}" style="color: #10b981; text-decoration: none; border-bottom: 2px solid #10b981;">{{this.title}}</a>
                   </h4>
-                  <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #6b7280;">{{this.description}}</p>
-                  {{#if this.category}}<p style="margin: 0; font-size: 12px; color: #9ca3af; font-weight: 600;">📁 {{this.category}}</p>{{/if}}
+                  <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #94a3b8;">{{this.description}}</p>
+                  {{#if this.category}}<p style="margin: 0; font-size: 12px; color: #64748b; font-weight: 600;">📁 {{this.category}}</p>{{/if}}
                 </td>
               </tr>
             </table>
@@ -74,7 +75,7 @@ export function getNewsletterTemplate(): string {
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
   <tr>
     <td style="text-align: center; padding-bottom: 32px;">
-      <a href="{{callToAction.url}}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none; border-radius: 8px; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);">
+      <a href="{{callToAction.url}}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none; border-radius: 8px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
         {{callToAction.text}} →
       </a>
     </td>
@@ -85,12 +86,12 @@ export function getNewsletterTemplate(): string {
 <!-- Social Links & Footer -->
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
   <tr>
-    <td style="border-top: 2px solid #e5e7eb; padding-top: 32px;">
+    <td style="border-top: 2px solid #334155; padding-top: 32px;">
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
         <tr>
           <td style="text-align: center;">
-            <p style="margin: 0 0 20px; font-size: 14px; font-weight: 600; color: #111827;">
-              Follow us for more updates
+            <p style="margin: 0 0 20px; font-size: 14px; font-weight: 600; color: #f1f5f9;">
+              Follow NodePress for more updates
             </p>
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
               <tr>
@@ -124,6 +125,6 @@ export function getNewsletterTemplate(): string {
 </table>`;
 
   return getBaseEmailTemplate(content, {
-    preheader: "Check out this week's featured content and updates",
+    preheader: "Check out this week's NodePress featured content and updates",
   });
 }

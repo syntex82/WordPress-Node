@@ -48,7 +48,27 @@ export class MediaController {
   }
 
   /**
-   * Get all media
+   * Get storage stats for all users (admin only)
+   * GET /api/media/storage/all
+   */
+  @Get('storage/all')
+  @Roles(UserRole.ADMIN)
+  getAllStorageStats() {
+    return this.mediaService.getAllUsersStorageStats();
+  }
+
+  /**
+   * Get storage stats for current user
+   * GET /api/media/storage/me
+   */
+  @Get('storage/me')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
+  getMyStorageStats(@CurrentUser() user: any) {
+    return this.mediaService.getUserStorageStats(user.id);
+  }
+
+  /**
+   * Get all media - users see their own, admins can see all or filter by user
    * GET /api/media
    */
   @Get()
@@ -57,11 +77,29 @@ export class MediaController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('mimeType') mimeType?: string,
+    @Query('userId') userId?: string,
+    @Query('showAll') showAll?: string,
+    @CurrentUser() user?: any,
   ) {
+    // Determine which user's media to show
+    let filterUserId: string | undefined;
+
+    if (user?.role === UserRole.ADMIN && showAll === 'true') {
+      // Admin viewing all media - no user filter
+      filterUserId = userId || undefined;
+    } else if (user?.role === UserRole.ADMIN && userId) {
+      // Admin viewing specific user's media
+      filterUserId = userId;
+    } else {
+      // Non-admin or admin without showAll - show only own media
+      filterUserId = user?.id;
+    }
+
     return this.mediaService.findAll(
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
       mimeType,
+      filterUserId,
     );
   }
 

@@ -1,6 +1,7 @@
 /**
  * Base Email Template
  * Mobile-responsive template that works across all major email clients
+ * Configured for NodePress - https://nodepress.co.uk
  */
 
 export function getBaseEmailTemplate(
@@ -30,24 +31,24 @@ export function getBaseEmailTemplate(
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
     img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-    
+
     /* Base styles */
     body {
       width: 100% !important;
       height: 100% !important;
       margin: 0 !important;
       padding: 0 !important;
-      background-color: #f4f4f5;
+      background-color: #0f172a;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     }
-    
+
     /* Container */
     .email-container {
       max-width: 600px;
       margin: 0 auto;
-      background-color: #ffffff;
+      background-color: #1e293b;
     }
-    
+
     /* Responsive styles */
     @media screen and (max-width: 600px) {
       .email-container { width: 100% !important; }
@@ -58,49 +59,61 @@ export function getBaseEmailTemplate(
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+<body style="margin: 0; padding: 0; background-color: #0f172a;">
   ${options.preheader ? `<div style="display: none; max-height: 0; overflow: hidden;">${options.preheader}</div>` : ''}
-  
+
   <!-- Background wrapper -->
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0f172a;">
     <tr>
       <td style="padding: 40px 20px;">
         <!-- Email container -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="email-container" style="margin: 0 auto; max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
-          
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="email-container" style="margin: 0 auto; max-width: 600px; background-color: #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+
           <!-- Header -->
           <tr>
-            <td style="padding: 32px 40px; text-align: center; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+            <td style="padding: 32px 40px; text-align: center; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
               {{#if site.logo}}
-                <img src="{{site.logo}}" alt="{{site.name}}" width="150" style="max-width: 150px; height: auto;">
+                <img src="{{site.logo}}" alt="{{site.name}}" width="180" style="max-width: 180px; height: auto;">
               {{else}}
-                <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">{{site.name}}</h1>
+                <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px;">{{site.name}}</h1>
               {{/if}}
+              <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.8);">https://nodepress.co.uk</p>
             </td>
           </tr>
-          
+
           <!-- Content -->
           <tr>
-            <td style="padding: 40px;" class="mobile-padding">
+            <td style="padding: 40px; color: #f1f5f9;" class="mobile-padding">
               ${content}
             </td>
           </tr>
-          
+
           <!-- Footer -->
           <tr>
-            <td style="padding: 32px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+            <td style="padding: 32px 40px; background-color: #0f172a; border-top: 1px solid #334155;">
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 <tr>
                   <td style="text-align: center;">
-                    <p style="margin: 0 0 8px; font-size: 14px; color: #6b7280;">
+                    <!-- Social Links -->
+                    <p style="margin: 0 0 16px;">
+                      <a href="https://nodepress.co.uk" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Website</a>
+                      <span style="color: #475569;">|</span>
+                      <a href="https://nodepress.co.uk/docs" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Documentation</a>
+                      <span style="color: #475569;">|</span>
+                      <a href="https://nodepress.co.uk/support" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Support</a>
+                    </p>
+                    <p style="margin: 0 0 8px; font-size: 14px; color: #94a3b8;">
                       © {{year}} {{site.name}}. All rights reserved.
                     </p>
-                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">
+                      NodePress CMS - Modern Content Management System
+                    </p>
+                    <p style="margin: 8px 0 0; font-size: 12px; color: #64748b;">
                       {{#if site.address}}{{site.address}}{{/if}}
                     </p>
                     {{#if unsubscribeUrl}}
                     <p style="margin: 16px 0 0; font-size: 12px;">
-                      <a href="{{unsubscribeUrl}}" style="color: #9ca3af; text-decoration: underline;">Unsubscribe</a>
+                      <a href="{{unsubscribeUrl}}" style="color: #64748b; text-decoration: underline;">Unsubscribe from these emails</a>
                     </p>
                     {{/if}}
                   </td>
@@ -108,7 +121,19 @@ export function getBaseEmailTemplate(
               </table>
             </td>
           </tr>
-          
+
+        </table>
+
+        <!-- Legal footer -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 20px auto 0;">
+          <tr>
+            <td style="text-align: center;">
+              <p style="margin: 0; font-size: 11px; color: #475569;">
+                This email was sent by NodePress CMS. If you have questions, please contact
+                <a href="mailto:support@nodepress.co.uk" style="color: #10b981;">support@nodepress.co.uk</a>
+              </p>
+            </td>
+          </tr>
         </table>
       </td>
     </tr>

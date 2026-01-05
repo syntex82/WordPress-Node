@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - {{siteName}}</title>
+  <meta name="description" content="Comprehensive developer documentation for NodePress CMS - Development, Management, Security, Theme Development, and Debugging guides.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --bg-dark: #0f172a;
+      --bg-darker: #020617;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --border: #334155;
+      --border-light: #475569;
+      --code-bg: #1e293b;
+      --sidebar-width: 280px;
+      --header-height: 64px;
+      --toc-width: 240px;
+    }
+    [data-theme="light"] {
+      --bg-dark: #ffffff;
+      --bg-darker: #f8fafc;
+      --bg-card: #f1f5f9;
+      --bg-card-hover: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      --border: #e2e8f0;
+      --border-light: #cbd5e1;
+      --code-bg: #f1f5f9;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 20px); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-darker);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    /* Header */
+    .docs-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      z-index: 1000;
+      backdrop-filter: blur(12px);
+    }
+    .docs-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .docs-logo svg { width: 32px; height: 32px; }
+    .docs-logo span { color: var(--primary); }
+    .docs-search {
+      flex: 1;
+      max-width: 500px;
+      margin: 0 2rem;
+      position: relative;
+    }
+    .docs-search input {
+      width: 100%;
+      padding: 0.625rem 1rem 0.625rem 2.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .docs-search input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    .docs-search input::placeholder { color: var(--text-dim); }
+    .docs-search svg {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--text-dim);
+    }
+    .docs-search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 4px;
+      max-height: 400px;
+      overflow-y: auto;
+      display: none;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .docs-search-results.active { display: block; }
+    .docs-search-result {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .docs-search-result:hover { background: var(--bg-card-hover); }
+    .docs-search-result:last-child { border-bottom: none; }
+    .docs-search-result h4 { font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--text); }
+    .docs-search-result p { font-size: 0.8rem; color: var(--text-muted); }
+    .docs-search-result .category {
+      font-size: 0.7rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .docs-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-left: auto;
+    }
+    .docs-theme-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .docs-theme-toggle:hover { border-color: var(--primary); }
+    .docs-theme-toggle svg { width: 20px; height: 20px; }
+    .docs-home-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .docs-home-link:hover { background: var(--primary-dark); }
+    /* Sidebar */
+    .docs-sidebar {
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      width: var(--sidebar-width);
+      height: calc(100vh - var(--header-height));
+      background: var(--bg-dark);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 1.5rem 0;
+      z-index: 900;
+      transition: transform 0.3s;
+    }
+    .docs-sidebar-section { margin-bottom: 1.5rem; }
+    .docs-sidebar-title {
+      padding: 0.5rem 1.5rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+    .docs-sidebar-nav { list-style: none; }
+    .docs-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1.5rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .docs-sidebar-link:hover {
+      color: var(--text);
+      background: var(--bg-card);
+    }
+    .docs-sidebar-link.active {
+      color: var(--primary);
+      background: rgba(16, 185, 129, 0.1);
+      border-left-color: var(--primary);
+    }
+    .docs-sidebar-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .docs-sidebar-submenu { list-style: none; }
+    .docs-sidebar-submenu .docs-sidebar-link {
+      padding-left: 3rem;
+      font-size: 0.85rem;
+    }
+    /* Main Content */
+    .docs-main {
+      margin-left: var(--sidebar-width);
+      margin-right: var(--toc-width);
+      padding: calc(var(--header-height) + 2rem) 3rem 4rem;
+      max-width: calc(100% - var(--sidebar-width) - var(--toc-width));
+    }
+    .docs-content { max-width: 800px; margin: 0 auto; }
+    /* TOC */
+    .docs-toc {
+      position: fixed;
+      top: var(--header-height);
+      right: 0;
+      width: var(--toc-width);
+      height: calc(100vh - var(--header-height));
+      padding: 2rem 1rem;
+      overflow-y: auto;
+      border-left: 1px solid var(--border);
+      background: var(--bg-dark);
+    }
+    .docs-toc-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+    }
+    .docs-toc-list { list-style: none; }
+    .docs-toc-link {
+      display: block;
+      padding: 0.375rem 0;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      transition: color 0.15s;
+      border-left: 2px solid transparent;
+      padding-left: 0.75rem;
+      margin-left: -0.75rem;
+    }
+    .docs-toc-link:hover { color: var(--text); }
+    .docs-toc-link.active {
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+    .docs-toc-link.h3 { padding-left: 1.5rem; margin-left: -0.75rem; }
+    /* Typography */
+    .docs-content h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .docs-content h1 + .docs-lead {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    .docs-content h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 3rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+    }
+    .docs-content h2:first-of-type { border-top: none; padding-top: 0; margin-top: 2rem; }
+    .docs-content h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 2rem 0 0.75rem;
+      color: var(--text);
+    }
+    .docs-content h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.5rem;
+      color: var(--text);
+    }
+    .docs-content p { margin-bottom: 1rem; color: var(--text-muted); }
+    .docs-content ul, .docs-content ol {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+      color: var(--text-muted);
+    }
+    .docs-content li { margin-bottom: 0.5rem; }
+    .docs-content li strong { color: var(--text); }
+    .docs-content a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .docs-content a:hover { color: var(--primary-dark); text-decoration: underline; }
+    /* Code */
+    .docs-content code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875em;
+      background: var(--code-bg);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      color: var(--primary);
+    }
+    .docs-content pre {
+      background: var(--code-bg);
+      border-radius: 8px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+    }
+    .docs-content pre code {
+      background: none;
+      padding: 0;
+      color: var(--text);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    /* Callouts */
+    .docs-callout {
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid;
+    }
+    .docs-callout-info {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+    }
+    .docs-callout-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: #f59e0b;
+    }
+    .docs-callout-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+    }
+    .docs-callout-success {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--primary);
+    }
+    .docs-callout-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .docs-callout-info .docs-callout-title { color: #3b82f6; }
+    .docs-callout-warning .docs-callout-title { color: #f59e0b; }
+    .docs-callout-danger .docs-callout-title { color: #ef4444; }
+    .docs-callout-success .docs-callout-title { color: var(--primary); }
+    .docs-callout p:last-child { margin-bottom: 0; }
+    /* Cards */
+    .docs-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .docs-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: all 0.2s;
+    }
+    .docs-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .docs-card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .docs-card h4 { margin: 0 0 0.5rem; color: var(--text); }
+    .docs-card p { margin: 0; font-size: 0.875rem; }
+    /* Tables */
+    .docs-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    .docs-content th, .docs-content td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    .docs-content th {
+      background: var(--bg-card);
+      font-weight: 600;
+      color: var(--text);
+    }
+    .docs-content td { color: var(--text-muted); }
+    /* Section dividers */
+    .docs-section {
+      padding-top: 2rem;
+      scroll-margin-top: calc(var(--header-height) + 20px);
+    }
+    /* Mobile Menu Toggle */
+    .docs-menu-toggle {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .docs-menu-toggle svg { width: 24px; height: 24px; }
+    /* Mobile overlay */
+    .docs-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 850;
+    }
+    .docs-overlay.active { display: block; }
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .docs-toc { display: none; }
+      .docs-main { margin-right: 0; max-width: calc(100% - var(--sidebar-width)); }
+    }
+    @media (max-width: 900px) {
+      .docs-menu-toggle { display: flex; }
+      .docs-sidebar {
+        transform: translateX(-100%);
+        z-index: 950;
+      }
+      .docs-sidebar.open { transform: translateX(0); }
+      .docs-main {
+        margin-left: 0;
+        max-width: 100%;
+        padding: calc(var(--header-height) + 1.5rem) 1.5rem 3rem;
+      }
+      .docs-search { display: none; }
+      .docs-content h1 { font-size: 2rem; }
+      .docs-content h2 { font-size: 1.5rem; }
+    }
+    @media (max-width: 600px) {
+      .docs-main { padding: calc(var(--header-height) + 1rem) 1rem 2rem; }
+      .docs-content h1 { font-size: 1.75rem; }
+      .docs-card-grid { grid-template-columns: 1fr; }
+      .docs-home-link span { display: none; }
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-darker); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="docs-menu-toggle" onclick="toggleSidebar()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <a href="/" class="docs-logo">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="40" height="40" rx="8" fill="#10b981"/>
+        <path d="M12 28V12l8 8 8-8v16" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Node<span>Press</span> Docs
+    </a>
+    <div class="docs-search">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" id="docsSearch" placeholder="Search documentation... (Ctrl+K)" autocomplete="off">
+      <div class="docs-search-results" id="searchResults"></div>
+    </div>
+    <div class="docs-header-actions">
+      <button class="docs-theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </button>
+      <a href="/" class="docs-home-link">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span>Home</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Overlay for mobile -->
+  <div class="docs-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <nav class="docs-sidebar" id="docsSidebar">
+    <div class="docs-sidebar-section">
+      <div class="docs-sidebar-title">Getting Started</div>
+      <ul class="docs-sidebar-nav">
+        <li><a href="#introduction" class="docs-sidebar-link active">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Introduction
+        </a></li>
+        <li><a href="#quick-start" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Quick Start
+        </a></li>
+        <li><a href="#architecture" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Architecture
+        </a></li>
+      </ul>
+    </div>
+    <div class="docs-sidebar-section">
+      <div class="docs-sidebar-title">Development</div>
+      <ul class="docs-sidebar-nav">
+        <li><a href="#dev-setup" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Environment Setup
+        </a></li>
+        <li><a href="#project-structure" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+          Project Structure
+        </a></li>
+        <li><a href="#modules" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+          Module System
+        </a></li>
+        <li><a href="#api-reference" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          API Reference
+        </a></li>
+        <li><a href="#database" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+          Database & Prisma
+        </a></li>
+      </ul>
+    </div>
+    <div class="docs-sidebar-section">
+      <div class="docs-sidebar-title">Management</div>
+      <ul class="docs-sidebar-nav">
+        <li><a href="#admin-panel" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+          Admin Panel
+        </a></li>
+        <li><a href="#user-roles" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          User Roles & Permissions
+        </a></li>
+        <li><a href="#content-management" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Content Management
+        </a></li>
+        <li><a href="#lms-admin" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          LMS Administration
+        </a></li>
+        <li><a href="#ecommerce-setup" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          eCommerce Setup
+        </a></li>
+      </ul>
+    </div>
+    <div class="docs-sidebar-section">
+      <div class="docs-sidebar-title">Security</div>
+      <ul class="docs-sidebar-nav">
+        <li><a href="#authentication" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          Authentication
+        </a></li>
+        <li><a href="#authorization" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Authorization
+        </a></li>
+        <li><a href="#data-protection" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Data Protection
+        </a></li>
+        <li><a href="#security-best-practices" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          Best Practices
+        </a></li>
+      </ul>
+    </div>
+    <div class="docs-sidebar-section">
+      <div class="docs-sidebar-title">Theme Development</div>
+      <ul class="docs-sidebar-nav">
+        <li><a href="#theme-structure" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+          Theme Structure
+        </a></li>
+        <li><a href="#handlebars" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          Handlebars Templating
+        </a></li>
+        <li><a href="#theme-assets" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          CSS & JavaScript
+        </a></li>
+        <li><a href="#theme-customization" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+          Customization Options
+        </a></li>
+        <li><a href="#advanced-features" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Advanced Features
+        </a></li>
+      </ul>
+    </div>
+    <div class="docs-sidebar-section">
+      <div class="docs-sidebar-title">Debugging & Testing</div>
+      <ul class="docs-sidebar-nav">
+        <li><a href="#troubleshooting" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Troubleshooting
+        </a></li>
+        <li><a href="#testing" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          Testing Strategies
+        </a></li>
+        <li><a href="#performance" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          Performance
+        </a></li>
+        <li><a href="#monitoring" class="docs-sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Monitoring
+        </a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Table of Contents (right side) -->
+  <aside class="docs-toc" id="docsToc">
+    <div class="docs-toc-title">On This Page</div>
+    <ul class="docs-toc-list" id="tocList">
+      <!-- Populated by JS -->
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <div class="docs-content" id="docsContent">
+
+      <!-- Introduction -->
+      <section id="introduction" class="docs-section">
+        <h1>NodePress Documentation</h1>
+        <p class="docs-lead">The complete guide to building, managing, and extending NodePress CMS - a modern, full-featured content management system built with NestJS, React, Prisma, and PostgreSQL.</p>
+
+        <div class="docs-card-grid">
+          <div class="docs-card">
+            <div class="docs-card-icon">🚀</div>
+            <h4>Quick Start</h4>
+            <p>Get up and running with NodePress in under 5 minutes.</p>
+          </div>
+          <div class="docs-card">
+            <div class="docs-card-icon">📚</div>
+            <h4>LMS & Courses</h4>
+            <p>Build online courses with quizzes, certificates, and progress tracking.</p>
+          </div>
+          <div class="docs-card">
+            <div class="docs-card-icon">🛒</div>
+            <h4>eCommerce</h4>
+            <p>Full shopping cart, Stripe payments, and order management.</p>
+          </div>
+          <div class="docs-card">
+            <div class="docs-card-icon">🎨</div>
+            <h4>Theme Development</h4>
+            <p>Create custom themes with Handlebars templating.</p>
+          </div>
+        </div>
+
+        <h3>What is NodePress?</h3>
+        <p>NodePress is an enterprise-grade CMS that combines the best of modern web technologies to deliver a powerful, extensible platform for building websites, online courses, and eCommerce stores.</p>
+
+        <h4>Key Features</h4>
+        <ul>
+          <li><strong>Content Management</strong> - Posts, pages, media library, SEO tools, and rich text editing</li>
+          <li><strong>Learning Management (LMS)</strong> - Courses, lessons, quizzes, certificates, and progress tracking</li>
+          <li><strong>eCommerce</strong> - Products, shopping cart, Stripe checkout, orders, and inventory</li>
+          <li><strong>Real-time Features</strong> - WebSocket messaging, video calls, live notifications</li>
+          <li><strong>Social Timeline</strong> - Posts, likes, comments, shares, hashtags, and @mentions</li>
+          <li><strong>Developer Marketplace</strong> - Freelancer profiles, hiring system, and project management</li>
+          <li><strong>Plugin System</strong> - Extend functionality with custom plugins</li>
+          <li><strong>Theme Engine</strong> - Handlebars-based templating with CSS/JS customization</li>
+        </ul>
+
+        <h4>Tech Stack</h4>
+        <table>
+          <thead>
+            <tr><th>Layer</th><th>Technologies</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Backend</td><td>Node.js 20+, NestJS 11, TypeScript 5.9, Prisma 5</td></tr>
+            <tr><td>Frontend</td><td>React 18, Vite 6, Tailwind CSS, Zustand</td></tr>
+            <tr><td>Database</td><td>PostgreSQL 15+, Redis (caching)</td></tr>
+            <tr><td>Real-time</td><td>Socket.IO, WebRTC</td></tr>
+            <tr><td>Payments</td><td>Stripe</td></tr>
+            <tr><td>AI</td><td>OpenAI GPT-4, Anthropic Claude</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Quick Start -->
+      <section id="quick-start" class="docs-section">
+        <h2>Quick Start</h2>
+        <p>Get NodePress running on your local machine in minutes.</p>
+
+        <h3>Prerequisites</h3>
+        <ul>
+          <li><strong>Node.js 20+</strong> - JavaScript runtime</li>
+          <li><strong>PostgreSQL 15+</strong> - Database server</li>
+          <li><strong>Redis</strong> - Caching and sessions (optional but recommended)</li>
+          <li><strong>Git</strong> - Version control</li>
+        </ul>
+
+        <h3>Installation</h3>
+        <div class="docs-callout docs-callout-info">
+          <div class="docs-callout-title">💡 Tip</div>
+          <p>Use the automated setup script for the fastest installation.</p>
+        </div>
+
+        <h4>Step 1: Clone the Repository</h4>
+        <pre><code class="language-bash">git clone https://github.com/syntex82/NodePress.git
+cd NodePress</code></pre>
+
+        <h4>Step 2: Install Dependencies</h4>
+        <pre><code class="language-bash"># Install backend dependencies
+npm install
+
+# Install frontend dependencies
+cd admin && npm install && cd ..</code></pre>
+
+        <h4>Step 3: Configure Environment</h4>
+        <pre><code class="language-bash"># Copy environment template
+cp .env.example .env
+
+# Edit with your settings
+# DATABASE_URL="postgresql://user:pass@localhost:5432/nodepress"
+# JWT_SECRET="your-secure-secret-key"
+# REDIS_URL="redis://localhost:6379"</code></pre>
+
+        <h4>Step 4: Setup Database</h4>
+        <pre><code class="language-bash"># Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev
+
+# Seed initial data (optional)
+npx prisma db seed</code></pre>
+
+        <h4>Step 5: Start Development Server</h4>
+        <pre><code class="language-bash"># Start backend (port 3000)
+npm run start:dev
+
+# In another terminal, start frontend (port 5173)
+cd admin && npm run dev</code></pre>
+
+        <div class="docs-callout docs-callout-success">
+          <div class="docs-callout-title">✅ Success</div>
+          <p>NodePress is now running! Visit <code>http://localhost:3000</code> for the public site and <code>http://localhost:5173/admin</code> for the admin panel.</p>
+        </div>
+
+        <h3>Default Credentials</h3>
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Email</th><th>Password</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Admin</td><td>admin@nodepress.dev</td><td>admin123</td></tr>
+            <tr><td>Editor</td><td>editor@nodepress.dev</td><td>editor123</td></tr>
+          </tbody>
+        </table>
+
+        <div class="docs-callout docs-callout-warning">
+          <div class="docs-callout-title">⚠️ Important</div>
+          <p>Change default passwords immediately in production environments.</p>
+        </div>
+      </section>
+
+      <!-- Architecture -->
+      <section id="architecture" class="docs-section">
+        <h2>Architecture Overview</h2>
+        <p>NodePress follows a modular, layered architecture designed for scalability and maintainability.</p>
+
+        <h3>System Architecture</h3>
+        <pre><code class="language-plaintext">┌─────────────────────────────────────────────────────────────┐
+│                        Client Layer                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ Public Site │  │ Admin Panel │  │ Mobile Apps (API)   │  │
+│  │ (Handlebars)│  │   (React)   │  │                     │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      API Gateway Layer                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │  REST API   │  │  WebSocket  │  │    Authentication   │  │
+│  │ Controllers │  │   Gateway   │  │      (JWT/OAuth)    │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Service Layer                           │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌───────┐  │
+│  │ Content │ │   LMS   │ │  Shop   │ │Messages │ │ Media │  │
+│  │ Service │ │ Service │ │ Service │ │ Service │ │Service│  │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └───────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Data Layer                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │   Prisma    │  │    Redis    │  │   File Storage      │  │
+│  │    ORM      │  │   Cache     │  │   (Local/S3)        │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│         │                                                    │
+│         ▼                                                    │
+│  ┌─────────────┐                                            │
+│  │ PostgreSQL  │                                            │
+│  │  Database   │                                            │
+│  └─────────────┘                                            │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+
+        <h3>NestJS Module Structure</h3>
+        <p>Each feature is encapsulated in a NestJS module with its own controllers, services, and DTOs:</p>
+        <pre><code class="language-typescript">@Module({
+  imports: [PrismaModule, ConfigModule],
+  controllers: [CoursesController, LessonsController],
+  providers: [CoursesService, LessonsService],
+  exports: [CoursesService],
+})
+export class LmsModule {}</code></pre>
+
+        <h3>Request Flow</h3>
+        <ol>
+          <li><strong>Request</strong> - Client sends HTTP request or WebSocket message</li>
+          <li><strong>Guards</strong> - Authentication and authorization checks (JWT, Roles)</li>
+          <li><strong>Pipes</strong> - Request validation and transformation</li>
+          <li><strong>Controller</strong> - Route handling and request parsing</li>
+          <li><strong>Service</strong> - Business logic execution</li>
+          <li><strong>Repository</strong> - Database operations via Prisma</li>
+          <li><strong>Response</strong> - Data serialization and response</li>
+        </ol>
+      </section>
+
+      <!-- Content Management -->
+      <section id="content-management" class="docs-section">
+        <h2>Content Management</h2>
+        <p>NodePress provides a comprehensive content management system for creating and organizing posts, pages, and media.</p>
+
+        <h3 id="posts">Posts</h3>
+        <p>Posts are the primary content type for blogs, news, and articles.</p>
+
+        <h4>Creating a Post</h4>
+        <pre><code class="language-typescript">// POST /api/posts
+const post = await postsService.create({
+  title: 'Getting Started with NodePress',
+  slug: 'getting-started-nodepress',
+  content: '&lt;p&gt;Welcome to NodePress...&lt;/p&gt;',
+  excerpt: 'A quick introduction to NodePress CMS',
+  status: 'PUBLISHED',
+  categoryIds: ['cat-123'],
+  tagIds: ['tag-456'],
+  featuredImageId: 'media-789',
+});</code></pre>
+
+        <h4>Post Status Workflow</h4>
+        <ul>
+          <li><code>DRAFT</code> - Work in progress, not visible to public</li>
+          <li><code>PENDING</code> - Awaiting editorial review</li>
+          <li><code>PUBLISHED</code> - Live and visible to public</li>
+          <li><code>SCHEDULED</code> - Will publish at specified date/time</li>
+          <li><code>ARCHIVED</code> - Hidden from public, preserved for reference</li>
+        </ul>
+
+        <h3 id="pages">Pages</h3>
+        <p>Pages are static content like About, Contact, and Terms of Service.</p>
+
+        <pre><code class="language-typescript">// Pages support hierarchical structure
+const page = await pagesService.create({
+  title: 'About Us',
+  slug: 'about',
+  content: '&lt;p&gt;Our company story...&lt;/p&gt;',
+  parentId: null, // Top-level page
+  template: 'about', // Uses about.hbs template
+});</code></pre>
+
+        <h3 id="categories-tags">Categories & Tags</h3>
+        <p>Organize content with hierarchical categories and flat tags.</p>
+
+        <pre><code class="language-typescript">// Categories support nesting
+const category = await categoriesService.create({
+  name: 'Web Development',
+  slug: 'web-development',
+  description: 'Articles about web development',
+  parentId: 'parent-cat-id', // Optional parent
+});
+
+// Tags are flat
+const tag = await tagsService.create({
+  name: 'JavaScript',
+  slug: 'javascript',
+});</code></pre>
+
+        <h3 id="media-library">Media Library</h3>
+        <p>Upload and manage images, videos, documents, and other files.</p>
+
+        <h4>Uploading Files</h4>
+        <pre><code class="language-typescript">// POST /api/media/upload
+const formData = new FormData();
+formData.append('file', fileBlob);
+formData.append('alt', 'Product screenshot');
+
+const media = await fetch('/api/media/upload', {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${token}` },
+  body: formData,
+});</code></pre>
+
+        <h4>Supported File Types</h4>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>Extensions</th><th>Max Size</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Images</td><td>jpg, png, gif, webp, svg</td><td>10 MB</td></tr>
+            <tr><td>Videos</td><td>mp4, webm, mov</td><td>100 MB</td></tr>
+            <tr><td>Documents</td><td>pdf, doc, docx, xls, xlsx</td><td>25 MB</td></tr>
+            <tr><td>Audio</td><td>mp3, wav, ogg</td><td>50 MB</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- LMS -->
+      <section id="lms" class="docs-section">
+        <h2>Learning Management System</h2>
+        <p>Build and sell online courses with NodePress's integrated LMS.</p>
+
+        <h3 id="courses">Courses</h3>
+        <p>Courses are the top-level container for educational content.</p>
+
+        <pre><code class="language-typescript">// Create a course
+const course = await coursesService.create({
+  title: 'Complete TypeScript Masterclass',
+  slug: 'typescript-masterclass',
+  description: 'Learn TypeScript from beginner to advanced',
+  price: 9900, // $99.00 in cents
+  currency: 'USD',
+  level: 'INTERMEDIATE',
+  status: 'PUBLISHED',
+  thumbnailId: 'media-123',
+});</code></pre>
+
+        <h4>Course Levels</h4>
+        <ul>
+          <li><code>BEGINNER</code> - No prior knowledge required</li>
+          <li><code>INTERMEDIATE</code> - Some experience recommended</li>
+          <li><code>ADVANCED</code> - Significant experience required</li>
+          <li><code>ALL_LEVELS</code> - Suitable for everyone</li>
+        </ul>
+
+        <h3 id="lessons">Lessons</h3>
+        <p>Lessons contain the actual educational content within a course.</p>
+
+        <pre><code class="language-typescript">// Create a lesson
+const lesson = await lessonsService.create({
+  courseId: 'course-123',
+  title: 'Introduction to Types',
+  slug: 'intro-to-types',
+  content: '&lt;p&gt;TypeScript adds static typing...&lt;/p&gt;',
+  videoUrl: 'https://vimeo.com/123456',
+  duration: 1200, // 20 minutes in seconds
+  order: 1,
+  isFree: true, // Preview lesson
+});</code></pre>
+
+        <h3 id="quizzes">Quizzes</h3>
+        <p>Test student knowledge with interactive quizzes.</p>
+
+        <pre><code class="language-typescript">// Create a quiz
+const quiz = await quizzesService.create({
+  lessonId: 'lesson-123',
+  title: 'Types Quiz',
+  passingScore: 70, // Percentage
+  questions: [
+    {
+      question: 'What is the type of "hello"?',
+      type: 'MULTIPLE_CHOICE',
+      options: ['number', 'string', 'boolean', 'object'],
+      correctAnswer: 1, // Index of correct option
+      points: 10,
+    },
+  ],
+});</code></pre>
+
+        <h3 id="certificates">Certificates</h3>
+        <p>Award certificates upon course completion.</p>
+
+        <pre><code class="language-typescript">// Certificate is auto-generated when course is completed
+// Configure certificate template in course settings
+const courseSettings = {
+  certificateEnabled: true,
+  certificateTemplate: 'modern', // Template name
+  certificateTitle: 'Certificate of Completion',
+  instructorSignature: 'media-signature-id',
+};</code></pre>
+      </section>
+
+      <!-- eCommerce -->
+      <section id="ecommerce" class="docs-section">
+        <h2>eCommerce</h2>
+        <p>Sell physical and digital products with NodePress's integrated shop.</p>
+
+        <h3 id="products">Products</h3>
+        <pre><code class="language-typescript">// Create a product
+const product = await productsService.create({
+  name: 'NodePress Pro License',
+  slug: 'nodepress-pro',
+  description: 'Lifetime access to NodePress Pro features',
+  price: 19900, // $199.00 in cents
+  salePrice: 14900, // Optional sale price
+  currency: 'USD',
+  type: 'DIGITAL', // PHYSICAL or DIGITAL
+  status: 'PUBLISHED',
+  inventory: {
+    trackInventory: false, // Digital products
+    unlimited: true,
+  },
+  images: ['media-1', 'media-2'],
+});</code></pre>
+
+        <h3 id="cart">Shopping Cart</h3>
+        <pre><code class="language-typescript">// Add to cart
+await cartService.addItem({
+  userId: 'user-123',
+  productId: 'product-456',
+  quantity: 1,
+  variant: { size: 'Large', color: 'Blue' }, // Optional
+});
+
+// Get cart
+const cart = await cartService.getCart('user-123');
+// Returns: { items: [...], subtotal, tax, total }</code></pre>
+
+        <h3 id="checkout">Checkout & Payments</h3>
+        <p>NodePress integrates with Stripe for secure payment processing.</p>
+
+        <pre><code class="language-typescript">// Create checkout session
+const session = await checkoutService.createSession({
+  userId: 'user-123',
+  successUrl: 'https://example.com/success',
+  cancelUrl: 'https://example.com/cart',
+});
+
+// Returns Stripe checkout URL
+// Redirect user to: session.url</code></pre>
+
+        <div class="docs-callout docs-callout-info">
+          <div class="docs-callout-title">💳 Stripe Configuration</div>
+          <p>Set <code>STRIPE_SECRET_KEY</code> and <code>STRIPE_WEBHOOK_SECRET</code> in your environment variables.</p>
+        </div>
+
+        <h3 id="orders">Orders</h3>
+        <pre><code class="language-typescript">// Orders are created automatically after successful payment
+// Webhook handles: checkout.session.completed
+
+// Query orders
+const orders = await ordersService.findAll({
+  userId: 'user-123',
+  status: 'COMPLETED',
+});
+
+// Order statuses: PENDING, PROCESSING, COMPLETED, CANCELLED, REFUNDED</code></pre>
+      </section>
+
+      <!-- API Reference -->
+      <section id="api-reference" class="docs-section">
+        <h2>API Reference</h2>
+        <p>NodePress exposes a RESTful API for all operations.</p>
+
+        <h3 id="authentication-api">Authentication</h3>
+        <p>All API requests require authentication via JWT tokens.</p>
+
+        <h4>Login</h4>
+        <pre><code class="language-bash">POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+
+# Response
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+  "user": { "id": "...", "email": "...", "role": "ADMIN" }
+}</code></pre>
+
+        <h4>Using Tokens</h4>
+        <pre><code class="language-bash"># Include in Authorization header
+GET /api/posts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</code></pre>
+
+        <h3 id="endpoints">Core Endpoints</h3>
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>Endpoints</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Posts</td><td><code>/api/posts</code></td><td>CRUD for blog posts</td></tr>
+            <tr><td>Pages</td><td><code>/api/pages</code></td><td>CRUD for static pages</td></tr>
+            <tr><td>Media</td><td><code>/api/media</code></td><td>File upload and management</td></tr>
+            <tr><td>Users</td><td><code>/api/users</code></td><td>User management</td></tr>
+            <tr><td>Courses</td><td><code>/api/courses</code></td><td>LMS course management</td></tr>
+            <tr><td>Products</td><td><code>/api/products</code></td><td>eCommerce products</td></tr>
+            <tr><td>Orders</td><td><code>/api/orders</code></td><td>Order management</td></tr>
+            <tr><td>Settings</td><td><code>/api/settings</code></td><td>Site configuration</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="pagination">Pagination</h3>
+        <pre><code class="language-bash"># All list endpoints support pagination
+GET /api/posts?page=1&limit=10&sort=createdAt&order=desc
+
+# Response includes pagination metadata
+{
+  "data": [...],
+  "meta": {
+    "total": 100,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 10
+  }
+}</code></pre>
+
+        <h3 id="error-handling">Error Handling</h3>
+        <pre><code class="language-json">{
+  "statusCode": 400,
+  "message": "Validation failed",
+  "errors": [
+    { "field": "email", "message": "Invalid email format" }
+  ]
+}</code></pre>
+      </section>
+
+      <!-- Theme Development -->
+      <section id="theme-development" class="docs-section">
+        <h2>Theme Development</h2>
+        <p>Create custom themes using Handlebars templates.</p>
+
+        <h3 id="theme-structure">Theme Structure</h3>
+        <pre><code class="language-plaintext">themes/
+└── my-theme/
+    ├── theme.json          # Theme metadata
+    ├── assets/
+    │   ├── css/
+    │   │   └── style.css
+    │   └── js/
+    │       └── main.js
+    ├── templates/
+    │   ├── layouts/
+    │   │   └── main.hbs    # Base layout
+    │   ├── partials/
+    │   │   ├── header.hbs
+    │   │   └── footer.hbs
+    │   ├── home.hbs        # Homepage
+    │   ├── post.hbs        # Single post
+    │   ├── page.hbs        # Static page
+    │   └── archive.hbs     # Post listing
+    └── screenshot.png      # Theme preview</code></pre>
+
+        <h3 id="theme-json">theme.json</h3>
+        <pre><code class="language-json">{
+  "name": "My Custom Theme",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "A beautiful custom theme",
+  "homepage": "https://example.com",
+  "license": "MIT",
+  "supports": {
+    "customColors": true,
+    "customFonts": true,
+    "darkMode": true
+  }
+}</code></pre>
+
+        <h3 id="handlebars-helpers">Handlebars Helpers</h3>
+        <p>NodePress provides many built-in helpers:</p>
+
+        <pre><code class="language-handlebars">&lt;!-- Date formatting --&gt;
+{{formatDate post.createdAt "MMMM D, YYYY"}}
+
+&lt;!-- Truncate text --&gt;
+{{truncate post.content 150}}
+
+&lt;!-- Conditional classes --&gt;
+&lt;div class="{{#if featured}}featured{{/if}}"&gt;
+
+&lt;!-- Asset URLs --&gt;
+&lt;link href="{{asset 'css/style.css'}}" rel="stylesheet"&gt;
+
+&lt;!-- Site settings --&gt;
+&lt;title&gt;{{siteName}} - {{pageTitle}}&lt;/title&gt;
+
+&lt;!-- Navigation --&gt;
+{{#each navigation}}
+  &lt;a href="{{url}}" class="{{#if active}}active{{/if}}"&gt;
+    {{label}}
+  &lt;/a&gt;
+{{/each}}</code></pre>
+
+        <h3 id="template-data">Template Data</h3>
+        <p>Each template receives context data:</p>
+
+        <pre><code class="language-typescript">// post.hbs receives:
+{
+  post: {
+    title, slug, content, excerpt,
+    author: { name, avatar },
+    categories: [...],
+    tags: [...],
+    featuredImage: { url, alt },
+    createdAt, updatedAt,
+  },
+  site: { name, description, logo },
+  navigation: [...],
+  sidebar: { recentPosts, categories },
+}</code></pre>
+      </section>
+
+      <!-- Plugin Development -->
+      <section id="plugin-development" class="docs-section">
+        <h2>Plugin Development</h2>
+        <p>Extend NodePress functionality with custom plugins.</p>
+
+        <h3 id="plugin-structure">Plugin Structure</h3>
+        <pre><code class="language-plaintext">plugins/
+└── my-plugin/
+    ├── plugin.json         # Plugin metadata
+    ├── index.ts            # Entry point
+    ├── services/
+    │   └── my-service.ts
+    ├── controllers/
+    │   └── my-controller.ts
+    └── views/
+        └── settings.hbs    # Admin settings page</code></pre>
+
+        <h3 id="plugin-json">plugin.json</h3>
+        <pre><code class="language-json">{
+  "name": "my-plugin",
+  "displayName": "My Plugin",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "Adds awesome features",
+  "main": "index.ts",
+  "hooks": ["onInit", "onPostCreate", "onUserLogin"],
+  "settings": {
+    "apiKey": { "type": "string", "label": "API Key" },
+    "enabled": { "type": "boolean", "default": true }
+  }
+}</code></pre>
+
+        <h3 id="plugin-hooks">Available Hooks</h3>
+        <table>
+          <thead>
+            <tr><th>Hook</th><th>Trigger</th><th>Parameters</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>onInit</code></td><td>Plugin initialization</td><td>config</td></tr>
+            <tr><td><code>onPostCreate</code></td><td>New post created</td><td>post</td></tr>
+            <tr><td><code>onPostUpdate</code></td><td>Post updated</td><td>post, changes</td></tr>
+            <tr><td><code>onUserLogin</code></td><td>User logs in</td><td>user</td></tr>
+            <tr><td><code>onUserRegister</code></td><td>New user registers</td><td>user</td></tr>
+            <tr><td><code>onOrderComplete</code></td><td>Order completed</td><td>order</td></tr>
+            <tr><td><code>onCourseEnroll</code></td><td>User enrolls in course</td><td>enrollment</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="plugin-example">Example Plugin</h3>
+        <pre><code class="language-typescript">// index.ts
+import { Plugin, Hook } from '@nodepress/plugin-sdk';
+
+export default class MyPlugin extends Plugin {
+  @Hook('onInit')
+  async initialize() {
+    console.log('My plugin initialized!');
+  }
+
+  @Hook('onPostCreate')
+  async handleNewPost(post: Post) {
+    // Send notification, update analytics, etc.
+    await this.notifySubscribers(post);
+  }
+
+  private async notifySubscribers(post: Post) {
+    // Plugin logic here
+  }
+}</code></pre>
+      </section>
+
+      <!-- Deployment -->
+      <section id="deployment" class="docs-section">
+        <h2>Deployment</h2>
+        <p>Deploy NodePress to production environments.</p>
+
+        <h3 id="docker">Docker Deployment</h3>
+        <pre><code class="language-dockerfile"># Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+
+EXPOSE 3000
+CMD ["npm", "run", "start:prod"]</code></pre>
+
+        <h4>Docker Compose</h4>
+        <pre><code class="language-yaml"># docker-compose.yml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/nodepress
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=nodepress
+      - POSTGRES_PASSWORD=password
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:</code></pre>
+
+        <h3 id="production-checklist">Production Checklist</h3>
+        <ul>
+          <li>✅ Set <code>NODE_ENV=production</code></li>
+          <li>✅ Use strong, unique <code>JWT_SECRET</code></li>
+          <li>✅ Configure SSL/TLS certificates</li>
+          <li>✅ Set up database backups</li>
+          <li>✅ Configure Redis for sessions and caching</li>
+          <li>✅ Set up monitoring and logging</li>
+          <li>✅ Configure CDN for static assets</li>
+          <li>✅ Enable rate limiting</li>
+          <li>✅ Set up health checks</li>
+        </ul>
+
+        <h3 id="environment-variables">Environment Variables</h3>
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Required</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>DATABASE_URL</code></td><td>Yes</td><td>PostgreSQL connection string</td></tr>
+            <tr><td><code>JWT_SECRET</code></td><td>Yes</td><td>Secret for JWT signing</td></tr>
+            <tr><td><code>REDIS_URL</code></td><td>No</td><td>Redis connection string</td></tr>
+            <tr><td><code>STRIPE_SECRET_KEY</code></td><td>No</td><td>Stripe API key</td></tr>
+            <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td>No</td><td>Stripe webhook secret</td></tr>
+            <tr><td><code>OPENAI_API_KEY</code></td><td>No</td><td>OpenAI API key for AI features</td></tr>
+            <tr><td><code>SMTP_HOST</code></td><td>No</td><td>Email server host</td></tr>
+            <tr><td><code>SMTP_PORT</code></td><td>No</td><td>Email server port</td></tr>
+            <tr><td><code>SMTP_USER</code></td><td>No</td><td>Email username</td></tr>
+            <tr><td><code>SMTP_PASS</code></td><td>No</td><td>Email password</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Configuration -->
+      <section id="configuration" class="docs-section">
+        <h2>Configuration</h2>
+        <p>Configure NodePress behavior through settings and environment variables.</p>
+
+        <h3 id="site-settings">Site Settings</h3>
+        <p>Manage site settings through the admin panel or API:</p>
+
+        <pre><code class="language-typescript">// GET /api/settings
+const settings = await settingsService.getAll();
+
+// PATCH /api/settings
+await settingsService.update({
+  siteName: 'My Awesome Site',
+  siteDescription: 'A NodePress powered website',
+  siteUrl: 'https://example.com',
+  timezone: 'America/New_York',
+  dateFormat: 'MMMM D, YYYY',
+  postsPerPage: 10,
+  commentsEnabled: true,
+  registrationEnabled: true,
+});</code></pre>
+
+        <h3 id="domain-configuration">Updating Site URL & Domain</h3>
+        <p>When moving from localhost to a production domain, you need to update several configuration points.</p>
+
+        <h4>Step 1: Update Environment Variables</h4>
+        <p>Update your <code>.env</code> file with your production domain:</p>
+        <pre><code class="language-bash"># .env - Change from localhost to your domain
+SITE_URL=https://yourdomain.com
+APP_URL=https://yourdomain.com
+
+# If using separate admin subdomain
+ADMIN_URL=https://admin.yourdomain.com
+
+# Update CORS origins
+CORS_ORIGINS=https://yourdomain.com,https://admin.yourdomain.com
+
+# Update cookie domain for authentication
+COOKIE_DOMAIN=.yourdomain.com</code></pre>
+
+        <h4>Step 2: Update Site Settings via Admin Panel</h4>
+        <p>Navigate to <strong>Admin Panel → Settings → General</strong> and update:</p>
+        <ul>
+          <li><strong>Site URL</strong> - Your full domain (e.g., <code>https://yourdomain.com</code>)</li>
+          <li><strong>Site Name</strong> - Your site's display name</li>
+          <li><strong>Site Description</strong> - SEO meta description</li>
+        </ul>
+
+        <h4>Step 3: Update Navigation Menus</h4>
+        <p>Update menu links from localhost URLs to your production domain:</p>
+        <pre><code class="language-typescript">// Via API: GET /api/menus to list all menus
+const menus = await menusService.findAll();
+
+// Update menu items with new URLs
+// PATCH /api/menus/:id
+await menusService.update(menuId, {
+  items: [
+    { label: 'Home', url: '/', order: 1 },
+    { label: 'Blog', url: '/blog', order: 2 },
+    { label: 'Shop', url: '/shop', order: 3 },
+    { label: 'Courses', url: '/courses', order: 4 },
+    { label: 'Contact', url: '/contact', order: 5 },
+  ]
+});</code></pre>
+
+        <div class="docs-callout docs-callout-info">
+          <div class="docs-callout-title">💡 Use Relative URLs</div>
+          <p>Always use relative URLs (e.g., <code>/blog</code> instead of <code>http://localhost:3000/blog</code>) in your navigation menus. This way, links work correctly in both development and production without changes.</p>
+        </div>
+
+        <h4>Step 4: Update via Admin Panel UI</h4>
+        <p>The easiest way to update navigation:</p>
+        <ol>
+          <li>Go to <strong>Admin Panel → Appearance → Menus</strong></li>
+          <li>Select the menu you want to edit (e.g., "Primary Menu")</li>
+          <li>Click on each menu item to edit</li>
+          <li>Update any hardcoded localhost URLs to relative paths or your domain</li>
+          <li>Click <strong>Save Menu</strong></li>
+        </ol>
+
+        <h4>Step 5: Update Database URLs (Bulk Update)</h4>
+        <p>If you have many hardcoded localhost URLs in your content, run this SQL to update them:</p>
+        <pre><code class="language-bash"># PostgreSQL - Update all localhost references in posts
+UPDATE posts
+SET content = REPLACE(content, 'http://localhost:3000', 'https://yourdomain.com')
+WHERE content LIKE '%localhost:3000%';
+
+# Update pages
+UPDATE pages
+SET content = REPLACE(content, 'http://localhost:3000', 'https://yourdomain.com')
+WHERE content LIKE '%localhost:3000%';
+
+# Update menu items
+UPDATE menu_items
+SET url = REPLACE(url, 'http://localhost:3000', 'https://yourdomain.com')
+WHERE url LIKE '%localhost:3000%';
+
+# Update media URLs if stored as absolute
+UPDATE media
+SET url = REPLACE(url, 'http://localhost:3000', 'https://yourdomain.com')
+WHERE url LIKE '%localhost:3000%';</code></pre>
+
+        <div class="docs-callout docs-callout-warning">
+          <div class="docs-callout-title">⚠️ Backup First</div>
+          <p>Always backup your database before running bulk update queries. Use <code>pg_dump</code> to create a backup.</p>
+        </div>
+
+        <h4>Step 6: SSL/HTTPS Configuration</h4>
+        <p>For production, always use HTTPS:</p>
+        <pre><code class="language-bash"># Force HTTPS in .env
+FORCE_HTTPS=true
+
+# If behind a reverse proxy (nginx, Cloudflare)
+TRUST_PROXY=true</code></pre>
+
+        <h4>Step 7: Clear Caches</h4>
+        <p>After updating URLs, clear all caches:</p>
+        <pre><code class="language-bash"># Clear Redis cache
+redis-cli FLUSHALL
+
+# Or via API (admin only)
+POST /api/cache/clear
+Authorization: Bearer &lt;admin-token&gt;</code></pre>
+
+        <h4>Common URL Configuration Issues</h4>
+        <table>
+          <thead>
+            <tr><th>Issue</th><th>Solution</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Mixed content warnings</td><td>Ensure all URLs use HTTPS, including images and scripts</td></tr>
+            <tr><td>CORS errors</td><td>Add your domain to <code>CORS_ORIGINS</code> in .env</td></tr>
+            <tr><td>Login not working</td><td>Check <code>COOKIE_DOMAIN</code> matches your domain</td></tr>
+            <tr><td>Images not loading</td><td>Update media URLs or configure CDN/S3 storage</td></tr>
+            <tr><td>API calls failing</td><td>Update frontend API base URL configuration</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="email-configuration">Email Configuration</h3>
+        <pre><code class="language-typescript">// Email templates are in /templates/emails/
+// Customize welcome, password reset, order confirmation, etc.
+
+// Example: Send custom email
+await emailService.send({
+  to: 'user@example.com',
+  subject: 'Welcome to Our Site',
+  template: 'welcome',
+  context: { userName: 'John', activationLink: '...' },
+});</code></pre>
+
+        <h3 id="caching">Caching</h3>
+        <pre><code class="language-typescript">// Redis caching is automatic for:
+// - Database queries
+// - API responses
+// - Session data
+// - Rate limiting
+
+// Manual cache control
+await cacheService.set('key', value, 3600); // 1 hour TTL
+const cached = await cacheService.get('key');
+await cacheService.del('key');</code></pre>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" class="docs-section">
+        <h2>FAQ</h2>
+
+        <h3>General Questions</h3>
+
+        <h4>Is NodePress free to use?</h4>
+        <p>Yes, NodePress is open-source and free to use under the MIT license. You can use it for personal and commercial projects.</p>
+
+        <h4>What are the system requirements?</h4>
+        <p>NodePress requires Node.js 20+, PostgreSQL 15+, and optionally Redis. For production, we recommend at least 2GB RAM and 2 CPU cores.</p>
+
+        <h4>Can I migrate from WordPress?</h4>
+        <p>Yes, we provide a migration tool that imports posts, pages, users, and media from WordPress. See the migration guide for details.</p>
+
+        <h3>Technical Questions</h3>
+
+        <h4>How do I reset the admin password?</h4>
+        <pre><code class="language-bash"># Using the CLI
+npx nodepress reset-password admin@example.com
+
+# Or directly in the database
+UPDATE users SET password = '$2b$10$...' WHERE email = 'admin@example.com';</code></pre>
+
+        <h4>How do I enable debug mode?</h4>
+        <pre><code class="language-bash"># Set in .env
+DEBUG=true
+LOG_LEVEL=debug</code></pre>
+
+        <h4>How do I backup my database?</h4>
+        <pre><code class="language-bash"># PostgreSQL backup
+pg_dump -U postgres nodepress > backup.sql
+
+# Restore
+psql -U postgres nodepress < backup.sql</code></pre>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-docker.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-handlebars.min.js"></script>
+  <script>
+    // Documentation page JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mobile sidebar toggle
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebar = document.getElementById('docsSidebar');
+
+      if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('open');
+        });
+      }
+
+      // Build navigation from sections
+      const navList = document.getElementById('docsNavList');
+      const sections = document.querySelectorAll('.docs-section');
+
+      sections.forEach(section => {
+        const h2 = section.querySelector('h1, h2');
+        if (h2) {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#' + section.id;
+          a.textContent = h2.textContent;
+          a.className = 'docs-nav-link';
+          li.appendChild(a);
+          navList.appendChild(li);
+
+          // Add sub-navigation for h3 elements
+          const h3s = section.querySelectorAll('h3[id]');
+          if (h3s.length > 0) {
+            const subUl = document.createElement('ul');
+            subUl.className = 'docs-nav-sub';
+            h3s.forEach(h3 => {
+              const subLi = document.createElement('li');
+              const subA = document.createElement('a');
+              subA.href = '#' + h3.id;
+              subA.textContent = h3.textContent;
+              subA.className = 'docs-nav-link docs-nav-link-sub';
+              subLi.appendChild(subA);
+              subUl.appendChild(subLi);
+            });
+            li.appendChild(subUl);
+          }
+        }
+      });
+
+      // Active section highlighting
+      const navLinks = document.querySelectorAll('.docs-nav-link');
+
+      function updateActiveLink() {
+        let current = '';
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          if (window.scrollY >= sectionTop - 100) {
+            current = section.id;
+          }
+        });
+
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', updateActiveLink);
+      updateActiveLink();
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Close mobile sidebar
+            sidebar.classList.remove('open');
+          }
+        });
+      });
+
+      // Search functionality
+      const searchInput = document.getElementById('docsSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+          const query = e.target.value.toLowerCase();
+          const allSections = document.querySelectorAll('.docs-section');
+
+          allSections.forEach(section => {
+            const text = section.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+              section.style.display = 'block';
+            } else {
+              section.style.display = 'none';
+            }
+          });
+        });
+      }
+
+      // Copy code button
+      document.querySelectorAll('pre').forEach(pre => {
+        const button = document.createElement('button');
+        button.className = 'copy-code-btn';
+        button.textContent = 'Copy';
+        button.addEventListener('click', function() {
+          const code = pre.querySelector('code');
+          navigator.clipboard.writeText(code.textContent).then(() => {
+            button.textContent = 'Copied!';
+            setTimeout(() => button.textContent = 'Copy', 2000);
+          });
+        });
+        pre.style.position = 'relative';
+        pre.appendChild(button);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -40,7 +40,7 @@ export default function FooterPanel({ settings, onChange }: FooterPanelProps) {
         <h3 className="text-sm font-medium text-white mb-3">Copyright Text</h3>
         <textarea
           rows={2}
-          defaultValue="© 2024 Your Company. All rights reserved."
+          defaultValue="© {year} NodePress. All rights reserved."
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500"
           placeholder="Enter copyright text..."
         />

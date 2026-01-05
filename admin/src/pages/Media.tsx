@@ -1,16 +1,17 @@
 /**
  * Media Page
  * Manage media library with grid view and drag-drop upload
- * With comprehensive tooltips for user guidance
+ * Per-user media libraries with admin storage dashboard
  */
 
 import { useEffect, useState, useRef } from 'react';
 import { mediaApi } from '../services/api';
 import { useThemeClasses } from '../contexts/SiteThemeContext';
+import { useAuthStore } from '../stores/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import toast from 'react-hot-toast';
-import { FiUpload, FiTrash2, FiX, FiImage, FiDownload, FiHelpCircle } from 'react-icons/fi';
+import { FiUpload, FiTrash2, FiX, FiImage, FiDownload, FiHelpCircle, FiUsers, FiHardDrive, FiDatabase, FiUser } from 'react-icons/fi';
 import Tooltip from '../components/Tooltip';
 
 // Tooltip content for media page
@@ -24,8 +25,30 @@ const MEDIA_TOOLTIPS = {
   dragDrop: { title: 'Drag & Drop', content: 'Drag files directly onto this area to upload them quickly.' },
 };
 
+interface StorageUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  role: string;
+  fileCount: number;
+  totalSize: number;
+}
+
+interface StorageStats {
+  users: StorageUser[];
+  totals: {
+    totalUsers: number;
+    totalSize: number;
+    totalFiles: number;
+  };
+}
+
 export default function Media() {
   const theme = useThemeClasses();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
+
   const [media, setMedia] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -40,18 +63,72 @@ export default function Media() {
   const [metadataForm, setMetadataForm] = useState({ alt: '', caption: '' });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Admin-only state
+  const [viewMode, setViewMode] = useState<'my-media' | 'all-media' | 'storage'>('my-media');
+  const [storageStats, setStorageStats] = useState<StorageStats | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [myStorageStats, setMyStorageStats] = useState<{ totalSize: number; fileCount: number } | null>(null);
+
   useEffect(() => {
     fetchMedia();
-  }, []);
+    fetchMyStorageStats();
+    if (isAdmin) {
+      fetchStorageStats();
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    // Refetch when view mode or selected user changes
+    if (viewMode === 'my-media') {
+      fetchMedia();
+    } else if (viewMode === 'all-media') {
+      fetchAllMedia();
+    }
+  }, [viewMode, selectedUserId]);
 
   const fetchMedia = async () => {
     try {
+      setLoading(true);
       const response = await mediaApi.getAll();
       setMedia(response.data.data);
     } catch (error) {
       toast.error('Failed to load media');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAllMedia = async () => {
+    try {
+      setLoading(true);
+      const params: any = {};
+      if (selectedUserId) {
+        params.userId = selectedUserId;
+      }
+      const response = await mediaApi.getAllMedia(params);
+      setMedia(response.data.data);
+    } catch (error) {
+      toast.error('Failed to load media');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStorageStats = async () => {
+    try {
+      const response = await mediaApi.getAllStorageStats();
+      setStorageStats(response.data);
+    } catch (error) {
+      console.error('Failed to load storage stats');
+    }
+  };
+
+  const fetchMyStorageStats = async () => {
+    try {
+      const response = await mediaApi.getMyStorageStats();
+      setMyStorageStats(response.data);
+    } catch (error) {
+      console.error('Failed to load storage stats');
     }
   };
 
@@ -136,28 +213,40 @@ export default function Media() {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading && !storageStats) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="flex items-center gap-3">
           <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Media Library</h1>
-          <Tooltip title="About Media Library" content="Store and manage all your images, videos, and documents. Upload files here to use them in posts and pages." position="right" variant="help">
+          <Tooltip title="About Media Library" content="Your personal media library. Upload files here to use them in posts and pages." position="right" variant="help">
             <button className={`p-1 ${theme.icon} hover:text-blue-400`}>
               <FiHelpCircle size={18} />
             </button>
           </Tooltip>
         </div>
-        <Tooltip title={MEDIA_TOOLTIPS.upload.title} content={MEDIA_TOOLTIPS.upload.content} position="left">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center bg-gradient-to-r from-amber-600 to-amber-500 text-white px-4 py-2 rounded-xl hover:from-amber-500 hover:to-amber-400 shadow-lg shadow-amber-500/20 transition-all"
-          >
-            <FiUpload className="mr-2" size={18} />
-            Upload Files
-          </button>
-        </Tooltip>
+        <div className="flex items-center gap-3">
+          {/* My Storage Stats */}
+          {myStorageStats && (
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${theme.isDark ? 'bg-slate-800/50 border border-slate-700/50' : 'bg-gray-100 border border-gray-200'}`}>
+              <FiHardDrive className="text-blue-400" size={16} />
+              <span className={`text-sm ${theme.textMuted}`}>
+                {formatFileSize(myStorageStats.totalSize)} • {myStorageStats.fileCount} files
+              </span>
+            </div>
+          )}
+          <Tooltip title={MEDIA_TOOLTIPS.upload.title} content={MEDIA_TOOLTIPS.upload.content} position="left">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center bg-gradient-to-r from-amber-600 to-amber-500 text-white px-4 py-2 rounded-xl hover:from-amber-500 hover:to-amber-400 shadow-lg shadow-amber-500/20 transition-all"
+            >
+              <FiUpload className="mr-2" size={18} />
+              Upload Files
+            </button>
+          </Tooltip>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -168,10 +257,182 @@ export default function Media() {
         />
       </div>
 
-      {/* File Type Filter */}
-      <div className="mb-6 flex gap-2">
-        <Tooltip title={MEDIA_TOOLTIPS.filter.title} content={MEDIA_TOOLTIPS.filter.content} position="bottom">
-          <div className="flex gap-2">
+      {/* Admin View Mode Toggle */}
+      {isAdmin && (
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button
+            onClick={() => { setViewMode('my-media'); setSelectedUserId(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              viewMode === 'my-media'
+                ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                : theme.isDark
+                  ? 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-700/50 hover:text-white'
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 hover:text-gray-900'
+            }`}
+          >
+            <FiUser size={16} />
+            My Media
+          </button>
+          <button
+            onClick={() => { setViewMode('all-media'); setSelectedUserId(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              viewMode === 'all-media'
+                ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                : theme.isDark
+                  ? 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-700/50 hover:text-white'
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 hover:text-gray-900'
+            }`}
+          >
+            <FiImage size={16} />
+            All Media
+          </button>
+          <button
+            onClick={() => setViewMode('storage')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              viewMode === 'storage'
+                ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                : theme.isDark
+                  ? 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-700/50 hover:text-white'
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 hover:text-gray-900'
+            }`}
+          >
+            <FiDatabase size={16} />
+            Storage Dashboard
+          </button>
+        </div>
+      )}
+
+      {/* Storage Dashboard (Admin Only) */}
+      {isAdmin && viewMode === 'storage' && storageStats && (
+        <div className="mb-8">
+          {/* Totals Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className={`rounded-xl p-5 ${theme.card}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-blue-500/20">
+                  <FiHardDrive className="text-blue-400" size={20} />
+                </div>
+                <span className={theme.textMuted}>Total Storage</span>
+              </div>
+              <p className={`text-2xl font-bold ${theme.textPrimary}`}>{formatFileSize(storageStats.totals.totalSize)}</p>
+            </div>
+            <div className={`rounded-xl p-5 ${theme.card}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-green-500/20">
+                  <FiImage className="text-green-400" size={20} />
+                </div>
+                <span className={theme.textMuted}>Total Files</span>
+              </div>
+              <p className={`text-2xl font-bold ${theme.textPrimary}`}>{storageStats.totals.totalFiles.toLocaleString()}</p>
+            </div>
+            <div className={`rounded-xl p-5 ${theme.card}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-purple-500/20">
+                  <FiUsers className="text-purple-400" size={20} />
+                </div>
+                <span className={theme.textMuted}>Users with Media</span>
+              </div>
+              <p className={`text-2xl font-bold ${theme.textPrimary}`}>{storageStats.totals.totalUsers}</p>
+            </div>
+          </div>
+
+          {/* Users Storage Table */}
+          <div className={`rounded-xl border overflow-hidden ${theme.card}`}>
+            <div className={`px-4 py-3 border-b ${theme.border}`}>
+              <h3 className={`font-semibold ${theme.textPrimary}`}>Storage by User</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className={theme.isDark ? 'bg-slate-800/50' : 'bg-gray-50'}>
+                    <th className={`px-4 py-3 text-left text-sm font-medium ${theme.textMuted}`}>User</th>
+                    <th className={`px-4 py-3 text-left text-sm font-medium ${theme.textMuted}`}>Role</th>
+                    <th className={`px-4 py-3 text-right text-sm font-medium ${theme.textMuted}`}>Files</th>
+                    <th className={`px-4 py-3 text-right text-sm font-medium ${theme.textMuted}`}>Storage Used</th>
+                    <th className={`px-4 py-3 text-right text-sm font-medium ${theme.textMuted}`}>% of Total</th>
+                    <th className={`px-4 py-3 text-center text-sm font-medium ${theme.textMuted}`}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${theme.border}`}>
+                  {storageStats.users.map((u) => (
+                    <tr key={u.id} className={`${theme.isDark ? 'hover:bg-slate-800/30' : 'hover:bg-gray-50'} transition-colors`}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {u.avatar ? (
+                            <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-medium">
+                              {u.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <p className={`font-medium ${theme.textPrimary}`}>{u.name}</p>
+                            <p className={`text-xs ${theme.textMuted}`}>{u.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          u.role === 'ADMIN' ? 'bg-red-500/20 text-red-400' :
+                          u.role === 'EDITOR' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-gray-500/20 text-gray-400'
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className={`px-4 py-3 text-right ${theme.textPrimary}`}>{u.fileCount}</td>
+                      <td className={`px-4 py-3 text-right font-medium ${theme.textPrimary}`}>{formatFileSize(u.totalSize)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
+                              style={{ width: `${Math.min(100, (u.totalSize / storageStats.totals.totalSize) * 100)}%` }}
+                            />
+                          </div>
+                          <span className={`text-sm ${theme.textMuted}`}>
+                            {((u.totalSize / storageStats.totals.totalSize) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => { setViewMode('all-media'); setSelectedUserId(u.id); }}
+                          className="px-3 py-1.5 text-xs bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 transition-colors"
+                        >
+                          View Files
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show media grid when not in storage view */}
+      {viewMode !== 'storage' && (
+        <>
+          {/* Selected User Filter (when viewing specific user's media) */}
+          {isAdmin && viewMode === 'all-media' && selectedUserId && storageStats && (
+            <div className={`mb-4 flex items-center gap-2 px-4 py-2 rounded-lg ${theme.isDark ? 'bg-indigo-500/10 border border-indigo-500/30' : 'bg-indigo-50 border border-indigo-200'}`}>
+              <FiUser className="text-indigo-400" size={16} />
+              <span className={theme.textPrimary}>
+                Viewing media for: <strong>{storageStats.users.find(u => u.id === selectedUserId)?.name}</strong>
+              </span>
+              <button
+                onClick={() => setSelectedUserId(null)}
+                className="ml-auto px-2 py-1 text-xs bg-indigo-500/20 text-indigo-400 rounded hover:bg-indigo-500/30 transition-colors"
+              >
+                Clear Filter
+              </button>
+            </div>
+          )}
+
+          {/* File Type Filter */}
+          <div className="mb-6 flex flex-wrap gap-2">
             {[
               { id: 'all', label: 'All Files' },
               { id: 'image', label: 'Images' },
@@ -194,8 +455,6 @@ export default function Media() {
               </button>
             ))}
           </div>
-        </Tooltip>
-      </div>
 
       {/* Drag and Drop Zone */}
       <Tooltip title={MEDIA_TOOLTIPS.dragDrop.title} content={MEDIA_TOOLTIPS.dragDrop.content} position="top">
@@ -285,10 +544,15 @@ export default function Media() {
               <div className="p-2">
                 <p className={`text-xs truncate ${theme.textPrimary}`}>{item.originalName}</p>
                 <p className={`text-xs ${theme.textMuted}`}>{formatFileSize(item.size)}</p>
+                {viewMode === 'all-media' && item.uploadedBy && (
+                  <p className={`text-[10px] ${theme.textMuted} truncate`}>by {item.uploadedBy.name}</p>
+                )}
               </div>
             </div>
           ))}
         </div>
+      )}
+        </>
       )}
 
       {/* Media Details Modal */}
@@ -340,6 +604,12 @@ export default function Media() {
                   <span className={`font-medium ${theme.textMuted}`}>Uploaded:</span>
                   <p className={theme.textPrimary}>{new Date(selectedMedia.createdAt).toLocaleString()}</p>
                 </div>
+                {selectedMedia.uploadedBy && (
+                  <div>
+                    <span className={`font-medium ${theme.textMuted}`}>Uploaded by:</span>
+                    <p className={theme.textPrimary}>{selectedMedia.uploadedBy.name} ({selectedMedia.uploadedBy.email})</p>
+                  </div>
+                )}
                 <div>
                   <span className={`font-medium ${theme.textMuted}`}>URL:</span>
                   <input

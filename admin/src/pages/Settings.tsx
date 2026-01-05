@@ -85,6 +85,8 @@ export default function Settings() {
     adminUrl: '',
     supportEmail: '',
     siteName: '',
+    siteLogo: '',
+    siteTagline: '',
   });
   const [domainSaving, setDomainSaving] = useState(false);
 
@@ -153,6 +155,8 @@ export default function Settings() {
           adminUrl: domainRes.data.adminUrl || '',
           supportEmail: domainRes.data.supportEmail || '',
           siteName: domainRes.data.siteName || '',
+          siteLogo: domainRes.data.siteLogo || '',
+          siteTagline: domainRes.data.siteTagline || '',
         });
       }
 
@@ -960,7 +964,7 @@ export default function Settings() {
                   value={domainConfig.siteName}
                   onChange={(e) => setDomainConfig({ ...domainConfig, siteName: e.target.value })}
                   className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.input}`}
-                  placeholder="My Awesome Site"
+                  placeholder="NodePress"
                 />
               </div>
               <div>
@@ -970,9 +974,33 @@ export default function Settings() {
                   value={domainConfig.supportEmail}
                   onChange={(e) => setDomainConfig({ ...domainConfig, supportEmail: e.target.value })}
                   className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.input}`}
-                  placeholder="support@yoursite.com"
+                  placeholder="support@nodepress.co.uk"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${theme.textMuted}`}>Site Tagline</label>
+              <input
+                type="text"
+                value={domainConfig.siteTagline || ''}
+                onChange={(e) => setDomainConfig({ ...domainConfig, siteTagline: e.target.value })}
+                className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.input}`}
+                placeholder="Modern Content Management System"
+              />
+              <p className={`text-xs mt-1 ${theme.textMuted}`}>A short tagline that appears in emails and branding</p>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${theme.textMuted}`}>Site Logo URL</label>
+              <input
+                type="url"
+                value={domainConfig.siteLogo || ''}
+                onChange={(e) => setDomainConfig({ ...domainConfig, siteLogo: e.target.value })}
+                className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.input}`}
+                placeholder="https://nodepress.co.uk/logo.png"
+              />
+              <p className={`text-xs mt-1 ${theme.textMuted}`}>Logo image URL for email headers (leave empty for text-only)</p>
             </div>
 
             <button

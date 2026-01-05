@@ -1113,20 +1113,348 @@ The shop module provides complete e-commerce functionality.
 
 ### LMS Module
 
-The learning management system for courses and lessons.
+A complete Learning Management System for creating, selling, and delivering online courses with quizzes, progress tracking, and certificates.
 
 **Key Files:**
-- `src/modules/lms/lms.service.ts` - Course management
-- `src/modules/lms/lesson.service.ts` - Lesson handling
-- `src/modules/lms/enrollment.service.ts` - Student enrollment
-- `src/modules/lms/progress.service.ts` - Progress tracking
+
+*Backend Services:*
+- `src/modules/lms/services/courses.service.ts` - Course CRUD and catalog
+- `src/modules/lms/services/lessons.service.ts` - Lesson management
+- `src/modules/lms/services/modules.service.ts` - Course module/section organization
+- `src/modules/lms/services/quizzes.service.ts` - Quiz creation and grading
+- `src/modules/lms/services/enrollments.service.ts` - Student enrollment handling
+- `src/modules/lms/services/progress.service.ts` - Learning progress tracking
+- `src/modules/lms/services/certificates.service.ts` - Certificate issuance
+- `src/modules/lms/services/certificate-generator.service.ts` - PDF generation
+
+*Controllers:*
+- `src/modules/lms/controllers/courses.controller.ts` - Admin course management
+- `src/modules/lms/controllers/learning.controller.ts` - Student learning experience
+- `src/modules/lms/controllers/enrollments.controller.ts` - Enrollment handling
+- `src/modules/lms/controllers/quizzes.controller.ts` - Quiz administration
+- `src/modules/lms/controllers/certificates.controller.ts` - Certificate endpoints
+
+*Frontend Pages:*
+- `admin/src/pages/lms/CourseCatalog.tsx` - Public course browsing
+- `admin/src/pages/lms/CourseLanding.tsx` - Course sales page
+- `admin/src/pages/lms/CourseEditor.tsx` - Course creation/editing
+- `admin/src/pages/lms/CurriculumBuilder.tsx` - Module and lesson organization
+- `admin/src/pages/lms/LearningPlayer.tsx` - Video player with progress tracking
+- `admin/src/pages/lms/QuizPlayer.tsx` - Student quiz interface
+- `admin/src/pages/lms/StudentDashboard.tsx` - Student's enrolled courses
+- `admin/src/pages/lms/Certificate.tsx` - Certificate display and download
 
 **Features:**
-- Course creation with curriculum
-- Lesson types (video, text, quiz)
-- Student enrollment
-- Progress tracking
-- Certificates
+- Course creation with rich descriptions and featured images
+- Course modules/sections for organizing curriculum
+- Multiple lesson types: VIDEO, ARTICLE, QUIZ, ASSIGNMENT
+- Video hosting: Self-hosted, YouTube, Vimeo support
+- Quiz system with multiple question types
+- Automatic and manual progress tracking
+- PDF certificate generation
+- Enrollment management with payment integration
+- Admin dashboard with analytics
+
+#### Course Structure
+
+Courses in NodePress follow a hierarchical structure:
+
+```
+Course
+├── Module 1 (Section)
+│   ├── Lesson 1.1 (VIDEO)
+│   ├── Lesson 1.2 (ARTICLE)
+│   └── Lesson 1.3 (QUIZ)
+├── Module 2
+│   ├── Lesson 2.1
+│   └── Lesson 2.2
+└── Final Quiz (standalone)
+```
+
+#### Course DTOs
+
+```typescript
+// Creating a course
+interface CreateCourseDto {
+  title: string;                    // Required
+  slug?: string;                    // Auto-generated if not provided
+  description?: string;             // Rich text description
+  shortDescription?: string;        // For cards/previews
+  category?: string;                // Course category
+  level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ALL_LEVELS';
+  featuredImage?: string;           // Cover image URL
+  priceType?: 'FREE' | 'PAID';
+  priceAmount?: number;             // Price in cents
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  passingScorePercent?: number;     // Required score for quizzes
+  certificateEnabled?: boolean;     // Issue certificates on completion
+  estimatedHours?: number;
+  whatYouLearn?: string[];          // Learning outcomes
+  requirements?: string[];          // Prerequisites
+}
+
+// Querying courses
+interface CourseQueryDto {
+  search?: string;                  // Search title/description
+  category?: string;
+  level?: CourseLevel;
+  priceType?: 'FREE' | 'PAID';
+  status?: CourseStatus;
+  instructorId?: string;
+  page?: number;
+  limit?: number;
+}
+```
+
+#### Lesson Types & DTOs
+
+```typescript
+enum LessonType {
+  VIDEO = 'VIDEO',           // Video content with player
+  ARTICLE = 'ARTICLE',       // Rich text content
+  QUIZ = 'QUIZ',             // Interactive quiz
+  ASSIGNMENT = 'ASSIGNMENT', // Homework/project
+}
+
+interface CreateLessonDto {
+  title: string;
+  content?: string;          // Rich text content
+  orderIndex?: number;       // Position in curriculum
+  type?: LessonType;
+  videoAssetId?: string;     // Link to video asset
+  moduleId?: string;         // Parent module
+  estimatedMinutes?: number;
+  isPreview?: boolean;       // Free preview for unenrolled users
+  isRequired?: boolean;      // Required for completion
+}
+
+// Video asset for lessons
+interface CreateVideoAssetDto {
+  provider?: 'UPLOAD' | 'HLS' | 'YOUTUBE' | 'VIMEO';
+  url?: string;
+  playbackId?: string;       // Provider-specific ID
+  filePath?: string;         // For uploads
+  durationSeconds?: number;
+  isProtected?: boolean;
+  thumbnailUrl?: string;
+}
+```
+
+#### Quiz System
+
+The quiz system supports multiple question types with automatic grading:
+
+```typescript
+enum QuestionType {
+  MCQ = 'MCQ',               // Multiple choice (single answer)
+  MCQ_MULTI = 'MCQ_MULTI',   // Multiple choice (multiple answers)
+  TRUE_FALSE = 'TRUE_FALSE', // Boolean
+  SHORT_ANSWER = 'SHORT_ANSWER', // Text matching
+  ESSAY = 'ESSAY',           // Long form (manual grading)
+}
+
+interface CreateQuizDto {
+  title: string;
+  description?: string;
+  lessonId?: string;           // Attach to lesson
+  timeLimitSeconds?: number;   // Optional time limit
+  attemptsAllowed?: number;    // Max retakes
+  shuffleQuestions?: boolean;  // Randomize order
+  passingScorePercent?: number;
+  isRequired?: boolean;        // Required for certificate
+  questions?: CreateQuestionDto[];
+}
+
+interface CreateQuestionDto {
+  type: QuestionType;
+  prompt: string;              // Question text
+  optionsJson?: string[];      // Answer options for MCQ
+  correctAnswerJson: any;      // Correct answer
+  explanation?: string;        // Shown after answering
+  points?: number;             // Point value
+  orderIndex?: number;
+}
+
+// Submitting quiz answers
+interface SubmitQuizDto {
+  answers: Array<{
+    questionId: string;
+    answer: any;  // string, string[], or boolean
+  }>;
+}
+```
+
+**Quiz Flow:**
+1. Student starts quiz: `POST /api/lms/learn/:courseId/quizzes/:quizId/start`
+2. Receives questions (without correct answers)
+3. Submits answers: `POST /api/lms/learn/:courseId/quizzes/:quizId/attempts/:attemptId/submit`
+4. Receives results with score and explanations
+
+#### Progress Tracking
+
+```typescript
+interface UpdateProgressDto {
+  videoWatchedSeconds?: number;  // For video lessons
+  lessonCompleted?: boolean;     // Mark complete
+}
+```
+
+**Auto-completion:**
+- Video lessons auto-complete at 90% watched
+- Progress is tracked every 10 seconds during video playback
+- Quiz lessons complete when passing score is achieved
+
+**Progress Response:**
+```typescript
+interface CourseProgress {
+  lessons: Array<{
+    id: string;
+    title: string;
+    completed: boolean;
+    progress?: { videoWatchedSeconds: number; lastAccessedAt: Date };
+  }>;
+  completedLessons: number;
+  totalLessons: number;
+  percentComplete: number;
+  nextLesson?: Lesson;
+  requiredQuizzes: Array<{ id: string; title: string; passed: boolean }>;
+  allRequiredQuizzesPassed: boolean;
+  isComplete: boolean;  // True when eligible for certificate
+}
+```
+
+#### Enrollment System
+
+```typescript
+// Enroll in a course
+interface EnrollCourseDto {
+  paymentId?: string;  // Required for paid courses
+}
+
+// Enrollment statuses
+enum EnrollmentStatus {
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  EXPIRED = 'EXPIRED',
+  CANCELLED = 'CANCELLED',
+}
+```
+
+#### Certificate Generation
+
+Certificates are automatically issued when:
+1. All lessons are completed
+2. All required quizzes are passed
+3. Course has `certificateEnabled: true`
+
+**Certificate Features:**
+- Unique certificate number
+- Verification hash for public verification
+- PDF download with custom template
+- Public verification URL
+
+```typescript
+// Certificate data
+interface Certificate {
+  id: string;
+  certificateNumber: string;
+  verificationHash: string;
+  pdfUrl?: string;
+  issuedAt: Date;
+  course: { title: string };
+  user: { name: string };
+}
+
+// Verify a certificate
+GET /api/lms/certificates/verify/:hash
+// Returns: { valid: true, certificate: {...} } or { valid: false, message: '...' }
+```
+
+#### API Endpoints Summary
+
+**Public Endpoints:**
+```typescript
+GET  /api/lms/courses                    // Course catalog
+GET  /api/lms/courses/categories         // Get all categories
+GET  /api/lms/courses/:slug              // Course details by slug
+GET  /api/lms/certificates/verify/:hash  // Verify certificate
+```
+
+**Student Endpoints (Authenticated):**
+```typescript
+POST /api/lms/courses/:id/enroll         // Enroll in course
+GET  /api/lms/my-courses                 // Enrolled courses
+GET  /api/lms/dashboard                  // Student dashboard
+
+// Learning
+GET  /api/lms/learn/:courseId            // Course with progress
+GET  /api/lms/learn/:courseId/lessons/:lessonId  // Lesson content
+PUT  /api/lms/learn/:courseId/lessons/:lessonId/progress  // Update progress
+POST /api/lms/learn/:courseId/lessons/:lessonId/complete  // Mark complete
+
+// Quizzes
+GET  /api/lms/learn/:courseId/quizzes/:quizId  // Quiz info
+POST /api/lms/learn/:courseId/quizzes/:quizId/start  // Start attempt
+POST /api/lms/learn/:courseId/quizzes/:quizId/attempts/:attemptId/submit  // Submit
+
+// Certificates
+GET  /api/lms/my-certificates            // User's certificates
+POST /api/lms/courses/:id/certificate    // Request certificate
+```
+
+**Admin Endpoints:**
+```typescript
+// Course management
+POST   /api/admin/lms/courses            // Create course
+PUT    /api/admin/lms/courses/:id        // Update course
+DELETE /api/admin/lms/courses/:id        // Delete course
+
+// Modules (curriculum sections)
+POST   /api/admin/lms/courses/:courseId/modules      // Create module
+PUT    /api/admin/lms/modules/:id                    // Update module
+DELETE /api/admin/lms/modules/:id                    // Delete module
+PUT    /api/admin/lms/courses/:courseId/modules/reorder  // Reorder
+
+// Lessons
+POST   /api/admin/lms/courses/:courseId/lessons      // Create lesson
+PUT    /api/admin/lms/lessons/:id                    // Update lesson
+DELETE /api/admin/lms/lessons/:id                    // Delete lesson
+
+// Quizzes
+POST   /api/admin/lms/courses/:courseId/quizzes      // Create quiz
+PUT    /api/admin/lms/quizzes/:id                    // Update quiz
+POST   /api/admin/lms/quizzes/:id/questions          // Add question
+PUT    /api/admin/lms/questions/:id                  // Update question
+
+// Enrollments
+GET    /api/admin/lms/courses/:courseId/enrollments  // Course enrollments
+PUT    /api/admin/lms/enrollments/:id                // Update enrollment
+
+// Dashboard
+GET    /api/admin/lms/dashboard                      // Admin stats
+```
+
+#### Frontend Routes
+
+```typescript
+// Student routes
+/lms/catalog              // Course catalog
+/lms/course/:slug         // Course landing page
+/lms/learn/:courseId      // Learning player
+/lms/learn/:courseId/lesson/:lessonId  // Specific lesson
+/lms/quiz/:courseId/:quizId  // Quiz player
+/lms/certificate/:courseId   // Certificate view
+/lms/my-courses           // Student dashboard
+
+// Admin routes
+/admin/lms                    // LMS dashboard
+/admin/lms/courses            // Course list
+/admin/lms/courses/new        // Create course
+/admin/lms/courses/:id        // Edit course
+/admin/lms/courses/:id/curriculum  // Curriculum builder
+/admin/lms/courses/:id/quizzes     // Course quizzes
+/admin/lms/courses/:id/quizzes/:quizId/questions  // Quiz questions
+```
 
 ### Real-time Messaging
 
@@ -1161,6 +1489,142 @@ Peer-to-peer video calling.
 2. Callee receives call notification
 3. WebRTC signaling (offer/answer/ICE)
 4. Direct peer-to-peer connection established
+
+### Timeline & Social Module
+
+A complete social networking module with posts, comments, likes, shares, and real-time updates.
+
+**Key Files:**
+- `src/modules/timeline/timeline.service.ts` - Post creation and feed management
+- `src/modules/timeline/timeline.controller.ts` - REST API endpoints
+- `src/modules/timeline/timeline.gateway.ts` - Real-time WebSocket events
+- `admin/src/pages/feed/Timeline.tsx` - Main timeline feed page
+- `admin/src/components/PostCard.tsx` - Post display component
+- `admin/src/components/CommentModal.tsx` - Full-screen comments view
+- `admin/src/components/CreatePostForm.tsx` - Post creation form
+- `admin/src/components/MobileMediaRecorder.tsx` - Video/audio recording
+
+**Features:**
+- Timeline posts with text, images, and videos
+- Real-time likes, comments, and shares
+- Hashtag detection and trending topics
+- @mention support with notifications
+- Follow/unfollow system
+- Discover feed for public posts
+- Full-screen comment modal with post preview
+- Video and audio recording for comments
+
+**API Endpoints:**
+```typescript
+POST /api/timeline/posts              // Create a new post
+GET  /api/timeline/feed               // Get personalized feed
+GET  /api/timeline/discover           // Get public discover feed
+GET  /api/timeline/posts/:id          // Get single post
+POST /api/timeline/posts/:id/like     // Like a post
+DELETE /api/timeline/posts/:id/like   // Unlike a post
+POST /api/timeline/posts/:id/share    // Share/repost
+GET  /api/timeline/posts/:id/comments // Get post comments
+POST /api/timeline/posts/:id/comments // Add comment
+GET  /api/timeline/hashtags/trending  // Get trending hashtags
+GET  /api/timeline/hashtags/:tag/posts // Posts by hashtag
+GET  /api/timeline/users/:id/posts    // Get user's posts
+```
+
+**WebSocket Events:**
+```typescript
+// Real-time timeline updates
+socket.on('timeline:newPost', (post) => { ... });
+socket.on('timeline:postLiked', ({ postId, userId, count }) => { ... });
+socket.on('timeline:newComment', ({ postId, comment }) => { ... });
+socket.on('timeline:postShared', ({ postId, userId }) => { ... });
+```
+
+### Frontend Components
+
+#### CommentModal Component
+
+A full-screen modal for viewing and adding comments on posts. Features:
+
+- **Full Post Preview**: Shows the original post with author, content, and media
+- **Comments Feed**: Scrollable list of all comments with replies
+- **Reply Support**: Nested replies to comments
+- **Video/Audio Recording**: Record video or voice note comments
+- **Mobile Optimized**: Safe area insets for notched devices
+- **Real-time Updates**: Comments appear instantly via WebSocket
+
+```typescript
+// Usage in PostCard or Timeline
+<CommentModal
+  postId={post.id}
+  post={post}  // Optional: pass post data to avoid loading
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  onCommentAdded={() => updateCommentCount()}
+/>
+```
+
+#### MobileMediaRecorder Component
+
+A modern, TikTok-inspired media recording component for video and audio capture.
+
+**Features:**
+- Video recording with front/back camera toggle
+- Audio-only recording with waveform visualization
+- Screen recording with microphone commentary
+- Permission handling with user-friendly prompts
+- Upload progress with visual feedback
+- Preview before saving
+- Haptic feedback on mobile devices
+
+```typescript
+// Usage for video recording
+<MobileMediaRecorder
+  isOpen={showRecorder}
+  onClose={() => setShowRecorder(false)}
+  onMediaCaptured={(media) => {
+    // media: { type: 'VIDEO' | 'AUDIO', url: string, thumbnail?: string }
+    console.log('Recorded:', media.url);
+  }}
+  mode="video"  // 'video' | 'audio' | 'screen'
+/>
+```
+
+#### PostCard Component
+
+Displays a timeline post with full interaction support.
+
+**Props:**
+```typescript
+interface PostCardProps {
+  post: TimelinePost;
+  onDelete?: (postId: string) => void;
+  onCommentClick?: (postId: string, post: TimelinePost) => void;
+  onHashtagClick?: (tag: string) => void;
+  onPostShared?: (post: TimelinePost) => void;
+}
+```
+
+**Features:**
+- Author avatar and name with link to profile
+- Post content with hashtag and mention highlighting
+- Media gallery with lightbox
+- Like button with real-time count
+- Comment button opening full-screen modal
+- Share/repost functionality
+- Delete option for own posts
+
+#### CreatePostForm Component
+
+Rich post creation with media upload support.
+
+**Features:**
+- Text input with character count
+- Drag-and-drop media upload
+- Video recording integration
+- Audio voice note recording
+- Hashtag auto-detection
+- @mention autocomplete
+- Post visibility toggle
 
 ---
 

@@ -1297,27 +1297,78 @@ var featureData = {
     subtitle: 'Complete course creation and student management platform',
     content: `
       <h3>📖 Overview</h3>
-      <p>NodePress includes a full-featured Learning Management System that rivals dedicated platforms like Teachable, Thinkific, or LearnDash. Create, sell, and manage online courses with ease.</p>
+      <p>NodePress includes a full-featured Learning Management System that rivals dedicated platforms like Teachable, Thinkific, or LearnDash. Create, sell, and manage online courses with comprehensive curriculum building, quiz assessment, progress tracking, and PDF certificate generation.</p>
 
       <h3>✨ Key Features</h3>
       <ul>
         <li><strong>Course Builder</strong> - Drag-and-drop course creation with modules, lessons, and sections</li>
-        <li><strong>Video Hosting</strong> - Support for self-hosted videos, YouTube, Vimeo, and Wistia</li>
-        <li><strong>Quizzes & Assessments</strong> - Multiple choice, true/false, essay questions with auto-grading</li>
-        <li><strong>Certificates</strong> - Customizable PDF certificates with dynamic fields</li>
-        <li><strong>Progress Tracking</strong> - Real-time student progress with completion percentages</li>
-        <li><strong>Drip Content</strong> - Schedule lesson releases over time</li>
-        <li><strong>Prerequisites</strong> - Require course/lesson completion before advancing</li>
-        <li><strong>Discussion Forums</strong> - Per-lesson discussion threads for student engagement</li>
+        <li><strong>Curriculum Builder</strong> - Organize lessons into modules/sections with ordering</li>
+        <li><strong>Video Hosting</strong> - Self-hosted, YouTube, and Vimeo support with progress tracking</li>
+        <li><strong>Quizzes & Assessments</strong> - MCQ, true/false, multi-select, short answer, essay</li>
+        <li><strong>Auto-Grading</strong> - Automatic quiz scoring with configurable passing percentages</li>
+        <li><strong>PDF Certificates</strong> - Auto-generated certificates with verification</li>
+        <li><strong>Progress Tracking</strong> - Real-time progress with video position tracking</li>
+        <li><strong>Free Previews</strong> - Mark lessons as free preview for unenrolled users</li>
+        <li><strong>Payment Integration</strong> - Stripe integration for paid course enrollment</li>
+        <li><strong>Admin Dashboard</strong> - Analytics, enrollments, and revenue tracking</li>
       </ul>
 
-      <h3>🔌 API Endpoints</h3>
-      <pre><code>GET  /api/courses              # List all courses
-POST /api/courses              # Create a course
-GET  /api/courses/:id          # Get course details
-POST /api/courses/:id/enroll   # Enroll in a course
-GET  /api/learning/my-courses  # Get enrolled courses
-POST /api/learning/progress    # Update lesson progress</code></pre>
+      <h3>📋 Lesson Types</h3>
+      <ul>
+        <li><strong>VIDEO</strong> - Video content with auto-progress tracking (90% completion)</li>
+        <li><strong>ARTICLE</strong> - Rich text content lessons</li>
+        <li><strong>QUIZ</strong> - Interactive quizzes with scoring</li>
+        <li><strong>ASSIGNMENT</strong> - Homework and project submissions</li>
+      </ul>
+
+      <h3>📝 Quiz Question Types</h3>
+      <ul>
+        <li><strong>MCQ</strong> - Multiple choice, single answer</li>
+        <li><strong>MCQ_MULTI</strong> - Multiple choice, multiple answers</li>
+        <li><strong>TRUE_FALSE</strong> - Boolean questions</li>
+        <li><strong>SHORT_ANSWER</strong> - Text input with matching</li>
+        <li><strong>ESSAY</strong> - Long form answers (manual grading)</li>
+      </ul>
+
+      <h3>🔌 Student API Endpoints</h3>
+      <pre><code>GET  /api/lms/courses                    # Course catalog
+GET  /api/lms/courses/:slug              # Course details
+POST /api/lms/courses/:id/enroll         # Enroll in course
+GET  /api/lms/my-courses                 # Enrolled courses
+GET  /api/lms/learn/:courseId            # Course with progress
+GET  /api/lms/learn/:courseId/lessons/:id  # Lesson content
+PUT  /api/lms/learn/:courseId/lessons/:id/progress  # Update progress
+POST /api/lms/learn/:courseId/quizzes/:id/start  # Start quiz
+POST /api/lms/learn/:courseId/quizzes/:id/attempts/:id/submit  # Submit quiz
+POST /api/lms/courses/:id/certificate    # Request certificate
+GET  /api/lms/certificates/verify/:hash  # Verify certificate</code></pre>
+
+      <h3>🔧 Admin API Endpoints</h3>
+      <pre><code>POST /api/admin/lms/courses              # Create course
+PUT  /api/admin/lms/courses/:id          # Update course
+POST /api/admin/lms/courses/:id/modules  # Create module
+POST /api/admin/lms/courses/:id/lessons  # Create lesson
+POST /api/admin/lms/courses/:id/quizzes  # Create quiz
+POST /api/admin/lms/quizzes/:id/questions  # Add question
+GET  /api/admin/lms/dashboard            # Admin analytics</code></pre>
+
+      <h3>🏆 Certificate System</h3>
+      <ul>
+        <li>Auto-issuance when all lessons and required quizzes complete</li>
+        <li>Unique certificate number and verification hash</li>
+        <li>PDF download with custom template</li>
+        <li>Public verification URL for employers</li>
+        <li>Certificate revocation support</li>
+      </ul>
+
+      <h3>📊 Progress Tracking</h3>
+      <ul>
+        <li>Video position tracking (every 10 seconds)</li>
+        <li>Auto-complete at 90% video watched</li>
+        <li>Quiz attempt history with scores</li>
+        <li>Next lesson recommendation</li>
+        <li>Overall course completion percentage</li>
+      </ul>
 
       <h3>💡 Use Cases</h3>
       <ul>
@@ -1325,6 +1376,20 @@ POST /api/learning/progress    # Update lesson progress</code></pre>
         <li>Corporate training and onboarding</li>
         <li>Membership sites with educational content</li>
         <li>Certification programs</li>
+        <li>Developer bootcamps</li>
+        <li>Professional skill development</li>
+      </ul>
+
+      <h3>🧩 React Components</h3>
+      <ul>
+        <li><strong>CourseCatalog</strong> - Browse and search courses</li>
+        <li><strong>CourseLanding</strong> - Course sales page with enrollment</li>
+        <li><strong>CourseEditor</strong> - Admin course creation/editing</li>
+        <li><strong>CurriculumBuilder</strong> - Module and lesson organization</li>
+        <li><strong>LearningPlayer</strong> - Video player with progress</li>
+        <li><strong>QuizPlayer</strong> - Interactive quiz taking</li>
+        <li><strong>StudentDashboard</strong> - Enrolled courses overview</li>
+        <li><strong>Certificate</strong> - Certificate display and download</li>
       </ul>
     `
   },
@@ -1648,6 +1713,7 @@ X-XSS-Protection: 1; mode=block</code></pre>
       <ul>
         <li><strong>Timeline Posts</strong> - Create posts with text, images, and videos</li>
         <li><strong>Likes & Comments</strong> - Full engagement system with real-time counters</li>
+        <li><strong>Full-Screen Comment Modal</strong> - View and add comments with post preview, video/audio recording</li>
         <li><strong>Post Sharing</strong> - Repost content with optional comments (like Twitter retweets)</li>
         <li><strong>#Hashtags</strong> - Auto-detected hashtags with trending topics</li>
         <li><strong>@Mentions</strong> - Tag users with autocomplete and notifications</li>
@@ -1656,17 +1722,33 @@ X-XSS-Protection: 1; mode=block</code></pre>
         <li><strong>Discover Feed</strong> - Explore public posts from all users</li>
         <li><strong>Privacy Controls</strong> - Public/private post visibility</li>
         <li><strong>Media Gallery</strong> - Multi-image and video uploads per post</li>
+        <li><strong>Video Recording</strong> - Record video comments with front/back camera toggle</li>
+        <li><strong>Voice Notes</strong> - Record audio comments with waveform visualization</li>
+      </ul>
+
+      <h3>🎬 Media Recording Features</h3>
+      <ul>
+        <li><strong>Video Recording</strong> - Record video with camera toggle and preview</li>
+        <li><strong>Audio Recording</strong> - Voice notes with real-time waveform display</li>
+        <li><strong>Screen Recording</strong> - Capture screen with microphone commentary</li>
+        <li><strong>Permission Handling</strong> - User-friendly camera/mic permission prompts</li>
+        <li><strong>Upload Progress</strong> - Visual feedback during media upload</li>
+        <li><strong>Preview & Retake</strong> - Review recordings before posting</li>
       </ul>
 
       <h3>🔌 API Endpoints</h3>
-      <pre><code>POST /api/timeline/posts           # Create a post
-GET  /api/timeline/posts           # Get feed posts
-GET  /api/timeline/discover        # Discover public posts
-POST /api/timeline/posts/:id/like  # Like a post
-POST /api/timeline/posts/:id/share # Share/repost
+      <pre><code>POST /api/timeline/posts              # Create a post
+GET  /api/timeline/feed               # Get personalized feed
+GET  /api/timeline/discover           # Discover public posts
+GET  /api/timeline/posts/:id          # Get single post
+POST /api/timeline/posts/:id/like     # Like a post
+DELETE /api/timeline/posts/:id/like   # Unlike a post
+POST /api/timeline/posts/:id/share    # Share/repost
+GET  /api/timeline/posts/:id/comments # Get post comments
+POST /api/timeline/posts/:id/comments # Add comment (text, video, or audio)
 GET  /api/timeline/hashtags/trending  # Trending hashtags
 GET  /api/timeline/hashtags/:tag/posts # Posts by hashtag
-GET  /api/timeline/mentions/search # User search for @mentions</code></pre>
+GET  /api/timeline/mentions/search    # User search for @mentions</code></pre>
 
       <h3>📡 WebSocket Events</h3>
       <ul>
@@ -1683,6 +1765,14 @@ GET  /api/timeline/mentions/search # User search for @mentions</code></pre>
         <li><strong>POST_COMMENT</strong> - When someone comments on your post</li>
         <li><strong>POST_SHARED</strong> - When someone shares your post</li>
         <li><strong>FOLLOW</strong> - When someone follows you</li>
+      </ul>
+
+      <h3>🧩 React Components</h3>
+      <ul>
+        <li><strong>CommentModal</strong> - Full-screen comment view with post preview</li>
+        <li><strong>MobileMediaRecorder</strong> - Video/audio recording component</li>
+        <li><strong>PostCard</strong> - Post display with interactions</li>
+        <li><strong>CreatePostForm</strong> - Rich post creation form</li>
       </ul>
     `
   },

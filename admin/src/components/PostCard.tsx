@@ -17,7 +17,7 @@ import PostMediaGallery from './PostMediaGallery';
 interface PostCardProps {
   post: TimelinePost;
   onDelete?: (postId: string) => void;
-  onCommentClick?: (postId: string) => void;
+  onCommentClick?: (postId: string, post: TimelinePost) => void;
   onHashtagClick?: (tag: string) => void;
   onPostShared?: (post: TimelinePost) => void;
 }
@@ -286,7 +286,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
         </button>
 
         <button
-          onClick={() => onCommentClick?.(post.id)}
+          onClick={() => onCommentClick?.(post.id, post)}
           className={`flex items-center gap-2 transition-colors ${isDark ? 'text-slate-400' : 'text-gray-500'} hover:text-blue-500`}
         >
           <FiMessageCircle className="w-5 h-5" />

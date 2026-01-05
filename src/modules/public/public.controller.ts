@@ -631,6 +631,23 @@ Sitemap: ${baseUrl}/sitemap.xml
   }
 
   /**
+   * Documentation page
+   * GET /docs
+   */
+  @Get('docs')
+  @UseGuards(OptionalJwtAuthGuard)
+  async docs(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = (req as any).user;
+      const html = await this.themeRenderer.renderDocs(user);
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering documentation page:', error);
+      res.status(500).send(`Error rendering documentation page: ${error.message}`);
+    }
+  }
+
+  /**
    * Shop page
    * GET /shop
    */

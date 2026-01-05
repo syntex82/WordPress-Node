@@ -88,11 +88,16 @@ export class MediaService {
   }
 
   /**
-   * Find all media with pagination
+   * Find all media with pagination - filtered by user unless admin viewing all
    */
-  async findAll(page = 1, limit = 20, mimeType?: string) {
+  async findAll(page = 1, limit = 20, mimeType?: string, userId?: string) {
     const skip = (page - 1) * limit;
     const where: any = {};
+
+    // Filter by user if userId provided
+    if (userId) {
+      where.uploadedById = userId;
+    }
 
     if (mimeType) {
       where.mimeType = { contains: mimeType };
@@ -124,6 +129,82 @@ export class MediaService {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Get storage usage for a specific user
+   */
+  async getUserStorageStats(userId: string) {
+    const stats = await this.prisma.media.aggregate({
+      where: { uploadedById: userId },
+      _sum: { size: true },
+      _count: { id: true },
+    });
+
+    return {
+      userId,
+      totalSize: stats._sum.size || 0,
+      fileCount: stats._count.id || 0,
+    };
+  }
+
+  /**
+   * Get storage usage for all users (admin only)
+   */
+  async getAllUsersStorageStats() {
+    // Get all users with their media stats
+    const usersWithMedia = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        role: true,
+        Media: {
+          select: {
+            size: true,
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    // Calculate totals
+    const userStats = usersWithMedia.map((user) => {
+      const totalSize = user.Media.reduce((sum, media) => sum + media.size, 0);
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+        fileCount: user.Media.length,
+        totalSize,
+      };
+    });
+
+    // Filter to only users with media and sort by storage used
+    const usersWithStorage = userStats
+      .filter((u) => u.fileCount > 0)
+      .sort((a, b) => b.totalSize - a.totalSize);
+
+    // Calculate grand totals
+    const grandTotal = usersWithStorage.reduce(
+      (acc, user) => ({
+        totalSize: acc.totalSize + user.totalSize,
+        totalFiles: acc.totalFiles + user.fileCount,
+      }),
+      { totalSize: 0, totalFiles: 0 },
+    );
+
+    return {
+      users: usersWithStorage,
+      totals: {
+        totalUsers: usersWithStorage.length,
+        totalSize: grandTotal.totalSize,
+        totalFiles: grandTotal.totalFiles,
       },
     };
   }

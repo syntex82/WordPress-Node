@@ -294,7 +294,7 @@ export default function MobileMediaRecorder({
   };
 
   useEffect(() => {
-    if (isOpen && mode === 'video') {
+    if (isOpen && (mode === 'video' || mode === 'audio')) {
       initializeMedia();
     }
   }, [facingMode, isOpen, mode, initializeMedia]);
