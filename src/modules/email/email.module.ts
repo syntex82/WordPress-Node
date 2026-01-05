@@ -12,6 +12,7 @@ import { EmailTemplatesService } from './email-templates.service';
 import { EmailLogsService } from './email-logs.service';
 import { BulkEmailService } from './bulk-email.service';
 import { EmailTemplatesSeederService } from './email-templates-seeder.service';
+import { SystemEmailService } from './system-email.service';
 import { EmailController } from './email.controller';
 
 @Module({
@@ -23,7 +24,8 @@ import { EmailController } from './email.controller';
     EmailLogsService,
     BulkEmailService,
     EmailTemplatesSeederService,
+    SystemEmailService,
   ],
-  exports: [EmailService, EmailTemplatesService, EmailLogsService, BulkEmailService],
+  exports: [EmailService, EmailTemplatesService, EmailLogsService, BulkEmailService, SystemEmailService],
 })
 export class EmailModule {}

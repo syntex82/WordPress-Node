@@ -1610,7 +1610,7 @@ export const feedApi = {
 // Timeline Post types
 export interface PostMedia {
   id: string;
-  type: 'IMAGE' | 'VIDEO' | 'GIF';
+  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO';
   url: string;
   thumbnail?: string;
   altText?: string;
@@ -1692,7 +1692,7 @@ export interface TimelinePostsResponse {
 }
 
 export interface CreatePostMediaDto {
-  type: 'IMAGE' | 'VIDEO' | 'GIF';
+  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO';
   url: string;
   thumbnail?: string;
   altText?: string;
@@ -1747,6 +1747,10 @@ export const timelineApi = {
       `/timeline/posts/${postId}/comments`,
       { params: { page, limit } }
     ),
+
+  // Delete a comment
+  deleteComment: (postId: string, commentId: string) =>
+    api.delete(`/timeline/posts/${postId}/comments/${commentId}`),
 
   // Delete a post
   deletePost: (postId: string) =>

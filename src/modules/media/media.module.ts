@@ -9,6 +9,7 @@ import { memoryStorage } from 'multer';
 import { PrismaModule } from '../../database/prisma.module';
 import { MediaService } from './media.service';
 import { MediaController } from './media.controller';
+import { OptimizedImageController } from './optimized-image.controller';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { MediaController } from './media.controller';
     }),
   ],
   providers: [MediaService],
-  controllers: [MediaController],
+  controllers: [MediaController, OptimizedImageController],
   exports: [MediaService],
 })
 export class MediaModule {}

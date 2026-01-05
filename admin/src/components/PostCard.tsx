@@ -146,8 +146,12 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
           url: m.url,
           thumbnail: m.thumbnail,
           altText: m.altText,
+          width: m.width,
+          height: m.height,
+          duration: m.duration,
         }))}
         className="mt-3"
+        immersive={true}
       />
     );
   };

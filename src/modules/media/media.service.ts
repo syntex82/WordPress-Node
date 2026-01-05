@@ -368,4 +368,30 @@ export class MediaService {
       where: { id },
     });
   }
+
+  /**
+   * Generate srcset string for responsive images
+   * Returns srcset attribute value for use in <img> tags
+   */
+  async generateSrcset(filename: string): Promise<string> {
+    const baseName = filename.replace(/\.[^.]+$/, '');
+    const responsiveDir = path.join(this.uploadDir, 'responsive');
+    const srcsetParts: string[] = [];
+
+    for (const size of RESPONSIVE_SIZES) {
+      const responsiveFilename = `${baseName}-${size}w.webp`;
+      const responsivePath = path.join(responsiveDir, responsiveFilename);
+
+      if (fsSync.existsSync(responsivePath)) {
+        srcsetParts.push(`/uploads/responsive/${responsiveFilename} ${size}w`);
+      }
+    }
+
+    // If no responsive versions, return empty string
+    if (srcsetParts.length === 0) {
+      return '';
+    }
+
+    return srcsetParts.join(', ');
+  }
 }

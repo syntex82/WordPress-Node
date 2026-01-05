@@ -5,6 +5,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../../database/prisma.module';
+import { EmailModule } from '../email/email.module';
 
 // Services
 import { ProductsService } from './services/products.service';
@@ -29,7 +30,7 @@ import { ShippingController, StorefrontShippingController } from './controllers/
 import { FeatureGuard } from '../../common/guards/feature.guard';
 
 @Module({
-  imports: [PrismaModule, ConfigModule],
+  imports: [PrismaModule, ConfigModule, EmailModule],
   controllers: [
     // Admin controllers
     ProductsController,

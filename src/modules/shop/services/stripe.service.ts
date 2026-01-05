@@ -13,6 +13,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../database/prisma.service';
 import { SystemConfigService } from '../../settings/system-config.service';
+import { SystemEmailService } from '../../email/system-email.service';
+import { EmailService } from '../../email/email.service';
 import Stripe from 'stripe';
 
 @Injectable()
@@ -24,6 +26,8 @@ export class StripeService implements OnModuleInit {
     private prisma: PrismaService,
     private configService: ConfigService,
     private systemConfig: SystemConfigService,
+    private systemEmailService: SystemEmailService,
+    private emailService: EmailService,
   ) {}
 
   async onModuleInit() {
@@ -197,10 +201,25 @@ export class StripeService implements OnModuleInit {
     // Get order with items to process course enrollments
     const order = await this.prisma.order.findUnique({
       where: { id: payment.orderId },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: { select: { name: true, images: true, sku: true } },
+            course: { select: { title: true, featuredImage: true } },
+          },
+        },
+      },
     });
 
     if (!order) return;
+
+    // Fetch user if order has userId
+    const user = order.userId
+      ? await this.prisma.user.findUnique({
+          where: { id: order.userId },
+          select: { id: true, name: true, email: true },
+        })
+      : null;
 
     // Update order status
     await this.prisma.order.update({
@@ -210,6 +229,66 @@ export class StripeService implements OnModuleInit {
         status: 'CONFIRMED',
       },
     });
+
+    // Send order confirmation email (non-blocking)
+    try {
+      const email = user?.email || order.email;
+      // Parse billing address for name (shippingAddress is JSON)
+      const billingAddress = order.billingAddress as { name?: string } | null;
+      const shippingAddr = order.shippingAddress as {
+        name?: string;
+        street?: string;
+        city?: string;
+        state?: string;
+        zip?: string;
+        country?: string;
+      } | null;
+      const name = user?.name || billingAddress?.name || 'Customer';
+      const userId = user?.id || order.id;
+
+      if (email) {
+        const siteContext = await this.emailService.getSiteContext();
+        await this.systemEmailService.sendOrderConfirmationEmail({
+          to: email,
+          toName: name,
+          userId,
+          firstName: name.split(' ')[0] || name,
+          order: {
+            number: order.orderNumber,
+            date: new Date(order.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+            items: order.items.map((item) => ({
+              name: item.product?.name || item.course?.title || item.name,
+              quantity: item.quantity,
+              total: Number(item.total).toFixed(2),
+              image: item.product?.images?.[0] || item.course?.featuredImage || undefined,
+              sku: item.product?.sku || undefined,
+            })),
+            subtotal: Number(order.subtotal).toFixed(2),
+            shipping: Number(order.shipping) > 0 ? Number(order.shipping).toFixed(2) : undefined,
+            tax: Number(order.tax) > 0 ? Number(order.tax).toFixed(2) : undefined,
+            total: Number(order.total).toFixed(2),
+            shippingAddress: shippingAddr
+              ? {
+                  name: shippingAddr.name || name,
+                  street: shippingAddr.street || '',
+                  city: shippingAddr.city || '',
+                  state: shippingAddr.state || '',
+                  zip: shippingAddr.zip || '',
+                  country: shippingAddr.country || '',
+                }
+              : undefined,
+          },
+          orderUrl: `${siteContext.frontendUrl}/account/orders/${order.id}`,
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to send order confirmation email:', error);
+      // Don't fail payment processing if email fails
+    }
 
     // Enroll user in purchased courses after payment succeeds
     if (order.userId) {

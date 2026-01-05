@@ -16,7 +16,11 @@ import {
   UploadedFile,
   Body,
   BadRequestException,
+  Res,
+  Headers,
+  NotFoundException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -24,6 +28,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from '@prisma/client';
+import * as fs from 'fs';
 
 @Controller('api/media')
 @UseGuards(JwtAuthGuard, RolesGuard)

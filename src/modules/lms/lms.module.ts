@@ -4,6 +4,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../database/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { EmailModule } from '../email/email.module';
 
 // Services
 import { CoursesService } from './services/courses.service';
@@ -32,7 +33,7 @@ import { CourseOwnershipGuard } from './guards/course-ownership.guard';
 import { FeatureGuard } from '../../common/guards/feature.guard';
 
 @Module({
-  imports: [PrismaModule, ConfigModule],
+  imports: [PrismaModule, ConfigModule, EmailModule],
   controllers: [
     CoursesController,
     PublicCoursesController,

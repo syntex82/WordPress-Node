@@ -3,15 +3,27 @@
  */
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { SystemEmailService } from '../../email/system-email.service';
+import { EmailService } from '../../email/email.service';
 import { EnrollCourseDto, UpdateEnrollmentDto } from '../dto/enrollment.dto';
 
 @Injectable()
 export class EnrollmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private systemEmailService: SystemEmailService,
+    private emailService: EmailService,
+  ) {}
 
   async enroll(courseId: string, userId: string, dto: EnrollCourseDto) {
     // Check if course exists and is published
-    const course = await this.prisma.course.findUnique({ where: { id: courseId } });
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        instructor: { select: { name: true } },
+        _count: { select: { lessons: true } },
+      },
+    });
     if (!course) throw new NotFoundException('Course not found');
     if (course.status !== 'PUBLISHED')
       throw new BadRequestException('Course is not available for enrollment');
@@ -27,7 +39,7 @@ export class EnrollmentsService {
       throw new BadRequestException('Payment required for this course');
     }
 
-    return this.prisma.enrollment.create({
+    const enrollment = await this.prisma.enrollment.create({
       data: {
         courseId,
         userId,
@@ -36,8 +48,34 @@ export class EnrollmentsService {
       },
       include: {
         course: { select: { id: true, title: true, slug: true, featuredImage: true } },
+        user: { select: { id: true, name: true, email: true } },
       },
     });
+
+    // Send course enrollment email (non-blocking)
+    try {
+      const siteContext = await this.emailService.getSiteContext();
+      await this.systemEmailService.sendCourseEnrollmentEmail({
+        to: enrollment.user.email,
+        toName: enrollment.user.name,
+        userId: enrollment.user.id,
+        firstName: enrollment.user.name.split(' ')[0] || enrollment.user.name,
+        course: {
+          title: course.title,
+          description: course.shortDescription || undefined,
+          thumbnail: course.featuredImage || undefined,
+          instructor: course.instructor?.name,
+          lessons: course._count.lessons,
+          duration: course.estimatedHours ? `${course.estimatedHours} hours` : undefined,
+        },
+        courseUrl: `${siteContext.frontendUrl}/courses/${course.slug}`,
+      });
+    } catch (error) {
+      console.error('Failed to send course enrollment email:', error);
+      // Don't fail enrollment if email fails
+    }
+
+    return enrollment;
   }
 
   async findUserEnrollments(userId: string) {

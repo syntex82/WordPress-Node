@@ -16,7 +16,7 @@ import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { SecurityEventType } from '@prisma/client';
 import { EmailService } from '../email/email.service';
-import { getPasswordResetTemplate } from '../email/templates/password-reset-template';
+import { SystemEmailService } from '../email/system-email.service';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +29,7 @@ export class AuthService {
     private jwtService: JwtService,
     private prisma: PrismaService,
     private emailService: EmailService,
+    private systemEmailService: SystemEmailService,
     private configService: ConfigService,
   ) {}
 
@@ -131,6 +132,21 @@ export class AuthService {
       ...registerDto,
       password: hashedPassword,
     });
+
+    // Send welcome email (non-blocking)
+    try {
+      const siteContext = await this.emailService.getSiteContext();
+      await this.systemEmailService.sendWelcomeEmail({
+        to: user.email,
+        toName: user.name,
+        userId: user.id,
+        firstName: user.name.split(' ')[0] || user.name,
+        loginUrl: `${siteContext.adminUrl}/login`,
+      });
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+      // Don't fail registration if email fails
+    }
 
     // Password is already excluded by the create method's select clause
     return user;
@@ -334,23 +350,16 @@ export class AuthService {
     const resetUrl = `${siteContext.adminUrl}/reset-password?token=${resetToken}`;
     const supportUrl = `mailto:${siteContext.supportEmail}`;
 
-    // Get email template
-    const emailHtml = getPasswordResetTemplate({
-      user: { firstName: user.name.split(' ')[0] || user.name },
-      resetUrl,
-      expiresIn: `${this.PASSWORD_RESET_EXPIRY_HOURS} hour`,
-      supportUrl,
-    });
-
-    // Send email
+    // Send email using system email service (uses database templates with fallback)
     try {
-      await this.emailService.send({
+      await this.systemEmailService.sendPasswordResetEmail({
         to: user.email,
         toName: user.name,
-        subject: 'Reset Your Password',
-        html: emailHtml,
-        recipientId: user.id,
-        metadata: { type: 'password_reset' },
+        userId: user.id,
+        firstName: user.name.split(' ')[0] || user.name,
+        resetUrl,
+        expiresIn: `${this.PASSWORD_RESET_EXPIRY_HOURS} hour`,
+        supportUrl,
       });
 
       // Log security event

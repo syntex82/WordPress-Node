@@ -2,6 +2,7 @@
  * Timeline Page
  * Rich media timeline with posts, images, videos, and interactions
  * Includes trending hashtags, sharing, mentions, and real-time updates
+ * Now with TikTok-style immersive feed mode!
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -10,12 +11,14 @@ import { timelineApi, profileApi, TimelinePost, SuggestedUser } from '../../serv
 import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
 import CommentModal from '../../components/CommentModal';
-import { FiUsers, FiCompass, FiTrendingUp, FiRefreshCw, FiHash, FiBell } from 'react-icons/fi';
+import ImmersiveFeed from '../../components/ImmersiveFeed';
+import { FiUsers, FiCompass, FiTrendingUp, FiRefreshCw, FiHash, FiBell, FiGrid, FiPlay } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../../stores/authStore';
 
 type TabType = 'following' | 'discover' | 'hashtag';
+type ViewMode = 'grid' | 'immersive';
 
 interface TrendingHashtag {
   id: string;
@@ -37,8 +40,19 @@ export default function Timeline() {
   const [newPostsCount, setNewPostsCount] = useState(0);
   const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
   const [commentModalPost, setCommentModalPost] = useState<TimelinePost | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const socketRef = useRef<Socket | null>(null);
   const { token } = useAuthStore();
+
+  // If in immersive mode, render the ImmersiveFeed
+  if (viewMode === 'immersive') {
+    return (
+      <ImmersiveFeed
+        initialPosts={posts}
+        onSwitchToGrid={() => setViewMode('grid')}
+      />
+    );
+  }
 
   const loadPosts = useCallback(async (reset = false) => {
     try {
@@ -206,9 +220,28 @@ export default function Timeline() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Timeline</h1>
-          <p className="text-gray-600 dark:text-gray-400">Share and discover posts from your network</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Timeline</h1>
+            <p className="text-gray-600 dark:text-gray-400">Share and discover posts from your network</p>
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl p-1 shadow-sm">
+            <button
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-blue-500 text-white shadow-md"
+            >
+              <FiGrid className="w-4 h-4" />
+              Grid
+            </button>
+            <button
+              onClick={() => setViewMode('immersive')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <FiPlay className="w-4 h-4" />
+              Immersive
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

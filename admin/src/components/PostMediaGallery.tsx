@@ -1,14 +1,15 @@
 /**
  * PostMediaGallery Component
- * Displays media attachments in timeline posts with gallery layout and lightbox
+ * Displays media attachments in timeline posts with TikTok-inspired gallery layout and lightbox
+ * Features: Large media display, vertical video support, audio player, immersive viewing
  */
 
-import { useState } from 'react';
-import { FiX, FiPlay, FiChevronLeft, FiChevronRight, FiMaximize2 } from 'react-icons/fi';
+import { useState, useRef, useEffect } from 'react';
+import { FiX, FiPlay, FiPause, FiChevronLeft, FiChevronRight, FiMaximize2, FiVolume2, FiVolumeX } from 'react-icons/fi';
 
 interface MediaItem {
   id?: string;
-  type: 'IMAGE' | 'VIDEO' | 'GIF';
+  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO';
   url: string;
   thumbnail?: string;
   altText?: string;
@@ -20,12 +21,22 @@ interface MediaItem {
 interface PostMediaGalleryProps {
   media: MediaItem[];
   className?: string;
+  /** Enable TikTok-style immersive mode for single videos */
+  immersive?: boolean;
 }
 
-export default function PostMediaGallery({ media, className = '' }: PostMediaGalleryProps) {
+export default function PostMediaGallery({ media, className = '', immersive = true }: PostMediaGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [isPlaying, setIsPlaying] = useState<Record<number, boolean>>({});
+  const [isMuted, setIsMuted] = useState<Record<number, boolean>>({});
+  const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
 
   if (!media || media.length === 0) return null;
+
+  // Check if this is a single video/audio for immersive display
+  const isSingleVideo = media.length === 1 && media[0].type === 'VIDEO';
+  const isSingleAudio = media.length === 1 && media[0].type === 'AUDIO';
+  const isVerticalVideo = isSingleVideo && media[0].height && media[0].width && media[0].height > media[0].width;
 
   const openLightbox = (index: number) => setLightboxIndex(index);
   const closeLightbox = () => setLightboxIndex(null);
@@ -56,8 +67,42 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
     return match ? match[1] : null;
   };
 
+  // Toggle video play/pause
+  const toggleVideoPlay = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const video = videoRefs.current[index];
+    if (video) {
+      if (video.paused) {
+        video.play();
+        setIsPlaying(prev => ({ ...prev, [index]: true }));
+      } else {
+        video.pause();
+        setIsPlaying(prev => ({ ...prev, [index]: false }));
+      }
+    }
+  };
+
+  // Toggle video mute
+  const toggleMute = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const video = videoRefs.current[index];
+    if (video) {
+      video.muted = !video.muted;
+      setIsMuted(prev => ({ ...prev, [index]: video.muted }));
+    }
+  };
+
+  // Format duration
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const renderMedia = (item: MediaItem, index: number, inLightbox = false) => {
     const isVideo = item.type === 'VIDEO';
+    const isAudio = item.type === 'AUDIO';
+    const isVertical = item.height && item.width && item.height > item.width;
 
     // YouTube embed
     if (isYouTube(item.url)) {
@@ -87,19 +132,83 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
       );
     }
 
-    // Video file
-    if (isVideo) {
+    // Audio file - render audio player
+    if (isAudio) {
       return (
-        <div className="relative w-full h-full">
+        <div className="w-full h-full bg-gradient-to-br from-purple-600 to-indigo-700 flex flex-col items-center justify-center p-4 min-h-[120px]">
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3">
+            <FiVolume2 className="w-8 h-8 text-white" />
+          </div>
+          <audio
+            src={item.url}
+            controls
+            className="w-full max-w-[280px]"
+            onClick={(e) => e.stopPropagation()}
+          />
+          {item.duration && (
+            <span className="text-white/80 text-sm mt-2">{formatDuration(item.duration)}</span>
+          )}
+        </div>
+      );
+    }
+
+    // Video file - TikTok-style inline playback for single videos
+    if (isVideo) {
+      const showInlineControls = immersive && isSingleVideo && !inLightbox;
+
+      return (
+        <div className="relative w-full h-full bg-black">
           {inLightbox ? (
             <video
               src={item.url}
               controls
               autoPlay
               playsInline
-              className="max-w-[95vw] max-h-[85vh] sm:max-w-[90vw] sm:max-h-[90vh]"
+              className={isVertical
+                ? 'max-h-[90vh] max-w-[60vw] sm:max-w-[50vw]'
+                : 'max-w-[95vw] max-h-[85vh] sm:max-w-[90vw] sm:max-h-[90vh]'}
             />
+          ) : showInlineControls ? (
+            // TikTok-style inline video with tap-to-play
+            <>
+              <video
+                ref={(el) => { videoRefs.current[index] = el; }}
+                src={item.url}
+                className={`w-full h-full ${isVertical ? 'object-contain' : 'object-cover'}`}
+                poster={item.thumbnail}
+                playsInline
+                muted={isMuted[index] ?? true}
+                loop
+                onClick={(e) => toggleVideoPlay(index, e)}
+                onEnded={() => setIsPlaying(prev => ({ ...prev, [index]: false }))}
+              />
+              {/* Play/Pause overlay */}
+              {!isPlaying[index] && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center bg-black/20 cursor-pointer"
+                  onClick={(e) => toggleVideoPlay(index, e)}
+                >
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                    <FiPlay className="w-8 h-8 sm:w-10 sm:h-10 text-gray-800 ml-1" />
+                  </div>
+                </div>
+              )}
+              {/* Mute button */}
+              <button
+                onClick={(e) => toggleMute(index, e)}
+                className="absolute bottom-3 right-3 p-2.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors"
+              >
+                {isMuted[index] ?? true ? <FiVolumeX className="w-5 h-5" /> : <FiVolume2 className="w-5 h-5" />}
+              </button>
+              {/* Duration badge */}
+              {item.duration && (
+                <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  {formatDuration(item.duration)}
+                </div>
+              )}
+            </>
           ) : (
+            // Thumbnail mode for grid/multiple videos
             <>
               <video
                 src={item.url}
@@ -113,7 +222,7 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
               </div>
               {item.duration && (
                 <div className="absolute bottom-2 right-10 sm:right-2 bg-black/70 text-white text-xs px-2 py-1 rounded pointer-events-none">
-                  {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                  {formatDuration(item.duration)}
                 </div>
               )}
             </>
@@ -143,10 +252,25 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
     }
   };
 
-  // Get aspect ratio class based on media count and screen size
+  // Get aspect ratio class based on media count, type, and dimensions
   const getAspectClass = (index: number) => {
+    const item = media[index];
+
+    // Audio: compact player
+    if (item.type === 'AUDIO') {
+      return 'aspect-[3/1] sm:aspect-[4/1]';
+    }
+
     if (media.length === 1) {
-      // Single image: larger aspect ratio for better mobile viewing
+      // Single vertical video: TikTok-style tall aspect ratio
+      if (item.type === 'VIDEO' && item.height && item.width && item.height > item.width) {
+        return 'aspect-[9/16] max-h-[70vh] sm:max-h-[80vh]';
+      }
+      // Single horizontal video: cinematic widescreen
+      if (item.type === 'VIDEO') {
+        return 'aspect-video sm:aspect-[2/1]';
+      }
+      // Single image: larger display
       return 'aspect-[4/3] sm:aspect-video';
     }
     if (media.length === 2) {
@@ -161,30 +285,47 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
     return 'aspect-square';
   };
 
+  // Check if item should have inline playback (no lightbox click)
+  const hasInlinePlayback = (item: MediaItem) => {
+    return immersive && isSingleVideo && item.type === 'VIDEO';
+  };
+
+  // Check if item is audio (no lightbox needed)
+  const isAudioItem = (item: MediaItem) => item.type === 'AUDIO';
+
   return (
     <>
       <div className={`grid ${getGridClass()} gap-1 sm:gap-1.5 rounded-xl sm:rounded-2xl overflow-hidden ${className}`}>
-        {media.slice(0, 4).map((item, index) => (
-          <div
-            key={item.id || index}
-            onClick={(e) => { e.stopPropagation(); openLightbox(index); }}
-            onTouchEnd={(e) => { e.stopPropagation(); }}
-            className={`relative cursor-pointer overflow-hidden ${getAspectClass(index)}
-              ${media.length === 3 && index === 0 ? 'col-span-full sm:col-span-1 sm:row-span-2' : ''}
-              hover:opacity-95 transition-opacity touch-manipulation`}
-          >
-            {renderMedia(item, index)}
-            {index === 3 && media.length > 4 && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
-                <span className="text-white text-xl sm:text-2xl font-bold">+{media.length - 4}</span>
-              </div>
-            )}
-            {/* Expand icon for all media on mobile */}
-            <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 p-2 sm:p-2.5 bg-black/60 rounded-full pointer-events-none">
-              <FiMaximize2 className="w-4 h-4 sm:w-4 sm:h-4 text-white" />
+        {media.slice(0, 4).map((item, index) => {
+          const skipLightbox = hasInlinePlayback(item) || isAudioItem(item);
+
+          return (
+            <div
+              key={item.id || index}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!skipLightbox) openLightbox(index);
+              }}
+              onTouchEnd={(e) => { e.stopPropagation(); }}
+              className={`relative ${skipLightbox ? '' : 'cursor-pointer'} overflow-hidden ${getAspectClass(index)}
+                ${media.length === 3 && index === 0 ? 'col-span-full sm:col-span-1 sm:row-span-2' : ''}
+                hover:opacity-95 transition-opacity touch-manipulation`}
+            >
+              {renderMedia(item, index)}
+              {index === 3 && media.length > 4 && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
+                  <span className="text-white text-xl sm:text-2xl font-bold">+{media.length - 4}</span>
+                </div>
+              )}
+              {/* Expand icon - only show for items that open lightbox */}
+              {!skipLightbox && (
+                <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 p-2 sm:p-2.5 bg-black/60 rounded-full pointer-events-none">
+                  <FiMaximize2 className="w-4 h-4 sm:w-4 sm:h-4 text-white" />
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Lightbox - Enhanced for mobile */}
