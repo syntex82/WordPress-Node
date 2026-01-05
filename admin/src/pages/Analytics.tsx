@@ -281,7 +281,6 @@ export default function Analytics() {
 }
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
-  const { useThemeClasses } = require('../contexts/SiteThemeContext');
   const theme = useThemeClasses();
   const colors: Record<string, string> = {
     blue: 'bg-blue-500/20 text-blue-400',
