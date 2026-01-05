@@ -743,20 +743,20 @@ export default function GroupChat() {
               ))}
             </div>
           )}
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-700/50 rounded-2xl px-2 sm:px-3 py-1.5 border border-slate-600/30 relative shadow-lg">
+          <div className="flex items-center gap-1 sm:gap-2 bg-slate-700/50 rounded-2xl px-1.5 sm:px-3 py-1.5 border border-slate-600/30 relative shadow-lg">
             {/* File Upload Button */}
             <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple onChange={handleFileSelect} className="hidden" />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingMedia}
-              className="p-2.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center active:scale-95"
+              className="p-2 sm:p-2.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center active:scale-95 flex-shrink-0"
               title="Attach media"
             >
               {uploadingMedia ? (
                 <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <FiPaperclip size={20} />
+                <FiPaperclip size={18} className="sm:w-5 sm:h-5" />
               )}
             </button>
 
@@ -764,18 +764,18 @@ export default function GroupChat() {
             <button
               type="button"
               onClick={() => { setMediaRecorderMode('video'); setShowMediaRecorder(true); }}
-              className="p-2.5 sm:hidden text-slate-400 hover:text-red-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95"
+              className="p-2 sm:hidden text-slate-400 hover:text-red-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center active:scale-95 flex-shrink-0"
               title="Record video"
             >
-              <FiVideo size={20} />
+              <FiVideo size={18} />
             </button>
             <button
               type="button"
               onClick={() => { setMediaRecorderMode('audio'); setShowMediaRecorder(true); }}
-              className="p-2.5 sm:hidden text-slate-400 hover:text-purple-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95"
+              className="p-2 sm:hidden text-slate-400 hover:text-purple-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center active:scale-95 flex-shrink-0"
               title="Record audio"
             >
-              <FiMic size={20} />
+              <FiMic size={18} />
             </button>
 
             {/* Desktop Screen Share Button */}
@@ -792,10 +792,10 @@ export default function GroupChat() {
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="p-2.5 text-slate-400 hover:text-yellow-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center active:scale-95"
+              className="p-2 sm:p-2.5 text-slate-400 hover:text-yellow-400 hover:bg-slate-600/50 rounded-xl transition-all duration-200 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center active:scale-95 flex-shrink-0"
               title="Add emoji"
             >
-              <FiSmile size={20} />
+              <FiSmile size={18} className="sm:w-5 sm:h-5" />
             </button>
             {/* Emoji Picker Popup */}
             {showEmojiPicker && (
@@ -814,14 +814,14 @@ export default function GroupChat() {
               type="text"
               value={newMessage}
               onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-              placeholder="Type your message..."
-              className="flex-1 bg-transparent py-2.5 text-white placeholder-slate-400 focus:outline-none text-[14px] sm:text-[15px] min-w-0"
+              placeholder="Message..."
+              className="flex-1 bg-transparent py-2.5 text-white placeholder-slate-500 focus:outline-none text-[15px] sm:text-[15px] min-w-[50px] w-0"
               disabled={sending}
             />
             <button
               type="submit"
               disabled={(!newMessage.trim() && pendingMedia.length === 0) || sending}
-              className={`p-3 rounded-xl transition-all duration-200 min-w-[48px] min-h-[48px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
+              className={`p-2.5 sm:p-3 rounded-xl transition-all duration-200 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center flex-shrink-0 ${
                 (newMessage.trim() || pendingMedia.length > 0) && !sending
                   ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:scale-105 active:scale-95'
                   : 'bg-slate-600/50 text-slate-500'

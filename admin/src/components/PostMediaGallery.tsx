@@ -96,22 +96,23 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
               src={item.url}
               controls
               autoPlay
-              className="max-w-full max-h-[80vh]"
+              playsInline
+              className="max-w-[95vw] max-h-[85vh] sm:max-w-[90vw] sm:max-h-[90vh]"
             />
           ) : (
             <>
               <video
                 src={item.url}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
                 poster={item.thumbnail}
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                  <FiPlay className="w-6 h-6 text-gray-800 ml-1" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                <div className="w-14 h-14 sm:w-12 sm:h-12 bg-white/90 rounded-full flex items-center justify-center">
+                  <FiPlay className="w-7 h-7 sm:w-6 sm:h-6 text-gray-800 ml-1" />
                 </div>
               </div>
               {item.duration && (
-                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                <div className="absolute bottom-2 right-10 sm:right-2 bg-black/70 text-white text-xs px-2 py-1 rounded pointer-events-none">
                   {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
                 </div>
               )}
@@ -126,8 +127,7 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
       <img
         src={item.url}
         alt={item.altText || ''}
-        className={inLightbox ? 'max-w-full max-h-[80vh] object-contain' : 'w-full h-full object-cover'}
-        onClick={() => !inLightbox && openLightbox(index)}
+        className={inLightbox ? 'max-w-[95vw] max-h-[85vh] sm:max-w-[90vw] sm:max-h-[90vh] object-contain' : 'w-full h-full object-cover pointer-events-none'}
       />
     );
   };
@@ -167,23 +167,22 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
         {media.slice(0, 4).map((item, index) => (
           <div
             key={item.id || index}
-            onClick={() => openLightbox(index)}
+            onClick={(e) => { e.stopPropagation(); openLightbox(index); }}
+            onTouchEnd={(e) => { e.stopPropagation(); }}
             className={`relative cursor-pointer overflow-hidden ${getAspectClass(index)}
               ${media.length === 3 && index === 0 ? 'col-span-full sm:col-span-1 sm:row-span-2' : ''}
-              hover:opacity-95 transition-opacity`}
+              hover:opacity-95 transition-opacity touch-manipulation`}
           >
             {renderMedia(item, index)}
             {index === 3 && media.length > 4 && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
                 <span className="text-white text-xl sm:text-2xl font-bold">+{media.length - 4}</span>
               </div>
             )}
-            {/* Expand icon for single images on mobile */}
-            {media.length === 1 && (
-              <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 p-1.5 sm:p-2 bg-black/50 rounded-full opacity-70 hover:opacity-100 transition-opacity">
-                <FiMaximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-              </div>
-            )}
+            {/* Expand icon for all media on mobile */}
+            <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 p-2 sm:p-2.5 bg-black/60 rounded-full pointer-events-none">
+              <FiMaximize2 className="w-4 h-4 sm:w-4 sm:h-4 text-white" />
+            </div>
           </div>
         ))}
       </div>
@@ -191,15 +190,16 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
       {/* Lightbox - Enhanced for mobile */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-2 sm:p-4"
+          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
           onClick={closeLightbox}
+          style={{ touchAction: 'none' }}
         >
           {/* Close button - larger touch target on mobile */}
           <button
-            onClick={closeLightbox}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-2 text-white/80 hover:text-white z-10 bg-black/30 rounded-full"
+            onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-3 text-white hover:text-white/80 z-20 bg-black/50 rounded-full touch-manipulation"
           >
-            <FiX className="w-6 h-6 sm:w-8 sm:h-8" />
+            <FiX className="w-7 h-7 sm:w-8 sm:h-8" />
           </button>
 
           {/* Navigation - positioned for mobile touch */}
@@ -207,30 +207,30 @@ export default function PostMediaGallery({ media, className = '' }: PostMediaGal
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 text-white/80 hover:text-white bg-black/40 sm:bg-black/30 rounded-full z-10"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-3 text-white hover:text-white/80 bg-black/50 rounded-full z-20 touch-manipulation"
               >
-                <FiChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
+                <FiChevronLeft className="w-7 h-7 sm:w-8 sm:h-8" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 text-white/80 hover:text-white bg-black/40 sm:bg-black/30 rounded-full z-10"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-3 text-white hover:text-white/80 bg-black/50 rounded-full z-20 touch-manipulation"
               >
-                <FiChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
+                <FiChevronRight className="w-7 h-7 sm:w-8 sm:h-8" />
               </button>
             </>
           )}
 
-          {/* Content - full width on mobile */}
+          {/* Content - full screen on mobile */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center justify-center w-full h-full max-w-[95vw] sm:max-w-[90vw] max-h-[85vh] sm:max-h-[90vh]"
+            className="flex items-center justify-center w-full h-full p-4"
           >
             {renderMedia(media[lightboxIndex], lightboxIndex, true)}
           </div>
 
           {/* Counter - better visibility on mobile */}
           {media.length > 1 && (
-            <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 text-white/90 text-xs sm:text-sm bg-black/50 px-3 py-1 rounded-full">
+            <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-white text-sm sm:text-base bg-black/60 px-4 py-2 rounded-full z-20">
               {lightboxIndex + 1} / {media.length}
             </div>
           )}
