@@ -276,26 +276,29 @@ export default function MyProfile() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-0">
       {/* Cover Image - Premium Design */}
-      <div className="relative h-44 sm:h-60 md:h-80 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden">
-          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+      <div className="relative h-44 sm:h-60 md:h-80 z-10">
+        {/* Cover image container with overflow-hidden for rounded corners */}
+        <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden">
+            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+          </div>
+          {profile.coverImage && (
+            <img src={profile.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none" />
         </div>
-        {profile.coverImage && (
-          <img src={profile.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none" />
+        {/* Change Cover Button - Outside overflow-hidden container */}
         <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
         <button
           type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Cover button clicked');
             coverInputRef.current?.click();
           }}
           disabled={uploadingCover}
-          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-20 bg-slate-900/90 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/20 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
+          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 bg-slate-900/90 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/20 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
         >
           {uploadingCover ? (
             <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span className="hidden sm:inline">Uploading...</span></>
