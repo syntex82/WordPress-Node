@@ -1,12 +1,26 @@
 /**
  * Media Service
  * Handles file upload, storage, and media metadata management
+ * Includes automatic WebP conversion and responsive image generation
  */
 
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
+
+// Dynamic import for sharp (optional dependency)
+let sharp: any = null;
+try {
+  sharp = require('sharp');
+} catch {
+  console.warn('Sharp not installed - image optimization disabled. Install with: npm install sharp');
+}
+
+// Responsive image breakpoints
+const RESPONSIVE_SIZES = [320, 640, 960, 1280, 1920];
+const WEBP_QUALITY = 80;
 
 @Injectable()
 export class MediaService {
@@ -43,6 +57,7 @@ export class MediaService {
 
   /**
    * Upload file and create media record
+   * Automatically generates WebP and responsive versions for images
    */
   async upload(file: Express.Multer.File, userId: string) {
     if (!file || !file.buffer) {
@@ -61,9 +76,33 @@ export class MediaService {
       throw new BadRequestException('Failed to save file to disk');
     }
 
-    // Extract image dimensions if it's an image (simplified)
+    // Extract image dimensions and generate optimized versions
     let width: number | undefined;
     let height: number | undefined;
+
+    const isImage = file.mimetype.startsWith('image/') && !file.mimetype.includes('svg');
+
+    if (isImage && sharp) {
+      try {
+        // Get original dimensions
+        const metadata = await sharp(file.buffer).metadata();
+        width = metadata.width;
+        height = metadata.height;
+
+        // Generate WebP version
+        const webpFilename = filename.replace(/\.[^.]+$/, '.webp');
+        const webpPath = path.join(this.uploadDir, webpFilename);
+        await sharp(file.buffer).webp({ quality: WEBP_QUALITY }).toFile(webpPath);
+        this.logger.log(`🖼️ WebP generated: ${webpFilename}`);
+
+        // Generate responsive sizes (only for images larger than the target)
+        if (width && width > 640) {
+          await this.generateResponsiveSizes(file.buffer, filename);
+        }
+      } catch (error) {
+        this.logger.warn(`Image optimization failed: ${error.message}`);
+      }
+    }
 
     const url = `/uploads/${filename}`;
 
@@ -85,6 +124,72 @@ export class MediaService {
       ...media,
       url,
     };
+  }
+
+  /**
+   * Generate responsive image sizes
+   */
+  private async generateResponsiveSizes(buffer: Buffer, originalFilename: string) {
+    if (!sharp) return;
+
+    const baseName = originalFilename.replace(/\.[^.]+$/, '');
+    const responsiveDir = path.join(this.uploadDir, 'responsive');
+
+    // Ensure responsive directory exists
+    try {
+      await fs.mkdir(responsiveDir, { recursive: true });
+    } catch {
+      // Directory exists
+    }
+
+    for (const size of RESPONSIVE_SIZES) {
+      try {
+        const resizedFilename = `${baseName}-${size}w.webp`;
+        const resizedPath = path.join(responsiveDir, resizedFilename);
+
+        await sharp(buffer)
+          .resize(size, null, { withoutEnlargement: true })
+          .webp({ quality: WEBP_QUALITY })
+          .toFile(resizedPath);
+      } catch (error) {
+        // Skip sizes that fail (e.g., image smaller than target)
+      }
+    }
+  }
+
+  /**
+   * Get optimized image path (WebP if available)
+   */
+  async getOptimizedPath(
+    filename: string,
+    width?: number,
+  ): Promise<{ path: string; contentType: string }> {
+    // Try responsive size first
+    if (width && sharp) {
+      const targetSize = RESPONSIVE_SIZES.find((s) => s >= width) || RESPONSIVE_SIZES[RESPONSIVE_SIZES.length - 1];
+      const baseName = filename.replace(/\.[^.]+$/, '');
+      const responsivePath = path.join(this.uploadDir, 'responsive', `${baseName}-${targetSize}w.webp`);
+
+      if (fsSync.existsSync(responsivePath)) {
+        return { path: responsivePath, contentType: 'image/webp' };
+      }
+    }
+
+    // Try WebP version
+    const webpFilename = filename.replace(/\.[^.]+$/, '.webp');
+    const webpPath = path.join(this.uploadDir, webpFilename);
+
+    if (fsSync.existsSync(webpPath)) {
+      return { path: webpPath, contentType: 'image/webp' };
+    }
+
+    // Fall back to original
+    const originalPath = path.join(this.uploadDir, filename);
+    const ext = path.extname(filename).toLowerCase();
+    const contentType =
+      ext === '.png' ? 'image/png' : ext === '.gif' ? 'image/gif' : ext === '.svg' ? 'image/svg+xml' : 'image/jpeg';
+
+    return { path: originalPath, contentType };
   }
 
   /**

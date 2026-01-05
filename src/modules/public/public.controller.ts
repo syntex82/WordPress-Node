@@ -16,9 +16,11 @@ import {
   UseGuards,
   Inject,
   forwardRef,
+  NotFoundException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { join } from 'path';
+import { createReadStream, existsSync } from 'fs';
 import { PostsService } from '../content/services/posts.service';
 import { PagesService } from '../content/services/pages.service';
 import { ThemeRendererService } from '../themes/theme-renderer.service';
@@ -36,6 +38,7 @@ import { MarketplaceService } from '../themes/marketplace.service';
 import { PluginMarketplaceService } from '../plugins/plugin-marketplace.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { SeoService } from '../seo/seo.service';
+import { MediaService } from '../media/media.service';
 import { PostStatus } from '@prisma/client';
 import { CourseLevel, CoursePriceType } from '../lms/dto/course.dto';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
@@ -67,6 +70,8 @@ export class PublicController {
     private subscriptionsService: SubscriptionsService,
     @Inject(forwardRef(() => SeoService))
     private seoService: SeoService,
+    @Inject(forwardRef(() => MediaService))
+    private mediaService: MediaService,
   ) {}
 
   // ==================== SEO ROUTES (must be before catch-all) ====================
@@ -122,6 +127,53 @@ Crawl-delay: 1
 Sitemap: ${baseUrl}/sitemap.xml
 `;
     res.send(robotsTxt);
+  }
+
+  /**
+   * Optimized Image Endpoint
+   * Serves WebP images with responsive sizing and proper caching
+   * GET /img/:filename
+   */
+  @Get('img/:filename')
+  async optimizedImage(
+    @Param('filename') filename: string,
+    @Query('w') width: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      const requestedWidth = width ? parseInt(width, 10) : undefined;
+      const supportsWebP = req.headers.accept?.includes('image/webp');
+
+      // Get optimized image path
+      const { path: imagePath, contentType } = await this.mediaService.getOptimizedPath(
+        filename,
+        supportsWebP ? requestedWidth : undefined,
+      );
+
+      if (!existsSync(imagePath)) {
+        throw new NotFoundException('Image not found');
+      }
+
+      // Set cache headers (1 year for immutable assets)
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Vary', 'Accept');
+
+      // Stream the file
+      const stream = createReadStream(imagePath);
+      stream.pipe(res);
+    } catch (error) {
+      // Fall back to original upload path
+      const originalPath = join(process.cwd(), 'uploads', filename);
+      if (existsSync(originalPath)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+        const stream = createReadStream(originalPath);
+        stream.pipe(res);
+      } else {
+        res.status(404).send('Image not found');
+      }
+    }
   }
 
   /**

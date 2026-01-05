@@ -293,6 +293,7 @@ async function bootstrap() {
     join(process.cwd(), 'uploads', 'messages'),
     join(process.cwd(), 'uploads', 'media'),
     join(process.cwd(), 'uploads', 'groups'),
+    join(process.cwd(), 'uploads', 'responsive'), // For optimized responsive images
     join(process.cwd(), 'public'),
   ];
   for (const dir of requiredDirs) {
@@ -302,18 +303,25 @@ async function bootstrap() {
     }
   }
 
-  // Serve static files with caching headers
-  const staticOptions = isProduction ? { maxAge: '1y', etag: true, lastModified: true } : {};
+  // Serve static files with caching headers (1 year for immutable assets)
+  const staticOptions = isProduction
+    ? { maxAge: '1y', etag: true, lastModified: true, immutable: true }
+    : {};
 
   // Serve public folder at root (for PWA files: manifest.json, sw.js, offline.html)
   app.useStaticAssets(join(process.cwd(), 'public'), {
     ...staticOptions,
     maxAge: '1d', // PWA files should refresh more often
+    immutable: false,
   });
 
+  // Uploads with long cache (images are immutable once uploaded)
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
     ...staticOptions,
+    setHeaders: (res) => {
+      res.setHeader('Vary', 'Accept'); // For WebP content negotiation
+    },
   });
 
   app.useStaticAssets(join(process.cwd(), 'admin', 'dist'), {
