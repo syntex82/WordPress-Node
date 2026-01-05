@@ -273,15 +273,15 @@ export default function MyProfile() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-0">
       {/* Cover Image - Premium Design */}
-      <div className="relative h-44 sm:h-60 md:h-80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+      <div className="relative h-44 sm:h-60 md:h-80 rounded-2xl sm:rounded-3xl shadow-2xl">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl overflow-hidden">
           <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
         </div>
         {profile.coverImage && (
-          <img src={profile.coverImage} alt="Cover" className="w-full h-full object-cover relative z-10" />
+          <img src={profile.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover rounded-2xl sm:rounded-3xl" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none rounded-2xl sm:rounded-3xl" />
         <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
         <button
           onClick={(e) => {
@@ -290,7 +290,7 @@ export default function MyProfile() {
             coverInputRef.current?.click();
           }}
           disabled={uploadingCover}
-          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-30 bg-slate-900/80 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/10 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
+          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-10 bg-slate-900/80 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/10 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
         >
           {uploadingCover ? (
             <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span className="hidden sm:inline">Uploading...</span></>
@@ -301,10 +301,10 @@ export default function MyProfile() {
       </div>
 
       {/* Profile Header - Premium Card */}
-      <div className="relative px-3 sm:px-6 pb-6 z-10">
+      <div className="relative px-3 sm:px-6 pb-6 z-20">
         <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-14 sm:-mt-20 md:-mt-24">
           {/* Avatar with Premium Ring */}
-          <div className="relative group mx-auto md:mx-0 z-20">
+          <div className="relative group mx-auto md:mx-0 z-30">
             <div className="w-28 h-28 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl sm:rounded-3xl border-4 border-slate-900 bg-slate-900 shadow-2xl overflow-hidden ring-4 ring-white/10">
               {profile.avatar ? (
                 <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
