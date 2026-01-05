@@ -11,11 +11,10 @@ import { useThemeClasses } from '../contexts/SiteThemeContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { PostCustomizationPanel } from '../components/PageCustomizer';
-import MobileMediaRecorder from '../components/MobileMediaRecorder';
 import toast from 'react-hot-toast';
 import {
   FiPlus, FiSearch, FiEdit2, FiTrash2, FiEye, FiSliders, FiHelpCircle,
-  FiVideo, FiMic, FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal,
+  FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal,
   FiGrid, FiList, FiCalendar, FiUser, FiImage, FiPlay, FiBookmark,
   FiTrendingUp, FiClock, FiExternalLink
 } from 'react-icons/fi';
@@ -49,8 +48,6 @@ export default function Posts() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
-  const [showRecorder, setShowRecorder] = useState(false);
-  const [recorderMode, setRecorderMode] = useState<'video' | 'audio'>('video');
   const [activeCardMenu, setActiveCardMenu] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [bookmarkedPosts, setBookmarkedPosts] = useState<Set<string>>(new Set());
@@ -156,13 +153,6 @@ export default function Posts() {
     });
   };
 
-  // Handle media recording complete
-  const handleMediaCaptured = (media: { type: 'VIDEO' | 'AUDIO'; url: string }) => {
-    // Navigate to post editor with the captured media
-    navigate('/posts/new', { state: { capturedMedia: media } });
-    setShowRecorder(false);
-  };
-
   // Swipe handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -245,34 +235,6 @@ export default function Posts() {
             </button>
           </div>
 
-          {/* Recording Buttons - Mobile */}
-          <div className="flex items-center gap-2 sm:hidden">
-            <Tooltip title={POSTS_TOOLTIPS.recordVideo.title} content={POSTS_TOOLTIPS.recordVideo.content}>
-              <button
-                onClick={() => { setRecorderMode('video'); setShowRecorder(true); }}
-                className={`p-3 min-w-[48px] min-h-[48px] rounded-xl border flex items-center justify-center transition-all active:scale-95 ${
-                  theme.isDark
-                    ? 'bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30'
-                    : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
-                }`}
-              >
-                <FiVideo size={22} />
-              </button>
-            </Tooltip>
-            <Tooltip title={POSTS_TOOLTIPS.recordAudio.title} content={POSTS_TOOLTIPS.recordAudio.content}>
-              <button
-                onClick={() => { setRecorderMode('audio'); setShowRecorder(true); }}
-                className={`p-3 min-w-[48px] min-h-[48px] rounded-xl border flex items-center justify-center transition-all active:scale-95 ${
-                  theme.isDark
-                    ? 'bg-purple-500/20 border-purple-500/30 text-purple-400 hover:bg-purple-500/30'
-                    : 'bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100'
-                }`}
-              >
-                <FiMic size={22} />
-              </button>
-            </Tooltip>
-          </div>
-
           {/* Create Post Button */}
           <Tooltip title={POSTS_TOOLTIPS.addNew.title} content={POSTS_TOOLTIPS.addNew.content} position="left">
             <button
@@ -313,32 +275,6 @@ export default function Posts() {
             </select>
           </div>
 
-          {/* Desktop Recording Options */}
-          <div className="hidden sm:flex items-center gap-3 pt-2 border-t border-dashed ${theme.border}">
-            <span className={`text-sm ${theme.textMuted}`}>Quick create:</span>
-            <button
-              onClick={() => { setRecorderMode('video'); setShowRecorder(true); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all hover:scale-105 active:scale-95 ${
-                theme.isDark
-                  ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
-                  : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
-              }`}
-            >
-              <FiVideo size={18} />
-              Record Video
-            </button>
-            <button
-              onClick={() => { setRecorderMode('audio'); setShowRecorder(true); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all hover:scale-105 active:scale-95 ${
-                theme.isDark
-                  ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20'
-                  : 'bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100'
-              }`}
-            >
-              <FiMic size={18} />
-              Record Audio
-            </button>
-          </div>
         </div>
 
         {/* Bulk Actions */}
@@ -719,14 +655,6 @@ export default function Posts() {
           onClose={() => setCustomizePanel({ isOpen: false, postId: null, postTitle: null })}
         />
       )}
-
-      {/* Mobile Media Recorder */}
-      <MobileMediaRecorder
-        isOpen={showRecorder}
-        onClose={() => setShowRecorder(false)}
-        onMediaCaptured={handleMediaCaptured}
-        mode={recorderMode}
-      />
 
       {/* Click outside to close card menus */}
       {activeCardMenu && (

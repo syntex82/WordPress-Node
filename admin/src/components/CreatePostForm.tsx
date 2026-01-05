@@ -5,13 +5,14 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { FiImage, FiVideo, FiX, FiGlobe, FiLock, FiHash, FiAtSign, FiLink, FiPlay, FiFolder } from 'react-icons/fi';
+import { FiImage, FiVideo, FiX, FiGlobe, FiLock, FiHash, FiAtSign, FiLink, FiPlay, FiFolder, FiMic } from 'react-icons/fi';
 import { timelineApi, mediaApi, CreatePostMediaDto, TimelinePostUser } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { useSiteTheme } from '../contexts/SiteThemeContext';
 import toast from 'react-hot-toast';
 import EmojiPicker from './EmojiPicker';
 import MediaLibraryPicker from './MediaLibraryPicker';
+import MobileMediaRecorder from './MobileMediaRecorder';
 
 interface CreatePostFormProps {
   onPostCreated?: () => void;
@@ -44,6 +45,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
   const [externalUrl, setExternalUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Mobile media recorder state
+  const [showMediaRecorder, setShowMediaRecorder] = useState(false);
 
   // Debounced search for mention suggestions
   useEffect(() => {
@@ -210,6 +214,21 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
       setPreviewUrls((prev) => [...prev, url]);
       setMedia((prev) => [...prev, { type: isVideo ? 'VIDEO' : 'IMAGE', url }]);
     }
+  };
+
+  // Handle recorded media from MobileMediaRecorder (already uploaded by the component)
+  const handleMediaCaptured = (capturedMedia: { type: 'VIDEO' | 'AUDIO'; url: string; thumbnail?: string }) => {
+    if (media.length >= 4) {
+      toast.error('Maximum 4 media items allowed');
+      return;
+    }
+
+    // Treat audio as video for media type (audio files are stored as VIDEO type)
+    const mediaType: 'VIDEO' | 'IMAGE' | 'GIF' = 'VIDEO';
+    setPreviewUrls((prev) => [...prev, capturedMedia.url]);
+    setMedia((prev) => [...prev, { type: mediaType, url: capturedMedia.url, thumbnail: capturedMedia.thumbnail }]);
+    setShowMediaRecorder(false);
+    toast.success(`${capturedMedia.type === 'VIDEO' ? 'Video' : 'Audio'} added to post!`);
   };
 
   // Handle external URL input
@@ -474,6 +493,18 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 <FiFolder className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
+              {/* Record Video/Audio */}
+              <button
+                onClick={() => setShowMediaRecorder(true)}
+                disabled={media.length >= 4 || isUploading}
+                className={`p-1.5 sm:p-2 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
+                  isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-500'
+                }`}
+                title="Record video or audio"
+              >
+                <FiMic className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+
               {/* External URL */}
               <button
                 onClick={() => setShowUrlInput(!showUrlInput)}
@@ -533,6 +564,13 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
         onSelect={handleMediaLibrarySelect}
         multiple={true}
         accept="all"
+      />
+
+      {/* Mobile Media Recorder Modal */}
+      <MobileMediaRecorder
+        isOpen={showMediaRecorder}
+        onClose={() => setShowMediaRecorder(false)}
+        onMediaCaptured={handleMediaCaptured}
       />
     </div>
   );

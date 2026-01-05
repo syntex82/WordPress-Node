@@ -301,10 +301,10 @@ export default function MyProfile() {
       </div>
 
       {/* Profile Header - Premium Card */}
-      <div className="relative px-3 sm:px-6 pb-6">
+      <div className="relative px-3 sm:px-6 pb-6 z-10">
         <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-14 sm:-mt-20 md:-mt-24">
           {/* Avatar with Premium Ring */}
-          <div className="relative group mx-auto md:mx-0">
+          <div className="relative group mx-auto md:mx-0 z-20">
             <div className="w-28 h-28 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl sm:rounded-3xl border-4 border-slate-900 bg-slate-900 shadow-2xl overflow-hidden ring-4 ring-white/10">
               {profile.avatar ? (
                 <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
