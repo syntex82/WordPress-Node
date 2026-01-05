@@ -162,7 +162,6 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
             <video
               src={item.url}
               controls
-              autoPlay
               playsInline
               className={isVertical
                 ? 'max-h-[90vh] max-w-[60vw] sm:max-w-[50vw]'

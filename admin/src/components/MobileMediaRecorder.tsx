@@ -229,8 +229,16 @@ export default function MobileMediaRecorder({
     if (permissionState !== 'granted') return;
     // Screen mode doesn't support reinitializing - user would need to restart
     if (mode === 'screen') return;
+    // If we already have a stream (from requestPermissions), don't create a new one
+    // unless facingMode changed (camera switch)
+    if (streamRef.current && mode === 'audio') return;
 
     try {
+      // Stop existing tracks before getting new ones
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
       const constraints: MediaStreamConstraints = mode === 'video'
         ? {
             video: {

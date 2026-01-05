@@ -54,13 +54,10 @@ export default function ImmersivePostCard({
   const isVerticalVideo = primaryMedia?.type === 'VIDEO' && 
     primaryMedia.height && primaryMedia.width && primaryMedia.height > primaryMedia.width;
 
-  // Auto-play video when in view
+  // Pause video when out of view (no auto-play - user must click to play)
   useEffect(() => {
     if (hasVideo && videoRef.current) {
-      if (isInView) {
-        videoRef.current.play().catch(() => {});
-        setIsPlaying(true);
-      } else {
+      if (!isInView) {
         videoRef.current.pause();
         setIsPlaying(false);
       }

@@ -946,7 +946,7 @@ export default function GroupChat() {
             {lightboxMedia.type === 'image' ? (
               <img src={lightboxMedia.url} alt={lightboxMedia.filename} className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" />
             ) : (
-              <video src={lightboxMedia.url} className="max-w-full max-h-[85vh] rounded-xl shadow-2xl" controls autoPlay />
+              <video src={lightboxMedia.url} className="max-w-full max-h-[85vh] rounded-xl shadow-2xl" controls />
             )}
             <p className="text-center text-white/60 mt-3 text-sm">{lightboxMedia.filename}</p>
           </div>
