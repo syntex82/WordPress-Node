@@ -78,6 +78,166 @@ chmod +x scripts/ubuntu-setup.sh
 sudo ./scripts/ubuntu-setup.sh
 ```
 
+### Quick Setup (Windows)
+
+```powershell
+# Clone the repository
+git clone https://github.com/syntex82/NodePress.git
+cd NodePress
+
+# Run the automated setup script (PowerShell as Administrator)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+.\scripts\windows-setup.ps1
+```
+
+### Using and Customizing Setup Scripts
+
+NodePress provides several automated setup scripts to streamline local development. These scripts handle dependency installation, database configuration, and environment setup.
+
+#### Available Setup Scripts
+
+| Script | Platform | Purpose |
+|--------|----------|---------|
+| `scripts/ubuntu-setup.sh` | Ubuntu/Linux | Full development environment setup |
+| `scripts/windows-setup.ps1` | Windows | PowerShell-based development setup |
+| `scripts/windows-setup.bat` | Windows | Batch file alternative |
+| `scripts/quick-install.sh` | Linux/macOS | Minimal quick installation |
+| `scripts/hostinger-setup.sh` | Linux VPS | Production deployment on Hostinger |
+| `scripts/hostinger-vps-setup.sh` | Linux VPS | Extended VPS configuration |
+| `scripts/update.sh` | Linux | Update existing installation |
+
+#### What the Setup Scripts Do
+
+The main setup scripts (`ubuntu-setup.sh` and `windows-setup.ps1`) automate:
+
+1. **System Dependencies** - Install Node.js, npm, build tools
+2. **Database Setup** - Install and configure PostgreSQL
+3. **Redis Installation** - Set up Redis for caching (optional)
+4. **Environment Configuration** - Generate `.env` with secure secrets
+5. **NPM Dependencies** - Install backend and admin dependencies
+6. **Database Schema** - Run Prisma migrations and seed data
+7. **Build Process** - Build the admin panel and backend
+8. **Directory Structure** - Create required folders (uploads, themes, backups)
+
+#### Customizing Setup Scripts
+
+You can customize the setup scripts for your specific needs:
+
+**1. Change Database Credentials**
+
+Edit the script to use your preferred database settings:
+
+```bash
+# In ubuntu-setup.sh, find and modify:
+DB_NAME="my_custom_db"
+DB_USER="my_user"
+DB_PASSWORD="my_secure_password"
+```
+
+**2. Skip Optional Components**
+
+Comment out sections you don't need:
+
+```bash
+# Skip Redis installation (not required for local dev)
+# ((CURRENT_STEP++))
+# print_step "$CURRENT_STEP/$TOTAL_STEPS" "Installing Redis..."
+# ... redis installation code ...
+```
+
+**3. Add Custom Environment Variables**
+
+Extend the `.env` generation section:
+
+```bash
+# Add to the environment file generation
+cat >> "$APP_DIR/.env" << EOF
+
+# Custom additions
+MY_API_KEY=your-api-key
+FEATURE_FLAG_NEW_UI=true
+EOF
+```
+
+**4. Create Your Own Setup Script**
+
+Create a custom script for your team's workflow:
+
+```bash
+#!/bin/bash
+# custom-setup.sh - Team-specific setup
+
+# Run base setup
+./scripts/ubuntu-setup.sh
+
+# Add team-specific configurations
+echo "Setting up team configurations..."
+
+# Install additional dev tools
+npm install -g @nestjs/cli prisma
+
+# Copy team's shared .env overrides
+cp /shared/team-config/.env.local .env.local
+
+# Run custom seed data
+npm run db:seed:team-data
+
+echo "Team setup complete!"
+```
+
+**5. Environment-Specific Scripts**
+
+Create separate scripts for different environments:
+
+```bash
+# scripts/setup-dev.sh - Development with debug settings
+# scripts/setup-staging.sh - Staging with production-like config
+# scripts/setup-ci.sh - CI/CD pipeline optimized
+```
+
+#### Utility Scripts
+
+NodePress includes additional utility scripts:
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/seed-plans.ts` | Seed subscription plans into database |
+| `scripts/create-test-developer.ts` | Create test developer accounts |
+| `scripts/generate-sitemap.ts` | Generate XML sitemap |
+| `scripts/preview-email-templates.ts` | Preview email templates locally |
+| `scripts/fix-vite-cache.sh` | Clear Vite build cache issues |
+
+Run TypeScript utility scripts with:
+
+```bash
+npx ts-node scripts/seed-plans.ts
+npx ts-node scripts/create-test-developer.ts
+```
+
+#### Troubleshooting Setup Scripts
+
+**Permission Denied**
+```bash
+chmod +x scripts/ubuntu-setup.sh
+sudo ./scripts/ubuntu-setup.sh
+```
+
+**Script Fails Midway**
+```bash
+# Check logs for specific error
+# Re-run with verbose output
+bash -x scripts/ubuntu-setup.sh
+```
+
+**Database Connection Issues**
+```bash
+# Verify PostgreSQL is running
+sudo systemctl status postgresql
+
+# Test connection manually
+psql -U nodepress -d nodepress -h localhost
+```
+
 ### Manual Setup
 
 ```bash
