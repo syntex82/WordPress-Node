@@ -279,7 +279,7 @@ export default function MyProfile() {
       <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
 
       {/* Cover Image - Premium Design */}
-      <div className="relative h-80 sm:h-96 md:h-[28rem] z-30">
+      <div className="relative h-48 sm:h-56 md:h-64 z-30">
         {/* Cover image container with overflow-hidden for rounded corners */}
         <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden pointer-events-none">
           {/* Background Pattern */}
@@ -311,8 +311,8 @@ export default function MyProfile() {
       </div>
 
       {/* Profile Header - Premium Card */}
-      <div className="relative px-3 sm:px-6 pb-6 z-20">
-        <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-16 sm:-mt-20 md:-mt-24">
+      <div className="relative px-3 sm:px-6 pb-6 z-40">
+        <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-20 sm:-mt-24 md:-mt-28">
           {/* Avatar with Premium Ring */}
           <div className="relative group mx-auto md:mx-0 z-30">
             <div className="w-28 h-28 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl sm:rounded-3xl border-4 border-slate-900 bg-slate-900 shadow-2xl overflow-hidden ring-4 ring-white/10">
