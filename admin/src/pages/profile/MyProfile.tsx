@@ -279,7 +279,7 @@ export default function MyProfile() {
       <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
 
       {/* Cover Image - Premium Design */}
-      <div className="relative h-64 sm:h-72 md:h-80 z-30">
+      <div className="relative h-80 sm:h-96 md:h-[28rem] z-30">
         {/* Cover image container with overflow-hidden for rounded corners */}
         <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden pointer-events-none">
           {/* Background Pattern */}
