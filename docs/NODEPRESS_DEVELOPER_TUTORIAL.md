@@ -22,6 +22,7 @@ Welcome to the official NodePress Developer Tutorial! This comprehensive guide w
 12. [Testing & Quality](#12-testing--quality)
 13. [Deployment](#13-deployment)
 14. [Advanced Topics](#14-advanced-topics)
+15. [Production Cheatsheet](#15-production-cheatsheet---linux-database--server-management)
 
 ---
 
@@ -2049,6 +2050,1474 @@ export class AuthController {
     return this.authService.login(dto);
   }
 }
+```
+
+---
+
+## 15. Production Cheatsheet - Linux, Database & Server Management
+
+> ⚠️ **CRITICAL WARNING:** Always backup your database before running ANY destructive commands. The commands in the "DANGEROUS" sections can permanently delete data.
+
+### 15.1 Essential Linux Commands
+
+#### File System Navigation
+
+```bash
+# Current directory
+pwd
+
+# List files (detailed)
+ls -la
+
+# List files with human-readable sizes
+ls -lah
+
+# Change directory
+cd /var/www/WordPress-Node
+
+# Go back one directory
+cd ..
+
+# Go to home directory
+cd ~
+
+# Create directory
+mkdir -p /path/to/new/directory
+
+# Remove empty directory
+rmdir directory_name
+
+# Remove directory with contents (CAREFUL!)
+rm -rf directory_name
+
+# Copy file
+cp source.txt destination.txt
+
+# Copy directory recursively
+cp -r source_dir destination_dir
+
+# Move/rename file
+mv old_name.txt new_name.txt
+
+# View file contents
+cat file.txt
+
+# View file with line numbers
+cat -n file.txt
+
+# View large file (paginated)
+less file.txt
+
+# View first 50 lines
+head -50 file.txt
+
+# View last 50 lines
+tail -50 file.txt
+
+# Follow log file in real-time
+tail -f /var/log/nginx/error.log
+
+# Search in file
+grep "search_term" file.txt
+
+# Search recursively in directory
+grep -r "search_term" /path/to/directory
+
+# Search with line numbers
+grep -n "search_term" file.txt
+
+# Find files by name
+find /var/www -name "*.js"
+
+# Find files modified in last 24 hours
+find /var/www -mtime -1
+
+# Find and delete (CAREFUL!)
+find /tmp -name "*.log" -delete
+
+# Check disk usage
+df -h
+
+# Check directory size
+du -sh /var/www/WordPress-Node
+
+# Check directory sizes (sorted)
+du -sh /var/www/* | sort -h
+```
+
+#### File Permissions
+
+```bash
+# View permissions
+ls -la file.txt
+
+# Change owner
+chown user:group file.txt
+
+# Change owner recursively
+chown -R www-data:www-data /var/www/WordPress-Node
+
+# Change permissions (read/write/execute for owner)
+chmod 755 script.sh
+
+# Common permission patterns:
+# 755 - rwxr-xr-x (directories, executables)
+# 644 - rw-r--r-- (regular files)
+# 600 - rw------- (sensitive files like .env)
+
+# Make file executable
+chmod +x script.sh
+
+# Secure .env file
+chmod 600 .env
+```
+
+#### Process Management
+
+```bash
+# View running processes
+ps aux
+
+# Find specific process
+ps aux | grep node
+
+# Find process by port
+lsof -i :3000
+
+# Kill process by PID
+kill 12345
+
+# Force kill process
+kill -9 12345
+
+# Kill process by name
+pkill -f "node"
+
+# View real-time process info
+htop
+
+# View memory usage
+free -h
+
+# View CPU info
+lscpu
+
+# System uptime
+uptime
+```
+
+#### Network Commands
+
+```bash
+# Check open ports
+netstat -tulpn
+
+# Check specific port
+netstat -tulpn | grep 3000
+
+# Test connection to host:port
+nc -zv localhost 5432
+
+# Check DNS
+nslookup nodepress.co.uk
+
+# Download file
+wget https://example.com/file.zip
+
+# Download with curl
+curl -O https://example.com/file.zip
+
+# Test HTTP endpoint
+curl -I https://nodepress.co.uk
+
+# Check firewall status
+sudo ufw status
+
+# Allow port through firewall
+sudo ufw allow 3000
+
+# Check active connections
+ss -tulpn
+```
+
+### 15.2 Systemd Service Management
+
+```bash
+# Start a service
+sudo systemctl start nginx
+
+# Stop a service
+sudo systemctl stop nginx
+
+# Restart a service
+sudo systemctl restart nginx
+
+# Reload config without restart
+sudo systemctl reload nginx
+
+# Check service status
+sudo systemctl status nginx
+
+# Enable service on boot
+sudo systemctl enable nginx
+
+# Disable service on boot
+sudo systemctl disable nginx
+
+# View service logs
+sudo journalctl -u nginx
+
+# View service logs (follow)
+sudo journalctl -u nginx -f
+
+# View last 100 log lines
+sudo journalctl -u nginx -n 100
+
+# List all services
+systemctl list-units --type=service
+
+# List failed services
+systemctl list-units --type=service --state=failed
+```
+
+### 15.3 PM2 Process Manager
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# PM2 BASIC COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+# Start application
+pm2 start dist/main.js --name nodepress
+
+# Start with ecosystem file
+pm2 start ecosystem.config.js
+
+# List all processes
+pm2 list
+
+# Show detailed info
+pm2 show nodepress
+
+# Restart application
+pm2 restart nodepress
+
+# Restart with env update
+pm2 restart nodepress --update-env
+
+# Stop application
+pm2 stop nodepress
+
+# Delete application from PM2
+pm2 delete nodepress
+
+# Restart all applications
+pm2 restart all
+
+# Stop all applications
+pm2 stop all
+
+# ═══════════════════════════════════════════════════════════════
+# PM2 LOGS
+# ═══════════════════════════════════════════════════════════════
+
+# View all logs
+pm2 logs
+
+# View specific app logs
+pm2 logs nodepress
+
+# View last 200 lines
+pm2 logs nodepress --lines 200
+
+# Clear all logs
+pm2 flush
+
+# ═══════════════════════════════════════════════════════════════
+# PM2 MONITORING
+# ═══════════════════════════════════════════════════════════════
+
+# Real-time monitoring dashboard
+pm2 monit
+
+# Show memory/CPU usage
+pm2 status
+
+# ═══════════════════════════════════════════════════════════════
+# PM2 STARTUP & SAVE
+# ═══════════════════════════════════════════════════════════════
+
+# Save current process list
+pm2 save
+
+# Generate startup script
+pm2 startup
+
+# Remove startup script
+pm2 unstartup
+
+# Resurrect saved processes
+pm2 resurrect
+
+# ═══════════════════════════════════════════════════════════════
+# PM2 CLUSTER MODE (Scaling)
+# ═══════════════════════════════════════════════════════════════
+
+# Start with multiple instances
+pm2 start dist/main.js -i max --name nodepress
+
+# Start with specific number of instances
+pm2 start dist/main.js -i 4 --name nodepress
+
+# Scale up/down
+pm2 scale nodepress 4
+
+# Reload with zero downtime
+pm2 reload nodepress
+```
+
+### 15.4 PostgreSQL Database Management
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# CONNECTION & ACCESS
+# ═══════════════════════════════════════════════════════════════
+
+# Connect to PostgreSQL as postgres user
+sudo -u postgres psql
+
+# Connect to specific database
+sudo -u postgres psql -d wordpress_node
+
+# Connect with user/password
+PGPASSWORD=your_password psql -h localhost -U wpnode -d wordpress_node
+
+# Connect using DATABASE_URL
+psql "postgresql://wpnode:password@localhost:5432/wordpress_node"
+
+# Exit psql
+\q
+
+# ═══════════════════════════════════════════════════════════════
+# POSTGRESQL SERVICE
+# ═══════════════════════════════════════════════════════════════
+
+# Start PostgreSQL
+sudo systemctl start postgresql
+
+# Stop PostgreSQL
+sudo systemctl stop postgresql
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+
+# Check status
+sudo systemctl status postgresql
+
+# View PostgreSQL logs
+sudo tail -f /var/log/postgresql/postgresql-16-main.log
+
+# ═══════════════════════════════════════════════════════════════
+# DATABASE OPERATIONS (Run inside psql)
+# ═══════════════════════════════════════════════════════════════
+
+# List all databases
+\l
+
+# Connect to database
+\c wordpress_node
+
+# List all tables
+\dt
+
+# List tables with sizes
+\dt+
+
+# Describe table structure
+\d users
+
+# Describe table with details
+\d+ users
+
+# List all schemas
+\dn
+
+# Show current user
+SELECT current_user;
+
+# Show current database
+SELECT current_database();
+
+# ═══════════════════════════════════════════════════════════════
+# USER MANAGEMENT
+# ═══════════════════════════════════════════════════════════════
+
+# Create user
+CREATE USER wpnode WITH PASSWORD 'secure_password';
+
+# Grant all privileges on database
+GRANT ALL PRIVILEGES ON DATABASE wordpress_node TO wpnode;
+
+# Grant schema privileges
+GRANT ALL ON SCHEMA public TO wpnode;
+
+# Grant table privileges
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO wpnode;
+
+# Grant sequence privileges
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO wpnode;
+
+# Alter user password
+ALTER USER wpnode WITH PASSWORD 'new_password';
+
+# List users
+\du
+
+# ═══════════════════════════════════════════════════════════════
+# BACKUP & RESTORE (CRITICAL!)
+# ═══════════════════════════════════════════════════════════════
+
+# ⚠️ ALWAYS BACKUP BEFORE ANY MAJOR CHANGES!
+
+# Backup single database (recommended)
+pg_dump -U wpnode -h localhost wordpress_node > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Backup with compression
+pg_dump -U wpnode -h localhost wordpress_node | gzip > backup_$(date +%Y%m%d_%H%M%S).sql.gz
+
+# Backup specific tables only
+pg_dump -U wpnode -h localhost -t users -t posts wordpress_node > tables_backup.sql
+
+# Backup all databases
+pg_dumpall -U postgres > all_databases_backup.sql
+
+# Backup in custom format (allows selective restore)
+pg_dump -U wpnode -h localhost -Fc wordpress_node > backup.dump
+
+# Restore from SQL file
+psql -U wpnode -h localhost -d wordpress_node < backup.sql
+
+# Restore from compressed file
+gunzip -c backup.sql.gz | psql -U wpnode -h localhost -d wordpress_node
+
+# Restore from custom format
+pg_restore -U wpnode -h localhost -d wordpress_node backup.dump
+
+# Restore specific table from custom format
+pg_restore -U wpnode -h localhost -d wordpress_node -t users backup.dump
+
+# ═══════════════════════════════════════════════════════════════
+# USEFUL QUERIES
+# ═══════════════════════════════════════════════════════════════
+
+# Count rows in table
+SELECT COUNT(*) FROM users;
+
+# Show table sizes
+SELECT
+  schemaname,
+  tablename,
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+# Show database size
+SELECT pg_size_pretty(pg_database_size('wordpress_node'));
+
+# Show active connections
+SELECT * FROM pg_stat_activity WHERE datname = 'wordpress_node';
+
+# Kill a specific connection
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid = 12345;
+
+# Show running queries
+SELECT pid, query, state, query_start
+FROM pg_stat_activity
+WHERE state != 'idle' AND datname = 'wordpress_node';
+
+# ═══════════════════════════════════════════════════════════════
+# ⚠️ DANGEROUS OPERATIONS - USE WITH EXTREME CAUTION!
+# ═══════════════════════════════════════════════════════════════
+
+# Drop database (DESTROYS ALL DATA!)
+# DROP DATABASE wordpress_node;
+
+# Truncate table (DELETES ALL ROWS!)
+# TRUNCATE TABLE users CASCADE;
+
+# Delete all rows (slower but logs each row)
+# DELETE FROM users;
+
+# Drop table (DESTROYS TABLE!)
+# DROP TABLE users CASCADE;
+```
+
+### 15.5 Prisma ORM Commands
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# PRISMA SAFE COMMANDS (Non-destructive)
+# ═══════════════════════════════════════════════════════════════
+
+# Generate Prisma Client (safe - no DB changes)
+npx prisma generate
+
+# Open Prisma Studio (database GUI - READ operations safe)
+npx prisma studio
+
+# Validate schema file
+npx prisma validate
+
+# Format schema file
+npx prisma format
+
+# Pull database schema into Prisma (reads existing DB)
+npx prisma db pull
+
+# Show current migration status
+npx prisma migrate status
+
+# ═══════════════════════════════════════════════════════════════
+# PRISMA DEVELOPMENT COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+# Create and apply migration (development only)
+npx prisma migrate dev --name migration_name
+
+# Apply pending migrations
+npx prisma migrate deploy
+
+# Push schema changes (no migration file - DEV ONLY!)
+npx prisma db push
+
+# Seed database
+npx prisma db seed
+
+# ═══════════════════════════════════════════════════════════════
+# ⚠️ DANGEROUS PRISMA COMMANDS - BACKUP FIRST!
+# ═══════════════════════════════════════════════════════════════
+
+# Reset database (DELETES ALL DATA!)
+# npx prisma migrate reset
+
+# Reset and re-seed (DELETES ALL DATA!)
+# npx prisma migrate reset --force
+
+# Push with force (can drop columns!)
+# npx prisma db push --force-reset
+
+# ═══════════════════════════════════════════════════════════════
+# PRISMA TROUBLESHOOTING
+# ═══════════════════════════════════════════════════════════════
+
+# Clear Prisma cache
+rm -rf node_modules/.prisma
+npx prisma generate
+
+# Regenerate client after schema change
+npx prisma generate
+
+# Check Prisma version
+npx prisma --version
+
+# Debug Prisma queries (add to code)
+# const prisma = new PrismaClient({ log: ['query', 'info', 'warn', 'error'] })
+```
+
+### 15.6 Redis Management
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# REDIS SERVICE
+# ═══════════════════════════════════════════════════════════════
+
+# Start Redis
+sudo systemctl start redis-server
+
+# Stop Redis
+sudo systemctl stop redis-server
+
+# Restart Redis
+sudo systemctl restart redis-server
+
+# Check status
+sudo systemctl status redis-server
+
+# ═══════════════════════════════════════════════════════════════
+# REDIS CLI COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+# Connect to Redis
+redis-cli
+
+# Connect with password
+redis-cli -a your_password
+
+# Connect to remote Redis
+redis-cli -h hostname -p 6379 -a password
+
+# Test connection
+redis-cli ping
+# Should return: PONG
+
+# ═══════════════════════════════════════════════════════════════
+# REDIS DATA OPERATIONS
+# ═══════════════════════════════════════════════════════════════
+
+# Set a key
+SET mykey "Hello"
+
+# Get a key
+GET mykey
+
+# Delete a key
+DEL mykey
+
+# Check if key exists
+EXISTS mykey
+
+# Set key with expiration (seconds)
+SETEX mykey 3600 "Hello"
+
+# Get all keys (CAREFUL in production!)
+KEYS *
+
+# Get keys matching pattern
+KEYS wpnode:*
+
+# Get key type
+TYPE mykey
+
+# Get key TTL (time to live)
+TTL mykey
+
+# ═══════════════════════════════════════════════════════════════
+# REDIS MONITORING
+# ═══════════════════════════════════════════════════════════════
+
+# Server info
+INFO
+
+# Memory info
+INFO memory
+
+# Connected clients
+INFO clients
+
+# Monitor all commands (CAREFUL - performance impact)
+MONITOR
+
+# Slow log
+SLOWLOG GET 10
+
+# Database size (number of keys)
+DBSIZE
+
+# ═══════════════════════════════════════════════════════════════
+# REDIS CACHE MANAGEMENT
+# ═══════════════════════════════════════════════════════════════
+
+# Clear specific database
+SELECT 0
+FLUSHDB
+
+# Clear ALL databases (CAREFUL!)
+FLUSHALL
+
+# Delete keys matching pattern
+redis-cli KEYS "wpnode:cache:*" | xargs redis-cli DEL
+
+# ═══════════════════════════════════════════════════════════════
+# REDIS CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+
+# Edit Redis config
+sudo nano /etc/redis/redis.conf
+
+# Key settings:
+# maxmemory 256mb
+# maxmemory-policy allkeys-lru
+# requirepass your_password
+
+# Reload config
+redis-cli CONFIG REWRITE
+```
+
+### 15.7 Nginx Web Server
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# NGINX SERVICE
+# ═══════════════════════════════════════════════════════════════
+
+# Start Nginx
+sudo systemctl start nginx
+
+# Stop Nginx
+sudo systemctl stop nginx
+
+# Restart Nginx
+sudo systemctl restart nginx
+
+# Reload config (no downtime)
+sudo systemctl reload nginx
+
+# Check status
+sudo systemctl status nginx
+
+# Test configuration
+sudo nginx -t
+
+# ═══════════════════════════════════════════════════════════════
+# NGINX CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+
+# Main config file
+sudo nano /etc/nginx/nginx.conf
+
+# Site config
+sudo nano /etc/nginx/sites-available/nodepress
+
+# Enable site (create symlink)
+sudo ln -s /etc/nginx/sites-available/nodepress /etc/nginx/sites-enabled/
+
+# Disable site (remove symlink)
+sudo rm /etc/nginx/sites-enabled/nodepress
+
+# List enabled sites
+ls -la /etc/nginx/sites-enabled/
+
+# ═══════════════════════════════════════════════════════════════
+# NGINX LOGS
+# ═══════════════════════════════════════════════════════════════
+
+# Access log
+sudo tail -f /var/log/nginx/access.log
+
+# Error log
+sudo tail -f /var/log/nginx/error.log
+
+# Site-specific logs
+sudo tail -f /var/log/nginx/nodepress.access.log
+sudo tail -f /var/log/nginx/nodepress.error.log
+
+# ═══════════════════════════════════════════════════════════════
+# SAMPLE NODEPRESS NGINX CONFIG
+# ═══════════════════════════════════════════════════════════════
+
+# Save to: /etc/nginx/sites-available/nodepress
+#
+# server {
+#     listen 80;
+#     server_name nodepress.co.uk www.nodepress.co.uk;
+#     return 301 https://$server_name$request_uri;
+# }
+#
+# server {
+#     listen 443 ssl http2;
+#     server_name nodepress.co.uk www.nodepress.co.uk;
+#
+#     ssl_certificate /etc/letsencrypt/live/nodepress.co.uk/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/nodepress.co.uk/privkey.pem;
+#
+#     client_max_body_size 500M;
+#
+#     location / {
+#         proxy_pass http://127.0.0.1:3000;
+#         proxy_http_version 1.1;
+#         proxy_set_header Upgrade $http_upgrade;
+#         proxy_set_header Connection 'upgrade';
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_cache_bypass $http_upgrade;
+#     }
+#
+#     location /socket.io {
+#         proxy_pass http://127.0.0.1:3000;
+#         proxy_http_version 1.1;
+#         proxy_set_header Upgrade $http_upgrade;
+#         proxy_set_header Connection "upgrade";
+#     }
+# }
+```
+
+### 15.8 SSL/TLS with Certbot
+
+```bash
+# Install Certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Get certificate (interactive)
+sudo certbot --nginx -d nodepress.co.uk -d www.nodepress.co.uk
+
+# Get certificate (non-interactive)
+sudo certbot --nginx --non-interactive --agree-tos --email admin@nodepress.co.uk -d nodepress.co.uk
+
+# Test renewal
+sudo certbot renew --dry-run
+
+# Force renewal
+sudo certbot renew --force-renewal
+
+# List certificates
+sudo certbot certificates
+
+# Delete certificate
+sudo certbot delete --cert-name nodepress.co.uk
+
+# Auto-renewal is handled by systemd timer
+sudo systemctl status certbot.timer
+```
+
+### 15.9 Docker Management
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# DOCKER SERVICE
+# ═══════════════════════════════════════════════════════════════
+
+# Start Docker
+sudo systemctl start docker
+
+# Stop Docker
+sudo systemctl stop docker
+
+# Check status
+sudo systemctl status docker
+
+# Docker version
+docker --version
+
+# ═══════════════════════════════════════════════════════════════
+# DOCKER IMAGES
+# ═══════════════════════════════════════════════════════════════
+
+# List images
+docker images
+
+# Pull image
+docker pull node:20-alpine
+
+# Build image from Dockerfile
+docker build -t nodepress:latest .
+
+# Remove image
+docker rmi nodepress:latest
+
+# Remove unused images
+docker image prune
+
+# ═══════════════════════════════════════════════════════════════
+# DOCKER CONTAINERS
+# ═══════════════════════════════════════════════════════════════
+
+# List running containers
+docker ps
+
+# List all containers
+docker ps -a
+
+# Run container
+docker run -d --name nodepress -p 3000:3000 nodepress:latest
+
+# Run with environment file
+docker run -d --name nodepress --env-file .env -p 3000:3000 nodepress:latest
+
+# Stop container
+docker stop nodepress
+
+# Start stopped container
+docker start nodepress
+
+# Restart container
+docker restart nodepress
+
+# Remove container
+docker rm nodepress
+
+# Force remove running container
+docker rm -f nodepress
+
+# View container logs
+docker logs nodepress
+
+# Follow container logs
+docker logs -f nodepress
+
+# Execute command in container
+docker exec -it nodepress /bin/sh
+
+# ═══════════════════════════════════════════════════════════════
+# DOCKER COMPOSE
+# ═══════════════════════════════════════════════════════════════
+
+# Start services
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# Rebuild and start
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Scale service
+docker-compose up -d --scale nodepress=3
+
+# ═══════════════════════════════════════════════════════════════
+# DOCKER CLEANUP
+# ═══════════════════════════════════════════════════════════════
+
+# Remove stopped containers
+docker container prune
+
+# Remove unused images
+docker image prune
+
+# Remove unused volumes
+docker volume prune
+
+# Remove everything unused
+docker system prune -a
+
+# Check disk usage
+docker system df
+```
+
+### 15.10 Storage Management
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# DISK USAGE
+# ═══════════════════════════════════════════════════════════════
+
+# Check disk space
+df -h
+
+# Check specific partition
+df -h /var/www
+
+# Check directory sizes
+du -sh /var/www/WordPress-Node/*
+
+# Find largest files
+find /var/www -type f -exec du -h {} + | sort -rh | head -20
+
+# Find largest directories
+du -h /var/www --max-depth=2 | sort -rh | head -20
+
+# ═══════════════════════════════════════════════════════════════
+# UPLOADS DIRECTORY
+# ═══════════════════════════════════════════════════════════════
+
+# Check uploads size
+du -sh /var/www/WordPress-Node/uploads
+
+# List uploads by size
+ls -lahS /var/www/WordPress-Node/uploads
+
+# Find files larger than 100MB
+find /var/www/WordPress-Node/uploads -size +100M -type f
+
+# ═══════════════════════════════════════════════════════════════
+# CLEANUP OLD FILES
+# ═══════════════════════════════════════════════════════════════
+
+# Find files older than 30 days
+find /var/www/WordPress-Node/backups -mtime +30 -type f
+
+# Delete files older than 30 days (CAREFUL!)
+find /var/www/WordPress-Node/backups -mtime +30 -type f -delete
+
+# Clean npm cache
+npm cache clean --force
+
+# Clean PM2 logs
+pm2 flush
+
+# Clear system logs older than 7 days
+sudo journalctl --vacuum-time=7d
+
+# ═══════════════════════════════════════════════════════════════
+# BACKUP UPLOADS
+# ═══════════════════════════════════════════════════════════════
+
+# Create uploads backup
+tar -czvf uploads_backup_$(date +%Y%m%d).tar.gz /var/www/WordPress-Node/uploads
+
+# Restore uploads backup
+tar -xzvf uploads_backup_20250106.tar.gz -C /
+
+# Sync to remote (rsync)
+rsync -avz /var/www/WordPress-Node/uploads user@backup-server:/backups/uploads/
+```
+
+### 15.11 Git Version Control
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# BASIC GIT COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+# Check status
+git status
+
+# View changes
+git diff
+
+# Add files
+git add .
+
+# Commit
+git commit -m "feat: description"
+
+# Push to remote
+git push origin main
+
+# Pull latest
+git pull origin main
+
+# ═══════════════════════════════════════════════════════════════
+# BRANCHES
+# ═══════════════════════════════════════════════════════════════
+
+# List branches
+git branch -a
+
+# Create branch
+git checkout -b feature/new-feature
+
+# Switch branch
+git checkout main
+
+# Delete local branch
+git branch -d feature/old-feature
+
+# Delete remote branch
+git push origin --delete feature/old-feature
+
+# ═══════════════════════════════════════════════════════════════
+# STASHING (Save work temporarily)
+# ═══════════════════════════════════════════════════════════════
+
+# Stash changes
+git stash
+
+# Stash with message
+git stash save "Work in progress on feature X"
+
+# List stashes
+git stash list
+
+# Apply stash
+git stash pop
+
+# Apply specific stash
+git stash apply stash@{0}
+
+# ═══════════════════════════════════════════════════════════════
+# VIEWING HISTORY
+# ═══════════════════════════════════════════════════════════════
+
+# View commit log
+git log --oneline -20
+
+# View specific file history
+git log --oneline -20 -- path/to/file
+
+# Show specific commit
+git show abc1234
+
+# View who changed what
+git blame path/to/file
+
+# ═══════════════════════════════════════════════════════════════
+# ⚠️ DANGEROUS GIT COMMANDS - UNDERSTAND BEFORE USING!
+# ═══════════════════════════════════════════════════════════════
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Undo last commit (discard changes) - CAREFUL!
+git reset --hard HEAD~1
+
+# Discard all local changes - CAREFUL!
+git checkout -- .
+
+# Force push (VERY CAREFUL - can overwrite remote!)
+# git push --force origin main
+
+# Reset to remote state (LOSES LOCAL CHANGES!)
+# git fetch origin
+# git reset --hard origin/main
+```
+
+### 15.12 Complete Backup Strategy
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# FULL BACKUP SCRIPT
+# ═══════════════════════════════════════════════════════════════
+
+#!/bin/bash
+# Save as: /var/www/WordPress-Node/scripts/full-backup.sh
+
+BACKUP_DIR="/var/www/WordPress-Node/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+APP_DIR="/var/www/WordPress-Node"
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR/$DATE"
+
+# Backup database
+echo "Backing up database..."
+PGPASSWORD=your_password pg_dump -U wpnode -h localhost wordpress_node > "$BACKUP_DIR/$DATE/database.sql"
+
+# Backup uploads
+echo "Backing up uploads..."
+tar -czvf "$BACKUP_DIR/$DATE/uploads.tar.gz" "$APP_DIR/uploads"
+
+# Backup .env
+echo "Backing up configuration..."
+cp "$APP_DIR/.env" "$BACKUP_DIR/$DATE/.env"
+
+# Backup themes
+tar -czvf "$BACKUP_DIR/$DATE/themes.tar.gz" "$APP_DIR/themes"
+
+echo "Backup complete: $BACKUP_DIR/$DATE"
+
+# ═══════════════════════════════════════════════════════════════
+# RESTORE SCRIPT
+# ═══════════════════════════════════════════════════════════════
+
+#!/bin/bash
+# Save as: /var/www/WordPress-Node/scripts/restore-backup.sh
+
+BACKUP_PATH=$1
+APP_DIR="/var/www/WordPress-Node"
+
+if [ -z "$BACKUP_PATH" ]; then
+    echo "Usage: ./restore-backup.sh /path/to/backup/directory"
+    exit 1
+fi
+
+# Stop application
+pm2 stop nodepress
+
+# Restore database
+echo "Restoring database..."
+PGPASSWORD=your_password psql -U wpnode -h localhost -d wordpress_node < "$BACKUP_PATH/database.sql"
+
+# Restore uploads
+echo "Restoring uploads..."
+tar -xzvf "$BACKUP_PATH/uploads.tar.gz" -C /
+
+# Restore .env
+cp "$BACKUP_PATH/.env" "$APP_DIR/.env"
+
+# Restart application
+pm2 restart nodepress
+
+echo "Restore complete!"
+
+# ═══════════════════════════════════════════════════════════════
+# AUTOMATED BACKUP CRON
+# ═══════════════════════════════════════════════════════════════
+
+# Edit crontab
+crontab -e
+
+# Add daily backup at 3 AM
+# 0 3 * * * /var/www/WordPress-Node/scripts/full-backup.sh >> /var/log/nodepress-backup.log 2>&1
+
+# Add weekly cleanup (remove backups older than 30 days)
+# 0 4 * * 0 find /var/www/WordPress-Node/backups -mtime +30 -type d -exec rm -rf {} \;
+```
+
+### 15.13 Scaling & Performance
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# PM2 CLUSTER MODE
+# ═══════════════════════════════════════════════════════════════
+
+# Start with all CPU cores
+pm2 start dist/main.js -i max --name nodepress
+
+# Start with specific number of instances
+pm2 start dist/main.js -i 4 --name nodepress
+
+# Scale up
+pm2 scale nodepress +2
+
+# Scale down
+pm2 scale nodepress 2
+
+# Zero-downtime reload
+pm2 reload nodepress
+
+# ═══════════════════════════════════════════════════════════════
+# ECOSYSTEM FILE FOR SCALING
+# ═══════════════════════════════════════════════════════════════
+
+# ecosystem.config.js
+# module.exports = {
+#   apps: [{
+#     name: 'nodepress',
+#     script: 'dist/main.js',
+#     instances: 'max',
+#     exec_mode: 'cluster',
+#     max_memory_restart: '500M',
+#     env: {
+#       NODE_ENV: 'production',
+#       PORT: 3000
+#     }
+#   }]
+# };
+
+# Start with ecosystem file
+pm2 start ecosystem.config.js
+
+# ═══════════════════════════════════════════════════════════════
+# PERFORMANCE MONITORING
+# ═══════════════════════════════════════════════════════════════
+
+# Real-time monitoring
+pm2 monit
+
+# Memory usage
+free -h
+
+# CPU usage
+top
+htop
+
+# Disk I/O
+iostat -x 1
+
+# Network connections
+ss -s
+
+# ═══════════════════════════════════════════════════════════════
+# POSTGRESQL PERFORMANCE
+# ═══════════════════════════════════════════════════════════════
+
+# Check slow queries (requires pg_stat_statements extension)
+SELECT query, calls, mean_time, total_time
+FROM pg_stat_statements
+ORDER BY mean_time DESC
+LIMIT 10;
+
+# Check table bloat
+SELECT
+  schemaname, tablename,
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+# Vacuum tables (reclaim space)
+VACUUM ANALYZE;
+
+# ═══════════════════════════════════════════════════════════════
+# NGINX PERFORMANCE
+# ═══════════════════════════════════════════════════════════════
+
+# Enable gzip (in nginx.conf)
+# gzip on;
+# gzip_types text/plain text/css application/json application/javascript;
+# gzip_min_length 1000;
+
+# Enable caching for static files
+# location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+#     expires 30d;
+#     add_header Cache-Control "public, immutable";
+# }
+```
+
+### 15.14 Security Hardening
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# FIREWALL (UFW)
+# ═══════════════════════════════════════════════════════════════
+
+# Enable firewall
+sudo ufw enable
+
+# Allow SSH
+sudo ufw allow 22
+
+# Allow HTTP/HTTPS
+sudo ufw allow 80
+sudo ufw allow 443
+
+# Check status
+sudo ufw status verbose
+
+# Deny specific IP
+sudo ufw deny from 1.2.3.4
+
+# ═══════════════════════════════════════════════════════════════
+# SSH SECURITY
+# ═══════════════════════════════════════════════════════════════
+
+# Edit SSH config
+sudo nano /etc/ssh/sshd_config
+
+# Recommended settings:
+# PermitRootLogin no
+# PasswordAuthentication no
+# PubkeyAuthentication yes
+# MaxAuthTries 3
+
+# Restart SSH
+sudo systemctl restart sshd
+
+# ═══════════════════════════════════════════════════════════════
+# FAIL2BAN (Brute force protection)
+# ═══════════════════════════════════════════════════════════════
+
+# Install
+sudo apt install fail2ban
+
+# Start
+sudo systemctl start fail2ban
+sudo systemctl enable fail2ban
+
+# Check status
+sudo fail2ban-client status
+
+# Check SSH jail
+sudo fail2ban-client status sshd
+
+# Unban IP
+sudo fail2ban-client set sshd unbanip 1.2.3.4
+
+# ═══════════════════════════════════════════════════════════════
+# FILE PERMISSIONS
+# ═══════════════════════════════════════════════════════════════
+
+# Secure .env file
+chmod 600 /var/www/WordPress-Node/.env
+
+# Secure private keys
+chmod 600 ~/.ssh/id_rsa
+
+# Set proper ownership
+chown -R www-data:www-data /var/www/WordPress-Node/uploads
+```
+
+### 15.15 Troubleshooting Quick Reference
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# APPLICATION NOT STARTING
+# ═══════════════════════════════════════════════════════════════
+
+# Check PM2 status
+pm2 status
+
+# Check PM2 logs
+pm2 logs nodepress --lines 100
+
+# Check if port is in use
+lsof -i :3000
+
+# Kill process on port
+kill $(lsof -t -i:3000)
+
+# Check Node.js version
+node --version
+
+# Reinstall dependencies
+rm -rf node_modules
+npm install
+
+# Rebuild
+npm run build
+
+# ═══════════════════════════════════════════════════════════════
+# DATABASE ISSUES
+# ═══════════════════════════════════════════════════════════════
+
+# Check PostgreSQL status
+sudo systemctl status postgresql
+
+# Check PostgreSQL logs
+sudo tail -50 /var/log/postgresql/postgresql-16-main.log
+
+# Test connection
+PGPASSWORD=password psql -h localhost -U wpnode -d wordpress_node -c "SELECT 1"
+
+# Regenerate Prisma client
+npx prisma generate
+
+# ═══════════════════════════════════════════════════════════════
+# NGINX ISSUES
+# ═══════════════════════════════════════════════════════════════
+
+# Test config
+sudo nginx -t
+
+# Check error log
+sudo tail -50 /var/log/nginx/error.log
+
+# Check if running
+sudo systemctl status nginx
+
+# ═══════════════════════════════════════════════════════════════
+# SSL ISSUES
+# ═══════════════════════════════════════════════════════════════
+
+# Check certificate expiry
+sudo certbot certificates
+
+# Force renewal
+sudo certbot renew --force-renewal
+
+# Check SSL with openssl
+openssl s_client -connect nodepress.co.uk:443 -servername nodepress.co.uk
+
+# ═══════════════════════════════════════════════════════════════
+# DISK SPACE ISSUES
+# ═══════════════════════════════════════════════════════════════
+
+# Check disk usage
+df -h
+
+# Find large files
+find / -type f -size +100M 2>/dev/null | head -20
+
+# Clean PM2 logs
+pm2 flush
+
+# Clean npm cache
+npm cache clean --force
+
+# Clean old journals
+sudo journalctl --vacuum-size=100M
+
+# ═══════════════════════════════════════════════════════════════
+# MEMORY ISSUES
+# ═══════════════════════════════════════════════════════════════
+
+# Check memory
+free -h
+
+# Find memory-hungry processes
+ps aux --sort=-%mem | head -10
+
+# Restart PM2 to free memory
+pm2 restart all
+
+# Clear Redis cache
+redis-cli FLUSHDB
 ```
 
 ---
