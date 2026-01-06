@@ -279,9 +279,9 @@ export default function MyProfile() {
       <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
 
       {/* Cover Image - Premium Design */}
-      <div className="relative h-48 sm:h-56 md:h-64 z-30">
+      <div className="relative h-48 sm:h-56 md:h-64">
         {/* Cover image container with overflow-hidden for rounded corners */}
-        <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-hidden">
             <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
@@ -291,27 +291,27 @@ export default function MyProfile() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
         </div>
-
-        {/* Change Cover Button - Outside the overflow-hidden, clickable */}
-        <button
-          type="button"
-          onClick={() => {
-            console.log('Cover button clicked');
-            coverInputRef.current?.click();
-          }}
-          disabled={uploadingCover}
-          className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 bg-slate-900/90 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/20 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
-        >
-          {uploadingCover ? (
-            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span className="hidden sm:inline">Uploading...</span></>
-          ) : (
-            <><FiCamera className="w-4 h-4" /> <span className="hidden sm:inline">Change Cover</span></>
-          )}
-        </button>
       </div>
 
+      {/* Change Cover Button - Positioned outside cover div to avoid z-index issues */}
+      <button
+        type="button"
+        onClick={() => {
+          console.log('Cover button clicked');
+          coverInputRef.current?.click();
+        }}
+        disabled={uploadingCover}
+        className="absolute top-44 sm:top-48 md:top-56 right-7 sm:right-9 z-50 bg-slate-900/90 hover:bg-slate-800 backdrop-blur-xl text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center gap-2 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-xl border border-white/20 text-xs sm:text-sm font-medium hover:scale-105 active:scale-95"
+      >
+        {uploadingCover ? (
+          <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span className="hidden sm:inline">Uploading...</span></>
+        ) : (
+          <><FiCamera className="w-4 h-4" /> <span className="hidden sm:inline">Change Cover</span></>
+        )}
+      </button>
+
       {/* Profile Header - Premium Card */}
-      <div className="relative px-3 sm:px-6 pb-6 z-40">
+      <div className="relative px-3 sm:px-6 pb-6">
         <div className="flex flex-col md:flex-row md:items-end gap-4 sm:gap-6 -mt-20 sm:-mt-24 md:-mt-28">
           {/* Avatar with Premium Ring */}
           <div className="relative group mx-auto md:mx-0 z-30">
