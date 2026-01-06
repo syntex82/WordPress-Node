@@ -15,13 +15,17 @@ export interface CreatePostDto {
   content?: string;
   isPublic?: boolean;
   media?: {
-    type: 'IMAGE' | 'VIDEO' | 'GIF';
+    type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO' | 'LINK';
     url: string;
     thumbnail?: string;
     altText?: string;
     width?: number;
     height?: number;
     duration?: number;
+    // Link preview metadata
+    linkTitle?: string;
+    linkDescription?: string;
+    linkSiteName?: string;
   }[];
 }
 
@@ -209,6 +213,10 @@ export class TimelineService {
                   height: m.height,
                   duration: m.duration,
                   order: index,
+                  // Link preview metadata
+                  linkTitle: m.linkTitle,
+                  linkDescription: m.linkDescription,
+                  linkSiteName: m.linkSiteName,
                 })),
               }
             : undefined,

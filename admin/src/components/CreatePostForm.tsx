@@ -250,23 +250,63 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
   };
 
   // Handle external URL input
-  const handleAddExternalUrl = () => {
+  const handleAddExternalUrl = async () => {
     if (!externalUrl.trim()) return;
 
     const url = externalUrl.trim();
     const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
     const isVimeo = url.includes('vimeo.com');
-    const isVideo = isYouTube || isVimeo || /\.(mp4|webm|ogg|mov)$/i.test(url);
+    const isDirectImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+    const isDirectVideo = /\.(mp4|webm|ogg|mov)$/i.test(url);
+    const isVideoEmbed = isYouTube || isVimeo;
 
     if (media.length >= 4) {
       toast.error('Maximum 4 media items allowed');
       return;
     }
 
-    setPreviewUrls((prev) => [...prev, url]);
-    setMedia((prev) => [...prev, { type: isVideo ? 'VIDEO' : 'IMAGE', url }]);
-    setExternalUrl('');
-    setShowUrlInput(false);
+    // Handle direct media URLs
+    if (isDirectImage) {
+      setPreviewUrls((prev) => [...prev, url]);
+      setMedia((prev) => [...prev, { type: 'IMAGE', url }]);
+      setExternalUrl('');
+      setShowUrlInput(false);
+      return;
+    }
+
+    if (isDirectVideo || isVideoEmbed) {
+      setPreviewUrls((prev) => [...prev, url]);
+      setMedia((prev) => [...prev, { type: 'VIDEO', url }]);
+      setExternalUrl('');
+      setShowUrlInput(false);
+      return;
+    }
+
+    // For other URLs, fetch link preview
+    try {
+      const loadingToast = toast.loading('Fetching link preview...');
+      const preview = await timelineApi.fetchUrlPreview(url);
+      toast.dismiss(loadingToast);
+
+      setPreviewUrls((prev) => [...prev, url]);
+      setMedia((prev) => [...prev, {
+        type: 'LINK',
+        url,
+        thumbnail: preview.data.image,
+        linkTitle: preview.data.title,
+        linkDescription: preview.data.description,
+        linkSiteName: preview.data.siteName,
+      }]);
+      setExternalUrl('');
+      setShowUrlInput(false);
+    } catch {
+      toast.error('Failed to fetch link preview');
+      // Add as simple link anyway
+      setPreviewUrls((prev) => [...prev, url]);
+      setMedia((prev) => [...prev, { type: 'LINK', url }]);
+      setExternalUrl('');
+      setShowUrlInput(false);
+    }
   };
 
   const removeMedia = (index: number) => {
@@ -425,14 +465,35 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
           {previewUrls.length > 0 && (
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-2 sm:mt-3">
               {previewUrls.map((url, index) => {
-                const isVideo = media[index]?.type === 'VIDEO';
+                const mediaItem = media[index];
+                const isLink = mediaItem?.type === 'LINK';
+                const isVideo = mediaItem?.type === 'VIDEO';
                 const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
                 const isVimeo = url.includes('vimeo.com');
                 const isExternalVideo = isYouTube || isVimeo;
 
                 return (
-                  <div key={index} className={`relative aspect-square rounded-lg overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-gray-100'}`}>
-                    {isExternalVideo ? (
+                  <div key={index} className={`relative ${isLink ? '' : 'aspect-square'} rounded-lg overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                    {isLink ? (
+                      // Link preview card
+                      <div className="p-2 sm:p-3">
+                        {mediaItem.thumbnail && (
+                          <img src={mediaItem.thumbnail} alt="" className="w-full h-20 sm:h-24 object-cover rounded mb-2" />
+                        )}
+                        <div className={`text-xs font-medium truncate ${isDark ? 'text-slate-200' : 'text-gray-900'}`}>
+                          {mediaItem.linkTitle || new URL(url).hostname}
+                        </div>
+                        {mediaItem.linkDescription && (
+                          <div className={`text-xs mt-0.5 line-clamp-2 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                            {mediaItem.linkDescription}
+                          </div>
+                        )}
+                        <div className={`text-xs mt-1 flex items-center gap-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                          <FiLink className="w-3 h-3" />
+                          {mediaItem.linkSiteName || new URL(url).hostname}
+                        </div>
+                      </div>
+                    ) : isExternalVideo ? (
                       <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4">
                         <FiPlay className="w-8 h-8 sm:w-10 sm:h-10 text-red-500 mb-1 sm:mb-2" />
                         <span className={`text-xs text-center truncate w-full ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>

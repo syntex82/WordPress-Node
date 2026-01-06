@@ -1610,7 +1610,7 @@ export const feedApi = {
 // Timeline Post types
 export interface PostMedia {
   id: string;
-  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO';
+  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO' | 'LINK';
   url: string;
   thumbnail?: string;
   altText?: string;
@@ -1618,6 +1618,10 @@ export interface PostMedia {
   height?: number;
   duration?: number;
   order: number;
+  // Link preview metadata
+  linkTitle?: string;
+  linkDescription?: string;
+  linkSiteName?: string;
 }
 
 export interface TimelinePostUser {
@@ -1692,13 +1696,17 @@ export interface TimelinePostsResponse {
 }
 
 export interface CreatePostMediaDto {
-  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO';
+  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO' | 'LINK';
   url: string;
   thumbnail?: string;
   altText?: string;
   width?: number;
   height?: number;
   duration?: number;
+  // Link preview metadata
+  linkTitle?: string;
+  linkDescription?: string;
+  linkSiteName?: string;
 }
 
 export interface CreateTimelinePostInputDto {
@@ -1778,7 +1786,21 @@ export const timelineApi = {
   // Search users for mention autocomplete
   searchUsersForMention: (query: string) =>
     api.get<TimelinePostUser[]>('/timeline/mentions/search', { params: { q: query } }),
+
+  // Fetch URL preview metadata
+  fetchUrlPreview: (url: string) =>
+    api.post<UrlPreviewData>('/timeline/url-preview', { url }),
 };
+
+// URL Preview types
+export interface UrlPreviewData {
+  url: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  type?: string;
+}
 
 // Developer Marketplace types
 export interface DeveloperProfile {

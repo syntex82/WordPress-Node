@@ -2155,13 +2155,18 @@ model PostMedia {
   postId    String
   type      PostMediaType
   url       String
-  thumbnail String?       // Thumbnail for videos
+  thumbnail String?       // Thumbnail for videos or link preview image
   altText   String?
   width     Int?
   height    Int?
-  duration  Int?          // Duration in seconds for videos
+  duration  Int?          // Duration in seconds for videos/audio
   order     Int           @default(0)
   createdAt DateTime      @default(now())
+
+  // Link preview metadata (for LINK type)
+  linkTitle       String?
+  linkDescription String?
+  linkSiteName    String?
 
   post TimelinePost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
@@ -2172,6 +2177,8 @@ enum PostMediaType {
   IMAGE
   VIDEO
   GIF
+  AUDIO
+  LINK
 }
 
 model PostLike {

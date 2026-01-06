@@ -18,10 +18,14 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TimelineService, CreatePostDto, SharePostDto, UpdatePostDto } from './timeline.service';
+import { UrlPreviewService } from './url-preview.service';
 
 @Controller('api/timeline')
 export class TimelineController {
-  constructor(private readonly timelineService: TimelineService) {}
+  constructor(
+    private readonly timelineService: TimelineService,
+    private readonly urlPreviewService: UrlPreviewService,
+  ) {}
 
   /**
    * Create a new timeline post
@@ -205,5 +209,14 @@ export class TimelineController {
   @UseGuards(JwtAuthGuard)
   async searchUsersForMention(@Query('q') query: string) {
     return this.timelineService.searchUsersForMention(query);
+  }
+
+  /**
+   * Fetch URL preview metadata (Open Graph)
+   */
+  @Post('url-preview')
+  @UseGuards(JwtAuthGuard)
+  async fetchUrlPreview(@Body() body: { url: string }) {
+    return this.urlPreviewService.fetchPreview(body.url);
   }
 }

@@ -171,6 +171,10 @@ export default function PostCard({ post, onDelete, onEdit, onCommentClick, onHas
             width: m.width,
             height: m.height,
             duration: m.duration,
+            // Link preview metadata
+            linkTitle: m.linkTitle,
+            linkDescription: m.linkDescription,
+            linkSiteName: m.linkSiteName,
           }))}
           className="sm:rounded-xl"
           immersive={true}

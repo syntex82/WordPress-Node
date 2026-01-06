@@ -4,18 +4,22 @@
  * Features: Large media display, vertical video support, audio player, immersive viewing
  */
 
-import { useState, useRef, useEffect } from 'react';
-import { FiX, FiPlay, FiPause, FiChevronLeft, FiChevronRight, FiMaximize2, FiVolume2, FiVolumeX } from 'react-icons/fi';
+import { useState, useRef } from 'react';
+import { FiX, FiPlay, FiChevronLeft, FiChevronRight, FiMaximize2, FiVolume2, FiVolumeX, FiLink, FiExternalLink } from 'react-icons/fi';
 
 interface MediaItem {
   id?: string;
-  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO';
+  type: 'IMAGE' | 'VIDEO' | 'GIF' | 'AUDIO' | 'LINK';
   url: string;
   thumbnail?: string;
   altText?: string;
   width?: number;
   height?: number;
   duration?: number;
+  // Link preview metadata
+  linkTitle?: string;
+  linkDescription?: string;
+  linkSiteName?: string;
 }
 
 interface PostMediaGalleryProps {
@@ -102,7 +106,53 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
   const renderMedia = (item: MediaItem, index: number, inLightbox = false) => {
     const isVideo = item.type === 'VIDEO';
     const isAudio = item.type === 'AUDIO';
+    const isLink = item.type === 'LINK';
     const isVertical = item.height && item.width && item.height > item.width;
+
+    // Link preview card
+    if (isLink) {
+      const hostname = (() => {
+        try { return new URL(item.url).hostname; } catch { return item.url; }
+      })();
+
+      return (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="block w-full h-full bg-slate-800 hover:bg-slate-750 transition-colors"
+        >
+          {/* Link preview image */}
+          {item.thumbnail ? (
+            <div className="relative h-32 sm:h-40 w-full">
+              <img src={item.thumbnail} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            </div>
+          ) : (
+            <div className="h-20 sm:h-24 w-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center">
+              <FiLink className="w-8 h-8 text-white/80" />
+            </div>
+          )}
+
+          {/* Link info */}
+          <div className="p-3 sm:p-4">
+            <h4 className="font-medium text-sm sm:text-base text-white line-clamp-2 mb-1">
+              {item.linkTitle || hostname}
+            </h4>
+            {item.linkDescription && (
+              <p className="text-xs sm:text-sm text-slate-400 line-clamp-2 mb-2">
+                {item.linkDescription}
+              </p>
+            )}
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <FiExternalLink className="w-3.5 h-3.5" />
+              <span className="truncate">{item.linkSiteName || hostname}</span>
+            </div>
+          </div>
+        </a>
+      );
+    }
 
     // YouTube embed
     if (isYouTube(item.url)) {
@@ -261,6 +311,11 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
       return 'aspect-[3/1] sm:aspect-[4/1]';
     }
 
+    // Link: no fixed aspect ratio, let content determine height
+    if (item.type === 'LINK') {
+      return ''; // Link cards have their own internal layout
+    }
+
     if (media.length === 1) {
       // Single vertical video: TikTok-style tall aspect ratio - nearly full screen on mobile
       if (item.type === 'VIDEO' && item.height && item.width && item.height > item.width) {
@@ -290,14 +345,15 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
     return immersive && isSingleVideo && item.type === 'VIDEO';
   };
 
-  // Check if item is audio (no lightbox needed)
+  // Check if item is audio or link (no lightbox needed)
   const isAudioItem = (item: MediaItem) => item.type === 'AUDIO';
+  const isLinkItem = (item: MediaItem) => item.type === 'LINK';
 
   return (
     <>
       <div className={`grid ${getGridClass()} gap-0.5 sm:gap-1.5 rounded-none sm:rounded-2xl overflow-hidden ${className}`}>
         {media.slice(0, 4).map((item, index) => {
-          const skipLightbox = hasInlinePlayback(item) || isAudioItem(item);
+          const skipLightbox = hasInlinePlayback(item) || isAudioItem(item) || isLinkItem(item);
 
           return (
             <div

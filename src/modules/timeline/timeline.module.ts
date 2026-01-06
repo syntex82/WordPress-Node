@@ -10,6 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TimelineController } from './timeline.controller';
 import { TimelineService } from './timeline.service';
 import { TimelineGateway } from './timeline.gateway';
+import { UrlPreviewService } from './url-preview.service';
 import { PrismaModule } from '../../database/prisma.module';
 import { FeedModule } from '../feed/feed.module';
 
@@ -26,8 +27,8 @@ import { FeedModule } from '../feed/feed.module';
     }),
   ],
   controllers: [TimelineController],
-  providers: [TimelineService, TimelineGateway],
-  exports: [TimelineService, TimelineGateway],
+  providers: [TimelineService, TimelineGateway, UrlPreviewService],
+  exports: [TimelineService, TimelineGateway, UrlPreviewService],
 })
 export class TimelineModule {}
 
