@@ -152,7 +152,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
     if (!post.media || post.media.length === 0) return null;
 
     return (
-      <div className="-mx-4 sm:mx-0 mt-3">
+      <div className="-mx-3 sm:mx-0 mt-3">
         <PostMediaGallery
           media={post.media.map(m => ({
             id: m.id,
@@ -172,28 +172,28 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
   };
 
   return (
-    <div className={`rounded-xl shadow-sm p-4 mb-4 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+    <div className={`rounded-none sm:rounded-xl shadow-none sm:shadow-sm p-3 sm:p-4 mb-0 sm:mb-4 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link to={`/admin/profile/${post.user.username || post.user.id}`}>
             {post.user.avatar ? (
-              <img src={post.user.avatar} alt={post.user.name} className="w-12 h-12 rounded-full object-cover" />
+              <img src={post.user.avatar} alt={post.user.name} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover" />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-base sm:text-lg">
                 {post.user.name.charAt(0)}
               </div>
             )}
           </Link>
-          <div>
+          <div className="min-w-0 flex-1">
             <Link
               to={`/admin/profile/${post.user.username || post.user.id}`}
-              className={`font-semibold hover:underline ${isDark ? 'text-white' : 'text-gray-900'}`}
+              className={`font-semibold hover:underline text-sm sm:text-base block truncate ${isDark ? 'text-white' : 'text-gray-900'}`}
             >
               {post.user.name}
             </Link>
             {post.user.headline && (
-              <p className={`text-sm line-clamp-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{post.user.headline}</p>
+              <p className={`text-xs sm:text-sm line-clamp-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{post.user.headline}</p>
             )}
             <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}

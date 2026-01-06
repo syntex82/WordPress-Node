@@ -218,9 +218,10 @@ export default function Timeline() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
+      {/* Mobile: edge-to-edge, Desktop: centered with max-width */}
+      <div className="max-w-6xl mx-auto px-0 sm:px-4 py-0 sm:py-8">
+        {/* Header - hidden on mobile for immersive feel, visible on desktop */}
+        <div className="hidden sm:flex mb-8 px-4 sm:px-0 items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Timeline</h1>
             <p className="text-gray-600 dark:text-gray-400">Share and discover posts from your network</p>
@@ -244,44 +245,46 @@ export default function Timeline() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 sm:gap-8">
+          {/* Main Feed - full width on mobile */}
           <div className="lg:col-span-2">
-            {/* Create Post */}
-            <CreatePostForm onPostCreated={handlePostCreated} />
+            {/* Create Post - padded on mobile */}
+            <div className="px-4 sm:px-0">
+              <CreatePostForm onPostCreated={handlePostCreated} />
+            </div>
 
-            {/* Tabs */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
+            {/* Tabs - sticky on mobile for easy navigation */}
+            <div className="bg-white dark:bg-gray-800 sm:rounded-xl shadow-sm mb-0 sm:mb-6 sticky top-0 z-20">
               <div className="flex border-b border-gray-200 dark:border-gray-700">
                 <button
                   onClick={() => { setActiveTab('following'); handleClearHashtag(); }}
-                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-colors ${
                     activeTab === 'following'
                       ? 'text-blue-600 border-b-2 border-blue-600'
                       : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
                   }`}
                 >
                   <FiUsers className="w-4 h-4" />
-                  Following
+                  <span className="hidden sm:inline">Following</span>
                 </button>
                 <button
                   onClick={() => { setActiveTab('discover'); setActiveHashtag(null); setSearchParams({}); }}
-                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-colors ${
                     activeTab === 'discover'
                       ? 'text-blue-600 border-b-2 border-blue-600'
                       : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
                   }`}
                 >
                   <FiCompass className="w-4 h-4" />
-                  Discover
+                  <span className="hidden sm:inline">Discover</span>
                 </button>
                 {activeTab === 'hashtag' && activeHashtag && (
-                  <div className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+                  <div className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
                     <FiHash className="w-4 h-4" />
-                    #{activeHashtag}
+                    <span className="truncate max-w-[80px] sm:max-w-none">#{activeHashtag}</span>
                     <button
                       onClick={handleClearHashtag}
-                      className="ml-2 text-gray-400 hover:text-gray-600"
+                      className="ml-1 text-gray-400 hover:text-gray-600"
                     >
                       ×
                     </button>
@@ -294,15 +297,15 @@ export default function Timeline() {
             {newPostsCount > 0 && (
               <button
                 onClick={handleShowNewPosts}
-                className="w-full mb-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                className="w-full mb-0 sm:mb-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 sm:rounded-xl flex items-center justify-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
               >
                 <FiBell className="w-4 h-4" />
                 {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'} available
               </button>
             )}
 
-            {/* Refresh Button */}
-            <div className="flex justify-end mb-4">
+            {/* Refresh Button - hidden on mobile, shown on desktop */}
+            <div className="hidden sm:flex justify-end mb-4">
               <button
                 onClick={() => loadPosts(true)}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:text-blue-700"
@@ -312,32 +315,34 @@ export default function Timeline() {
               </button>
             </div>
 
-            {/* Posts List */}
+            {/* Posts List - continuous flow on mobile */}
             {loading ? (
-              <div className="space-y-4">
+              <div className="space-y-0 sm:space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-6 animate-pulse">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  <div key={i} className="bg-white dark:bg-gray-800 sm:rounded-xl p-4 sm:p-6 animate-pulse border-b sm:border-b-0 border-gray-200 dark:border-gray-700">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
                       <div className="flex-1">
                         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2" />
                         <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
                       </div>
                     </div>
+                    {/* Skeleton for media */}
+                    <div className="mt-3 h-48 sm:h-64 bg-gray-200 dark:bg-gray-700 rounded-none sm:rounded-xl" />
                   </div>
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-                <FiUsers className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <div className="bg-white dark:bg-gray-800 sm:rounded-xl p-8 sm:p-12 text-center mx-4 sm:mx-0">
+                <FiUsers className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
                   {activeTab === 'hashtag' && activeHashtag
                     ? `No posts with #${activeHashtag}`
                     : activeTab === 'following'
                     ? 'No posts yet'
                     : 'Nothing to discover'}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400">
+                <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
                   {activeTab === 'hashtag'
                     ? 'Be the first to post with this hashtag'
                     : activeTab === 'following'
@@ -346,7 +351,7 @@ export default function Timeline() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-0 sm:space-y-4 divide-y sm:divide-y-0 divide-gray-200 dark:divide-gray-700">
                 {posts.map((post) => (
                   <PostCard
                     key={post.id}
@@ -364,7 +369,7 @@ export default function Timeline() {
                   <button
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="w-full py-3 text-center text-blue-600 hover:text-blue-700 font-medium"
+                    className="w-full py-4 sm:py-3 text-center text-blue-600 hover:text-blue-700 font-medium bg-white dark:bg-gray-800 sm:rounded-xl"
                   >
                     {loadingMore ? 'Loading...' : 'Load more'}
                   </button>
@@ -373,8 +378,8 @@ export default function Timeline() {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar - hidden on mobile */}
+          <div className="hidden lg:block space-y-6">
             {/* Trending Hashtags */}
             {trendingHashtags.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">

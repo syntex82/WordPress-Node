@@ -252,6 +252,7 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
   };
 
   // Get aspect ratio class based on media count, type, and dimensions
+  // Mobile-first: taller aspect ratios for more immersive experience
   const getAspectClass = (index: number) => {
     const item = media[index];
 
@@ -261,16 +262,16 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
     }
 
     if (media.length === 1) {
-      // Single vertical video: TikTok-style tall aspect ratio
+      // Single vertical video: TikTok-style tall aspect ratio - nearly full screen on mobile
       if (item.type === 'VIDEO' && item.height && item.width && item.height > item.width) {
-        return 'aspect-[9/16] max-h-[70vh] sm:max-h-[80vh]';
+        return 'aspect-[9/16] max-h-[85vh] sm:max-h-[80vh]';
       }
-      // Single horizontal video: cinematic widescreen
+      // Single horizontal video: taller on mobile for immersive feel
       if (item.type === 'VIDEO') {
-        return 'aspect-video sm:aspect-[2/1]';
+        return 'aspect-[4/3] sm:aspect-video';
       }
-      // Single image: larger display
-      return 'aspect-[4/3] sm:aspect-video';
+      // Single image: square on mobile (Instagram-like), wider on desktop
+      return 'aspect-square sm:aspect-[4/3]';
     }
     if (media.length === 2) {
       // Two images: taller on mobile when stacked
@@ -278,7 +279,7 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
     }
     if (media.length === 3 && index === 0) {
       // First of three: spans full width on mobile
-      return 'aspect-[16/9] sm:aspect-square sm:row-span-2';
+      return 'aspect-[4/3] sm:aspect-square sm:row-span-2';
     }
     // Default square for grids
     return 'aspect-square';
@@ -294,7 +295,7 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
 
   return (
     <>
-      <div className={`grid ${getGridClass()} gap-1 sm:gap-1.5 rounded-xl sm:rounded-2xl overflow-hidden ${className}`}>
+      <div className={`grid ${getGridClass()} gap-0.5 sm:gap-1.5 rounded-none sm:rounded-2xl overflow-hidden ${className}`}>
         {media.slice(0, 4).map((item, index) => {
           const skipLightbox = hasInlinePlayback(item) || isAudioItem(item);
 
