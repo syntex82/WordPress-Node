@@ -1947,7 +1947,7 @@ export const developerMarketplaceApi = {
 // Media attachment interface for messages
 interface MediaAttachment {
   url: string;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'audio';
   filename: string;
   size: number;
   mimeType: string;

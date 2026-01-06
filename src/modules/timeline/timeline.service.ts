@@ -674,17 +674,18 @@ export class TimelineService {
   /**
    * Delete a post
    */
-  async deletePost(postId: string, userId: string) {
+  async deletePost(postId: string, userId: string, isAdmin = false) {
     const post = await this.prisma.timelinePost.findUnique({ where: { id: postId } });
     if (!post) throw new NotFoundException('Post not found');
-    if (post.userId !== userId) throw new ForbiddenException('Not authorized');
+    // Allow deletion if user owns the post OR if user is admin/editor
+    if (post.userId !== userId && !isAdmin) throw new ForbiddenException('Not authorized');
 
     try {
-      // Also decrement user's post count
+      // Decrement the post owner's post count (not the deleting user's)
       await this.prisma.$transaction([
         this.prisma.timelinePost.delete({ where: { id: postId } }),
         this.prisma.user.update({
-          where: { id: userId },
+          where: { id: post.userId },
           data: { postsCount: { decrement: 1 } },
         }),
       ]);

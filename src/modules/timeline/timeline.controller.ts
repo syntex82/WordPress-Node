@@ -143,7 +143,8 @@ export class TimelineController {
   @Delete('posts/:id')
   @UseGuards(JwtAuthGuard)
   async deletePost(@Request() req, @Param('id') id: string) {
-    return this.timelineService.deletePost(id, req.user.id);
+    const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'EDITOR';
+    return this.timelineService.deletePost(id, req.user.id, isAdmin);
   }
 
   /**

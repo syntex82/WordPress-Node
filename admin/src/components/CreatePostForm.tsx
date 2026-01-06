@@ -5,7 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { FiImage, FiVideo, FiX, FiGlobe, FiLock, FiHash, FiAtSign, FiLink, FiPlay, FiFolder, FiMic } from 'react-icons/fi';
+import { FiImage, FiVideo, FiX, FiGlobe, FiLock, FiHash, FiAtSign, FiLink, FiPlay, FiFolder, FiMic, FiMonitor } from 'react-icons/fi';
 import { timelineApi, mediaApi, CreatePostMediaDto, TimelinePostUser } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { useSiteTheme } from '../contexts/SiteThemeContext';
@@ -13,6 +13,8 @@ import toast from 'react-hot-toast';
 import EmojiPicker from './EmojiPicker';
 import MediaLibraryPicker from './MediaLibraryPicker';
 import MobileMediaRecorder from './MobileMediaRecorder';
+
+type RecordingMode = 'video' | 'audio' | 'screen';
 
 interface CreatePostFormProps {
   onPostCreated?: () => void;
@@ -48,6 +50,22 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
   // Mobile media recorder state
   const [showMediaRecorder, setShowMediaRecorder] = useState(false);
+  const [showRecordingModeMenu, setShowRecordingModeMenu] = useState(false);
+  const [recordingMode, setRecordingMode] = useState<RecordingMode>('video');
+  const recordingMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close recording mode menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (recordingMenuRef.current && !recordingMenuRef.current.contains(event.target as Node)) {
+        setShowRecordingModeMenu(false);
+      }
+    };
+    if (showRecordingModeMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showRecordingModeMenu]);
 
   // Debounced search for mention suggestions
   useEffect(() => {
@@ -493,17 +511,56 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 <FiFolder className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
-              {/* Record Video/Audio */}
-              <button
-                onClick={() => setShowMediaRecorder(true)}
-                disabled={media.length >= 4 || isUploading}
-                className={`p-1.5 sm:p-2 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
-                  isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-500'
-                }`}
-                title="Record video or audio"
-              >
-                <FiMic className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
+              {/* Record Video/Audio/Screen - Dropdown Menu */}
+              <div className="relative" ref={recordingMenuRef}>
+                <button
+                  onClick={() => setShowRecordingModeMenu(!showRecordingModeMenu)}
+                  disabled={media.length >= 4 || isUploading}
+                  className={`p-1.5 sm:p-2 rounded-full disabled:opacity-50 transition-colors touch-manipulation ${
+                    showRecordingModeMenu
+                      ? 'text-purple-400 bg-purple-900/30'
+                      : isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-500'
+                  }`}
+                  title="Record video, audio, or screen"
+                >
+                  <FiMic className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+
+                {/* Recording Mode Dropdown */}
+                {showRecordingModeMenu && (
+                  <div className={`absolute bottom-full left-0 mb-2 py-2 rounded-xl shadow-xl border z-50 min-w-[160px] ${
+                    isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+                  }`}>
+                    <button
+                      onClick={() => { setRecordingMode('video'); setShowRecordingModeMenu(false); setShowMediaRecorder(true); }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                        isDark ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <FiVideo className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm font-medium">Record Video</span>
+                    </button>
+                    <button
+                      onClick={() => { setRecordingMode('audio'); setShowRecordingModeMenu(false); setShowMediaRecorder(true); }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                        isDark ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <FiMic className="w-4 h-4 text-purple-400" />
+                      <span className="text-sm font-medium">Record Audio</span>
+                    </button>
+                    <button
+                      onClick={() => { setRecordingMode('screen'); setShowRecordingModeMenu(false); setShowMediaRecorder(true); }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                        isDark ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <FiMonitor className="w-4 h-4 text-green-400" />
+                      <span className="text-sm font-medium">Screen Recording</span>
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* External URL */}
               <button
@@ -571,6 +628,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
         isOpen={showMediaRecorder}
         onClose={() => setShowMediaRecorder(false)}
         onMediaCaptured={handleMediaCaptured}
+        mode={recordingMode}
       />
     </div>
   );

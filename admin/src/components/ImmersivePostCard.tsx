@@ -39,7 +39,14 @@ export default function ImmersivePostCard({
   const [showMenu, setShowMenu] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
-  
+
+  // Sync state with prop changes (e.g., when post data is refreshed)
+  useEffect(() => {
+    setIsLiked(post.isLiked);
+    setLikesCount(post.likesCount);
+    setSharesCount(post.sharesCount);
+  }, [post.id, post.isLiked, post.likesCount, post.sharesCount]);
+
   // Video state
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);

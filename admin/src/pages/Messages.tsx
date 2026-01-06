@@ -33,7 +33,7 @@ interface User {
 
 interface MediaAttachment {
   url: string;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'audio';
   filename: string;
   size: number;
   mimeType: string;
@@ -480,14 +480,14 @@ export default function Messages() {
     // Add the captured media to pending media
     const mediaAttachment: MediaAttachment = {
       url: media.url,
-      type: media.type === 'VIDEO' ? 'video' : 'image', // Use image type for audio placeholder
+      type: media.type === 'VIDEO' ? 'video' : 'audio',
       filename: `${media.type.toLowerCase()}-${Date.now()}.webm`,
       size: 0,
       mimeType: media.type === 'VIDEO' ? 'video/webm' : 'audio/webm',
     };
     setPendingMedia((prev) => [...prev, mediaAttachment]);
     setShowMediaRecorder(false);
-    toast.success(`${media.type === 'VIDEO' ? 'Video' : 'Audio'} ready to send`);
+    toast.success(`${media.type === 'VIDEO' ? 'Video' : 'Voice message'} ready to send`);
   };
 
   // Format file size
@@ -898,9 +898,16 @@ export default function Messages() {
                                   {message.media && message.media.length > 0 && (
                                     <div className={`flex flex-wrap gap-2 ${message.content ? 'mb-2' : ''}`}>
                                       {(message.media as MediaAttachment[]).map((media, idx) => (
-                                        <div key={idx} className="cursor-pointer group/media" onClick={() => setLightboxMedia(media)}>
+                                        <div key={idx} className={media.type === 'audio' ? '' : 'cursor-pointer group/media'} onClick={() => media.type !== 'audio' && setLightboxMedia(media)}>
                                           {media.type === 'image' ? (
                                             <img src={media.url} alt={media.filename} className="max-w-[150px] sm:max-w-[200px] max-h-[150px] sm:max-h-[200px] rounded-lg object-cover group-hover/media:opacity-90 transition-opacity" />
+                                          ) : media.type === 'audio' ? (
+                                            <div className={`flex items-center gap-2 p-2 rounded-lg min-w-[200px] sm:min-w-[250px] ${isOwn ? 'bg-indigo-600/30' : 'bg-slate-700/50'}`}>
+                                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                                <FiMic className="text-purple-400" size={14} />
+                                              </div>
+                                              <audio src={media.url} controls className="flex-1 h-8 max-w-[180px] sm:max-w-[220px]" style={{ minWidth: 0 }} />
+                                            </div>
                                           ) : (
                                             <video src={media.url} className="max-w-[150px] sm:max-w-[200px] max-h-[150px] sm:max-h-[200px] rounded-lg" controls />
                                           )}
@@ -959,6 +966,11 @@ export default function Messages() {
                     <div key={idx} className="relative group">
                       {media.type === 'image' ? (
                         <img src={media.url} alt={media.filename} className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg border border-slate-600/50 shadow-lg" />
+                      ) : media.type === 'audio' ? (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 rounded-lg border border-purple-500/30">
+                          <FiMic className="text-purple-400" size={16} />
+                          <span className="text-purple-300 text-xs">Voice message</span>
+                        </div>
                       ) : (
                         <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-700 rounded-lg border border-slate-600/50 flex items-center justify-center shadow-lg">
                           <FiVideo className="text-slate-400" size={20} />
@@ -971,7 +983,9 @@ export default function Messages() {
                       >
                         <FiX size={12} />
                       </button>
-                      <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[9px] text-white text-center truncate px-0.5 rounded-b-lg backdrop-blur-sm">{formatFileSize(media.size)}</span>
+                      {media.type !== 'audio' && (
+                        <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[9px] text-white text-center truncate px-0.5 rounded-b-lg backdrop-blur-sm">{formatFileSize(media.size)}</span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1168,8 +1182,15 @@ export default function Messages() {
           <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
             {lightboxMedia.type === 'image' ? (
               <img src={lightboxMedia.url} alt={lightboxMedia.filename} className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" />
+            ) : lightboxMedia.type === 'audio' ? (
+              <div className="bg-slate-800 rounded-xl p-8 flex flex-col items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center">
+                  <FiMic className="text-purple-400" size={32} />
+                </div>
+                <audio src={lightboxMedia.url} controls className="w-64" />
+              </div>
             ) : (
-              <video src={lightboxMedia.url} className="max-w-full max-h-[85vh] rounded-xl shadow-2xl" controls />
+              <video src={lightboxMedia.url} className="max-w-full max-h-[85vh] rounded-xl shadow-2xl" controls autoPlay />
             )}
             <p className="text-center text-white/60 mt-3 text-sm">{lightboxMedia.filename}</p>
           </div>

@@ -15,6 +15,7 @@ import {
 import toast from 'react-hot-toast';
 import CreatePostForm from '../../components/CreatePostForm';
 import PostCard from '../../components/PostCard';
+import CommentModal from '../../components/CommentModal';
 import FollowersModal from '../../components/FollowersModal';
 import { useSiteTheme } from '../../contexts/SiteThemeContext';
 
@@ -41,6 +42,8 @@ export default function MyProfile() {
   const [openPostMenu, setOpenPostMenu] = useState<string | null>(null);
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
+  const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
+  const [commentModalPost, setCommentModalPost] = useState<TimelinePost | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -493,6 +496,10 @@ export default function MyProfile() {
                     key={post.id}
                     post={post}
                     onDelete={handleDeletePost}
+                    onCommentClick={(postId, postData) => {
+                      setCommentModalPostId(postId);
+                      setCommentModalPost(postData);
+                    }}
                   />
                 ))}
               </div>
@@ -700,6 +707,24 @@ export default function MyProfile() {
         username={profile.username}
         type={followersModalType}
         isOwnProfile={true}
+      />
+
+      {/* Comment Modal */}
+      <CommentModal
+        postId={commentModalPostId || ''}
+        post={commentModalPost || undefined}
+        isOpen={!!commentModalPostId}
+        onClose={() => {
+          setCommentModalPostId(null);
+          setCommentModalPost(null);
+        }}
+        onCommentAdded={() => {
+          setTimelinePosts(prev => prev.map(p =>
+            p.id === commentModalPostId
+              ? { ...p, commentsCount: p.commentsCount + 1 }
+              : p
+          ));
+        }}
       />
     </div>
   );

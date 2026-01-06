@@ -309,6 +309,19 @@ describe('TimelineService', () => {
 
       await expect(service.deletePost('post-1', 'user-1')).rejects.toThrow(ForbiddenException);
     });
+
+    it('should allow admin to delete any post', async () => {
+      mockPrismaService.timelinePost.findUnique.mockResolvedValue({
+        ...mockPost,
+        userId: 'other-user', // Post owned by different user
+      });
+      mockPrismaService.timelinePost.delete.mockResolvedValue(mockPost);
+      mockPrismaService.user.update.mockResolvedValue({});
+
+      const result = await service.deletePost('post-1', 'admin-user', true); // isAdmin = true
+
+      expect(result).toEqual({ success: true });
+    });
   });
 
   describe('getUserPosts', () => {

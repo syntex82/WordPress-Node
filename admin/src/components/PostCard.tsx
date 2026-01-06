@@ -4,7 +4,7 @@
  * Supports hashtags, mentions, sharing, and real-time updates
  */
 
-import { useState, useCallback, Fragment } from 'react';
+import { useState, useCallback, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiTrash2, FiPlay, FiRepeat, FiX, FiCopy, FiCheck, FiImage, FiVideo } from 'react-icons/fi';
@@ -36,6 +36,13 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
   const [isLiking, setIsLiking] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Sync state with prop changes (e.g., when post data is refreshed)
+  useEffect(() => {
+    setIsLiked(post.isLiked);
+    setLikesCount(post.likesCount);
+    setSharesCount(post.sharesCount);
+  }, [post.id, post.isLiked, post.likesCount, post.sharesCount]);
 
   const isOwner = currentUser?.id === post.user.id;
   const isSharedPost = !!post.originalPost;
@@ -277,6 +284,25 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
             <p className={`whitespace-pre-wrap text-sm ${isDark ? 'text-slate-200' : 'text-gray-800'}`}>
               {post.originalPost.content}
             </p>
+          )}
+          {/* Original post media */}
+          {post.originalPost.media && post.originalPost.media.length > 0 && (
+            <div className="mt-3 -mx-2">
+              <PostMediaGallery
+                media={post.originalPost.media.map(m => ({
+                  id: m.id,
+                  type: m.type,
+                  url: m.url,
+                  thumbnail: m.thumbnail,
+                  altText: m.altText,
+                  width: m.width,
+                  height: m.height,
+                  duration: m.duration,
+                }))}
+                className="rounded-lg"
+                immersive={false}
+              />
+            </div>
           )}
         </div>
       )}
