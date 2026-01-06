@@ -167,7 +167,7 @@ export default function PublicProfile() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-0">
       {/* Cover Image - Premium Design */}
-      <div className="relative h-52 sm:h-64 md:h-80 rounded-2xl sm:rounded-3xl shadow-2xl">
+      <div className="relative h-64 sm:h-72 md:h-80 rounded-2xl sm:rounded-3xl shadow-2xl">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl overflow-hidden">
           <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>

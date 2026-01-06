@@ -14,7 +14,7 @@ import {
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CreatePostForm from '../../components/CreatePostForm';
-import PostMediaGallery from '../../components/PostMediaGallery';
+import PostCard from '../../components/PostCard';
 import FollowersModal from '../../components/FollowersModal';
 import { useSiteTheme } from '../../contexts/SiteThemeContext';
 
@@ -279,7 +279,7 @@ export default function MyProfile() {
       <input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
 
       {/* Cover Image - Premium Design */}
-      <div className="relative h-52 sm:h-64 md:h-80 z-30">
+      <div className="relative h-64 sm:h-72 md:h-80 z-30">
         {/* Cover image container with overflow-hidden for rounded corners */}
         <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden pointer-events-none">
           {/* Background Pattern */}
@@ -487,74 +487,15 @@ export default function MyProfile() {
                 <p className="text-slate-400">Share what's on your mind above!</p>
               </div>
             ) : (
-              timelinePosts.map((post) => (
-                <div key={post.id} className="bg-slate-800/50 backdrop-blur rounded-xl p-4 sm:p-6 border border-slate-700/50">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {profile.avatar ? (
-                        <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-white font-bold">{profile.name?.charAt(0) || 'U'}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="font-medium text-white">{profile.name}</span>
-                          <span className="text-slate-500 text-sm ml-2">{formatTimeAgo(post.createdAt)}</span>
-                        </div>
-                        <div className="relative">
-                          <button
-                            onClick={() => setOpenPostMenu(openPostMenu === post.id ? null : post.id)}
-                            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg touch-manipulation min-w-[36px] min-h-[36px] flex items-center justify-center"
-                          >
-                            <FiMoreHorizontal className="w-5 h-5" />
-                          </button>
-                          {openPostMenu === post.id && (
-                            <div className="absolute right-0 top-10 bg-slate-700 rounded-lg shadow-xl border border-slate-600 py-1 z-20 min-w-[140px]">
-                              <button
-                                onClick={() => handleDeletePost(post.id)}
-                                className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-slate-600 w-full text-left touch-manipulation"
-                              >
-                                <FiTrash2 className="w-4 h-4" /> Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-slate-300 mt-2 whitespace-pre-wrap">{post.content}</p>
-                      {post.media && post.media.length > 0 && (
-                        <PostMediaGallery
-                          media={post.media.map(m => ({
-                            type: m.type,
-                            url: m.url,
-                            altText: m.altText,
-                            thumbnail: m.thumbnail,
-                          }))}
-                          className="mt-3"
-                        />
-                      )}
-                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-700/50">
-                        <button
-                          onClick={() => handleLikePost(post.id)}
-                          className={`flex items-center gap-1.5 text-sm transition ${post.isLiked ? 'text-red-400' : 'text-slate-400 hover:text-red-400'}`}
-                        >
-                          <FiHeart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
-                          {post.likesCount || 0}
-                        </button>
-                        <span className="flex items-center gap-1.5 text-sm text-slate-400">
-                          <FiMessageCircle className="w-4 h-4" />
-                          {post.commentsCount || 0}
-                        </span>
-                        <button className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-blue-400 transition">
-                          <FiShare2 className="w-4 h-4" />
-                          Share
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
+              <div className="space-y-0 divide-y divide-slate-700/50">
+                {timelinePosts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onDelete={handleDeletePost}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>
