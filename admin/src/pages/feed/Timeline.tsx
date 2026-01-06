@@ -11,6 +11,7 @@ import { timelineApi, profileApi, TimelinePost, SuggestedUser } from '../../serv
 import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
 import CommentModal from '../../components/CommentModal';
+import EditPostModal from '../../components/EditPostModal';
 import ImmersiveFeed from '../../components/ImmersiveFeed';
 import { FiUsers, FiCompass, FiTrendingUp, FiRefreshCw, FiHash, FiBell, FiGrid, FiPlay } from 'react-icons/fi';
 import toast from 'react-hot-toast';
@@ -40,6 +41,7 @@ export default function Timeline() {
   const [newPostsCount, setNewPostsCount] = useState(0);
   const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
   const [commentModalPost, setCommentModalPost] = useState<TimelinePost | null>(null);
+  const [editModalPost, setEditModalPost] = useState<TimelinePost | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const socketRef = useRef<Socket | null>(null);
   const { token } = useAuthStore();
@@ -357,6 +359,7 @@ export default function Timeline() {
                     key={post.id}
                     post={post}
                     onDelete={handlePostDeleted}
+                    onEdit={setEditModalPost}
                     onHashtagClick={handleHashtagClick}
                     onCommentClick={(postId, postData) => {
                       setCommentModalPostId(postId);
@@ -472,6 +475,18 @@ export default function Timeline() {
             p.id === commentModalPostId
               ? { ...p, commentsCount: p.commentsCount + 1 }
               : p
+          ));
+        }}
+      />
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        post={editModalPost}
+        isOpen={!!editModalPost}
+        onClose={() => setEditModalPost(null)}
+        onPostUpdated={(updatedPost) => {
+          setPosts(prev => prev.map(p =>
+            p.id === updatedPost.id ? updatedPost : p
           ));
         }}
       />

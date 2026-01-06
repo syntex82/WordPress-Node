@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import CreatePostForm from '../../components/CreatePostForm';
 import PostCard from '../../components/PostCard';
 import CommentModal from '../../components/CommentModal';
+import EditPostModal from '../../components/EditPostModal';
 import FollowersModal from '../../components/FollowersModal';
 import { useSiteTheme } from '../../contexts/SiteThemeContext';
 
@@ -44,6 +45,7 @@ export default function MyProfile() {
   const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
   const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
   const [commentModalPost, setCommentModalPost] = useState<TimelinePost | null>(null);
+  const [editModalPost, setEditModalPost] = useState<TimelinePost | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -496,6 +498,7 @@ export default function MyProfile() {
                     key={post.id}
                     post={post}
                     onDelete={handleDeletePost}
+                    onEdit={setEditModalPost}
                     onCommentClick={(postId, postData) => {
                       setCommentModalPostId(postId);
                       setCommentModalPost(postData);
@@ -723,6 +726,18 @@ export default function MyProfile() {
             p.id === commentModalPostId
               ? { ...p, commentsCount: p.commentsCount + 1 }
               : p
+          ));
+        }}
+      />
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        post={editModalPost}
+        isOpen={!!editModalPost}
+        onClose={() => setEditModalPost(null)}
+        onPostUpdated={(updatedPost) => {
+          setTimelinePosts(prev => prev.map(p =>
+            p.id === updatedPost.id ? updatedPost : p
           ));
         }}
       />

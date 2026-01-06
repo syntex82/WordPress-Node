@@ -7,7 +7,7 @@
 import { useState, useCallback, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiTrash2, FiPlay, FiRepeat, FiX, FiCopy, FiCheck, FiImage, FiVideo } from 'react-icons/fi';
+import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiTrash2, FiEdit2, FiPlay, FiRepeat, FiX, FiCopy, FiCheck, FiImage, FiVideo } from 'react-icons/fi';
 import { TimelinePost, timelineApi, profileApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { useSiteTheme } from '../contexts/SiteThemeContext';
@@ -17,12 +17,13 @@ import PostMediaGallery from './PostMediaGallery';
 interface PostCardProps {
   post: TimelinePost;
   onDelete?: (postId: string) => void;
+  onEdit?: (post: TimelinePost) => void;
   onCommentClick?: (postId: string, post: TimelinePost) => void;
   onHashtagClick?: (tag: string) => void;
   onPostShared?: (post: TimelinePost) => void;
 }
 
-export default function PostCard({ post, onDelete, onCommentClick, onHashtagClick, onPostShared }: PostCardProps) {
+export default function PostCard({ post, onDelete, onEdit, onCommentClick, onHashtagClick, onPostShared }: PostCardProps) {
   const { resolvedTheme } = useSiteTheme();
   const isDark = resolvedTheme === 'dark';
 
@@ -208,7 +209,7 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
           </div>
         </div>
 
-        {/* Menu */}
+        {/* Menu - always show for owner */}
         {isOwner && (
           <div className="relative">
             <button
@@ -221,9 +222,25 @@ export default function PostCard({ post, onDelete, onCommentClick, onHashtagClic
               <div className={`absolute right-0 mt-1 w-48 rounded-lg shadow-lg border z-10 ${
                 isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-200'
               }`}>
+                {/* Edit button - only for non-shared posts */}
+                {!isSharedPost && onEdit && (
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onEdit(post);
+                    }}
+                    className={`w-full flex items-center gap-2 px-4 py-2 ${isDark ? 'text-slate-200 hover:bg-slate-600' : 'text-gray-700 hover:bg-gray-100'}`}
+                  >
+                    <FiEdit2 className="w-4 h-4" />
+                    Edit Post
+                  </button>
+                )}
                 <button
-                  onClick={handleDelete}
-                  className={`w-full flex items-center gap-2 px-4 py-2 text-red-600 ${isDark ? 'hover:bg-slate-600' : 'hover:bg-gray-100'}`}
+                  onClick={() => {
+                    setShowMenu(false);
+                    handleDelete();
+                  }}
+                  className={`w-full flex items-center gap-2 px-4 py-2 text-red-500 ${isDark ? 'hover:bg-slate-600' : 'hover:bg-gray-100'}`}
                 >
                   <FiTrash2 className="w-4 h-4" />
                   Delete Post

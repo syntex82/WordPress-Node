@@ -1752,6 +1752,10 @@ export const timelineApi = {
   deleteComment: (postId: string, commentId: string) =>
     api.delete(`/timeline/posts/${postId}/comments/${commentId}`),
 
+  // Update a post
+  updatePost: (postId: string, data: { content?: string; isPublic?: boolean }) =>
+    api.patch<TimelinePost>(`/timeline/posts/${postId}`, data),
+
   // Delete a post
   deletePost: (postId: string) =>
     api.delete(`/timeline/posts/${postId}`),

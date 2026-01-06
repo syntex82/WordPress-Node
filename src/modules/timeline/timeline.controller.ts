@@ -9,6 +9,7 @@ import {
   Get,
   Post,
   Delete,
+  Patch,
   Body,
   Param,
   Query,
@@ -16,7 +17,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { TimelineService, CreatePostDto, SharePostDto } from './timeline.service';
+import { TimelineService, CreatePostDto, SharePostDto, UpdatePostDto } from './timeline.service';
 
 @Controller('api/timeline')
 export class TimelineController {
@@ -135,6 +136,15 @@ export class TimelineController {
     @Query('limit') limit?: string,
   ) {
     return this.timelineService.getComments(id, parseInt(page || '1'), parseInt(limit || '20'));
+  }
+
+  /**
+   * Update a post
+   */
+  @Patch('posts/:id')
+  @UseGuards(JwtAuthGuard)
+  async updatePost(@Request() req, @Param('id') id: string, @Body() dto: UpdatePostDto) {
+    return this.timelineService.updatePost(id, req.user.id, dto);
   }
 
   /**

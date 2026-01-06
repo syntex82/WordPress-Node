@@ -672,6 +672,34 @@ export class TimelineService {
   }
 
   /**
+   * Update a post
+   */
+  async updatePost(postId: string, userId: string, dto: UpdatePostDto) {
+    const post = await this.prisma.timelinePost.findUnique({
+      where: { id: postId },
+      include: this.postInclude,
+    });
+    if (!post) throw new NotFoundException('Post not found');
+    if (post.userId !== userId) throw new ForbiddenException('Not authorized to edit this post');
+
+    // Cannot edit shared posts (reposts)
+    if (post.originalPostId) {
+      throw new BadRequestException('Cannot edit a shared post');
+    }
+
+    const updatedPost = await this.prisma.timelinePost.update({
+      where: { id: postId },
+      data: {
+        content: dto.content !== undefined ? dto.content : post.content,
+        isPublic: dto.isPublic !== undefined ? dto.isPublic : post.isPublic,
+      },
+      include: this.postInclude,
+    });
+
+    return this.formatPost(updatedPost, userId);
+  }
+
+  /**
    * Delete a post
    */
   async deletePost(postId: string, userId: string, isAdmin = false) {
