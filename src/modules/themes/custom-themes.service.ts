@@ -712,6 +712,32 @@ img { max-width: 100%; height: auto; display: block; }
         },
       });
 
+      // Migrate blocks from pages to ThemeCustomizationBlock table
+      // This allows editing through the Theme Content Manager
+      if (pages && pages.length > 0) {
+        let blockPosition = 0;
+        for (const page of pages) {
+          if (page.blocks && Array.isArray(page.blocks)) {
+            for (const block of page.blocks) {
+              await this.prisma.themeCustomizationBlock.create({
+                data: {
+                  themeId: installedTheme.id,
+                  name: `${page.name} - ${block.type}`,
+                  type: block.type,
+                  title: block.props?.title || block.props?.heading || '',
+                  content: block.props?.description || block.props?.text || block.props?.content || '',
+                  layout: 'contained',
+                  columns: block.props?.columns || 1,
+                  isVisible: block.visibility?.desktop !== false,
+                  position: blockPosition++,
+                  richContent: block.props, // Store full props for rich editing
+                },
+              });
+            }
+          }
+        }
+      }
+
       return installedTheme;
     } catch (error) {
       // Clean up on failure

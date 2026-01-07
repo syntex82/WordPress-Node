@@ -3409,12 +3409,12 @@ export function BlockRenderer({
 
   return (
     <div
-      className={`relative group ${isSelected ? 'ring-2 ring-blue-500' : ''} ${animationClass}`}
+      className={`relative group cursor-pointer transition-all ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-900' : 'hover:ring-1 hover:ring-blue-400/50'} ${animationClass}`}
       style={getAnimationStyle()}
       onClick={onSelect}
     >
       {/* Block Controls */}
-      <div className={`absolute -top-3 right-2 flex items-center gap-1 bg-gray-800 rounded-lg p-1 z-10 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+      <div className={`absolute -top-3 right-2 flex items-center gap-1 bg-gray-800 rounded-lg p-1 z-10 transition-opacity shadow-lg ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
         <button
           onClick={(e) => { e.stopPropagation(); onMoveUp?.(); }}
           className="p-1.5 hover:bg-gray-700 rounded text-gray-300"
@@ -3467,9 +3467,21 @@ export function BlockRenderer({
         </button>
       </div>
 
-      {/* Block Type Label */}
-      <div className={`absolute -top-3 left-2 px-2 py-0.5 bg-gray-700 rounded text-xs text-gray-300 z-10 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-        {BLOCK_CONFIGS[block.type as BlockType]?.label || block.type}
+      {/* Block Type Label with Edit Hint */}
+      <div className={`absolute -top-3 left-2 flex items-center gap-2 z-10 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+        <span className="px-2 py-0.5 bg-blue-600 rounded text-xs text-white font-medium shadow-lg">
+          {BLOCK_CONFIGS[block.type as BlockType]?.label || block.type}
+        </span>
+        {!isSelected && (
+          <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400">
+            Click to edit
+          </span>
+        )}
+        {isSelected && (
+          <span className="px-2 py-0.5 bg-green-600 rounded text-xs text-white">
+            ✓ Selected - Edit in sidebar
+          </span>
+        )}
       </div>
 
       {renderBlock()}

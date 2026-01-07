@@ -648,19 +648,28 @@ export default function ThemeDesigner() {
       setThemeDescription(aiTheme.description || '');
       setSettings(mergedSettings);
 
+      // Helper function to merge block props with defaults from BLOCK_CONFIGS
+      const mergeBlockWithDefaults = (block: any) => {
+        const blockType = block.type as BlockType;
+        const config = BLOCK_CONFIGS[blockType];
+        const defaultProps = config?.defaultProps || {};
+
+        return {
+          id: block.id || `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: blockType || 'hero',
+          props: { ...defaultProps, ...block.props }, // Merge defaults with AI props
+          visibility: block.visibility || { desktop: true, tablet: true, mobile: true },
+          animation: block.animation || { type: 'none', duration: 300, delay: 0 },
+        };
+      };
+
       // Validate and set pages with proper structure
       const validPages = (aiTheme.pages && Array.isArray(aiTheme.pages) && aiTheme.pages.length > 0)
         ? aiTheme.pages.map((page: any, index: number) => ({
             id: page.id || `page-${Date.now()}-${index}`,
             name: page.name || (index === 0 ? 'Home' : `Page ${index + 1}`),
             slug: page.slug || (index === 0 ? '/' : `/page-${index + 1}`),
-            blocks: Array.isArray(page.blocks) ? page.blocks.map((block: any) => ({
-              id: block.id || `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              type: block.type || 'textBlock',
-              props: block.props || {},
-              visibility: block.visibility || { desktop: true, tablet: true, mobile: true },
-              animation: block.animation || { type: 'none', duration: 300, delay: 0 },
-            })) : [],
+            blocks: Array.isArray(page.blocks) ? page.blocks.map(mergeBlockWithDefaults) : [],
             isHomePage: page.isHomePage ?? index === 0,
           }))
         : [{ id: 'home', name: 'Home', slug: '/', blocks: [], isHomePage: true }];
@@ -671,7 +680,15 @@ export default function ThemeDesigner() {
       setHistoryIndex(0);
       setSelectedBlockId(null);
       setShowThemeList(false);
-      toast.success('Theme generated! Customize it further or save it.');
+
+      // Auto-switch to blocks tab so user can see and edit the blocks
+      setActiveSection('blocks');
+
+      // Show helpful toast with instructions
+      const totalBlocks = validPages.reduce((acc: number, p: any) => acc + p.blocks.length, 0);
+      toast.success(`Theme generated with ${validPages.length} page(s) and ${totalBlocks} blocks! Click any block to edit it.`, {
+        duration: 5000,
+      });
     } catch (error) {
       console.error('Error applying AI theme:', error);
       toast.error('Failed to apply AI-generated theme. Using defaults.');

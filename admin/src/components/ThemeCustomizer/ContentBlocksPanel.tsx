@@ -4,13 +4,14 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   FiPlus, FiTrash2, FiEdit2, FiX, FiSave, FiLayout as FiLayoutIcon,
   FiMove, FiEye, FiEyeOff, FiCopy, FiDownload, FiCheckSquare, FiSquare,
-  FiChevronUp, FiChevronDown, FiColumns, FiCode
+  FiChevronUp, FiChevronDown, FiColumns, FiCode, FiExternalLink
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { themeCustomizationApi, ThemeCustomizationBlock } from '../../services/api';
+import { themeCustomizationApi, customThemesApi, ThemeCustomizationBlock } from '../../services/api';
 import {
   DndContext,
   closestCenter,
@@ -226,6 +227,8 @@ export default function ContentBlocksPanel({ themeId }: ContentBlocksPanelProps)
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [filterType, setFilterType] = useState<string>('');
+  const [isCustomTheme, setIsCustomTheme] = useState(false);
+  const [customThemeBlockCount, setCustomThemeBlockCount] = useState(0);
   const [newBlock, setNewBlock] = useState<Partial<ThemeCustomizationBlock>>({
     name: '',
     type: 'text',
@@ -248,10 +251,41 @@ export default function ContentBlocksPanel({ themeId }: ContentBlocksPanelProps)
   const loadBlocks = async () => {
     try {
       setLoading(true);
+      // First try to load from ThemeCustomizationBlock (installed themes)
       const response = await themeCustomizationApi.getBlocks(themeId);
-      setBlocks(response.data.sort((a: ThemeCustomizationBlock, b: ThemeCustomizationBlock) => a.position - b.position));
+      if (response.data && response.data.length > 0) {
+        setBlocks(response.data.sort((a: ThemeCustomizationBlock, b: ThemeCustomizationBlock) => a.position - b.position));
+        setIsCustomTheme(false);
+      } else {
+        // Check if this is a CustomTheme with pages/blocks
+        try {
+          const customThemeResponse = await customThemesApi.getById(themeId);
+          if (customThemeResponse.data && customThemeResponse.data.pages) {
+            const pages = customThemeResponse.data.pages as any[];
+            const totalBlocks = pages.reduce((acc, page) => acc + (page.blocks?.length || 0), 0);
+            setIsCustomTheme(true);
+            setCustomThemeBlockCount(totalBlocks);
+            setBlocks([]);
+          }
+        } catch {
+          // Not a CustomTheme either, just show empty
+          setBlocks([]);
+        }
+      }
     } catch (err: any) {
-      toast.error('Failed to load blocks');
+      // Try CustomTheme as fallback
+      try {
+        const customThemeResponse = await customThemesApi.getById(themeId);
+        if (customThemeResponse.data && customThemeResponse.data.pages) {
+          const pages = customThemeResponse.data.pages as any[];
+          const totalBlocks = pages.reduce((acc, page) => acc + (page.blocks?.length || 0), 0);
+          setIsCustomTheme(true);
+          setCustomThemeBlockCount(totalBlocks);
+          setBlocks([]);
+        }
+      } catch {
+        toast.error('Failed to load blocks');
+      }
     } finally {
       setLoading(false);
     }
@@ -396,6 +430,40 @@ export default function ContentBlocksPanel({ themeId }: ContentBlocksPanelProps)
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-400">Loading blocks...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show redirect UI for CustomTheme blocks (AI-generated themes)
+  if (isCustomTheme) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 rounded-2xl border border-indigo-500/30 p-8 text-center">
+          <div className="w-16 h-16 bg-indigo-600/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FiLayoutIcon size={32} className="text-indigo-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">AI-Generated Theme Blocks</h3>
+          <p className="text-gray-400 mb-2">
+            This theme has <span className="text-indigo-400 font-semibold">{customThemeBlockCount} blocks</span> created by the AI Theme Generator.
+          </p>
+          <p className="text-gray-500 text-sm mb-6">
+            To edit these blocks, use the Theme Designer which provides a visual drag-and-drop editor.
+          </p>
+          <Link
+            to="/admin/theme-designer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium shadow-lg shadow-indigo-500/30 transition-all"
+          >
+            <FiEdit2 size={18} />
+            Open Theme Designer
+            <FiExternalLink size={14} />
+          </Link>
+          <div className="mt-6 pt-6 border-t border-gray-700">
+            <p className="text-xs text-gray-500">
+              💡 Tip: In the Theme Designer, click any block to edit its content, style, and layout.
+              You can also add new blocks, reorder them, and preview on different devices.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -609,90 +677,258 @@ export default function ContentBlocksPanel({ themeId }: ContentBlocksPanelProps)
         </div>
       )}
 
-      {/* Edit Block Modal */}
+      {/* Edit Block Modal - Enhanced with rich content editing */}
       {editingBlock && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto shadow-2xl">
-            <div className="p-6 border-b border-gray-700">
+          <div className="bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto shadow-2xl">
+            <div className="p-6 border-b border-gray-700 sticky top-0 bg-gray-800 z-10">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">Edit Block</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{BLOCK_TYPES.find(t => t.id === editData.type)?.icon || '📦'}</span>
+                  <h2 className="text-xl font-bold text-white">Edit {BLOCK_TYPES.find(t => t.id === editData.type)?.label || 'Block'}</h2>
+                </div>
                 <button onClick={() => setEditingBlock(null)} className="p-2 hover:bg-gray-700 rounded-lg text-gray-400">
                   <FiX size={24} />
                 </button>
               </div>
             </div>
 
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Block Name</label>
+            <div className="p-6 space-y-6">
+              {/* Basic Settings */}
+              <div className="bg-gray-900/50 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
+                  <FiLayoutIcon size={16} /> Basic Settings
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Block Name</label>
+                    <input
+                      type="text"
+                      value={editData.name || ''}
+                      onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Type</label>
+                    <select
+                      value={editData.type || ''}
+                      onChange={(e) => setEditData({ ...editData, type: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {BLOCK_TYPES.map(type => (
+                        <option key={type.id} value={type.id}>{type.icon} {type.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Layout</label>
+                    <select
+                      value={editData.layout || 'contained'}
+                      onChange={(e) => setEditData({ ...editData, layout: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {LAYOUT_OPTIONS.map(layout => (
+                        <option key={layout.id} value={layout.id}>{layout.icon} {layout.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Columns</label>
+                    <select
+                      value={editData.columns || 1}
+                      onChange={(e) => setEditData({ ...editData, columns: parseInt(e.target.value) })}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {[1, 2, 3, 4, 5, 6].map(n => (
+                        <option key={n} value={n}>{n} Column{n > 1 ? 's' : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Settings - Dynamic based on block type */}
+              <div className="bg-gray-900/50 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
+                  <FiEdit2 size={16} /> Content
+                </h3>
+
+                {/* Title - for most block types */}
+                <div className="mb-4">
+                  <label className="block text-sm text-gray-400 mb-1">Title / Heading</label>
                   <input
                     type="text"
-                    value={editData.name || ''}
-                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    value={editData.title || (editData as any).richContent?.title || ''}
+                    onChange={(e) => {
+                      const richContent = (editData as any).richContent || {};
+                      setEditData({
+                        ...editData,
+                        title: e.target.value,
+                        richContent: { ...richContent, title: e.target.value }
+                      } as any);
+                    }}
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Enter title..."
                   />
                 </div>
+
+                {/* Subtitle - for hero, cta blocks */}
+                {['hero', 'cta', 'features', 'testimonials'].includes(editData.type || '') && (
+                  <div className="mb-4">
+                    <label className="block text-sm text-gray-400 mb-1">Subtitle / Description</label>
+                    <input
+                      type="text"
+                      value={(editData as any).richContent?.subtitle || (editData as any).richContent?.description || ''}
+                      onChange={(e) => {
+                        const richContent = (editData as any).richContent || {};
+                        setEditData({
+                          ...editData,
+                          richContent: { ...richContent, subtitle: e.target.value, description: e.target.value }
+                        } as any);
+                      }}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Enter subtitle..."
+                    />
+                  </div>
+                )}
+
+                {/* CTA Button - for hero, cta blocks */}
+                {['hero', 'cta'].includes(editData.type || '') && (
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Button Text</label>
+                      <input
+                        type="text"
+                        value={(editData as any).richContent?.ctaText || (editData as any).richContent?.buttonText || ''}
+                        onChange={(e) => {
+                          const richContent = (editData as any).richContent || {};
+                          setEditData({
+                            ...editData,
+                            richContent: { ...richContent, ctaText: e.target.value, buttonText: e.target.value }
+                          } as any);
+                        }}
+                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                        placeholder="e.g., Get Started"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Button URL</label>
+                      <input
+                        type="text"
+                        value={(editData as any).richContent?.ctaUrl || (editData as any).richContent?.buttonLink || ''}
+                        onChange={(e) => {
+                          const richContent = (editData as any).richContent || {};
+                          setEditData({
+                            ...editData,
+                            richContent: { ...richContent, ctaUrl: e.target.value, buttonLink: e.target.value }
+                          } as any);
+                        }}
+                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                        placeholder="e.g., /signup"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Background Image - for hero blocks */}
+                {['hero', 'gallery'].includes(editData.type || '') && (
+                  <div className="mb-4">
+                    <label className="block text-sm text-gray-400 mb-1">Background Image URL</label>
+                    <input
+                      type="text"
+                      value={(editData as any).richContent?.backgroundImage || editData.backgroundImage || ''}
+                      onChange={(e) => {
+                        const richContent = (editData as any).richContent || {};
+                        setEditData({
+                          ...editData,
+                          backgroundImage: e.target.value,
+                          richContent: { ...richContent, backgroundImage: e.target.value }
+                        } as any);
+                      }}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                      placeholder="https://..."
+                    />
+                  </div>
+                )}
+
+                {/* Content - for text, custom blocks */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Type</label>
-                  <select
-                    value={editData.type || ''}
-                    onChange={(e) => setEditData({ ...editData, type: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {BLOCK_TYPES.map(type => (
-                      <option key={type.id} value={type.id}>{type.icon} {type.label}</option>
-                    ))}
-                  </select>
+                  <label className="block text-sm text-gray-400 mb-1">Content / Body Text</label>
+                  <textarea
+                    value={editData.content || (editData as any).richContent?.content || ''}
+                    onChange={(e) => {
+                      const richContent = (editData as any).richContent || {};
+                      setEditData({
+                        ...editData,
+                        content: e.target.value,
+                        richContent: { ...richContent, content: e.target.value }
+                      } as any);
+                    }}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 resize-none"
+                    placeholder="Enter content..."
+                  />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Display Title</label>
-                <input
-                  type="text"
-                  value={editData.title || ''}
-                  onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Layout</label>
-                  <select
-                    value={editData.layout || 'contained'}
-                    onChange={(e) => setEditData({ ...editData, layout: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {LAYOUT_OPTIONS.map(layout => (
-                      <option key={layout.id} value={layout.id}>{layout.icon} {layout.label}</option>
-                    ))}
-                  </select>
+
+              {/* Style Settings */}
+              <div className="bg-gray-900/50 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
+                  <FiCode size={16} /> Styling
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Background Color</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={(editData as any).backgroundColor || '#1a1a2e'}
+                        onChange={(e) => setEditData({ ...editData, backgroundColor: e.target.value } as any)}
+                        className="w-12 h-12 rounded-lg border border-gray-600 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={(editData as any).backgroundColor || ''}
+                        onChange={(e) => setEditData({ ...editData, backgroundColor: e.target.value } as any)}
+                        className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                        placeholder="#1a1a2e"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Text Color</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={(editData as any).textColor || '#ffffff'}
+                        onChange={(e) => setEditData({ ...editData, textColor: e.target.value } as any)}
+                        className="w-12 h-12 rounded-lg border border-gray-600 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={(editData as any).textColor || ''}
+                        onChange={(e) => setEditData({ ...editData, textColor: e.target.value } as any)}
+                        className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
+                        placeholder="#ffffff"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Columns</label>
-                  <select
-                    value={editData.columns || 1}
-                    onChange={(e) => setEditData({ ...editData, columns: parseInt(e.target.value) })}
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                      <option key={n} value={n}>{n} Column{n > 1 ? 's' : ''}</option>
-                    ))}
-                  </select>
+                <div className="mt-4">
+                  <label className="block text-sm text-gray-400 mb-1">Custom CSS</label>
+                  <textarea
+                    value={(editData as any).customCSS || ''}
+                    onChange={(e) => setEditData({ ...editData, customCSS: e.target.value } as any)}
+                    rows={3}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 resize-none font-mono text-sm"
+                    placeholder=".block { /* custom styles */ }"
+                  />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Content</label>
-                <textarea
-                  value={editData.content || ''}
-                  onChange={(e) => setEditData({ ...editData, content: e.target.value })}
-                  rows={5}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 resize-none"
-                />
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-700 flex justify-end gap-3 sticky bottom-0 bg-gray-800">
               <button onClick={() => setEditingBlock(null)} className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium">
                 Cancel
               </button>
