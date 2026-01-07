@@ -10,7 +10,7 @@ import {
   FiMove, FiPlus, FiArrowUp, FiArrowDown, FiCopy, FiEye, FiEyeOff,
   FiBook, FiList, FiTrendingUp, FiUser, FiFolder, FiShoppingCart,
   FiFilter, FiCreditCard, FiPercent, FiUpload, FiLock, FiMail, FiLogIn,
-  FiNavigation, FiAlignCenter, FiSidebar, FiMapPin
+  FiNavigation, FiAlignCenter, FiSidebar, FiMapPin, FiAlertCircle
 } from 'react-icons/fi';
 import { CustomThemeSettings } from '../../services/api';
 import MediaPickerModal from '../MediaPickerModal';
@@ -3654,6 +3654,18 @@ export function ContentBlocksPanel({
           <div className="space-y-2">
             {blocks.map((block, index) => {
               const config = BLOCK_CONFIGS[block.type];
+              // Skip blocks with unknown types
+              if (!config) {
+                return (
+                  <div
+                    key={block.id}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-red-900/20 border border-red-700/50"
+                  >
+                    <FiAlertCircle size={16} className="text-red-400" />
+                    <span className="flex-1 text-sm text-red-300">Unknown block: {block.type}</span>
+                  </div>
+                );
+              }
               const Icon = config.icon;
               return (
                 <div

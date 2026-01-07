@@ -57,6 +57,27 @@ export class CustomThemesController {
   }
 
   /**
+   * List available AI theme presets
+   * GET /api/custom-themes/presets
+   * NOTE: This must be BEFORE /:id to avoid being caught by the dynamic route
+   */
+  @Get('presets')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  listPresets() {
+    return this.aiThemeGeneratorService.listPresets();
+  }
+
+  /**
+   * Get a specific preset by ID
+   * GET /api/custom-themes/presets/:id
+   */
+  @Get('presets/:id')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  getPreset(@Param('id') id: string) {
+    return this.aiThemeGeneratorService.getPreset(id);
+  }
+
+  /**
    * Get custom theme by ID
    * GET /api/custom-themes/:id
    */
@@ -188,26 +209,6 @@ export class CustomThemesController {
   @Roles(UserRole.ADMIN)
   async generateAiTheme(@Body() dto: GenerateAiThemeDto, @Request() req: any) {
     return this.aiThemeGeneratorService.generateTheme(dto, req.user.id);
-  }
-
-  /**
-   * List available AI theme presets
-   * GET /api/custom-themes/presets
-   */
-  @Get('presets')
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  listPresets() {
-    return this.aiThemeGeneratorService.listPresets();
-  }
-
-  /**
-   * Get a specific preset by ID
-   * GET /api/custom-themes/presets/:id
-   */
-  @Get('presets/:id')
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  getPreset(@Param('id') id: string) {
-    return this.aiThemeGeneratorService.getPreset(id);
   }
 
   /**
