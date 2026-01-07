@@ -634,15 +634,51 @@ export default function ThemeDesigner() {
 
   // Handle AI-generated theme
   const handleAiThemeGenerated = (aiTheme: any) => {
-    setThemeName(aiTheme.name);
-    setThemeDescription(aiTheme.description);
-    setSettings(aiTheme.settings);
-    setPages(aiTheme.pages || [{ id: 'home', name: 'Home', slug: '/', blocks: [], isHomePage: true }]);
-    setCurrentPageId(aiTheme.pages?.[0]?.id || 'home');
-    setHistory([aiTheme.settings]);
-    setHistoryIndex(0);
-    setSelectedBlockId(null);
-    toast.success('Theme generated! Customize it further or save it.');
+    try {
+      // Merge AI settings with defaults to ensure all required properties exist
+      const mergedSettings: CustomThemeSettings = {
+        colors: { ...DEFAULT_SETTINGS.colors, ...aiTheme.settings?.colors },
+        typography: { ...DEFAULT_SETTINGS.typography, ...aiTheme.settings?.typography },
+        layout: { ...DEFAULT_SETTINGS.layout, ...aiTheme.settings?.layout },
+        spacing: { ...DEFAULT_SETTINGS.spacing, ...aiTheme.settings?.spacing },
+        borders: { ...DEFAULT_SETTINGS.borders, ...aiTheme.settings?.borders },
+      };
+
+      setThemeName(aiTheme.name || 'AI Generated Theme');
+      setThemeDescription(aiTheme.description || '');
+      setSettings(mergedSettings);
+
+      // Validate and set pages with proper structure
+      const validPages = (aiTheme.pages && Array.isArray(aiTheme.pages) && aiTheme.pages.length > 0)
+        ? aiTheme.pages.map((page: any, index: number) => ({
+            id: page.id || `page-${Date.now()}-${index}`,
+            name: page.name || (index === 0 ? 'Home' : `Page ${index + 1}`),
+            slug: page.slug || (index === 0 ? '/' : `/page-${index + 1}`),
+            blocks: Array.isArray(page.blocks) ? page.blocks.map((block: any) => ({
+              id: block.id || `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              type: block.type || 'textBlock',
+              props: block.props || {},
+              visibility: block.visibility || { desktop: true, tablet: true, mobile: true },
+              animation: block.animation || { type: 'none', duration: 300, delay: 0 },
+            })) : [],
+            isHomePage: page.isHomePage ?? index === 0,
+          }))
+        : [{ id: 'home', name: 'Home', slug: '/', blocks: [], isHomePage: true }];
+
+      setPages(validPages);
+      setCurrentPageId(validPages[0]?.id || 'home');
+      setHistory([mergedSettings]);
+      setHistoryIndex(0);
+      setSelectedBlockId(null);
+      setShowThemeList(false);
+      toast.success('Theme generated! Customize it further or save it.');
+    } catch (error) {
+      console.error('Error applying AI theme:', error);
+      toast.error('Failed to apply AI-generated theme. Using defaults.');
+      setSettings(DEFAULT_SETTINGS);
+      setPages([{ id: 'home', name: 'Home', slug: '/', blocks: [], isHomePage: true }]);
+      setCurrentPageId('home');
+    }
   };
 
   // Create new theme
