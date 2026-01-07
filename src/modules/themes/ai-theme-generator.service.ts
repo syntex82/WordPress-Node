@@ -143,7 +143,7 @@ export class AiThemeGeneratorService {
           { role: 'user', content: this.buildDetailedUserPrompt(dto) },
         ],
         temperature: 0.7,
-        max_tokens: 8000,
+        max_tokens: 4096,
       }),
     });
 
@@ -167,7 +167,7 @@ export class AiThemeGeneratorService {
       },
       body: JSON.stringify({
         model: 'claude-3-opus-20240229',
-        max_tokens: 8000,
+        max_tokens: 4096,
         system: this.getComprehensiveSystemPrompt(),
         messages: [{ role: 'user', content: this.buildDetailedUserPrompt(dto) }],
       }),
