@@ -191,6 +191,26 @@ export class CustomThemesController {
   }
 
   /**
+   * List available AI theme presets
+   * GET /api/custom-themes/presets
+   */
+  @Get('presets')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  listPresets() {
+    return this.aiThemeGeneratorService.listPresets();
+  }
+
+  /**
+   * Get a specific preset by ID
+   * GET /api/custom-themes/presets/:id
+   */
+  @Get('presets/:id')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  getPreset(@Param('id') id: string) {
+    return this.aiThemeGeneratorService.getPreset(id);
+  }
+
+  /**
    * Generate a short-lived preview token for iframe embedding
    * This token allows the Theme Customizer to embed the site in an iframe securely.
    * Token expires in 15 minutes and contains a 'preview' claim.

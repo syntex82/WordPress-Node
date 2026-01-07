@@ -2,13 +2,25 @@
  * AI Theme Generator Service - Enhanced Version
  * Generates comprehensive, production-ready theme configurations using AI
  * Supports full theme structure with content blocks, templates, and assets
+ * Falls back to beautiful presets when AI is not configured
  */
 
-import { Injectable, BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CustomThemeSettings, ThemePageData, ContentBlockData } from './custom-themes.service';
-import { GenerateAiThemeDto, PageType, ContentBlockType, IndustryType } from './dto/generate-ai-theme.dto';
+import {
+  GenerateAiThemeDto,
+  PageType,
+  ContentBlockType,
+  IndustryType,
+} from './dto/generate-ai-theme.dto';
 import { v4 as uuid } from 'uuid';
+import {
+  AI_THEME_PRESETS,
+  AiThemePreset,
+  getPresetsByIndustry,
+  searchPresets,
+} from './ai-theme-presets';
 
 /**
  * Extended theme data with full theme structure
@@ -22,6 +34,12 @@ export interface GeneratedThemeData {
   templates?: Record<string, string>;
   css?: string;
   features?: string[];
+  /** Indicates whether the theme was generated using AI or a preset */
+  generatedBy: 'ai' | 'preset';
+  /** The preset ID if generated from a preset */
+  presetId?: string;
+  /** The preset name if generated from a preset */
+  presetName?: string;
 }
 
 /**
@@ -98,13 +116,19 @@ export class AiThemeGeneratorService {
   }
 
   /**
-   * Generate comprehensive theme using AI
+   * Generate comprehensive theme using AI or fallback to presets
    */
   async generateTheme(dto: GenerateAiThemeDto, userId: string): Promise<GeneratedThemeData> {
+    // If a specific preset is requested, use it directly
+    if (dto.usePreset && dto.presetId) {
+      console.log(`Using preset directly: ${dto.presetId}`);
+      return this.generateFromPresetById(dto.presetId, dto.themeName, dto.description);
+    }
+
+    // If AI is not configured, use preset-based generation (beautiful themes without AI)
     if (!this.isConfigured) {
-      throw new ServiceUnavailableException(
-        'AI Theme Generator is not configured. Please set OPENAI_API_KEY or ANTHROPIC_API_KEY in .env',
-      );
+      console.log('AI not configured, using preset-based theme generation');
+      return this.generateFromPreset(dto);
     }
 
     if (!this.checkRateLimit(userId)) {
@@ -117,16 +141,156 @@ export class AiThemeGeneratorService {
       } else if (this.aiProvider === 'anthropic' && this.anthropicApiKey) {
         return await this.generateWithAnthropic(dto);
       } else {
-        throw new ServiceUnavailableException('No AI provider configured');
+        // Fallback to preset-based generation
+        return this.generateFromPreset(dto);
       }
     } catch (error: any) {
-      if (error instanceof BadRequestException || error instanceof ServiceUnavailableException) {
-        throw error;
-      }
-      throw new ServiceUnavailableException(
-        `AI generation failed: ${error.message || 'Unknown error'}`,
-      );
+      // On AI failure, fallback to preset-based generation
+      console.warn('AI generation failed, falling back to preset:', error.message);
+      return this.generateFromPreset(dto);
     }
+  }
+
+  /**
+   * Generate theme from a specific preset by ID
+   */
+  private generateFromPresetById(
+    presetId: string,
+    customName?: string,
+    customDescription?: string,
+  ): GeneratedThemeData {
+    const preset = AI_THEME_PRESETS.find((p) => p.id === presetId);
+
+    if (!preset) {
+      throw new BadRequestException(`Preset not found: ${presetId}`);
+    }
+
+    // Use convertPresetToThemeData with minimal DTO to preserve preset settings
+    return this.convertPresetToThemeData(preset, {
+      themeName: customName,
+      description: customDescription,
+    });
+  }
+
+  /**
+   * Generate theme from presets (works without AI)
+   * Matches presets based on industry, style, prompt keywords, and color scheme
+   */
+  private generateFromPreset(dto: GenerateAiThemeDto): GeneratedThemeData {
+    let preset: AiThemePreset | undefined;
+
+    // Try to find matching preset by industry first
+    if (dto.industry) {
+      const industryPresets = getPresetsByIndustry(dto.industry);
+      if (industryPresets.length > 0) {
+        // Find best match based on style/colorScheme
+        preset =
+          industryPresets.find(
+            (p) =>
+              (dto.style ? p.style === dto.style : true) &&
+              (dto.colorScheme ? p.colorScheme === dto.colorScheme : true),
+          ) || industryPresets[0];
+      }
+    }
+
+    // Try matching by prompt keywords
+    if (!preset && dto.prompt) {
+      const matchingPresets = searchPresets(dto.prompt);
+      if (matchingPresets.length > 0) {
+        preset = matchingPresets[0];
+      }
+    }
+
+    // Default to a preset based on style/colorScheme
+    if (!preset) {
+      if (dto.colorScheme === 'dark') {
+        preset = AI_THEME_PRESETS.find((p) => p.colorScheme === 'dark') || AI_THEME_PRESETS[0];
+      } else if (dto.style === 'bold') {
+        preset = AI_THEME_PRESETS.find((p) => p.style === 'bold') || AI_THEME_PRESETS[0];
+      } else {
+        // Default to Corporate Business or first available
+        preset = AI_THEME_PRESETS.find((p) => p.id === 'corporate-business') || AI_THEME_PRESETS[0];
+      }
+    }
+
+    // Convert preset to GeneratedThemeData
+    return this.convertPresetToThemeData(preset, dto);
+  }
+
+  /**
+   * Convert a preset to the GeneratedThemeData format
+   */
+  private convertPresetToThemeData(
+    preset: AiThemePreset,
+    dto: GenerateAiThemeDto,
+  ): GeneratedThemeData {
+    // Apply any user customizations to the preset colors
+    const colors = { ...preset.colors };
+    if (dto.primaryColor) colors.primary = dto.primaryColor;
+    if (dto.secondaryColor) colors.secondary = dto.secondaryColor;
+
+    // Apply color scheme overrides if different from preset
+    if (dto.colorScheme && dto.colorScheme !== preset.colorScheme) {
+      if (dto.colorScheme === 'dark') {
+        colors.background = '#0f172a';
+        colors.surface = '#1e293b';
+        colors.text = '#e2e8f0';
+        colors.textMuted = '#94a3b8';
+        colors.heading = '#f8fafc';
+        colors.border = '#334155';
+      } else if (dto.colorScheme === 'light') {
+        colors.background = '#ffffff';
+        colors.surface = '#f8fafc';
+        colors.text = '#334155';
+        colors.textMuted = '#64748b';
+        colors.heading = '#0f172a';
+        colors.border = '#e2e8f0';
+      }
+    }
+
+    const settings: CustomThemeSettings = {
+      colors,
+      typography: {
+        ...preset.typography,
+        headingFont: dto.fontFamily || preset.typography.headingFont,
+        bodyFont: dto.fontFamily || preset.typography.bodyFont,
+      },
+      layout: {
+        sidebarPosition: preset.layout.sidebarPosition,
+        contentWidth: preset.layout.contentWidth,
+        headerStyle: preset.layout.headerStyle,
+        footerStyle: preset.layout.footerStyle,
+      },
+      spacing: preset.spacing,
+      borders: preset.borders,
+    };
+
+    // Convert preset pages to ThemePageData format
+    const numberOfPages = dto.numberOfPages || preset.pages.length;
+    const pages: ThemePageData[] = preset.pages.slice(0, numberOfPages).map((page) => ({
+      id: uuid(),
+      name: page.name,
+      slug: page.slug,
+      isHomePage: page.isHomePage,
+      blocks: page.blocks.map((block) => ({
+        id: uuid(),
+        type: block.type as ContentBlockType,
+        props: { ...block.props },
+      })),
+    }));
+
+    return {
+      settings,
+      pages,
+      name: dto.themeName || preset.name,
+      description: dto.description || preset.description,
+      features: Object.entries(preset.features)
+        .filter(([_, v]) => v)
+        .map(([k]) => k),
+      generatedBy: 'preset',
+      presetId: preset.id,
+      presetName: preset.name,
+    };
   }
 
   private async generateWithOpenAI(dto: GenerateAiThemeDto): Promise<GeneratedThemeData> {
@@ -184,149 +348,694 @@ export class AiThemeGeneratorService {
   }
 
   /**
-   * Comprehensive system prompt with all content block types and page templates
+   * Professional image library with Unsplash URLs organized by category
+   */
+  private readonly UNSPLASH_IMAGES = {
+    hero: {
+      business:
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop',
+      technology:
+        'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920&h=1080&fit=crop',
+      creative: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=1920&h=1080&fit=crop',
+      ecommerce: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1920&h=1080&fit=crop',
+      education:
+        'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&h=1080&fit=crop',
+      healthcare:
+        'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1920&h=1080&fit=crop',
+      restaurant:
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&h=1080&fit=crop',
+      fitness:
+        'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&h=1080&fit=crop',
+      travel: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&h=1080&fit=crop',
+      realestate:
+        'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&h=1080&fit=crop',
+    },
+    team: [
+      'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
+    ],
+    testimonials: [
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
+      'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=100&h=100&fit=crop',
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
+    ],
+    products: [
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=600&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=600&fit=crop',
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop',
+    ],
+    blog: [
+      'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=800&h=500&fit=crop',
+    ],
+    about: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=800&fit=crop',
+    office: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop',
+    logos: [
+      'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg',
+      'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+      'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
+    ],
+  };
+
+  /**
+   * Professional content library with industry-specific content
+   */
+  private readonly CONTENT_LIBRARY = {
+    testimonials: [
+      {
+        quote:
+          'This solution transformed our business operations completely. We saw a 40% increase in productivity within the first month. The team was incredibly supportive throughout the implementation process.',
+        author: 'Sarah Mitchell',
+        role: 'Chief Operations Officer',
+        company: 'TechVentures Inc.',
+      },
+      {
+        quote:
+          'Outstanding quality and exceptional customer service. The attention to detail and commitment to excellence is evident in everything they do. Highly recommend to any growing business.',
+        author: 'Michael Chen',
+        role: 'Founder & CEO',
+        company: 'InnovateLabs',
+      },
+      {
+        quote:
+          'Working with this team has been an absolute pleasure. They understood our vision from day one and delivered beyond our expectations. Our revenue grew by 60% after implementing their solutions.',
+        author: 'Emily Rodriguez',
+        role: 'Marketing Director',
+        company: 'GrowthFirst Agency',
+      },
+      {
+        quote:
+          'The best investment we made this year. The ROI was visible within weeks, not months. Their expertise in the industry is unmatched and their support team is always available when needed.',
+        author: 'David Thompson',
+        role: 'VP of Operations',
+        company: 'Stellar Solutions',
+      },
+    ],
+    features: {
+      general: [
+        {
+          icon: '🚀',
+          title: 'Lightning Fast Performance',
+          description:
+            'Experience blazing-fast load times with our optimized infrastructure. Every millisecond counts, and we ensure your visitors never wait.',
+        },
+        {
+          icon: '🔒',
+          title: 'Enterprise-Grade Security',
+          description:
+            'Your data is protected with bank-level encryption and continuous monitoring. We take security seriously so you can focus on growth.',
+        },
+        {
+          icon: '📱',
+          title: 'Fully Responsive Design',
+          description:
+            'Look stunning on every device. From smartphones to 4K displays, your content adapts seamlessly to any screen size.',
+        },
+        {
+          icon: '🎯',
+          title: 'Conversion Optimized',
+          description:
+            'Every element is designed with conversion in mind. Strategic placement and compelling calls-to-action drive results.',
+        },
+        {
+          icon: '🌐',
+          title: 'Global CDN Delivery',
+          description:
+            'Reach audiences worldwide with our distributed content network. Fast loading speeds no matter where your visitors are located.',
+        },
+        {
+          icon: '📊',
+          title: 'Advanced Analytics',
+          description:
+            'Make data-driven decisions with comprehensive insights. Track performance, understand user behavior, and optimize continuously.',
+        },
+      ],
+      ecommerce: [
+        {
+          icon: '🛒',
+          title: 'Smart Shopping Cart',
+          description:
+            'Intelligent cart that remembers preferences, suggests products, and streamlines checkout for maximum conversions.',
+        },
+        {
+          icon: '💳',
+          title: 'Secure Payments',
+          description:
+            'Accept all major credit cards, digital wallets, and buy-now-pay-later options with PCI-compliant processing.',
+        },
+        {
+          icon: '📦',
+          title: 'Order Management',
+          description:
+            'Track orders from placement to delivery with real-time updates and automated customer notifications.',
+        },
+        {
+          icon: '🔄',
+          title: 'Easy Returns',
+          description:
+            'Hassle-free return process that builds customer trust and encourages repeat purchases.',
+        },
+      ],
+      education: [
+        {
+          icon: '📚',
+          title: 'Interactive Learning',
+          description:
+            'Engage students with multimedia lessons, quizzes, and hands-on exercises that make learning stick.',
+        },
+        {
+          icon: '🎓',
+          title: 'Certifications',
+          description:
+            'Validate achievements with professional certificates that students can share on LinkedIn and resumes.',
+        },
+        {
+          icon: '👥',
+          title: 'Community Learning',
+          description:
+            'Connect with peers, join study groups, and learn from instructors in our vibrant learning community.',
+        },
+        {
+          icon: '📈',
+          title: 'Progress Tracking',
+          description:
+            'Visual dashboards show learning progress, completed modules, and areas for improvement.',
+        },
+      ],
+    },
+    pricingPlans: [
+      {
+        name: 'Starter',
+        price: '$29',
+        period: '/month',
+        features: [
+          'Up to 5 team members',
+          '10GB storage',
+          'Email support',
+          'Basic analytics',
+          'API access',
+        ],
+        ctaText: 'Start Free Trial',
+        ctaUrl: '/signup?plan=starter',
+        featured: false,
+      },
+      {
+        name: 'Professional',
+        price: '$79',
+        period: '/month',
+        features: [
+          'Up to 25 team members',
+          '100GB storage',
+          'Priority support',
+          'Advanced analytics',
+          'API access',
+          'Custom integrations',
+          'White-label options',
+        ],
+        ctaText: 'Get Started',
+        ctaUrl: '/signup?plan=pro',
+        featured: true,
+      },
+      {
+        name: 'Enterprise',
+        price: '$199',
+        period: '/month',
+        features: [
+          'Unlimited team members',
+          'Unlimited storage',
+          '24/7 dedicated support',
+          'Custom analytics',
+          'Full API access',
+          'Custom integrations',
+          'White-label',
+          'SLA guarantee',
+          'Dedicated account manager',
+        ],
+        ctaText: 'Contact Sales',
+        ctaUrl: '/contact?plan=enterprise',
+        featured: false,
+      },
+    ],
+    team: [
+      {
+        name: 'Alexandra Rivers',
+        role: 'Chief Executive Officer',
+        bio: 'With 15+ years of industry experience, Alexandra leads our vision for innovation and growth. Previously VP at Fortune 500 companies.',
+        social: {
+          twitter: 'https://twitter.com/alexrivers',
+          linkedin: 'https://linkedin.com/in/alexrivers',
+          email: 'alex@company.com',
+        },
+      },
+      {
+        name: 'Marcus Chen',
+        role: 'Chief Technology Officer',
+        bio: 'Former Google engineer with expertise in scalable systems. Marcus architects our technology to handle millions of users seamlessly.',
+        social: {
+          twitter: 'https://twitter.com/marcuschen',
+          linkedin: 'https://linkedin.com/in/marcuschen',
+          email: 'marcus@company.com',
+        },
+      },
+      {
+        name: 'Sophia Williams',
+        role: 'Head of Design',
+        bio: 'Award-winning designer who has shaped products used by millions. Sophia ensures every pixel serves a purpose.',
+        social: { linkedin: 'https://linkedin.com/in/sophiawilliams', email: 'sophia@company.com' },
+      },
+      {
+        name: 'James Rodriguez',
+        role: 'VP of Marketing',
+        bio: 'Growth expert who has scaled multiple startups from zero to IPO. James leads our global marketing strategy.',
+        social: {
+          twitter: 'https://twitter.com/jamesrodriguez',
+          linkedin: 'https://linkedin.com/in/jamesrodriguez',
+        },
+      },
+    ],
+    faq: [
+      {
+        title: 'How do I get started?',
+        content:
+          'Getting started is easy! Simply sign up for a free trial, no credit card required. Our onboarding wizard will guide you through the setup process in under 5 minutes.',
+      },
+      {
+        title: 'Can I cancel my subscription anytime?',
+        content:
+          'Absolutely! There are no long-term contracts or commitments. You can upgrade, downgrade, or cancel your subscription at any time from your account settings.',
+      },
+      {
+        title: 'Do you offer custom enterprise solutions?',
+        content:
+          'Yes! Our enterprise plans are fully customizable to meet your specific needs. Contact our sales team to discuss your requirements and get a tailored solution.',
+      },
+      {
+        title: 'What payment methods do you accept?',
+        content:
+          'We accept all major credit cards (Visa, Mastercard, American Express), PayPal, and bank transfers for annual plans. Enterprise customers can also pay via invoice.',
+      },
+      {
+        title: 'Is my data secure?',
+        content:
+          'Security is our top priority. We use AES-256 encryption, SOC 2 Type II compliance, and regular security audits. Your data is backed up daily and stored in geographically distributed data centers.',
+      },
+      {
+        title: 'Do you offer refunds?',
+        content:
+          'Yes, we offer a 30-day money-back guarantee. If you are not completely satisfied, contact support within 30 days for a full refund, no questions asked.',
+      },
+    ],
+    blogPosts: [
+      {
+        title: '10 Strategies to Accelerate Your Business Growth in 2024',
+        excerpt:
+          'Discover proven tactics that leading companies are using to scale rapidly. From customer retention to market expansion, learn what works.',
+        author: 'Alexandra Rivers',
+        date: 'January 15, 2024',
+      },
+      {
+        title: 'The Future of Digital Transformation: Trends to Watch',
+        excerpt:
+          'AI, automation, and cloud-native technologies are reshaping industries. Here is what you need to know to stay ahead of the curve.',
+        author: 'Marcus Chen',
+        date: 'January 10, 2024',
+      },
+      {
+        title: 'Building a Customer-Centric Culture: A Complete Guide',
+        excerpt:
+          'Learn how top brands create experiences that turn customers into loyal advocates. Practical tips you can implement today.',
+        author: 'Sophia Williams',
+        date: 'January 5, 2024',
+      },
+    ],
+    products: [
+      {
+        name: 'Premium Wireless Headphones',
+        price: '$299.99',
+        originalPrice: '$399.99',
+        description:
+          'Experience crystal-clear audio with active noise cancellation and 40-hour battery life. Perfect for work and travel.',
+        rating: 4.9,
+      },
+      {
+        name: 'Smart Fitness Watch Pro',
+        price: '$249.99',
+        description:
+          'Track your health with precision. Heart rate monitoring, GPS, sleep tracking, and 100+ workout modes.',
+        rating: 4.8,
+      },
+      {
+        name: 'Ergonomic Office Chair',
+        price: '$549.99',
+        description:
+          'Designed for all-day comfort. Lumbar support, adjustable armrests, and breathable mesh back.',
+        rating: 4.7,
+      },
+      {
+        name: 'Portable Power Station',
+        price: '$399.99',
+        description:
+          '1000Wh capacity powers your devices anywhere. Solar compatible for off-grid adventures.',
+        rating: 4.9,
+      },
+    ],
+    courses: [
+      {
+        title: 'Complete Web Development Bootcamp',
+        instructor: 'Dr. Marcus Chen',
+        price: '$94.99',
+        rating: 4.9,
+        duration: '52 hours',
+        students: '125,000+',
+        description:
+          'Learn HTML, CSS, JavaScript, React, Node.js, and more. Build 20+ real-world projects.',
+      },
+      {
+        title: 'Data Science & Machine Learning A-Z',
+        instructor: 'Prof. Sarah Mitchell',
+        price: '$84.99',
+        rating: 4.8,
+        duration: '44 hours',
+        students: '98,000+',
+        description:
+          'Master Python, statistics, machine learning, and deep learning with hands-on projects.',
+      },
+      {
+        title: 'Digital Marketing Masterclass',
+        instructor: 'James Rodriguez',
+        price: '$79.99',
+        rating: 4.7,
+        duration: '38 hours',
+        students: '76,000+',
+        description:
+          'SEO, social media, email marketing, and paid ads. Complete digital marketing toolkit.',
+      },
+    ],
+  };
+
+  /**
+   * Comprehensive system prompt for professional theme generation
    */
   private getComprehensiveSystemPrompt(): string {
-    return `You are an expert web designer and theme creator specializing in modern, production-ready website themes. Generate comprehensive theme configurations with full content blocks, page templates, and styling.
+    return `You are an expert web designer creating PROFESSIONAL, MARKETPLACE-READY website themes. Generate COMPLETE theme configurations with FULLY POPULATED content blocks - NO placeholders, NO Lorem ipsum, NO empty fields.
 
-## AVAILABLE CONTENT BLOCK TYPES
+## CRITICAL REQUIREMENTS
 
-Generate blocks using these types with their required props:
+1. ALL blocks must have COMPLETE props with realistic content
+2. ALL images must use real Unsplash URLs (format: https://images.unsplash.com/photo-ID?w=WIDTH&h=HEIGHT&fit=crop)
+3. ALL text content must be professional, industry-appropriate, and engaging
+4. ALL buttons must have proper text and URLs (use relative paths like /contact, /signup, /shop)
+5. Include proper SEO metadata for each page
+6. Generate at least 3-4 blocks per page
 
-### Hero Blocks
-- "hero": { title, subtitle, backgroundImage?, ctaText, ctaUrl, alignment?, overlayOpacity? }
-- "heroVideo": { title, subtitle, videoUrl, ctaText, ctaUrl }
-- "heroSlider": { slides: [{ title, subtitle, image, ctaText, ctaUrl }] }
+## UNSPLASH IMAGE GUIDELINES
 
-### Feature Blocks
-- "features": { title, subtitle?, columns: 2|3|4, features: [{ icon?, title, description, link? }] }
-- "featureCards": { title, cards: [{ icon, title, description, image? }] }
-- "featureGrid": { title, items: [{ icon, title, description }], columns: 3|4 }
+Use these Unsplash photo IDs for different categories (format: https://images.unsplash.com/photo-{ID}?w=WIDTH&h=HEIGHT&fit=crop):
 
-### Content Blocks
-- "textBlock": { content, alignment? }
-- "richText": { html }
-- "imageText": { image, title, text, imagePosition: "left"|"right", ctaText?, ctaUrl? }
-- "twoColumn": { leftContent, rightContent }
-- "threeColumn": { columns: [{ title, content }] }
+Hero backgrounds (1920x1080): 1497366216548-37526070297c, 1518770660439-4636190af475, 1556742049-0cfed4f6a45d
+Team photos (400x400): 1560250097-0b93528c311a, 1573496359142-b8d87734a5a2, 1472099645785-5658abf4ff4e, 1580489944761-15a19d654956
+Testimonial avatars (100x100): 1494790108377-be9c29b29330, 1507003211169-0a1dd7228f2d, 1573497019940-1c28c88b4f3e
+Products (600x600): 1523275335684-37898b6baf30, 1505740420928-5e560c06d30e, 1572635196237-14b3f281503f
+Blog (800x500): 1499750310107-5fef28a66643, 1486312338219-ce68d2c6f44d, 1504868584819-f8e8b4b6d7e3
 
-### Media Blocks
-- "gallery": { title?, images: [{ src, alt, caption? }], columns: 2|3|4, lightbox? }
-- "video": { title?, videoUrl, thumbnail?, autoplay? }
-- "audio": { title?, audioUrl, showWaveform? }
-- "imageCarousel": { images: [{ src, alt }], autoplay?, interval? }
+## BLOCK TYPES WITH COMPLETE PROPS
 
-### Testimonial & Social Proof
-- "testimonials": { title, testimonials: [{ quote, author, role?, company?, avatar? }], layout: "grid"|"slider" }
-- "logoCloud": { title?, logos: [{ src, alt, url? }] }
-- "socialProof": { stats: [{ value, label }], title? }
-- "reviews": { title, reviews: [{ rating, text, author, date }] }
-
-### Pricing & Commerce
-- "pricing": { title, subtitle?, plans: [{ name, price, period, features: [], ctaText, ctaUrl, featured? }] }
-- "productGrid": { title, products: [{ name, price, image, description, url }], columns: 3|4 }
-- "productShowcase": { product: { name, price, images: [], description, features: [], ctaText } }
-
-### Call to Action
-- "cta": { title, subtitle?, ctaText, ctaUrl, backgroundColor?, style: "simple"|"split"|"centered" }
-- "ctaBanner": { title, ctaText, ctaUrl, backgroundImage? }
-- "newsletter": { title, subtitle?, placeholder?, buttonText, successMessage? }
-
-### Team & About
-- "teamGrid": { title, members: [{ name, role, image, bio?, social?: { twitter?, linkedin?, email? } }] }
-- "teamCarousel": { title, members: [...] }
-- "about": { title, content, image?, stats?: [{ value, label }] }
-- "timeline": { title, events: [{ date, title, description }] }
-
-### Blog & Content
-- "blogPosts": { title, posts: [{ title, excerpt, image, date, author, url }], columns: 2|3, showExcerpt? }
-- "blogGrid": { title, postsPerPage: 6|9|12, showCategories?, showAuthor? }
-- "categories": { title, categories: [{ name, count, url, image? }] }
-
-### Course & Education
-- "courseGrid": { title, courses: [{ title, instructor, image, price, rating, duration, url }], columns: 3|4 }
-- "courseShowcase": { course: { title, description, instructor, modules: [], price, ctaText } }
-- "curriculum": { title, modules: [{ title, lessons: [{ title, duration, type }] }] }
-
-### Interactive Elements
-- "accordion": { title?, items: [{ title, content }], allowMultiple? }
-- "tabs": { tabs: [{ title, content }] }
-- "countdown": { title, targetDate, style: "simple"|"cards" }
-- "progressBar": { items: [{ label, value, max }] }
-
-### Forms & Contact
-- "contactForm": { title, fields: [{ type, label, required?, placeholder? }], submitText, successMessage }
-- "contactInfo": { title, email?, phone?, address?, hours?, mapEmbed? }
-- "map": { title?, latitude, longitude, zoom?, marker? }
-
-### Stats & Data
-- "stats": { title?, stats: [{ value, label, icon? }], columns: 3|4 }
-- "counters": { counters: [{ value, label, prefix?, suffix? }] }
-- "charts": { title, type: "bar"|"line"|"pie", data: [...] }
-
-### Footer Blocks
-- "footerSimple": { copyright, links: [{ text, url }], social?: [...] }
-- "footerMultiColumn": { columns: [{ title, links: [{ text, url }] }], copyright, social? }
-- "footerCta": { title, ctaText, ctaUrl, copyright }
-
-## PAGE TEMPLATES
-
-Generate pages appropriate for the industry:
-
-- home: Hero + Features + Testimonials + CTA
-- about: About + Team + Timeline + Stats
-- services: Features + Pricing + Testimonials + CTA
-- products: ProductGrid + ProductShowcase + Reviews
-- blog: BlogGrid + Categories + Newsletter
-- contact: ContactForm + ContactInfo + Map
-- pricing: Pricing + FAQ + CTA
-- faq: Accordion + ContactInfo
-- team: TeamGrid + About
-- portfolio: Gallery + Testimonials
-- courses: CourseGrid + Testimonials + FAQ
-- shop: ProductGrid + Categories + Newsletter
-- checkout: (minimal blocks, focus on form)
-- login/register: (auth forms)
-
-## OUTPUT FORMAT
-
-Return ONLY valid JSON with this structure:
+### hero
 {
-  "settings": {
-    "colors": { primary, secondary, accent, background, surface, text, textMuted, heading, link, linkHover, border, success, warning, error },
-    "typography": { headingFont, bodyFont, baseFontSize, lineHeight, headingWeight, headingLineHeight },
-    "layout": { sidebarPosition, contentWidth, headerStyle, footerStyle, containerMaxWidth },
-    "spacing": { sectionPadding, elementSpacing, containerPadding, blockGap },
-    "borders": { radius, width, style },
-    "shadows": { small, medium, large },
-    "animations": { enabled, duration, easing }
-  },
-  "pages": [
-    {
-      "id": "uuid",
-      "name": "Page Name",
-      "slug": "page-slug",
-      "isHomePage": boolean,
-      "template": "template-name",
-      "seo": { title, description, keywords },
-      "blocks": [
-        {
-          "id": "uuid",
-          "type": "block-type",
-          "props": { ...blockProps }
-        }
-      ]
-    }
-  ],
-  "themeJson": {
-    "name": "Theme Name",
-    "version": "1.0.0",
-    "templates": ["home", "about", ...],
-    "features": ["darkMode", "animations", ...]
+  "type": "hero",
+  "props": {
+    "title": "Compelling Headline Here",
+    "subtitle": "Engaging subheadline that explains the value proposition",
+    "backgroundImage": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop",
+    "ctaText": "Get Started Free",
+    "ctaUrl": "/signup",
+    "secondaryCtaText": "Learn More",
+    "secondaryCtaUrl": "/about",
+    "alignment": "center",
+    "overlayOpacity": 0.5,
+    "overlayColor": "#000000"
   }
 }
 
-Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure accessibility and responsive design considerations.`;
+### features
+{
+  "type": "features",
+  "props": {
+    "title": "Why Choose Us",
+    "subtitle": "Everything you need to succeed",
+    "columns": 3,
+    "features": [
+      { "icon": "🚀", "title": "Lightning Fast", "description": "Experience blazing-fast load times with our optimized infrastructure.", "link": "/features/speed" },
+      { "icon": "🔒", "title": "Secure by Design", "description": "Bank-level encryption protects your data 24/7.", "link": "/features/security" },
+      { "icon": "📱", "title": "Mobile First", "description": "Look stunning on every device, from phones to desktops.", "link": "/features/responsive" }
+    ]
+  }
+}
+
+### testimonials
+{
+  "type": "testimonials",
+  "props": {
+    "title": "Trusted by Industry Leaders",
+    "subtitle": "See what our customers are saying",
+    "layout": "grid",
+    "testimonials": [
+      { "quote": "This solution transformed our business operations completely. We saw a 40% increase in productivity.", "author": "Sarah Mitchell", "role": "COO", "company": "TechVentures Inc", "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", "rating": 5 },
+      { "quote": "Outstanding quality and exceptional customer service. Highly recommend!", "author": "Michael Chen", "role": "CEO", "company": "InnovateLabs", "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", "rating": 5 }
+    ]
+  }
+}
+
+### pricing
+{
+  "type": "pricing",
+  "props": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "No hidden fees. Cancel anytime.",
+    "plans": [
+      { "name": "Starter", "price": "$29", "period": "/month", "description": "Perfect for individuals", "features": ["5 team members", "10GB storage", "Email support", "Basic analytics"], "ctaText": "Start Free Trial", "ctaUrl": "/signup?plan=starter", "featured": false },
+      { "name": "Professional", "price": "$79", "period": "/month", "description": "For growing teams", "features": ["25 team members", "100GB storage", "Priority support", "Advanced analytics", "API access"], "ctaText": "Get Started", "ctaUrl": "/signup?plan=pro", "featured": true },
+      { "name": "Enterprise", "price": "Custom", "period": "", "description": "For large organizations", "features": ["Unlimited members", "Unlimited storage", "24/7 support", "Custom integrations", "SLA guarantee"], "ctaText": "Contact Sales", "ctaUrl": "/contact", "featured": false }
+    ]
+  }
+}
+
+### teamGrid
+{
+  "type": "teamGrid",
+  "props": {
+    "title": "Meet Our Leadership Team",
+    "subtitle": "Experts dedicated to your success",
+    "members": [
+      { "name": "Alexandra Rivers", "role": "CEO & Founder", "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop", "bio": "15+ years leading innovation in tech", "social": { "twitter": "https://twitter.com/alexrivers", "linkedin": "https://linkedin.com/in/alexrivers" } }
+    ]
+  }
+}
+
+### productGrid
+{
+  "type": "productGrid",
+  "props": {
+    "title": "Featured Products",
+    "subtitle": "Discover our bestsellers",
+    "columns": 4,
+    "products": [
+      { "name": "Premium Wireless Headphones", "price": "$299.99", "originalPrice": "$399.99", "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop", "description": "Crystal-clear audio with noise cancellation", "rating": 4.9, "url": "/products/headphones", "badge": "Sale" }
+    ]
+  }
+}
+
+### newsletter
+{
+  "type": "newsletter",
+  "props": {
+    "title": "Stay Updated",
+    "subtitle": "Get the latest news and exclusive offers delivered to your inbox",
+    "placeholder": "Enter your email address",
+    "buttonText": "Subscribe Now",
+    "successMessage": "Thanks for subscribing! Check your inbox for a confirmation email.",
+    "privacyText": "We respect your privacy. Unsubscribe at any time.",
+    "backgroundColor": "#f8fafc"
+  }
+}
+
+### contactForm
+{
+  "type": "contactForm",
+  "props": {
+    "title": "Get in Touch",
+    "subtitle": "We would love to hear from you. Send us a message!",
+    "fields": [
+      { "type": "text", "name": "name", "label": "Full Name", "placeholder": "John Smith", "required": true },
+      { "type": "email", "name": "email", "label": "Email Address", "placeholder": "john@example.com", "required": true },
+      { "type": "tel", "name": "phone", "label": "Phone Number", "placeholder": "+1 (555) 000-0000", "required": false },
+      { "type": "select", "name": "subject", "label": "Subject", "options": ["General Inquiry", "Sales", "Support", "Partnership"], "required": true },
+      { "type": "textarea", "name": "message", "label": "Message", "placeholder": "Tell us about your project...", "required": true, "rows": 5 }
+    ],
+    "submitText": "Send Message",
+    "successMessage": "Thank you! We will respond within 24 hours."
+  }
+}
+
+### blogPosts
+{
+  "type": "blogPosts",
+  "props": {
+    "title": "Latest Insights",
+    "subtitle": "Expert advice and industry news",
+    "columns": 3,
+    "showExcerpt": true,
+    "posts": [
+      { "title": "10 Strategies for Business Growth", "excerpt": "Discover proven tactics that leading companies use to scale.", "image": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=500&fit=crop", "date": "January 15, 2024", "author": "Alexandra Rivers", "url": "/blog/business-growth", "category": "Business" }
+    ]
+  }
+}
+
+### cta
+{
+  "type": "cta",
+  "props": {
+    "title": "Ready to Transform Your Business?",
+    "subtitle": "Join 10,000+ companies already growing with us",
+    "ctaText": "Start Your Free Trial",
+    "ctaUrl": "/signup",
+    "secondaryCtaText": "Schedule a Demo",
+    "secondaryCtaUrl": "/demo",
+    "style": "gradient",
+    "backgroundColor": "#3b82f6",
+    "backgroundImage": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=600&fit=crop"
+  }
+}
+
+### stats
+{
+  "type": "stats",
+  "props": {
+    "title": "Trusted Worldwide",
+    "stats": [
+      { "value": "10K+", "label": "Active Users", "icon": "👥" },
+      { "value": "99.9%", "label": "Uptime", "icon": "⚡" },
+      { "value": "150+", "label": "Countries", "icon": "🌍" },
+      { "value": "24/7", "label": "Support", "icon": "💬" }
+    ],
+    "columns": 4
+  }
+}
+
+### accordion (FAQ)
+{
+  "type": "accordion",
+  "props": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      { "title": "How do I get started?", "content": "Getting started is easy! Sign up for a free trial - no credit card required. Our onboarding wizard guides you through setup in under 5 minutes." },
+      { "title": "Can I cancel anytime?", "content": "Absolutely! No long-term contracts. Upgrade, downgrade, or cancel anytime from your account settings." }
+    ],
+    "allowMultiple": true
+  }
+}
+
+### gallery
+{
+  "type": "gallery",
+  "props": {
+    "title": "Our Work",
+    "subtitle": "A showcase of our recent projects",
+    "columns": 3,
+    "lightbox": true,
+    "images": [
+      { "src": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop", "alt": "Mountain landscape project", "caption": "Brand Identity - TechCorp" },
+      { "src": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop", "alt": "Nature photography project", "caption": "Website Design - EcoLife" }
+    ]
+  }
+}
+
+### video
+{
+  "type": "video",
+  "props": {
+    "title": "See How It Works",
+    "subtitle": "Watch our 2-minute overview",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "thumbnail": "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1280&h=720&fit=crop",
+    "autoplay": false
+  }
+}
+
+### logoCloud
+{
+  "type": "logoCloud",
+  "props": {
+    "title": "Trusted by Leading Brands",
+    "logos": [
+      { "name": "TechCorp", "src": "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=80&fit=crop", "alt": "TechCorp logo", "url": "https://example.com" }
+    ]
+  }
+}
+
+### socialProof
+{
+  "type": "socialProof",
+  "props": {
+    "title": "Join Our Growing Community",
+    "stats": [
+      { "value": "50K+", "label": "Twitter Followers" },
+      { "value": "25K+", "label": "LinkedIn Followers" },
+      { "value": "100K+", "label": "Newsletter Subscribers" }
+    ],
+    "socialLinks": [
+      { "platform": "twitter", "url": "https://twitter.com/company", "icon": "twitter" },
+      { "platform": "linkedin", "url": "https://linkedin.com/company/company", "icon": "linkedin" },
+      { "platform": "facebook", "url": "https://facebook.com/company", "icon": "facebook" },
+      { "platform": "instagram", "url": "https://instagram.com/company", "icon": "instagram" }
+    ]
+  }
+}
+
+## OUTPUT FORMAT
+
+Return ONLY valid JSON:
+{
+  "settings": {
+    "colors": { "primary": "#hex", "secondary": "#hex", "accent": "#hex", "background": "#hex", "surface": "#hex", "text": "#hex", "textMuted": "#hex", "heading": "#hex", "link": "#hex", "linkHover": "#hex", "border": "#hex", "success": "#22c55e", "warning": "#f59e0b", "error": "#ef4444" },
+    "typography": { "headingFont": "Inter", "bodyFont": "Inter", "baseFontSize": 16, "lineHeight": 1.6, "headingWeight": 700, "headingLineHeight": 1.2 },
+    "layout": { "sidebarPosition": "none", "contentWidth": 1200, "headerStyle": "sticky", "footerStyle": "multicolumn", "containerMaxWidth": 1400 },
+    "spacing": { "sectionPadding": 80, "elementSpacing": 24, "containerPadding": 32, "blockGap": 64 },
+    "borders": { "radius": 12, "width": 1, "style": "solid" },
+    "shadows": { "small": "0 1px 3px rgba(0,0,0,0.1)", "medium": "0 4px 6px rgba(0,0,0,0.1)", "large": "0 10px 25px rgba(0,0,0,0.1)" },
+    "animations": { "enabled": true, "duration": 300, "easing": "ease-out" }
+  },
+  "pages": [
+    {
+      "id": "unique-uuid",
+      "name": "Home",
+      "slug": "home",
+      "isHomePage": true,
+      "seo": { "title": "Page Title | Brand", "description": "Meta description", "keywords": "keyword1, keyword2" },
+      "blocks": [ ...complete blocks with all props... ]
+    }
+  ]
+}
+
+Generate COMPLETE, PROFESSIONAL content. Every block must be production-ready.`;
   }
 
   /**
@@ -351,7 +1060,9 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
     }
 
     if (dto.primaryColor) {
-      parts.push(`\n## Primary Color\n${dto.primaryColor} - Use this as the base for the color palette`);
+      parts.push(
+        `\n## Primary Color\n${dto.primaryColor} - Use this as the base for the color palette`,
+      );
     }
 
     if (dto.secondaryColor) {
@@ -395,7 +1106,9 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
     }
 
     if (dto.includeCourses) {
-      parts.push(`\n## Courses/LMS\nInclude course grids, curriculum blocks, and learning features`);
+      parts.push(
+        `\n## Courses/LMS\nInclude course grids, curriculum blocks, and learning features`,
+      );
     }
 
     if (dto.includeBlog) {
@@ -403,10 +1116,14 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
     }
 
     if (dto.generateFullTheme) {
-      parts.push(`\n## Full Theme Generation\nGenerate a complete, production-ready theme with all pages fully populated with realistic content`);
+      parts.push(
+        `\n## Full Theme Generation\nGenerate a complete, production-ready theme with all pages fully populated with realistic content`,
+      );
     }
 
-    parts.push(`\n\nGenerate a complete, professional theme configuration with realistic content appropriate for the industry and requirements.`);
+    parts.push(
+      `\n\nGenerate a complete, professional theme configuration with realistic content appropriate for the industry and requirements.`,
+    );
 
     return parts.join('\n');
   }
@@ -414,7 +1131,10 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
   /**
    * Parse comprehensive AI response
    */
-  private parseComprehensiveAiResponse(content: string, dto: GenerateAiThemeDto): GeneratedThemeData {
+  private parseComprehensiveAiResponse(
+    content: string,
+    dto: GenerateAiThemeDto,
+  ): GeneratedThemeData {
     try {
       let jsonStr = content;
       const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
@@ -432,6 +1152,7 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
         name: dto.themeName || `AI Theme ${new Date().toLocaleDateString()}`,
         description: dto.description || `Generated with AI: ${dto.prompt.substring(0, 100)}...`,
         features: this.extractFeatures(dto),
+        generatedBy: 'ai',
       };
 
       if (dto.generateFullTheme && parsed.themeJson) {
@@ -591,7 +1312,10 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
   /**
    * Generate blocks for specific page type
    */
-  private generateBlocksForPageType(pageType: PageType, dto: GenerateAiThemeDto): ContentBlockData[] {
+  private generateBlocksForPageType(
+    pageType: PageType,
+    dto: GenerateAiThemeDto,
+  ): ContentBlockData[] {
     const blocks: ContentBlockData[] = [];
     const preferredBlocks = dto.preferredBlocks || [];
 
@@ -685,35 +1409,108 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
     return blocks;
   }
 
-  // Block creation methods
+  // ============================================
+  // PROFESSIONAL BLOCK CREATION METHODS
+  // All blocks include complete props with real content
+  // ============================================
+
+  private getHeroImage(industry?: string): string {
+    const images = this.UNSPLASH_IMAGES.hero;
+    return images[industry as keyof typeof images] || images.business;
+  }
+
   private createHeroBlock(dto: GenerateAiThemeDto, title?: string): ContentBlockData {
+    const industryTitles: Record<string, { title: string; subtitle: string }> = {
+      ecommerce: {
+        title: 'Discover Premium Products',
+        subtitle:
+          'Shop the latest trends with exclusive deals and free shipping on orders over $50',
+      },
+      education: {
+        title: 'Transform Your Future',
+        subtitle: 'Learn from industry experts with courses designed to accelerate your career',
+      },
+      saas: {
+        title: 'Powerful Tools for Modern Teams',
+        subtitle: 'Streamline your workflow with intelligent automation and seamless integrations',
+      },
+      agency: {
+        title: 'Creative Solutions That Drive Results',
+        subtitle: 'Award-winning design and strategy for brands that want to stand out',
+      },
+      healthcare: {
+        title: 'Your Health, Our Priority',
+        subtitle: 'Compassionate care with cutting-edge technology for better health outcomes',
+      },
+      fitness: {
+        title: 'Unlock Your Potential',
+        subtitle:
+          'Expert trainers, world-class facilities, and personalized programs for every goal',
+      },
+      restaurant: {
+        title: 'Exceptional Dining Experience',
+        subtitle: 'Fresh ingredients, inspired recipes, and an atmosphere you will love',
+      },
+      travel: {
+        title: 'Discover Your Next Adventure',
+        subtitle: 'Curated travel experiences that create memories lasting a lifetime',
+      },
+      realestate: {
+        title: 'Find Your Dream Home',
+        subtitle: 'Expert guidance through every step of your real estate journey',
+      },
+      portfolio: {
+        title: 'Creative Work That Inspires',
+        subtitle: 'Award-winning designs crafted with passion and precision',
+      },
+      blog: {
+        title: 'Insights That Matter',
+        subtitle: 'Thoughtful perspectives on the topics shaping our world',
+      },
+      general: {
+        title: 'Welcome to Excellence',
+        subtitle: 'Innovative solutions designed to help you succeed',
+      },
+    };
+
+    const content = industryTitles[dto.industry || 'general'] || industryTitles.general;
+
     return {
       id: uuid(),
       type: 'hero',
       props: {
-        title: title || 'Welcome to Your Site',
-        subtitle: dto.description || 'Created with AI Theme Designer',
-        backgroundImage: null,
+        title: title || content.title,
+        subtitle: dto.description || content.subtitle,
+        backgroundImage: this.getHeroImage(dto.industry),
         ctaText: 'Get Started',
-        ctaUrl: '#',
+        ctaUrl: '/signup',
+        secondaryCtaText: 'Learn More',
+        secondaryCtaUrl: '/about',
         alignment: 'center',
+        overlayOpacity: 0.5,
+        overlayColor: '#000000',
       },
     };
   }
 
-  private createFeaturesBlock(_dto: GenerateAiThemeDto): ContentBlockData {
+  private createFeaturesBlock(dto: GenerateAiThemeDto): ContentBlockData {
+    const features =
+      dto.industry &&
+      this.CONTENT_LIBRARY.features[dto.industry as keyof typeof this.CONTENT_LIBRARY.features]
+        ? this.CONTENT_LIBRARY.features[dto.industry as keyof typeof this.CONTENT_LIBRARY.features]
+        : this.CONTENT_LIBRARY.features.general;
+
     return {
       id: uuid(),
       type: 'features',
       props: {
-        title: 'Key Features',
-        subtitle: 'Everything you need to succeed',
+        title: 'Why Choose Us',
+        subtitle: 'Everything you need to succeed, all in one place',
         columns: 3,
-        features: [
-          { icon: '🚀', title: 'Fast & Reliable', description: 'Lightning-fast performance' },
-          { icon: '🔒', title: 'Secure', description: 'Enterprise-grade security' },
-          { icon: '📱', title: 'Responsive', description: 'Works on all devices' },
-        ],
+        features: features.slice(0, 6).map((f) => ({
+          ...f,
+          link: `/features/${f.title.toLowerCase().replace(/\s+/g, '-')}`,
+        })),
       },
     };
   }
@@ -723,26 +1520,32 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'testimonials',
       props: {
-        title: 'What Our Customers Say',
+        title: 'Trusted by Industry Leaders',
+        subtitle: 'See what our customers are saying about us',
         layout: 'grid',
-        testimonials: [
-          { quote: 'Amazing service!', author: 'John Doe', role: 'CEO', company: 'Tech Corp' },
-          { quote: 'Highly recommended!', author: 'Jane Smith', role: 'Designer', company: 'Creative Co' },
-        ],
+        testimonials: this.CONTENT_LIBRARY.testimonials.map((t, i) => ({
+          ...t,
+          avatar: this.UNSPLASH_IMAGES.testimonials[i % this.UNSPLASH_IMAGES.testimonials.length],
+          rating: 5,
+        })),
       },
     };
   }
 
-  private createCtaBlock(_dto: GenerateAiThemeDto): ContentBlockData {
+  private createCtaBlock(dto: GenerateAiThemeDto): ContentBlockData {
     return {
       id: uuid(),
       type: 'cta',
       props: {
-        title: 'Ready to Get Started?',
-        subtitle: 'Join thousands of satisfied customers',
-        ctaText: 'Start Now',
-        ctaUrl: '#',
-        style: 'centered',
+        title: 'Ready to Transform Your Business?',
+        subtitle: 'Join 10,000+ companies already growing with us. Start your free trial today.',
+        ctaText: 'Start Free Trial',
+        ctaUrl: '/signup',
+        secondaryCtaText: 'Schedule a Demo',
+        secondaryCtaUrl: '/demo',
+        style: 'gradient',
+        backgroundColor: dto.primaryColor || '#3b82f6',
+        backgroundImage: this.getHeroImage(dto.industry),
       },
     };
   }
@@ -753,12 +1556,14 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       type: 'productGrid',
       props: {
         title: 'Featured Products',
+        subtitle: 'Discover our bestselling items',
         columns: 4,
-        products: [
-          { name: 'Product 1', price: '$99', image: '', description: 'Great product', url: '#' },
-          { name: 'Product 2', price: '$149', image: '', description: 'Amazing product', url: '#' },
-          { name: 'Product 3', price: '$199', image: '', description: 'Premium product', url: '#' },
-        ],
+        products: this.CONTENT_LIBRARY.products.map((p, i) => ({
+          ...p,
+          image: this.UNSPLASH_IMAGES.products[i % this.UNSPLASH_IMAGES.products.length],
+          url: `/products/${p.name.toLowerCase().replace(/\s+/g, '-')}`,
+          badge: i === 0 ? 'Bestseller' : i === 1 ? 'New' : undefined,
+        })),
       },
     };
   }
@@ -769,11 +1574,13 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       type: 'courseGrid',
       props: {
         title: 'Popular Courses',
+        subtitle: 'Learn from world-class instructors',
         columns: 3,
-        courses: [
-          { title: 'Course 1', instructor: 'John Doe', image: '', price: '$49', rating: 4.8, duration: '10h', url: '#' },
-          { title: 'Course 2', instructor: 'Jane Smith', image: '', price: '$79', rating: 4.9, duration: '15h', url: '#' },
-        ],
+        courses: this.CONTENT_LIBRARY.courses.map((c, i) => ({
+          ...c,
+          image: this.UNSPLASH_IMAGES.blog[i % this.UNSPLASH_IMAGES.blog.length],
+          url: `/courses/${c.title.toLowerCase().replace(/\s+/g, '-')}`,
+        })),
       },
     };
   }
@@ -783,13 +1590,19 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'about',
       props: {
-        title: 'About Us',
-        content: 'We are a passionate team dedicated to delivering excellence.',
-        image: null,
+        title: 'Our Story',
+        subtitle: 'Building the future, one innovation at a time',
+        content: `Founded with a vision to transform how businesses operate, we have grown from a small startup to a global leader in our industry. Our journey has been defined by a relentless pursuit of excellence and an unwavering commitment to our customers.
+
+Today, we serve thousands of businesses worldwide, helping them achieve their goals through innovative solutions and exceptional service. Our team of experts brings decades of combined experience, ensuring that every project we undertake exceeds expectations.
+
+We believe in the power of technology to solve real problems and create meaningful impact. That is why we continue to invest in research and development, staying at the forefront of industry trends and emerging technologies.`,
+        image: this.UNSPLASH_IMAGES.about,
         stats: [
-          { value: '10+', label: 'Years Experience' },
-          { value: '500+', label: 'Happy Clients' },
-          { value: '1000+', label: 'Projects Completed' },
+          { value: '10+', label: 'Years of Excellence', icon: '📅' },
+          { value: '500+', label: 'Happy Clients', icon: '😊' },
+          { value: '1,000+', label: 'Projects Delivered', icon: '🚀' },
+          { value: '50+', label: 'Team Members', icon: '👥' },
         ],
       },
     };
@@ -800,12 +1613,12 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'teamGrid',
       props: {
-        title: 'Meet Our Team',
-        members: [
-          { name: 'John Doe', role: 'CEO', image: '', bio: 'Visionary leader' },
-          { name: 'Jane Smith', role: 'CTO', image: '', bio: 'Tech expert' },
-          { name: 'Bob Johnson', role: 'Designer', image: '', bio: 'Creative mind' },
-        ],
+        title: 'Meet Our Leadership Team',
+        subtitle: 'Experts dedicated to your success',
+        members: this.CONTENT_LIBRARY.team.map((m, i) => ({
+          ...m,
+          image: this.UNSPLASH_IMAGES.team[i % this.UNSPLASH_IMAGES.team.length],
+        })),
       },
     };
   }
@@ -816,10 +1629,44 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       type: 'timeline',
       props: {
         title: 'Our Journey',
+        subtitle: 'Key milestones that shaped who we are today',
         events: [
-          { date: '2020', title: 'Founded', description: 'Started our journey' },
-          { date: '2022', title: 'Growth', description: 'Expanded our team' },
-          { date: '2024', title: 'Innovation', description: 'Launched new products' },
+          {
+            date: '2018',
+            title: 'Company Founded',
+            description:
+              'Started with a vision to revolutionize the industry. Three founders, one shared dream, and endless possibilities.',
+          },
+          {
+            date: '2019',
+            title: 'First Major Client',
+            description:
+              'Secured our first Fortune 500 client, validating our approach and opening doors to new opportunities.',
+          },
+          {
+            date: '2020',
+            title: 'Series A Funding',
+            description:
+              'Raised $10M in Series A funding to accelerate growth and expand our product offerings.',
+          },
+          {
+            date: '2021',
+            title: 'Global Expansion',
+            description:
+              'Opened offices in London, Singapore, and Sydney to better serve our international customers.',
+          },
+          {
+            date: '2022',
+            title: '100K Users Milestone',
+            description:
+              'Reached 100,000 active users, a testament to our team dedication and product excellence.',
+          },
+          {
+            date: '2024',
+            title: 'Industry Leadership',
+            description:
+              'Recognized as an industry leader with multiple awards and a growing ecosystem of partners.',
+          },
         ],
       },
     };
@@ -830,12 +1677,16 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'stats',
       props: {
+        title: 'Trusted Worldwide',
+        subtitle: 'Numbers that speak for themselves',
         stats: [
-          { value: '99%', label: 'Customer Satisfaction' },
-          { value: '24/7', label: 'Support' },
-          { value: '50+', label: 'Countries' },
+          { value: '10K+', label: 'Active Users', icon: '👥' },
+          { value: '99.9%', label: 'Uptime SLA', icon: '⚡' },
+          { value: '150+', label: 'Countries Served', icon: '🌍' },
+          { value: '24/7', label: 'Support Available', icon: '💬' },
         ],
-        columns: 3,
+        columns: 4,
+        backgroundColor: '#f8fafc',
       },
     };
   }
@@ -846,10 +1697,36 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       type: 'featureCards',
       props: {
         title: 'Our Services',
+        subtitle: 'Comprehensive solutions tailored to your needs',
         cards: [
-          { icon: '💼', title: 'Consulting', description: 'Expert advice for your business' },
-          { icon: '🎨', title: 'Design', description: 'Beautiful, modern designs' },
-          { icon: '⚙️', title: 'Development', description: 'Custom solutions built for you' },
+          {
+            icon: '💼',
+            title: 'Strategic Consulting',
+            description:
+              'Expert guidance to optimize your business operations and drive sustainable growth. We analyze, strategize, and implement solutions that work.',
+            image: this.UNSPLASH_IMAGES.gallery[0],
+          },
+          {
+            icon: '🎨',
+            title: 'Creative Design',
+            description:
+              'Beautiful, user-centered designs that captivate your audience and strengthen your brand identity across all touchpoints.',
+            image: this.UNSPLASH_IMAGES.gallery[1],
+          },
+          {
+            icon: '⚙️',
+            title: 'Custom Development',
+            description:
+              'Tailored software solutions built with cutting-edge technologies. From web apps to enterprise systems, we bring your vision to life.',
+            image: this.UNSPLASH_IMAGES.gallery[2],
+          },
+          {
+            icon: '📈',
+            title: 'Growth Marketing',
+            description:
+              'Data-driven marketing strategies that attract, engage, and convert your ideal customers. Maximize ROI with proven tactics.',
+            image: this.UNSPLASH_IMAGES.gallery[3],
+          },
         ],
       },
     };
@@ -860,13 +1737,11 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'pricing',
       props: {
-        title: 'Choose Your Plan',
-        subtitle: 'Simple, transparent pricing',
-        plans: [
-          { name: 'Starter', price: '$9', period: '/month', features: ['Feature 1', 'Feature 2'], ctaText: 'Get Started', ctaUrl: '#' },
-          { name: 'Pro', price: '$29', period: '/month', features: ['All Starter features', 'Feature 3', 'Feature 4'], ctaText: 'Get Started', ctaUrl: '#', featured: true },
-          { name: 'Enterprise', price: '$99', period: '/month', features: ['All Pro features', 'Feature 5', 'Priority support'], ctaText: 'Contact Us', ctaUrl: '#' },
-        ],
+        title: 'Simple, Transparent Pricing',
+        subtitle: 'No hidden fees. Cancel anytime. Start free.',
+        plans: this.CONTENT_LIBRARY.pricingPlans,
+        billingToggle: true,
+        annualDiscount: 20,
       },
     };
   }
@@ -876,13 +1751,22 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'blogPosts',
       props: {
-        title: 'Latest Articles',
+        title: 'Latest Insights',
+        subtitle: 'Expert advice and industry news to keep you ahead',
         columns: 3,
         showExcerpt: true,
-        posts: [
-          { title: 'Getting Started', excerpt: 'Learn the basics...', image: '', date: '2024-01-15', author: 'John Doe', url: '#' },
-          { title: 'Advanced Tips', excerpt: 'Take it to the next level...', image: '', date: '2024-01-10', author: 'Jane Smith', url: '#' },
-        ],
+        showAuthor: true,
+        showDate: true,
+        posts: this.CONTENT_LIBRARY.blogPosts.map((p, i) => ({
+          ...p,
+          image: this.UNSPLASH_IMAGES.blog[i % this.UNSPLASH_IMAGES.blog.length],
+          url: `/blog/${p.title
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')}`,
+          category: 'Industry Insights',
+          readTime: `${5 + i * 2} min read`,
+        })),
       },
     };
   }
@@ -892,11 +1776,20 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'newsletter',
       props: {
-        title: 'Subscribe to Our Newsletter',
-        subtitle: 'Get the latest updates delivered to your inbox',
-        placeholder: 'Enter your email',
-        buttonText: 'Subscribe',
-        successMessage: 'Thanks for subscribing!',
+        title: 'Stay Ahead of the Curve',
+        subtitle:
+          'Join 25,000+ subscribers getting exclusive insights, tips, and updates delivered straight to their inbox.',
+        placeholder: 'Enter your email address',
+        buttonText: 'Subscribe Now',
+        successMessage:
+          'Thanks for subscribing! Check your inbox for a welcome email with exclusive content.',
+        privacyText: 'We respect your privacy. Unsubscribe at any time.',
+        backgroundColor: '#f8fafc',
+        features: [
+          'Weekly industry insights',
+          'Exclusive tips & tutorials',
+          'Early access to new features',
+        ],
       },
     };
   }
@@ -907,13 +1800,57 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       type: 'contactForm',
       props: {
         title: 'Get in Touch',
+        subtitle: 'Have a question or want to work together? We would love to hear from you.',
         fields: [
-          { type: 'text', label: 'Name', required: true, placeholder: 'Your name' },
-          { type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' },
-          { type: 'textarea', label: 'Message', required: true, placeholder: 'Your message' },
+          {
+            type: 'text',
+            name: 'firstName',
+            label: 'First Name',
+            placeholder: 'John',
+            required: true,
+            width: 'half',
+          },
+          {
+            type: 'text',
+            name: 'lastName',
+            label: 'Last Name',
+            placeholder: 'Smith',
+            required: true,
+            width: 'half',
+          },
+          {
+            type: 'email',
+            name: 'email',
+            label: 'Email Address',
+            placeholder: 'john@example.com',
+            required: true,
+          },
+          {
+            type: 'tel',
+            name: 'phone',
+            label: 'Phone Number',
+            placeholder: '+1 (555) 000-0000',
+            required: false,
+          },
+          {
+            type: 'select',
+            name: 'subject',
+            label: 'Subject',
+            options: ['General Inquiry', 'Sales', 'Support', 'Partnership', 'Other'],
+            required: true,
+          },
+          {
+            type: 'textarea',
+            name: 'message',
+            label: 'Message',
+            placeholder: 'Tell us about your project or question...',
+            required: true,
+            rows: 5,
+          },
         ],
         submitText: 'Send Message',
-        successMessage: 'Thank you! We will get back to you soon.',
+        successMessage: 'Thank you for reaching out! We typically respond within 24 hours.',
+        showSocialLinks: true,
       },
     };
   }
@@ -924,10 +1861,19 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       type: 'contactInfo',
       props: {
         title: 'Contact Information',
-        email: 'hello@example.com',
+        subtitle: 'Reach out through any of these channels',
+        email: 'hello@yourcompany.com',
         phone: '+1 (555) 123-4567',
-        address: '123 Main Street, City, Country',
-        hours: 'Mon-Fri: 9am-5pm',
+        address: '123 Innovation Drive, Suite 400, San Francisco, CA 94102',
+        hours: 'Monday - Friday: 9:00 AM - 6:00 PM PST',
+        mapEmbed:
+          'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.0977869999!2d-122.4194!3d37.7749!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zM3fCsDQ2JzI5LjYiTiAxMjLCsDI1JzA5LjkiVw!5e0!3m2!1sen!2sus!4v1234567890',
+        social: [
+          { platform: 'twitter', url: 'https://twitter.com/company', label: '@company' },
+          { platform: 'linkedin', url: 'https://linkedin.com/company/company', label: 'LinkedIn' },
+          { platform: 'facebook', url: 'https://facebook.com/company', label: 'Facebook' },
+          { platform: 'instagram', url: 'https://instagram.com/company', label: '@company' },
+        ],
       },
     };
   }
@@ -938,12 +1884,9 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       type: 'accordion',
       props: {
         title: 'Frequently Asked Questions',
-        allowMultiple: false,
-        items: [
-          { title: 'What is your return policy?', content: 'We offer a 30-day money-back guarantee.' },
-          { title: 'How do I contact support?', content: 'You can reach us via email or phone.' },
-          { title: 'Do you offer discounts?', content: 'Yes, we offer various discounts for annual plans.' },
-        ],
+        subtitle: 'Find answers to common questions about our services',
+        allowMultiple: true,
+        items: this.CONTENT_LIBRARY.faq,
       },
     };
   }
@@ -953,38 +1896,137 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
       id: uuid(),
       type: 'gallery',
       props: {
-        title: 'Our Work',
+        title: 'Our Portfolio',
+        subtitle: 'A showcase of our recent work and achievements',
         columns: 3,
         lightbox: true,
-        images: [
-          { src: '', alt: 'Project 1', caption: 'Amazing project' },
-          { src: '', alt: 'Project 2', caption: 'Creative work' },
-          { src: '', alt: 'Project 3', caption: 'Innovative design' },
+        filterCategories: ['All', 'Branding', 'Web Design', 'Photography', 'Marketing'],
+        images: this.UNSPLASH_IMAGES.gallery.map((src, i) => ({
+          src,
+          alt: `Portfolio project ${i + 1}`,
+          caption: [
+            'Brand Identity - TechCorp',
+            'Website Redesign - EcoLife',
+            'Marketing Campaign - FreshStart',
+            'Product Photography - StyleCo',
+            'Digital Campaign - HealthPlus',
+            'App Design - FinanceApp',
+          ][i],
+          category: [
+            'Branding',
+            'Web Design',
+            'Marketing',
+            'Photography',
+            'Marketing',
+            'Web Design',
+          ][i],
+        })),
+      },
+    };
+  }
+
+  private createVideoBlock(): ContentBlockData {
+    return {
+      id: uuid(),
+      type: 'video',
+      props: {
+        title: 'See How It Works',
+        subtitle: 'Watch our 2-minute overview to learn how we can help you succeed',
+        videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        thumbnail:
+          'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1280&h=720&fit=crop',
+        autoplay: false,
+        showControls: true,
+      },
+    };
+  }
+
+  private createLogoCloudBlock(): ContentBlockData {
+    return {
+      id: uuid(),
+      type: 'logoCloud',
+      props: {
+        title: 'Trusted by Industry Leaders',
+        subtitle: 'Join thousands of companies using our platform',
+        logos: [
+          { name: 'TechCorp', alt: 'TechCorp logo', url: '#' },
+          { name: 'InnovateLabs', alt: 'InnovateLabs logo', url: '#' },
+          { name: 'GrowthFirst', alt: 'GrowthFirst logo', url: '#' },
+          { name: 'FutureScale', alt: 'FutureScale logo', url: '#' },
+          { name: 'DataDrive', alt: 'DataDrive logo', url: '#' },
+        ],
+      },
+    };
+  }
+
+  private createSocialProofBlock(): ContentBlockData {
+    return {
+      id: uuid(),
+      type: 'socialProof',
+      props: {
+        title: 'Join Our Growing Community',
+        stats: [
+          { value: '50K+', label: 'Twitter Followers', icon: '🐦' },
+          { value: '25K+', label: 'LinkedIn Connections', icon: '💼' },
+          { value: '100K+', label: 'Newsletter Subscribers', icon: '📧' },
+        ],
+        socialLinks: [
+          { platform: 'twitter', url: 'https://twitter.com/company', icon: 'twitter' },
+          { platform: 'linkedin', url: 'https://linkedin.com/company/company', icon: 'linkedin' },
+          { platform: 'facebook', url: 'https://facebook.com/company', icon: 'facebook' },
+          { platform: 'instagram', url: 'https://instagram.com/company', icon: 'instagram' },
+          { platform: 'youtube', url: 'https://youtube.com/company', icon: 'youtube' },
         ],
       },
     };
   }
 
   /**
-   * Create block by type
+   * Create block by type - comprehensive mapping for all block types
    */
-  private createBlockByType(blockType: ContentBlockType, dto: GenerateAiThemeDto): ContentBlockData | null {
+  private createBlockByType(
+    blockType: ContentBlockType,
+    dto: GenerateAiThemeDto,
+  ): ContentBlockData | null {
     const blockCreators: Record<string, () => ContentBlockData> = {
+      // Hero blocks
       hero: () => this.createHeroBlock(dto),
+
+      // Feature blocks
       features: () => this.createFeaturesBlock(dto),
+      featureCards: () => this.createFeatureCardsBlock(),
+
+      // Testimonial & Social Proof
       testimonials: () => this.createTestimonialsBlock(),
+      logoCloud: () => this.createLogoCloudBlock(),
+      socialProof: () => this.createSocialProofBlock(),
+
+      // CTA blocks
       cta: () => this.createCtaBlock(dto),
+      newsletter: () => this.createNewsletterBlock(),
+
+      // Commerce blocks
       productGrid: () => this.createProductGridBlock(),
       courseGrid: () => this.createCourseGridBlock(),
       pricing: () => this.createPricingBlock(),
-      stats: () => this.createStatsBlock(),
-      timeline: () => this.createTimelineBlock(),
-      accordion: () => this.createAccordionBlock(),
-      newsletter: () => this.createNewsletterBlock(),
+
+      // Team & About
       teamGrid: () => this.createTeamGridBlock(),
-      contactForm: () => this.createContactFormBlock(),
-      gallery: () => this.createGalleryBlock(),
+      about: () => this.createAboutBlock(),
+      timeline: () => this.createTimelineBlock(),
+      stats: () => this.createStatsBlock(),
+
+      // Content blocks
       blogPosts: () => this.createBlogGridBlock(),
+      gallery: () => this.createGalleryBlock(),
+      video: () => this.createVideoBlock(),
+
+      // Interactive blocks
+      accordion: () => this.createAccordionBlock(),
+
+      // Contact blocks
+      contactForm: () => this.createContactFormBlock(),
+      contactInfo: () => this.createContactInfoBlock(),
     };
 
     const creator = blockCreators[blockType];
@@ -1087,7 +2129,7 @@ Generate realistic, industry-appropriate content. Use proper UUIDs. Ensure acces
   generateThemeJson(themeData: GeneratedThemeData): ThemeJsonConfig {
     const { settings, pages, name, description, features } = themeData;
 
-    const templateNames = pages.map(p => {
+    const templateNames = pages.map((p) => {
       if (p.isHomePage) return 'home.hbs';
       return `page-${p.slug}.hbs`;
     });
@@ -1555,7 +2597,7 @@ ${themeData.description}
 
 ## Features
 
-${(themeData.features || []).map(f => `- ${f}`).join('\n') || '- Modern, responsive design'}
+${(themeData.features || []).map((f) => `- ${f}`).join('\n') || '- Modern, responsive design'}
 
 ## Installation
 
@@ -1565,7 +2607,7 @@ ${(themeData.features || []).map(f => `- ${f}`).join('\n') || '- Modern, respons
 
 ## Pages Included
 
-${themeData.pages.map(p => `- ${p.name} (/${p.slug})`).join('\n')}
+${themeData.pages.map((p) => `- ${p.name} (/${p.slug})`).join('\n')}
 
 ## Credits
 
@@ -1581,5 +2623,45 @@ MIT License
       css,
       readme,
     };
+  }
+
+  /**
+   * List all available AI theme presets
+   * Returns simplified preset info for display in the UI
+   */
+  listPresets(): Array<{
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    thumbnail: string;
+    tags: string[];
+    industry: string;
+    style: string;
+    colorScheme: string;
+    primaryColor: string;
+    secondaryColor: string;
+  }> {
+    return AI_THEME_PRESETS.map((preset) => ({
+      id: preset.id,
+      name: preset.name,
+      description: preset.description,
+      category: preset.category,
+      thumbnail: preset.thumbnail,
+      tags: preset.tags,
+      industry: preset.industry,
+      style: preset.style,
+      colorScheme: preset.colorScheme,
+      primaryColor: preset.colors.primary,
+      secondaryColor: preset.colors.secondary,
+    }));
+  }
+
+  /**
+   * Get a specific preset by ID
+   */
+  getPreset(id: string): AiThemePreset | null {
+    const preset = AI_THEME_PRESETS.find((p) => p.id === id);
+    return preset || null;
   }
 }

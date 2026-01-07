@@ -535,7 +535,9 @@ export const customThemesApi = {
     api.post<{ css: string }>('/custom-themes/generate-css', { settings, customCSS }),
   // Generate theme using AI
   generateAiTheme: (data: {
-    prompt: string;
+    prompt?: string;
+    presetId?: string;
+    usePreset?: boolean;
     themeName?: string;
     description?: string;
     numberOfPages?: number;
@@ -555,7 +557,23 @@ export const customThemesApi = {
     footerStyle?: string;
     generateFullTheme?: boolean;
   }) =>
-    api.post<{ settings: CustomThemeSettings; pages: ThemePageData[]; name: string; description: string }>('/custom-themes/generate-ai', data),
+    api.post<{ settings: CustomThemeSettings; pages: ThemePageData[]; name: string; description: string; generatedBy?: 'ai' | 'preset'; presetId?: string; presetName?: string }>('/custom-themes/generate-ai', data),
+  // List available AI theme presets
+  listPresets: () => api.get<Array<{
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    thumbnail: string;
+    tags: string[];
+    industry: string;
+    style: string;
+    colorScheme: string;
+    primaryColor: string;
+    secondaryColor: string;
+  }>>('/custom-themes/presets'),
+  // Get a specific preset by ID
+  getPreset: (id: string) => api.get<any>(`/custom-themes/presets/${id}`),
   // Generate a short-lived preview token for secure iframe embedding
   getPreviewToken: () => api.post<{ token: string; expiresIn: number }>('/custom-themes/preview-token'),
 };
