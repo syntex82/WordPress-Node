@@ -127,12 +127,158 @@ NodePress CMS provides a comprehensive set of features for building modern web a
 | Feature | Description |
 |---------|-------------|
 | **Visual Theme Designer** | Drag-and-drop page builder with 30+ content blocks |
-| **Live Preview** | Real-time preview of theme changes in an iframe |
+| **Live Preview** | Real-time preview of theme changes via WebSocket |
 | **Multi-Page Themes** | Create themes with multiple page templates (home, about, contact, etc.) |
 | **Block-Based Editor** | Headers, heroes, galleries, testimonials, CTAs, forms, and more |
 | **Responsive Controls** | Mobile-first design with breakpoint-specific styling |
 | **Theme Customizer** | Colors, typography, spacing, and layout customization |
 | **Handlebars Templates** | Server-side rendering with powerful template inheritance |
+
+<br />
+
+### 🖼️ Visual Editor (NEW)
+
+The enhanced Visual Editor provides a modern, real-time theme editing experience with powerful features for designers and developers.
+
+| Feature | Description |
+|---------|-------------|
+| **Drag-and-Drop Builder** | Intuitive block management with position tracking and nested layouts |
+| **Real-Time Live Preview** | WebSocket-powered instant updates - see changes as you make them |
+| **Block Templates** | 7+ pre-built templates: Hero, Features Grid, Testimonials, CTA, Pricing, Gallery, Contact Form |
+| **Inline Editing** | Click any text element and edit directly on the page |
+| **Undo/Redo History** | 50-step undo/redo with full state restoration |
+| **AI Theme Generator** | Generate complete themes from text descriptions using GPT-4 or Claude |
+| **Collaborative Editing** | Multiple users can edit simultaneously with live cursor tracking |
+
+<details>
+<summary><strong>🎨 Click to view Customization Options</strong></summary>
+
+<br />
+
+**Color Settings:**
+| Option | Description |
+|--------|-------------|
+| **Color Palette** | Primary, secondary, accent, success, warning, error, info colors |
+| **Gradients** | Custom gradient definitions with stops and directions |
+| **Transparency** | Alpha channel support for all colors |
+
+**Typography Settings:**
+| Option | Description |
+|--------|-------------|
+| **Heading Font** | Choose from 800+ Google Fonts or upload custom fonts |
+| **Body Font** | Separate font selection for body text |
+| **Font Sizes** | Customizable scale (xs, sm, base, lg, xl, 2xl, 3xl, 4xl) |
+| **Line Height** | Adjustable line spacing |
+| **Heading Weight** | Control heading font weight (100-900) |
+
+**Spacing Settings:**
+| Option | Description |
+|--------|-------------|
+| **Section Padding** | Vertical padding for page sections |
+| **Element Spacing** | Gap between elements |
+| **Container Padding** | Horizontal container padding |
+| **Spacing Scale** | Custom spacing scale (xs to 3xl) |
+
+**Layout Settings:**
+| Option | Description |
+|--------|-------------|
+| **Content Width** | Maximum content container width |
+| **Sidebar Position** | Left, right, or none |
+| **Header Height** | Fixed or auto header height |
+| **Footer Configuration** | Footer layout and content |
+
+**Advanced Settings:**
+| Option | Description |
+|--------|-------------|
+| **Border Radius** | Global border radius (none, small, medium, large, full) |
+| **Shadows** | Custom shadow definitions for cards, buttons, modals |
+| **Animations** | Enable/disable animations with custom duration and easing |
+| **Responsive Breakpoints** | Custom breakpoints for mobile, tablet, laptop, desktop |
+
+</details>
+
+<details>
+<summary><strong>🤖 Click to view AI Theme Generator</strong></summary>
+
+<br />
+
+The AI Theme Generator creates complete, professional themes from natural language descriptions.
+
+**How It Works:**
+1. Describe your website (e.g., "Modern tech startup with blue and purple gradient")
+2. Select style preferences (minimalist, bold, elegant, playful)
+3. Choose AI provider (OpenAI GPT-4 or Anthropic Claude)
+4. AI generates complete theme with colors, typography, and page layouts
+
+**AI-Generated Components:**
+| Component | What's Generated |
+|-----------|------------------|
+| **Color Scheme** | Primary, secondary, accent, and semantic colors |
+| **Typography** | Font pairings for headings and body text |
+| **Spacing** | Consistent spacing scale |
+| **Page Layouts** | Complete pages with blocks (Home, About, Contact) |
+| **Component Styles** | Buttons, cards, forms, navigation |
+
+**API Endpoints:**
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/visual-editor/ai/generate` | Generate AI theme from description |
+| `POST /api/visual-editor/ai/apply` | Apply generated theme to existing theme |
+| `POST /api/visual-editor/ai/generate-and-apply/:themeId` | Generate and apply in one step |
+| `GET /api/visual-editor/ai/suggestions/:themeId` | Get AI suggestions for improvements |
+
+</details>
+
+<details>
+<summary><strong>🔧 Click to view Visual Editor API</strong></summary>
+
+<br />
+
+**Block Management:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/visual-editor/blocks/:themeId` | POST | Add a new block |
+| `/api/visual-editor/blocks/:themeId/:blockId` | PUT | Update a block |
+| `/api/visual-editor/blocks/:themeId/:blockId` | DELETE | Remove a block |
+| `/api/visual-editor/blocks/:themeId/:blockId/move` | PUT | Move block to new position |
+| `/api/visual-editor/blocks/:themeId/:blockId/duplicate` | POST | Duplicate a block |
+| `/api/visual-editor/blocks/:themeId/reorder` | POST | Reorder multiple blocks |
+
+**Inline Editing:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/visual-editor/inline-edit/:themeId` | POST | Update block content inline |
+
+**Undo/Redo:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/visual-editor/undo/:themeId` | POST | Undo last action |
+| `/api/visual-editor/redo/:themeId` | POST | Redo undone action |
+
+**Theme Settings:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/visual-editor/settings/:themeId` | GET | Get theme settings |
+| `/api/visual-editor/settings/:themeId` | PUT | Update theme settings |
+
+**Block Templates:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/visual-editor/templates` | GET | List all block templates |
+| `/api/visual-editor/templates/create-block` | POST | Create block from template |
+
+**WebSocket Events (Real-Time):**
+| Event | Direction | Description |
+|-------|-----------|-------------|
+| `joinTheme` | Client → Server | Join theme editing session |
+| `leaveTheme` | Client → Server | Leave theme editing session |
+| `themeUpdate` | Server → Client | Theme settings changed |
+| `blockChange` | Server → Client | Block added/updated/removed |
+| `previewUpdate` | Server → Client | Live preview should refresh |
+| `userJoined` | Server → Client | Another user joined editing |
+| `userLeft` | Server → Client | Another user left editing |
+
+</details>
 
 <br />
 

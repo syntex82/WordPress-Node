@@ -1216,6 +1216,267 @@ img { max-width: 100%; height: auto; display: block; }
   </div>
 </section>`;
 
+      case 'testimonials':
+        const testimonialsHTML = (props.testimonials || [])
+          .map(
+            (t: any) => `
+      <div class="testimonial-card" style="background: var(--color-surface); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+        <blockquote style="font-style: italic; margin-bottom: 1.5rem; color: var(--color-heading);">"${t.quote || ''}"</blockquote>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          ${t.avatar ? `<img src="${t.avatar}" alt="${t.author}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">` : `<div style="width: 50px; height: 50px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">${(t.author || 'A')[0]}</div>`}
+          <div>
+            <div style="font-weight: 600;">${t.author || 'Customer'}</div>
+            <div style="color: var(--color-text-muted); font-size: 0.9rem;">${t.role || ''}${t.company ? ` at ${t.company}` : ''}</div>
+          </div>
+        </div>
+      </div>`,
+          )
+          .join('');
+        return `<section class="testimonials-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 3rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(${props.layout === 'slider' ? 1 : Math.min((props.testimonials || []).length, 3)}, 1fr); gap: 2rem;">
+      ${testimonialsHTML}
+    </div>
+  </div>
+</section>`;
+
+      case 'teamGrid':
+        const teamHTML = (props.members || [])
+          .map(
+            (m: any) => `
+      <div class="team-member" style="text-align: center;">
+        ${m.image ? `<img src="${m.image}" alt="${m.name}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem;">` : `<div style="width: 150px; height: 150px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem; font-weight: 600; margin: 0 auto 1rem;">${(m.name || 'T')[0]}</div>`}
+        <h3 style="margin-bottom: 0.25rem;">${m.name || 'Team Member'}</h3>
+        <div style="color: var(--color-primary); margin-bottom: 0.5rem;">${m.role || ''}</div>
+        <p style="color: var(--color-text-muted); font-size: 0.9rem;">${m.bio || ''}</p>
+        ${m.social ? `<div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;">${m.social.twitter ? `<a href="${m.social.twitter}" style="color: var(--color-text-muted);">𝕏</a>` : ''}${m.social.linkedin ? `<a href="${m.social.linkedin}" style="color: var(--color-text-muted);">in</a>` : ''}${m.social.email ? `<a href="mailto:${m.social.email}" style="color: var(--color-text-muted);">✉</a>` : ''}</div>` : ''}
+      </div>`,
+          )
+          .join('');
+        return `<section class="team-grid-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 3rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(${Math.min((props.members || []).length, 4)}, 1fr); gap: 3rem;">
+      ${teamHTML}
+    </div>
+  </div>
+</section>`;
+
+      case 'blogPosts':
+        const postsHTML = (props.posts || [])
+          .map(
+            (p: any) => `
+      <article class="blog-post-card" style="background: var(--color-surface); border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--color-border);">
+        ${p.image ? `<img src="${p.image}" alt="${p.title}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;">` : ''}
+        <div style="padding: 1.5rem;">
+          <div style="color: var(--color-text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">${p.date || ''} ${p.author ? `• ${p.author}` : ''}</div>
+          <h3 style="margin-bottom: 0.75rem;"><a href="${p.url || '#'}" style="color: var(--color-heading); text-decoration: none;">${p.title || 'Blog Post'}</a></h3>
+          ${props.showExcerpt !== false ? `<p style="color: var(--color-text-muted); font-size: 0.95rem;">${p.excerpt || ''}</p>` : ''}
+        </div>
+      </article>`,
+          )
+          .join('');
+        return `<section class="blog-posts-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 3rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(${props.columns || 3}, 1fr); gap: 2rem;">
+      ${postsHTML}
+    </div>
+  </div>
+</section>`;
+
+      case 'contactForm':
+        const fieldsHTML = (props.fields || [])
+          .map(
+            (f: any) => `
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">${f.label || 'Field'}${f.required ? ' *' : ''}</label>
+        ${f.type === 'textarea' ? `<textarea placeholder="${f.placeholder || ''}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); min-height: 120px;" ${f.required ? 'required' : ''}></textarea>` : `<input type="${f.type || 'text'}" placeholder="${f.placeholder || ''}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);" ${f.required ? 'required' : ''}>`}
+      </div>`,
+          )
+          .join('');
+        return `<section class="contact-form-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 600px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <form style="background: var(--color-surface); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+      ${fieldsHTML}
+      <button type="submit" class="btn btn-primary" style="width: 100%;">${props.submitText || 'Submit'}</button>
+    </form>
+  </div>
+</section>`;
+
+      case 'contactInfo':
+        return `<section class="contact-info-block" style="padding: var(--section-padding) 0; background: var(--color-surface);">
+  <div class="container" style="max-width: 600px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; gap: 1.5rem;">
+      ${props.email ? `<div style="display: flex; align-items: center; gap: 1rem;"><span style="font-size: 1.5rem;">✉️</span><div><div style="font-weight: 600;">Email</div><a href="mailto:${props.email}" style="color: var(--color-link);">${props.email}</a></div></div>` : ''}
+      ${props.phone ? `<div style="display: flex; align-items: center; gap: 1rem;"><span style="font-size: 1.5rem;">📞</span><div><div style="font-weight: 600;">Phone</div><a href="tel:${props.phone}" style="color: var(--color-link);">${props.phone}</a></div></div>` : ''}
+      ${props.address ? `<div style="display: flex; align-items: center; gap: 1rem;"><span style="font-size: 1.5rem;">📍</span><div><div style="font-weight: 600;">Address</div><span>${props.address}</span></div></div>` : ''}
+      ${props.hours ? `<div style="display: flex; align-items: center; gap: 1rem;"><span style="font-size: 1.5rem;">🕐</span><div><div style="font-weight: 600;">Hours</div><span>${props.hours}</span></div></div>` : ''}
+    </div>
+  </div>
+</section>`;
+
+      case 'about':
+        const aboutStatsHTML = (props.stats || [])
+          .map((s: any) => `<div style="text-align: center;"><div style="font-size: 2rem; font-weight: 700; color: var(--color-primary);">${s.value}</div><div style="color: var(--color-text-muted);">${s.label}</div></div>`)
+          .join('');
+        return `<section class="about-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: ${props.image ? '1fr 1fr' : '1fr'}; gap: 4rem; align-items: center;">
+      ${props.image ? `<img src="${props.image}" alt="" style="width: 100%; border-radius: var(--border-radius);">` : ''}
+      <div>
+        ${props.title ? `<h2 style="margin-bottom: 1.5rem;">${props.title}</h2>` : ''}
+        <p style="color: var(--color-text-muted); line-height: 1.8;">${props.content || ''}</p>
+        ${props.stats && props.stats.length > 0 ? `<div style="display: grid; grid-template-columns: repeat(${props.stats.length}, 1fr); gap: 2rem; margin-top: 2rem;">${aboutStatsHTML}</div>` : ''}
+      </div>
+    </div>
+  </div>
+</section>`;
+
+      case 'featureCards':
+        const cardsHTML = (props.cards || [])
+          .map(
+            (c: any) => `
+      <div class="feature-card" style="background: var(--color-surface); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border); text-align: center;">
+        ${c.image ? `<img src="${c.image}" alt="${c.title}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: var(--border-radius); margin-bottom: 1.5rem;">` : `<div style="font-size: 3rem; margin-bottom: 1rem;">${c.icon || '⭐'}</div>`}
+        <h3 style="margin-bottom: 0.75rem;">${c.title || 'Feature'}</h3>
+        <p style="color: var(--color-text-muted);">${c.description || ''}</p>
+      </div>`,
+          )
+          .join('');
+        return `<section class="feature-cards-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 3rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(${Math.min((props.cards || []).length, 3)}, 1fr); gap: 2rem;">
+      ${cardsHTML}
+    </div>
+  </div>
+</section>`;
+
+      case 'reviews':
+        const reviewsHTML = (props.reviews || [])
+          .map(
+            (r: any) => `
+      <div class="review-card" style="background: var(--color-surface); padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+        <div style="color: #fbbf24; margin-bottom: 0.75rem;">${'★'.repeat(r.rating || 5)}${'☆'.repeat(5 - (r.rating || 5))}</div>
+        <p style="margin-bottom: 1rem;">${r.text || ''}</p>
+        <div style="display: flex; justify-content: space-between; color: var(--color-text-muted); font-size: 0.9rem;">
+          <span style="font-weight: 600;">${r.author || 'Anonymous'}</span>
+          <span>${r.date || ''}</span>
+        </div>
+      </div>`,
+          )
+          .join('');
+        return `<section class="reviews-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 3rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(${Math.min((props.reviews || []).length, 3)}, 1fr); gap: 2rem;">
+      ${reviewsHTML}
+    </div>
+  </div>
+</section>`;
+
+      case 'map':
+        return `<section class="map-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <div style="border-radius: var(--border-radius); overflow: hidden; height: 400px; background: var(--color-surface); display: flex; align-items: center; justify-content: center;">
+      ${props.mapEmbed ? props.mapEmbed : `<div style="text-align: center; color: var(--color-text-muted);"><div style="font-size: 3rem; margin-bottom: 1rem;">🗺️</div><p>Map placeholder</p></div>`}
+    </div>
+  </div>
+</section>`;
+
+      case 'textBlock':
+        return `<section class="text-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 800px; text-align: ${props.alignment || 'left'};">
+    ${props.content || ''}
+  </div>
+</section>`;
+
+      case 'richText':
+        return `<section class="rich-text-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 800px;">
+    ${props.html || ''}
+  </div>
+</section>`;
+
+      case 'twoColumn':
+        return `<section class="two-column-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;">
+      <div>${props.leftContent || ''}</div>
+      <div>${props.rightContent || ''}</div>
+    </div>
+  </div>
+</section>`;
+
+      case 'threeColumn':
+        const columnsHTML = (props.columns || [])
+          .map((c: any) => `<div><h3>${c.title || ''}</h3><div>${c.content || ''}</div></div>`)
+          .join('');
+        return `<section class="three-column-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem;">
+      ${columnsHTML}
+    </div>
+  </div>
+</section>`;
+
+      case 'counters':
+        const countersHTML = (props.counters || [])
+          .map(
+            (c: any) => `
+      <div style="text-align: center;">
+        <div style="font-size: 3rem; font-weight: 700; color: var(--color-primary);">${c.prefix || ''}${c.value || '0'}${c.suffix || ''}</div>
+        <div style="color: var(--color-text-muted);">${c.label || ''}</div>
+      </div>`,
+          )
+          .join('');
+        return `<section class="counters-block" style="padding: var(--section-padding) 0; background: var(--color-surface);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(${(props.counters || []).length || 4}, 1fr); gap: 2rem;">
+      ${countersHTML}
+    </div>
+  </div>
+</section>`;
+
+      case 'footerSimple':
+        const footerLinksHTML = (props.links || [])
+          .map((l: any) => `<a href="${l.url || '#'}" style="color: var(--color-text-muted); text-decoration: none;">${l.text || ''}</a>`)
+          .join(' • ');
+        return `<footer class="footer-simple" style="padding: 2rem 0; background: var(--color-surface); text-align: center;">
+  <div class="container">
+    <div style="margin-bottom: 1rem;">${footerLinksHTML}</div>
+    <div style="color: var(--color-text-muted); font-size: 0.9rem;">${props.copyright || `© ${new Date().getFullYear()} All rights reserved.`}</div>
+  </div>
+</footer>`;
+
+      case 'footerMultiColumn':
+        const footerColumnsHTML = (props.columns || [])
+          .map(
+            (col: any) => `
+      <div>
+        <h4 style="margin-bottom: 1rem;">${col.title || ''}</h4>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          ${(col.links || []).map((l: any) => `<li style="margin-bottom: 0.5rem;"><a href="${l.url || '#'}" style="color: var(--color-text-muted); text-decoration: none;">${l.text || ''}</a></li>`).join('')}
+        </ul>
+      </div>`,
+          )
+          .join('');
+        return `<footer class="footer-multi-column" style="padding: 4rem 0 2rem; background: var(--color-surface);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(${(props.columns || []).length || 4}, 1fr); gap: 3rem; margin-bottom: 3rem;">
+      ${footerColumnsHTML}
+    </div>
+    <div style="border-top: 1px solid var(--color-border); padding-top: 2rem; text-align: center; color: var(--color-text-muted); font-size: 0.9rem;">
+      ${props.copyright || `© ${new Date().getFullYear()} All rights reserved.`}
+    </div>
+  </div>
+</footer>`;
+
       default:
         // For unknown blocks, render as placeholder comment
         return `<!-- Block: ${type} -->`;

@@ -4,7 +4,7 @@
  */
 
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from '../../database/prisma.module';
 import { ThemesService } from './themes.service';
@@ -20,6 +20,9 @@ import { ThemeCustomizationService } from './theme-customization.service';
 import { ThemeCustomizationController } from './theme-customization.controller';
 import { MarketplaceService } from './marketplace.service';
 import { MarketplaceController } from './marketplace.controller';
+import { VisualEditorService } from './visual-editor.service';
+import { VisualEditorController } from './visual-editor.controller';
+import { VisualEditorGateway } from './visual-editor.gateway';
 import { ContentModule } from '../content/content.module';
 import { SettingsModule } from '../settings/settings.module';
 import { MenusModule } from '../menus/menus.module';
@@ -53,6 +56,8 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
     CustomizationRendererService,
     ThemeCustomizationService,
     MarketplaceService,
+    VisualEditorService,
+    VisualEditorGateway,
   ],
   controllers: [
     ThemesController,
@@ -60,6 +65,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
     CustomThemesController,
     ThemeCustomizationController,
     MarketplaceController,
+    VisualEditorController,
   ],
   exports: [
     ThemesService,
@@ -70,6 +76,8 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
     CustomizationRendererService,
     ThemeCustomizationService,
     MarketplaceService,
+    VisualEditorService,
+    VisualEditorGateway,
   ],
 })
 export class ThemesModule {}
