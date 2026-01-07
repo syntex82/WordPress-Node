@@ -116,14 +116,8 @@ export class ProfilesController {
    */
   @Get('me/suggested')
   @UseGuards(JwtAuthGuard)
-  async getSuggestedUsers(
-    @Request() req,
-    @Query('limit') limit?: string,
-  ) {
-    return this.profilesService.getSuggestedUsers(
-      req.user.id,
-      parseInt(limit || '10'),
-    );
+  async getSuggestedUsers(@Request() req, @Query('limit') limit?: string) {
+    return this.profilesService.getSuggestedUsers(req.user.id, parseInt(limit || '10'));
   }
 
   /**

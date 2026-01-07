@@ -68,17 +68,23 @@ describe('SystemEmailService', () => {
         isActive: true,
       };
       (prismaService.emailTemplate.findUnique as jest.Mock).mockResolvedValue(dbTemplate);
-      emailService.renderTemplate.mockImplementation((content) => content.replace('{{user.firstName}}', 'Test'));
+      emailService.renderTemplate.mockImplementation((content) =>
+        content.replace('{{user.firstName}}', 'Test'),
+      );
 
       await service.sendPasswordResetEmail(baseData);
 
-      expect(prismaService.emailTemplate.findUnique).toHaveBeenCalledWith({ where: { slug: 'password-reset' } });
-      expect(emailService.send).toHaveBeenCalledWith(expect.objectContaining({
-        to: 'user@test.com',
-        toName: 'Test User',
-        recipientId: 'user-123',
-        metadata: { type: 'password_reset' },
-      }));
+      expect(prismaService.emailTemplate.findUnique).toHaveBeenCalledWith({
+        where: { slug: 'password-reset' },
+      });
+      expect(emailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@test.com',
+          toName: 'Test User',
+          recipientId: 'user-123',
+          metadata: { type: 'password_reset' },
+        }),
+      );
     });
 
     it('should use fallback template when database template not found', async () => {
@@ -86,10 +92,12 @@ describe('SystemEmailService', () => {
 
       await service.sendPasswordResetEmail(baseData);
 
-      expect(emailService.send).toHaveBeenCalledWith(expect.objectContaining({
-        to: 'user@test.com',
-        subject: 'Reset Your Password',
-      }));
+      expect(emailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@test.com',
+          subject: 'Reset Your Password',
+        }),
+      );
     });
 
     it('should use fallback template when database template is inactive', async () => {
@@ -104,9 +112,11 @@ describe('SystemEmailService', () => {
 
       await service.sendPasswordResetEmail(baseData);
 
-      expect(emailService.send).toHaveBeenCalledWith(expect.objectContaining({
-        subject: 'Reset Your Password',
-      }));
+      expect(emailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: 'Reset Your Password',
+        }),
+      );
     });
   });
 
@@ -124,11 +134,13 @@ describe('SystemEmailService', () => {
 
       await service.sendWelcomeEmail(baseData);
 
-      expect(emailService.send).toHaveBeenCalledWith(expect.objectContaining({
-        to: 'user@test.com',
-        recipientId: 'user-123',
-        metadata: { type: 'welcome' },
-      }));
+      expect(emailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@test.com',
+          recipientId: 'user-123',
+          metadata: { type: 'welcome' },
+        }),
+      );
     });
   });
 
@@ -147,11 +159,13 @@ describe('SystemEmailService', () => {
 
       await service.sendCourseEnrollmentEmail(baseData);
 
-      expect(emailService.send).toHaveBeenCalledWith(expect.objectContaining({
-        to: 'user@test.com',
-        recipientId: 'user-123',
-        metadata: { type: 'course_enrollment', courseTitle: 'JavaScript Basics' },
-      }));
+      expect(emailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@test.com',
+          recipientId: 'user-123',
+          metadata: { type: 'course_enrollment', courseTitle: 'JavaScript Basics' },
+        }),
+      );
     });
   });
 
@@ -176,11 +190,13 @@ describe('SystemEmailService', () => {
 
       await service.sendOrderConfirmationEmail(baseData);
 
-      expect(emailService.send).toHaveBeenCalledWith(expect.objectContaining({
-        to: 'user@test.com',
-        recipientId: 'user-123',
-        metadata: { type: 'order_confirmation', orderNumber: 'ORD-12345' },
-      }));
+      expect(emailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@test.com',
+          recipientId: 'user-123',
+          metadata: { type: 'order_confirmation', orderNumber: 'ORD-12345' },
+        }),
+      );
     });
 
     it('should use database template when available', async () => {
@@ -202,4 +218,3 @@ describe('SystemEmailService', () => {
     });
   });
 });
-

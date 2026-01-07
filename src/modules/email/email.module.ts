@@ -26,6 +26,12 @@ import { EmailController } from './email.controller';
     EmailTemplatesSeederService,
     SystemEmailService,
   ],
-  exports: [EmailService, EmailTemplatesService, EmailLogsService, BulkEmailService, SystemEmailService],
+  exports: [
+    EmailService,
+    EmailTemplatesService,
+    EmailLogsService,
+    BulkEmailService,
+    SystemEmailService,
+  ],
 })
 export class EmailModule {}

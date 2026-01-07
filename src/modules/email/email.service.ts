@@ -57,7 +57,9 @@ export class EmailService implements OnModuleInit {
     try {
       // Try to get config from database first
       this.smtpConfig = await this.systemConfig.getSmtpConfig();
-      this.logger.log(`SMTP config loaded from DB: host=${this.smtpConfig.host}, user=${this.smtpConfig.user}, hasPass=${!!this.smtpConfig.pass}`);
+      this.logger.log(
+        `SMTP config loaded from DB: host=${this.smtpConfig.host}, user=${this.smtpConfig.user}, hasPass=${!!this.smtpConfig.pass}`,
+      );
     } catch (error) {
       // Database not ready yet, use env config
       this.logger.warn(`Failed to load SMTP config from DB: ${error}`);
@@ -76,7 +78,9 @@ export class EmailService implements OnModuleInit {
     this.defaultFromName = this.smtpConfig.fromName;
 
     if (!this.smtpConfig.user || !this.smtpConfig.pass) {
-      this.logger.warn(`SMTP credentials not configured: user="${this.smtpConfig.user}", hasPass=${!!this.smtpConfig.pass}`);
+      this.logger.warn(
+        `SMTP credentials not configured: user="${this.smtpConfig.user}", hasPass=${!!this.smtpConfig.pass}`,
+      );
       this.transporter = null;
       return;
     }

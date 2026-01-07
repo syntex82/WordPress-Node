@@ -39,8 +39,22 @@ describe('StripeService', () => {
     discount: 0,
     total: 112.99,
     currency: 'USD',
-    billingAddress: { name: 'John Doe', street: '123 Main St', city: 'NYC', state: 'NY', zip: '10001', country: 'US' },
-    shippingAddress: { name: 'John Doe', street: '123 Main St', city: 'NYC', state: 'NY', zip: '10001', country: 'US' },
+    billingAddress: {
+      name: 'John Doe',
+      street: '123 Main St',
+      city: 'NYC',
+      state: 'NY',
+      zip: '10001',
+      country: 'US',
+    },
+    shippingAddress: {
+      name: 'John Doe',
+      street: '123 Main St',
+      city: 'NYC',
+      state: 'NY',
+      zip: '10001',
+      country: 'US',
+    },
     createdAt: new Date('2026-01-05'),
     updatedAt: new Date(),
     items: [
@@ -53,7 +67,11 @@ describe('StripeService', () => {
         price: 99.99,
         quantity: 1,
         total: 99.99,
-        product: { name: 'Test Product', images: ['https://example.com/image.jpg'], sku: 'SKU-001' },
+        product: {
+          name: 'Test Product',
+          images: ['https://example.com/image.jpg'],
+          sku: 'SKU-001',
+        },
         course: null,
       },
     ],
@@ -152,9 +170,16 @@ describe('StripeService', () => {
 
     it('should send order confirmation email on successful payment', async () => {
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(mockOrder);
-      (prismaService.order.update as jest.Mock).mockResolvedValue({ ...mockOrder, status: 'CONFIRMED', paymentStatus: 'PAID' });
+      (prismaService.order.update as jest.Mock).mockResolvedValue({
+        ...mockOrder,
+        status: 'CONFIRMED',
+        paymentStatus: 'PAID',
+      });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
       await callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' });
@@ -182,9 +207,15 @@ describe('StripeService', () => {
     it('should use order email when user not found', async () => {
       const orderWithoutUser = { ...mockOrder, userId: null };
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(orderWithoutUser);
-      (prismaService.order.update as jest.Mock).mockResolvedValue({ ...orderWithoutUser, status: 'CONFIRMED' });
+      (prismaService.order.update as jest.Mock).mockResolvedValue({
+        ...orderWithoutUser,
+        status: 'CONFIRMED',
+      });
 
       await callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' });
 
@@ -197,14 +228,24 @@ describe('StripeService', () => {
 
     it('should not fail payment processing if email sending fails', async () => {
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(mockOrder);
-      (prismaService.order.update as jest.Mock).mockResolvedValue({ ...mockOrder, status: 'CONFIRMED' });
+      (prismaService.order.update as jest.Mock).mockResolvedValue({
+        ...mockOrder,
+        status: 'CONFIRMED',
+      });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-      (systemEmailService.sendOrderConfirmationEmail as jest.Mock).mockRejectedValue(new Error('Email failed'));
+      (systemEmailService.sendOrderConfirmationEmail as jest.Mock).mockRejectedValue(
+        new Error('Email failed'),
+      );
 
       // Should not throw
-      await expect(callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' })).resolves.not.toThrow();
+      await expect(
+        callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' }),
+      ).resolves.not.toThrow();
 
       // Payment should still be updated
       expect(prismaService.payment.update).toHaveBeenCalled();
@@ -221,7 +262,10 @@ describe('StripeService', () => {
 
     it('should skip email if order not found', async () => {
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(null);
 
       await callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' });
@@ -231,9 +275,15 @@ describe('StripeService', () => {
 
     it('should include shipping address when available', async () => {
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(mockOrder);
-      (prismaService.order.update as jest.Mock).mockResolvedValue({ ...mockOrder, status: 'CONFIRMED' });
+      (prismaService.order.update as jest.Mock).mockResolvedValue({
+        ...mockOrder,
+        status: 'CONFIRMED',
+      });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
       await callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' });
@@ -255,9 +305,15 @@ describe('StripeService', () => {
     it('should handle order without shipping address (digital products)', async () => {
       const digitalOrder = { ...mockOrder, shippingAddress: null, shipping: 0 };
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(digitalOrder);
-      (prismaService.order.update as jest.Mock).mockResolvedValue({ ...digitalOrder, status: 'CONFIRMED' });
+      (prismaService.order.update as jest.Mock).mockResolvedValue({
+        ...digitalOrder,
+        status: 'CONFIRMED',
+      });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
       await callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' });
@@ -289,9 +345,15 @@ describe('StripeService', () => {
         ],
       };
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(courseOrder);
-      (prismaService.order.update as jest.Mock).mockResolvedValue({ ...courseOrder, status: 'CONFIRMED' });
+      (prismaService.order.update as jest.Mock).mockResolvedValue({
+        ...courseOrder,
+        status: 'CONFIRMED',
+      });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
       (prismaService.enrollment.findUnique as jest.Mock).mockResolvedValue(null);
       (prismaService.enrollment.create as jest.Mock).mockResolvedValue({ id: 'enroll-1' });
@@ -324,11 +386,19 @@ describe('StripeService', () => {
         ],
       };
       (prismaService.payment.findUnique as jest.Mock).mockResolvedValue(mockPayment);
-      (prismaService.payment.update as jest.Mock).mockResolvedValue({ ...mockPayment, status: 'PAID' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue({
+        ...mockPayment,
+        status: 'PAID',
+      });
       (prismaService.order.findUnique as jest.Mock).mockResolvedValue(courseOrder);
-      (prismaService.order.update as jest.Mock).mockResolvedValue({ ...courseOrder, status: 'CONFIRMED' });
+      (prismaService.order.update as jest.Mock).mockResolvedValue({
+        ...courseOrder,
+        status: 'CONFIRMED',
+      });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-      (prismaService.enrollment.findUnique as jest.Mock).mockResolvedValue({ id: 'existing-enroll' });
+      (prismaService.enrollment.findUnique as jest.Mock).mockResolvedValue({
+        id: 'existing-enroll',
+      });
 
       await callHandlePaymentSuccess({ id: 'pi_test123', latest_charge: 'ch_test123' });
 
@@ -336,4 +406,3 @@ describe('StripeService', () => {
     });
   });
 });
-

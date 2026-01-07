@@ -26,7 +26,10 @@ import {
 } from './controllers/orders.controller';
 import { CheckoutController, RefundsController } from './controllers/checkout.controller';
 import { StorefrontController } from './controllers/storefront.controller';
-import { ShippingController, StorefrontShippingController } from './controllers/shipping.controller';
+import {
+  ShippingController,
+  StorefrontShippingController,
+} from './controllers/shipping.controller';
 import { FeatureGuard } from '../../common/guards/feature.guard';
 
 @Module({
@@ -55,6 +58,13 @@ import { FeatureGuard } from '../../common/guards/feature.guard';
     ShippingService,
     FeatureGuard,
   ],
-  exports: [ProductsService, CategoriesService, CartService, OrdersService, StripeService, ShippingService],
+  exports: [
+    ProductsService,
+    CategoriesService,
+    CartService,
+    OrdersService,
+    StripeService,
+    ShippingService,
+  ],
 })
 export class ShopModule {}

@@ -41,11 +41,7 @@ export class TimelineController {
    */
   @Get('feed')
   @UseGuards(JwtAuthGuard)
-  async getFeed(
-    @Request() req,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async getFeed(@Request() req, @Query('page') page?: string, @Query('limit') limit?: string) {
     return this.timelineService.getFeedPosts(
       req.user.id,
       parseInt(page || '1'),
@@ -58,11 +54,7 @@ export class TimelineController {
    */
   @Get('discover')
   @UseGuards(JwtAuthGuard)
-  async getDiscover(
-    @Request() req,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async getDiscover(@Request() req, @Query('page') page?: string, @Query('limit') limit?: string) {
     return this.timelineService.getDiscoverPosts(
       req.user.id,
       parseInt(page || '1'),
@@ -166,11 +158,7 @@ export class TimelineController {
    */
   @Post('posts/:id/share')
   @UseGuards(JwtAuthGuard)
-  async sharePost(
-    @Request() req,
-    @Param('id') id: string,
-    @Body() dto: SharePostDto,
-  ) {
+  async sharePost(@Request() req, @Param('id') id: string, @Body() dto: SharePostDto) {
     return this.timelineService.sharePost(req.user.id, id, dto);
   }
 

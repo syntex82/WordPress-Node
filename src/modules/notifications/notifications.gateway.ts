@@ -100,4 +100,3 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     return this.userSockets.has(userId);
   }
 }
-

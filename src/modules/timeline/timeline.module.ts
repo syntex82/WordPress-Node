@@ -31,4 +31,3 @@ import { FeedModule } from '../feed/feed.module';
   exports: [TimelineService, TimelineGateway, UrlPreviewService],
 })
 export class TimelineModule {}
-

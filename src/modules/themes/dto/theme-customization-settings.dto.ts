@@ -3,7 +3,19 @@
  * Comprehensive settings for fonts, colors, spacing, shadows, animations
  */
 
-import { IsString, IsOptional, IsNumber, IsBoolean, IsObject, IsArray, ValidateNested, IsEnum, Min, Max, IsHexColor } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsObject,
+  IsArray,
+  ValidateNested,
+  IsEnum,
+  Min,
+  Max,
+  IsHexColor,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // ============ COLOR SETTINGS ============
@@ -607,4 +619,3 @@ export class UpdateThemeSettingsDto {
   @IsBoolean()
   merge?: boolean; // Merge with existing or replace
 }
-

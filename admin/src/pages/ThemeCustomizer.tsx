@@ -2,16 +2,19 @@
  * Theme Customizer Page
  * Live theme customization with sidebar and preview
  * Features: Real-time preview via postMessage, Undo/Redo, Import/Export, Element Inspector
- * With comprehensive tooltips for user guidance
+ * Content Management: Media, Content Blocks, Links directly in customizer
+ * With comprehensive tooltips and guided onboarding
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiX, FiSave, FiRefreshCw, FiChevronLeft, FiChevronRight, FiEye, FiSettings, FiType, FiLayout, FiGrid, FiHome as FiHomeIcon, FiAlertCircle, FiCode, FiTarget, FiRotateCcw, FiRotateCw, FiDownload, FiDroplet, FiBox } from 'react-icons/fi';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiX, FiSave, FiRefreshCw, FiChevronLeft, FiChevronRight, FiEye, FiSettings, FiType, FiLayout, FiGrid, FiHome as FiHomeIcon, FiAlertCircle, FiCode, FiTarget, FiRotateCcw, FiRotateCw, FiDownload, FiDroplet, FiBox, FiImage, FiLink2, FiHelpCircle, FiExternalLink } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { customThemesApi, CustomTheme, CustomThemeSettings } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import Tooltip from '../components/Tooltip';
+import OnboardingTooltip from '../components/OnboardingTooltip';
+import { CUSTOMIZATION_ONBOARDING_STEPS, OnboardingStep } from '../contexts/ThemeCustomizationContext';
 
 // Tooltip content for all customizer features
 const CUSTOMIZER_TOOLTIPS = {
@@ -27,6 +30,12 @@ const CUSTOMIZER_TOOLTIPS = {
   css: { title: '💻 Custom CSS', content: 'Add your own CSS code. Override any style with custom rules.' },
   inspector: { title: '🔍 Element Inspector', content: 'Click any element on the preview to inspect its styles. Generate CSS rules automatically.' },
   importExport: { title: '📦 Import / Export', content: 'Backup your settings or transfer to another site. Export as JSON file.' },
+  // Content Management tooltips
+  images: { title: '🖼️ Media Library', content: 'Upload and manage images like logos, backgrounds, and banners. Drag to reorder.' },
+  blocks: { title: '🧱 Content Blocks', content: 'Create reusable content sections like heroes, features, and CTAs.' },
+  links: { title: '🔗 Links & Navigation', content: 'Manage navigation links, social media, and call-to-action buttons.' },
+  contentManager: { title: '📝 Content Manager', content: 'Open the full content manager for advanced media and content block editing.' },
+  // Action tooltips
   undo: { title: 'Undo', content: 'Revert your last change. Keyboard shortcut: Ctrl+Z', shortcut: 'Ctrl+Z' },
   redo: { title: 'Redo', content: 'Restore a reverted change. Keyboard shortcut: Ctrl+Y', shortcut: 'Ctrl+Y' },
   reset: { title: 'Reset Changes', content: 'Discard all unsaved changes and revert to the last saved state.' },
@@ -36,6 +45,7 @@ const CUSTOMIZER_TOOLTIPS = {
   viewport: { title: 'Responsive Preview', content: 'Test how your site looks on different devices. Switch between desktop, tablet, and mobile views.' },
   collapse: { title: 'Toggle Sidebar', content: 'Collapse or expand the sidebar to see more of the preview.' },
   close: { title: 'Close Customizer', content: 'Exit the customizer and return to the dashboard. Unsaved changes will prompt for confirmation.' },
+  startTour: { title: '🎓 Start Tour', content: 'Take a guided tour through the customization process. Perfect for first-time users!' },
 };
 
 // Components
@@ -53,6 +63,9 @@ import ElementInspector from '../components/ThemeCustomizer/ElementInspector';
 import ImportExportPanel from '../components/ThemeCustomizer/ImportExportPanel';
 import ResponsivePreview, { ViewportSize, getViewportWidth } from '../components/ThemeCustomizer/ResponsivePreview';
 import { useUndoRedo } from '../components/ThemeCustomizer/useUndoRedo';
+import ImageManagementPanel from '../components/ThemeCustomizer/ImageManagementPanel';
+import ContentBlocksPanel from '../components/ThemeCustomizer/ContentBlocksPanel';
+import LinkManagementPanel from '../components/ThemeCustomizer/LinkManagementPanel';
 
 // Get the backend URL - in production it's same origin, in development it's port 3000
 const getBackendUrl = () => {
@@ -62,7 +75,10 @@ const getBackendUrl = () => {
   return 'http://localhost:3000';
 };
 
-type PanelType = 'colors' | 'typography' | 'header' | 'footer' | 'layout' | 'homepage' | 'css' | 'palette' | 'advTypography' | 'spacing' | 'inspector' | 'importExport' | null;
+type PanelType = 'colors' | 'typography' | 'header' | 'footer' | 'layout' | 'homepage' | 'css' | 'palette' | 'advTypography' | 'spacing' | 'inspector' | 'importExport' | 'images' | 'blocks' | 'links' | null;
+
+// Onboarding storage key
+const ONBOARDING_STORAGE_KEY = 'theme_customizer_onboarding';
 
 interface ElementInfo {
   tagName: string;
@@ -161,6 +177,46 @@ export default function ThemeCustomizer() {
   // Element Inspector state
   const [inspectorEnabled, setInspectorEnabled] = useState(false);
   const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null);
+
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState<string | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+
+  // Load onboarding state
+  useEffect(() => {
+    const stored = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        setCompletedSteps(data.completedSteps || []);
+        // Don't auto-start if user has seen it before
+        if (!data.hasSeenTour) {
+          setShowOnboarding(true);
+          setOnboardingStep('welcome');
+        }
+      } catch (e) {
+        // First time user
+        setShowOnboarding(true);
+        setOnboardingStep('welcome');
+      }
+    } else {
+      // First time user
+      setShowOnboarding(true);
+      setOnboardingStep('welcome');
+    }
+  }, []);
+
+  // Save onboarding state
+  useEffect(() => {
+    if (completedSteps.length > 0 || !showOnboarding) {
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify({
+        completedSteps,
+        hasSeenTour: true,
+        currentStep: onboardingStep,
+      }));
+    }
+  }, [completedSteps, showOnboarding, onboardingStep]);
 
   // Computed
   const hasChanges = JSON.stringify(savedSettings) !== JSON.stringify(draftSettings);
@@ -477,7 +533,7 @@ export default function ThemeCustomizer() {
     return typeof width === 'number' ? `${width}px` : width;
   };
 
-  // Panel definitions - Basic and Advanced
+  // Panel definitions - Basic, Content, and Advanced
   const basicPanels = [
     { id: 'colors' as PanelType, name: 'Colors', icon: FiEye },
     { id: 'typography' as PanelType, name: 'Typography', icon: FiType },
@@ -485,6 +541,12 @@ export default function ThemeCustomizer() {
     { id: 'footer' as PanelType, name: 'Footer', icon: FiGrid },
     { id: 'layout' as PanelType, name: 'Layout', icon: FiSettings },
     { id: 'homepage' as PanelType, name: 'Homepage', icon: FiHomeIcon },
+  ];
+
+  const contentPanels = [
+    { id: 'images' as PanelType, name: 'Media Library', icon: FiImage },
+    { id: 'blocks' as PanelType, name: 'Content Blocks', icon: FiLayout },
+    { id: 'links' as PanelType, name: 'Links & Navigation', icon: FiLink2 },
   ];
 
   const advancedPanels = [
@@ -495,6 +557,61 @@ export default function ThemeCustomizer() {
     { id: 'inspector' as PanelType, name: 'Element Inspector', icon: FiTarget },
     { id: 'importExport' as PanelType, name: 'Import / Export', icon: FiDownload },
   ];
+
+  // Onboarding functions
+  const handleNextOnboardingStep = () => {
+    if (!onboardingStep) return;
+    const step = CUSTOMIZATION_ONBOARDING_STEPS.find(s => s.id === onboardingStep);
+    if (step?.nextStep) {
+      setCompletedSteps(prev => [...prev, onboardingStep]);
+      setOnboardingStep(step.nextStep);
+
+      // Auto-navigate based on step
+      if (step.nextStep === 'choose-colors') {
+        setActivePanel('colors');
+      } else if (step.nextStep === 'set-typography') {
+        setActivePanel('typography');
+      } else if (step.nextStep === 'configure-header') {
+        setActivePanel('header');
+      } else if (step.nextStep === 'add-content') {
+        setActivePanel(null);
+      } else if (step.nextStep === 'upload-images') {
+        setActivePanel('images');
+      } else if (step.nextStep === 'create-blocks') {
+        setActivePanel('blocks');
+      } else if (step.nextStep === 'add-links') {
+        setActivePanel('links');
+      }
+    } else {
+      // Complete the tour
+      setShowOnboarding(false);
+      setOnboardingStep(null);
+    }
+  };
+
+  const handleSkipOnboarding = () => {
+    setShowOnboarding(false);
+    setOnboardingStep(null);
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify({
+      completedSteps: ['skipped'],
+      hasSeenTour: true,
+      currentStep: null,
+    }));
+  };
+
+  const handleStartTour = () => {
+    setShowOnboarding(true);
+    setOnboardingStep('welcome');
+    setCompletedSteps([]);
+  };
+
+  const getCurrentOnboardingStep = (): OnboardingStep | null => {
+    return CUSTOMIZATION_ONBOARDING_STEPS.find(s => s.id === onboardingStep) || null;
+  };
+
+  const getOnboardingStepIndex = (): number => {
+    return CUSTOMIZATION_ONBOARDING_STEPS.findIndex(s => s.id === onboardingStep);
+  };
 
   if (loading) {
     return (
@@ -535,9 +652,22 @@ export default function ThemeCustomizer() {
         {/* Panel Navigation */}
         {!sidebarCollapsed && !activePanel && (
           <div className="flex-1 overflow-y-auto p-4">
+            {/* Start Tour Button */}
+            <Tooltip title={CUSTOMIZER_TOOLTIPS.startTour.title} content={CUSTOMIZER_TOOLTIPS.startTour.content} position="right" variant="help">
+              <button
+                onClick={handleStartTour}
+                className="w-full flex items-center gap-3 p-3 mb-4 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 text-blue-300 hover:from-blue-600/30 hover:to-purple-600/30 transition-all group"
+                data-action="start-tour"
+              >
+                <FiHelpCircle size={18} className="group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium">Start Guided Tour</span>
+                <FiChevronRight size={14} className="ml-auto text-blue-400 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </Tooltip>
+
             {/* Basic Panels */}
             <div className="mb-4">
-              <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2 px-1">Basic</h3>
+              <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2 px-1">🎨 Design</h3>
               <div className="space-y-1">
                 {basicPanels.map(panel => {
                   const tooltip = CUSTOMIZER_TOOLTIPS[panel.id as keyof typeof CUSTOMIZER_TOOLTIPS];
@@ -546,6 +676,7 @@ export default function ThemeCustomizer() {
                       <button
                         onClick={() => setActivePanel(panel.id)}
                         className="w-full flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all group"
+                        data-panel={panel.id}
                       >
                         <panel.icon size={18} className="group-hover:scale-110 transition-transform" />
                         <span className="text-sm">{panel.name}</span>
@@ -556,9 +687,46 @@ export default function ThemeCustomizer() {
                 })}
               </div>
             </div>
+
+            {/* Content Management Panels */}
+            <div className="mb-4">
+              <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2 px-1">📝 Content</h3>
+              <div className="space-y-1">
+                {contentPanels.map(panel => {
+                  const tooltip = CUSTOMIZER_TOOLTIPS[panel.id as keyof typeof CUSTOMIZER_TOOLTIPS];
+                  return (
+                    <Tooltip key={panel.id} title={tooltip?.title || panel.name} content={tooltip?.content || ''} position="right" variant="help">
+                      <button
+                        onClick={() => setActivePanel(panel.id)}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all group"
+                        data-panel={panel.id}
+                        data-tab={panel.id}
+                      >
+                        <panel.icon size={18} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-sm">{panel.name}</span>
+                        <FiChevronRight size={14} className="ml-auto text-slate-500 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </Tooltip>
+                  );
+                })}
+                {/* Full Content Manager Link */}
+                <Tooltip title={CUSTOMIZER_TOOLTIPS.contentManager.title} content={CUSTOMIZER_TOOLTIPS.contentManager.content} position="right" variant="help">
+                  <Link
+                    to="/admin/theme-content"
+                    className="w-full flex items-center gap-3 p-3 rounded-xl text-slate-400 hover:bg-slate-700/30 hover:text-slate-200 transition-all group border border-dashed border-slate-600/50"
+                    data-action="manage-content"
+                  >
+                    <FiExternalLink size={18} className="group-hover:scale-110 transition-transform" />
+                    <span className="text-sm">Full Content Manager</span>
+                    <FiChevronRight size={14} className="ml-auto text-slate-500 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </Tooltip>
+              </div>
+            </div>
+
             {/* Advanced Panels */}
             <div>
-              <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2 px-1">Advanced</h3>
+              <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2 px-1">⚙️ Advanced</h3>
               <div className="space-y-1">
                 {advancedPanels.map(panel => {
                   const tooltip = CUSTOMIZER_TOOLTIPS[panel.id as keyof typeof CUSTOMIZER_TOOLTIPS];
@@ -567,6 +735,7 @@ export default function ThemeCustomizer() {
                       <button
                         onClick={() => setActivePanel(panel.id)}
                         className="w-full flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all group"
+                        data-panel={panel.id}
                       >
                         <panel.icon size={18} className="group-hover:scale-110 transition-transform" />
                         <span className="text-sm">{panel.name}</span>
@@ -598,6 +767,10 @@ export default function ThemeCustomizer() {
               {activePanel === 'footer' && <FooterPanel settings={draftSettings} onChange={updateSettings} />}
               {activePanel === 'layout' && <LayoutPanel settings={draftSettings} onChange={updateSettings} />}
               {activePanel === 'homepage' && <HomepagePanel settings={draftSettings} onChange={updateSettings} />}
+              {/* Content Management Panels */}
+              {activePanel === 'images' && activeTheme && <ImageManagementPanel themeId={activeTheme.id} />}
+              {activePanel === 'blocks' && activeTheme && <ContentBlocksPanel themeId={activeTheme.id} />}
+              {activePanel === 'links' && activeTheme && <LinkManagementPanel themeId={activeTheme.id} />}
               {/* Advanced Panels */}
               {activePanel === 'palette' && <ColorPaletteManager settings={draftSettings} onChange={updateSettings} onApplyPalette={applyColorPalette} />}
               {activePanel === 'advTypography' && <AdvancedTypographyPanel settings={draftSettings} onChange={updateSettings} onLoadFont={loadFontInPreview} />}
@@ -613,7 +786,7 @@ export default function ThemeCustomizer() {
         {sidebarCollapsed && (
           <div className="flex-1 overflow-y-auto py-4">
             <div className="space-y-1 px-2">
-              {[...basicPanels, ...advancedPanels].map(panel => {
+              {[...basicPanels, ...contentPanels, ...advancedPanels].map(panel => {
                 const tooltip = CUSTOMIZER_TOOLTIPS[panel.id as keyof typeof CUSTOMIZER_TOOLTIPS];
                 return (
                   <Tooltip key={panel.id} title={tooltip?.title || panel.name} content={tooltip?.content || ''} position="right" variant="help">
@@ -783,6 +956,36 @@ export default function ThemeCustomizer() {
           </div>
         </div>
       </div>
+
+      {/* Onboarding Tooltip */}
+      {showOnboarding && onboardingStep && getCurrentOnboardingStep() && (
+        <OnboardingTooltip
+          step={getCurrentOnboardingStep()!}
+          currentStepIndex={getOnboardingStepIndex()}
+          totalSteps={CUSTOMIZATION_ONBOARDING_STEPS.length}
+          onNext={handleNextOnboardingStep}
+          onSkip={handleSkipOnboarding}
+          onComplete={() => {
+            setShowOnboarding(false);
+            setOnboardingStep(null);
+          }}
+        />
+      )}
+
+      {/* Onboarding highlight styles */}
+      <style>{`
+        .onboarding-highlight {
+          position: relative;
+          z-index: 9998;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+          border-radius: 8px;
+          animation: pulse-highlight 2s ease-in-out infinite;
+        }
+        @keyframes pulse-highlight {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3); }
+          50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.7), 0 0 30px rgba(59, 130, 246, 0.5); }
+        }
+      `}</style>
     </div>
   );
 }

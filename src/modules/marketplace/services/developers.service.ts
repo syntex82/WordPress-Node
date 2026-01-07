@@ -349,49 +349,68 @@ export class DevelopersService {
   /**
    * Admin: Update developer profile with extended fields
    */
-  async adminUpdate(developerId: string, dto: {
-    displayName?: string;
-    headline?: string;
-    bio?: string;
-    profileImage?: string;
-    category?: string;
-    skills?: string[];
-    languages?: string[];
-    frameworks?: string[];
-    tools?: string[];
-    spokenLanguages?: string[];
-    hourlyRate?: number;
-    minimumBudget?: number;
-    yearsOfExperience?: number;
-    portfolio?: any[];
-    education?: any[];
-    certifications?: any[];
-    availability?: string;
-    availableHours?: number;
-    timezone?: string;
-    websiteUrl?: string;
-    githubUrl?: string;
-    linkedinUrl?: string;
-    status?: DeveloperStatus;
-    isVerified?: boolean;
-    isFeatured?: boolean;
-    rating?: number;
-    reviewCount?: number;
-  }) {
+  async adminUpdate(
+    developerId: string,
+    dto: {
+      displayName?: string;
+      headline?: string;
+      bio?: string;
+      profileImage?: string;
+      category?: string;
+      skills?: string[];
+      languages?: string[];
+      frameworks?: string[];
+      tools?: string[];
+      spokenLanguages?: string[];
+      hourlyRate?: number;
+      minimumBudget?: number;
+      yearsOfExperience?: number;
+      portfolio?: any[];
+      education?: any[];
+      certifications?: any[];
+      availability?: string;
+      availableHours?: number;
+      timezone?: string;
+      websiteUrl?: string;
+      githubUrl?: string;
+      linkedinUrl?: string;
+      status?: DeveloperStatus;
+      isVerified?: boolean;
+      isFeatured?: boolean;
+      rating?: number;
+      reviewCount?: number;
+    },
+  ) {
     const existing = await this.prisma.developer.findUnique({ where: { id: developerId } });
     if (!existing) throw new NotFoundException('Developer not found');
 
     // Extract admin-only fields
-    const { status, isVerified, isFeatured, rating, reviewCount, websiteUrl, githubUrl, linkedinUrl, ...profileData } = dto;
+    const {
+      status,
+      isVerified,
+      isFeatured,
+      rating,
+      reviewCount,
+      websiteUrl,
+      githubUrl,
+      linkedinUrl,
+      ...profileData
+    } = dto;
 
     const developer = await this.prisma.developer.update({
       where: { id: developerId },
       data: {
         ...profileData,
         category: profileData.category as PrismaDeveloperCategory,
-        portfolio: profileData.portfolio ? JSON.parse(JSON.stringify(profileData.portfolio)) : undefined,
-        education: profileData.education ? JSON.parse(JSON.stringify(profileData.education)) : undefined,
-        certifications: profileData.certifications ? JSON.parse(JSON.stringify(profileData.certifications)) : undefined,
+        portfolio: profileData.portfolio
+          ? JSON.parse(JSON.stringify(profileData.portfolio))
+          : undefined,
+        education: profileData.education
+          ? JSON.parse(JSON.stringify(profileData.education))
+          : undefined,
+        certifications: profileData.certifications
+          ? JSON.parse(JSON.stringify(profileData.certifications))
+          : undefined,
         websiteUrl,
         githubUrl,
         linkedinUrl,
@@ -455,7 +474,8 @@ export class DevelopersService {
     }
 
     const status = dto.status || DeveloperStatus.ACTIVE;
-    const isVerified = dto.isVerified !== undefined ? dto.isVerified : status === DeveloperStatus.ACTIVE;
+    const isVerified =
+      dto.isVerified !== undefined ? dto.isVerified : status === DeveloperStatus.ACTIVE;
 
     const developer = await this.prisma.developer.create({
       data: {
@@ -494,7 +514,7 @@ export class DevelopersService {
     const developerUserIds = await this.prisma.developer.findMany({
       select: { userId: true },
     });
-    const excludeIds = developerUserIds.map(d => d.userId);
+    const excludeIds = developerUserIds.map((d) => d.userId);
 
     const where: Prisma.UserWhereInput = {
       id: { notIn: excludeIds },

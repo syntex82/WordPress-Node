@@ -2,17 +2,7 @@
  * Certificate Templates Controller
  * Admin endpoints for managing certificate templates
  */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-  Patch,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Patch } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -64,4 +54,3 @@ export class CertificateTemplatesController {
     return this.certificateTemplateService.setDefault(id);
   }
 }
-

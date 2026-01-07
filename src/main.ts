@@ -128,7 +128,12 @@ async function bootstrap() {
         ? {
             directives: {
               defaultSrc: ["'self'"],
-              styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdn.tailwindcss.com'],
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                'https://fonts.googleapis.com',
+                'https://cdn.tailwindcss.com',
+              ],
               fontSrc: ["'self'", 'https://fonts.gstatic.com'],
               imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
               scriptSrc: [
@@ -366,7 +371,8 @@ async function bootstrap() {
     id: '/',
     name: 'NodePress',
     short_name: 'NodePress',
-    description: 'Modern CMS platform with courses, e-commerce, messaging, and real-time collaboration',
+    description:
+      'Modern CMS platform with courses, e-commerce, messaging, and real-time collaboration',
     start_url: '/',
     scope: '/',
     display: 'standalone',

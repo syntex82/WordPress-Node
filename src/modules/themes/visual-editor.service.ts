@@ -17,7 +17,10 @@ import {
   LivePreviewUpdateDto,
   CreateBlockFromTemplateDto,
 } from './dto/visual-editor.dto';
-import { CompleteThemeSettingsDto, UpdateThemeSettingsDto } from './dto/theme-customization-settings.dto';
+import {
+  CompleteThemeSettingsDto,
+  UpdateThemeSettingsDto,
+} from './dto/theme-customization-settings.dto';
 import { v4 as uuid } from 'uuid';
 
 interface HistoryEntry {
@@ -74,7 +77,13 @@ export class VisualEditorService {
 
   // ============ BLOCK OPERATIONS ============
 
-  async addBlock(themeId: string, userId: string, blockData: any, position?: number, parentId?: string) {
+  async addBlock(
+    themeId: string,
+    userId: string,
+    blockData: any,
+    position?: number,
+    parentId?: string,
+  ) {
     const theme = await this.getThemeWithBlocks(themeId);
     const session = this.getOrCreateSession(themeId, userId);
 
@@ -404,9 +413,7 @@ export class VisualEditorService {
 
     const currentConfig = (theme.config as Record<string, any>) || {};
     const currentSettings = currentConfig.customSettings || {};
-    const newSettings = dto.merge
-      ? this.deepMerge(currentSettings, dto.settings)
-      : dto.settings;
+    const newSettings = dto.merge ? this.deepMerge(currentSettings, dto.settings) : dto.settings;
 
     const newConfig = { ...currentConfig, customSettings: newSettings };
 
@@ -509,20 +516,59 @@ export class VisualEditorService {
 
   private initializeBlockTemplates() {
     const templates = [
-      { id: 'hero-basic', name: 'Basic Hero', type: 'hero', category: 'headers',
-        defaultProps: { title: 'Welcome', subtitle: 'Your amazing subtitle', ctaText: 'Get Started' } },
-      { id: 'hero-centered', name: 'Centered Hero', type: 'hero', category: 'headers',
-        defaultProps: { title: 'Welcome', subtitle: 'Centered content', alignment: 'center' } },
-      { id: 'features-3col', name: '3 Column Features', type: 'features', category: 'content',
-        defaultProps: { columns: 3, features: [] } },
-      { id: 'testimonials-grid', name: 'Testimonials Grid', type: 'testimonials', category: 'social-proof',
-        defaultProps: { layout: 'grid', testimonials: [] } },
-      { id: 'pricing-3tier', name: '3 Tier Pricing', type: 'pricing', category: 'commerce',
-        defaultProps: { plans: [], showToggle: true } },
-      { id: 'cta-simple', name: 'Simple CTA', type: 'cta', category: 'conversion',
-        defaultProps: { title: 'Ready to get started?', buttonText: 'Contact Us' } },
-      { id: 'contact-form', name: 'Contact Form', type: 'contactForm', category: 'forms',
-        defaultProps: { fields: ['name', 'email', 'message'], submitText: 'Send Message' } },
+      {
+        id: 'hero-basic',
+        name: 'Basic Hero',
+        type: 'hero',
+        category: 'headers',
+        defaultProps: {
+          title: 'Welcome',
+          subtitle: 'Your amazing subtitle',
+          ctaText: 'Get Started',
+        },
+      },
+      {
+        id: 'hero-centered',
+        name: 'Centered Hero',
+        type: 'hero',
+        category: 'headers',
+        defaultProps: { title: 'Welcome', subtitle: 'Centered content', alignment: 'center' },
+      },
+      {
+        id: 'features-3col',
+        name: '3 Column Features',
+        type: 'features',
+        category: 'content',
+        defaultProps: { columns: 3, features: [] },
+      },
+      {
+        id: 'testimonials-grid',
+        name: 'Testimonials Grid',
+        type: 'testimonials',
+        category: 'social-proof',
+        defaultProps: { layout: 'grid', testimonials: [] },
+      },
+      {
+        id: 'pricing-3tier',
+        name: '3 Tier Pricing',
+        type: 'pricing',
+        category: 'commerce',
+        defaultProps: { plans: [], showToggle: true },
+      },
+      {
+        id: 'cta-simple',
+        name: 'Simple CTA',
+        type: 'cta',
+        category: 'conversion',
+        defaultProps: { title: 'Ready to get started?', buttonText: 'Contact Us' },
+      },
+      {
+        id: 'contact-form',
+        name: 'Contact Form',
+        type: 'contactForm',
+        category: 'forms',
+        defaultProps: { fields: ['name', 'email', 'message'], submitText: 'Send Message' },
+      },
     ];
 
     for (const template of templates) {
@@ -533,7 +579,7 @@ export class VisualEditorService {
   getBlockTemplates(category?: string) {
     const templates = Array.from(this.blockTemplates.values());
     if (category) {
-      return templates.filter(t => t.category === category);
+      return templates.filter((t) => t.category === category);
     }
     return templates;
   }
@@ -607,4 +653,3 @@ export class VisualEditorService {
     return result;
   }
 }
-

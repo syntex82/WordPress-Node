@@ -119,11 +119,19 @@ export class ThemeRendererService {
     // Responsive image helper - generates srcset for optimized images
     Handlebars.registerHelper('responsiveImg', (src: string, alt: string, options: any) => {
       if (!src) return '';
-      const sizes = options?.hash?.sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
+      const sizes =
+        options?.hash?.sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
       const className = options?.hash?.class || '';
       const loading = options?.hash?.loading || 'lazy';
 
-      // Extract filename from path
+      // Check if this is an external URL (don't optimize external images)
+      if (src.startsWith('http://') || src.startsWith('https://')) {
+        return new Handlebars.SafeString(
+          `<img src="${src}" alt="${alt || ''}" class="${className}" loading="${loading}" decoding="async">`,
+        );
+      }
+
+      // Extract filename from path (handles /uploads/filename.jpg)
       const filename = src.split('/').pop() || '';
       const basePath = '/img/' + filename;
 
@@ -131,8 +139,11 @@ export class ThemeRendererService {
       const widths = [320, 640, 960, 1280, 1920];
       const srcset = widths.map((w) => `${basePath}?w=${w} ${w}w`).join(', ');
 
+      // Add fetchpriority="high" for eager-loaded images (LCP optimization)
+      const fetchPriority = loading === 'eager' ? ' fetchpriority="high"' : '';
+
       return new Handlebars.SafeString(
-        `<img src="${basePath}" srcset="${srcset}" sizes="${sizes}" alt="${alt || ''}" class="${className}" loading="${loading}" decoding="async">`,
+        `<img src="${basePath}" srcset="${srcset}" sizes="${sizes}" alt="${alt || ''}" class="${className}" loading="${loading}" decoding="async"${fetchPriority}>`,
       );
     });
 

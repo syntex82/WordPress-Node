@@ -30,7 +30,11 @@ export class EnrollmentsController {
 
   // Alternative endpoint for simpler URL
   @Post('enroll/:courseId')
-  async enrollSimple(@Param('courseId') courseId: string, @Body() dto: EnrollCourseDto, @Request() req) {
+  async enrollSimple(
+    @Param('courseId') courseId: string,
+    @Body() dto: EnrollCourseDto,
+    @Request() req,
+  ) {
     return this.enrollmentsService.enroll(courseId, req.user.id, dto);
   }
 

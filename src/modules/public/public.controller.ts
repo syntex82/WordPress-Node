@@ -190,7 +190,9 @@ Sitemap: ${baseUrl}/sitemap.xml
     const result = await this.postsService.findAll(1, 20, PostStatus.PUBLISHED);
     const posts = result.data;
 
-    const items = posts.map(post => `
+    const items = posts
+      .map(
+        (post) => `
     <item>
       <title><![CDATA[${post.title}]]></title>
       <link>${baseUrl}/blog/${post.slug}</link>
@@ -198,7 +200,9 @@ Sitemap: ${baseUrl}/sitemap.xml
       <description><![CDATA[${post.metaDescription || post.excerpt || ''}]]></description>
       <pubDate>${new Date(post.publishedAt || post.createdAt).toUTCString()}</pubDate>
       ${post.author ? `<author>${post.author.email} (${post.author.name})</author>` : ''}
-    </item>`).join('');
+    </item>`,
+      )
+      .join('');
 
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
@@ -1071,9 +1075,14 @@ Sitemap: ${baseUrl}/sitemap.xml
         popularSkills: popularSkills.slice(0, 10),
         stats: {
           totalDevelopers: stats.total || 0,
-          projectsCompleted: stats.topRated?.reduce((sum: number, d: any) => sum + (d.projectsCompleted || 0), 0) || 0,
+          projectsCompleted:
+            stats.topRated?.reduce((sum: number, d: any) => sum + (d.projectsCompleted || 0), 0) ||
+            0,
           avgRating: stats.topRated?.length
-            ? (stats.topRated.reduce((sum: number, d: any) => sum + (d.rating || 0), 0) / stats.topRated.length).toFixed(1)
+            ? (
+                stats.topRated.reduce((sum: number, d: any) => sum + (d.rating || 0), 0) /
+                stats.topRated.length
+              ).toFixed(1)
             : '4.8',
         },
         filters: {

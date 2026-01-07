@@ -35,7 +35,7 @@ export class UrlPreviewService {
         maxContentLength: this.maxContentLength,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; NodePress/1.0; +https://nodepress.io)',
-          'Accept': 'text/html,application/xhtml+xml',
+          Accept: 'text/html,application/xhtml+xml',
         },
         validateStatus: (status) => status < 400,
       });
@@ -115,7 +115,7 @@ export class UrlPreviewService {
       /dailymotion\.com\//i,
       /twitch\.tv\//i,
     ];
-    return videoPatterns.some(pattern => pattern.test(url));
+    return videoPatterns.some((pattern) => pattern.test(url));
   }
 
   /**
@@ -134,4 +134,3 @@ export class UrlPreviewService {
     return null;
   }
 }
-

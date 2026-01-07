@@ -76,4 +76,3 @@ export class OptimizedImageController {
     return { srcset, src: `/img/${filename}` };
   }
 }
-

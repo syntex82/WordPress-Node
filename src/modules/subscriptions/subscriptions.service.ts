@@ -144,8 +144,8 @@ export class SubscriptionsService {
     if (!priceId) {
       throw new BadRequestException(
         `No Stripe price configured for ${plan.name} plan (${dto.billingCycle} billing). ` +
-        `Please configure Stripe Price IDs in Admin > Settings > Subscription Plans. ` +
-        `You need to create products in Stripe Dashboard first and copy the Price IDs.`
+          `Please configure Stripe Price IDs in Admin > Settings > Subscription Plans. ` +
+          `You need to create products in Stripe Dashboard first and copy the Price IDs.`,
       );
     }
 
@@ -153,7 +153,7 @@ export class SubscriptionsService {
     if (!priceId.startsWith('price_')) {
       throw new BadRequestException(
         `Invalid Stripe Price ID format for ${plan.name} plan. ` +
-        `Price IDs should start with "price_". Current value: "${priceId}"`
+          `Price IDs should start with "price_". Current value: "${priceId}"`,
       );
     }
 
@@ -296,10 +296,7 @@ export class SubscriptionsService {
       if (priceId) {
         const plan = await this.prisma.subscriptionPlan.findFirst({
           where: {
-            OR: [
-              { stripePriceIdMonthly: priceId },
-              { stripePriceIdYearly: priceId },
-            ],
+            OR: [{ stripePriceIdMonthly: priceId }, { stripePriceIdYearly: priceId }],
           },
         });
         if (plan) planId = plan.id;
@@ -643,7 +640,7 @@ export class SubscriptionsService {
     }
 
     // Check each plan's Stripe configuration
-    const planDiagnostics = plans.map(plan => ({
+    const planDiagnostics = plans.map((plan) => ({
       id: plan.id,
       name: plan.name,
       slug: plan.slug,
@@ -681,10 +678,13 @@ export class SubscriptionsService {
       plans: planDiagnostics,
       summary: {
         totalPlans: plans.length,
-        activePlans: plans.filter(p => p.isActive).length,
-        plansWithIssues: planDiagnostics.filter(p => p.issues.length > 0).length,
+        activePlans: plans.filter((p) => p.isActive).length,
+        plansWithIssues: planDiagnostics.filter((p) => p.issues.length > 0).length,
         paidPlansWithoutStripe: planDiagnostics.filter(
-          p => (p.monthlyPrice > 0 || p.yearlyPrice > 0) && !p.hasMonthlyPriceId && !p.hasYearlyPriceId
+          (p) =>
+            (p.monthlyPrice > 0 || p.yearlyPrice > 0) &&
+            !p.hasMonthlyPriceId &&
+            !p.hasYearlyPriceId,
         ).length,
       },
       instructions: [
@@ -709,13 +709,14 @@ export class SubscriptionsService {
     // Get all plans
     const plans = await this.prisma.subscriptionPlan.findMany();
 
-    const updates: Array<{ planName: string; monthlyPriceId?: string; yearlyPriceId?: string }> = [];
+    const updates: Array<{ planName: string; monthlyPriceId?: string; yearlyPriceId?: string }> =
+      [];
 
     for (const plan of plans) {
       if (!plan.stripeProductId) continue;
 
       // Find prices for this product
-      const productPrices = prices.data.filter(p => p.product === plan.stripeProductId);
+      const productPrices = prices.data.filter((p) => p.product === plan.stripeProductId);
 
       let monthlyPriceId: string | undefined;
       let yearlyPriceId: string | undefined;
@@ -751,16 +752,23 @@ export class SubscriptionsService {
    * Create Stripe prices for products and update plans
    * Supports both: 1 product with 2 prices, or 2 products with 1 price each
    */
-  async createStripePricesForProducts(planConfigs: Array<{
-    slug: string;
-    monthlyProductId?: string;
-    yearlyProductId?: string;
-    productId?: string;
-    monthlyPrice: number;
-    yearlyPrice: number;
-  }>) {
+  async createStripePricesForProducts(
+    planConfigs: Array<{
+      slug: string;
+      monthlyProductId?: string;
+      yearlyProductId?: string;
+      productId?: string;
+      monthlyPrice: number;
+      yearlyPrice: number;
+    }>,
+  ) {
     const stripe = await this.getStripe();
-    const results: Array<{ slug: string; monthlyPriceId?: string; yearlyPriceId?: string; error?: string }> = [];
+    const results: Array<{
+      slug: string;
+      monthlyPriceId?: string;
+      yearlyPriceId?: string;
+      error?: string;
+    }> = [];
 
     for (const config of planConfigs) {
       try {

@@ -5,7 +5,14 @@
  * Integrates with Activity Feed for social visibility
  */
 
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TimelineGateway } from './timeline.gateway';
 import { FeedService } from '../feed/feed.service';
@@ -152,11 +159,7 @@ export class TimelineService {
   /**
    * Process mentions - create mention records and notify users
    */
-  private async processMentions(
-    postId: string,
-    mentionerUserId: string,
-    usernames: string[],
-  ) {
+  private async processMentions(postId: string, mentionerUserId: string, usernames: string[]) {
     for (const username of usernames) {
       const user = await this.prisma.user.findFirst({
         where: { username: { equals: username, mode: 'insensitive' } },
@@ -255,7 +258,9 @@ export class TimelineService {
       if (updatedPost?.isPublic) {
         const user = updatedPost.user;
         const previewContent = content
-          ? content.length > 100 ? content.substring(0, 100) + '...' : content
+          ? content.length > 100
+            ? content.substring(0, 100) + '...'
+            : content
           : 'shared a post';
 
         await this.feedService.createActivity({

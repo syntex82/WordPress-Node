@@ -70,9 +70,12 @@ export class ShippingService {
         name: dto.name,
         description: dto.description,
         cost: dto.cost !== undefined ? new Decimal(dto.cost) : undefined,
-        freeAbove: dto.freeAbove !== undefined 
-          ? (dto.freeAbove ? new Decimal(dto.freeAbove) : null) 
-          : undefined,
+        freeAbove:
+          dto.freeAbove !== undefined
+            ? dto.freeAbove
+              ? new Decimal(dto.freeAbove)
+              : null
+            : undefined,
         minDays: dto.minDays,
         maxDays: dto.maxDays,
         countries: dto.countries,
@@ -94,9 +97,9 @@ export class ShippingService {
       orderBy: { priority: 'asc' },
     });
 
-    return allMethods.filter(method => {
+    return allMethods.filter((method) => {
       if (!method.countries) return true; // Available for all countries
-      const countryCodes = method.countries.split(',').map(c => c.trim().toUpperCase());
+      const countryCodes = method.countries.split(',').map((c) => c.trim().toUpperCase());
       return countryCodes.includes(countryCode.toUpperCase());
     });
   }
@@ -104,7 +107,7 @@ export class ShippingService {
   // Calculate shipping cost based on cart subtotal
   async calculateShipping(methodId: string, subtotal: number) {
     const method = await this.findOne(methodId);
-    
+
     // Check if free shipping applies
     if (method.freeAbove && subtotal >= Number(method.freeAbove)) {
       return {
@@ -128,22 +131,24 @@ export class ShippingService {
   // Get shipping rates for checkout (with calculated costs)
   async getShippingRates(countryCode: string, subtotal: number) {
     const methods = await this.getAvailableForCountry(countryCode);
-    
-    return Promise.all(methods.map(async (method) => {
-      const calculation = await this.calculateShipping(method.id, subtotal);
-      return {
-        id: method.id,
-        name: method.name,
-        description: method.description,
-        cost: calculation.finalCost,
-        originalCost: calculation.originalCost,
-        isFree: calculation.isFree,
-        freeAbove: method.freeAbove ? Number(method.freeAbove) : null,
-        minDays: method.minDays,
-        maxDays: method.maxDays,
-        estimatedDelivery: this.formatDeliveryEstimate(method.minDays, method.maxDays),
-      };
-    }));
+
+    return Promise.all(
+      methods.map(async (method) => {
+        const calculation = await this.calculateShipping(method.id, subtotal);
+        return {
+          id: method.id,
+          name: method.name,
+          description: method.description,
+          cost: calculation.finalCost,
+          originalCost: calculation.originalCost,
+          isFree: calculation.isFree,
+          freeAbove: method.freeAbove ? Number(method.freeAbove) : null,
+          minDays: method.minDays,
+          maxDays: method.maxDays,
+          estimatedDelivery: this.formatDeliveryEstimate(method.minDays, method.maxDays),
+        };
+      }),
+    );
   }
 
   private formatDeliveryEstimate(minDays?: number | null, maxDays?: number | null): string {
@@ -154,4 +159,3 @@ export class ShippingService {
     return 'Varies';
   }
 }
-

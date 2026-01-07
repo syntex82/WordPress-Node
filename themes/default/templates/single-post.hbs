@@ -270,10 +270,10 @@
 <div class="single-post-page">
   <article class="post-article">
 
-    <!-- Featured Image (if present) -->
+    <!-- Featured Image (if present) - Optimized with responsive srcset -->
     {{#if post.featuredImage}}
     <div class="post-featured-image">
-      <img src="{{post.featuredImage}}" alt="{{post.title}}">
+      {{{responsiveImg post.featuredImage post.title class="post-image" loading="eager" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 800px"}}}
     </div>
     {{/if}}
 

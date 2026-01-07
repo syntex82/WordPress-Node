@@ -2,7 +2,12 @@
  * Products Service
  * Handles product CRUD operations with variant management
  */
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import {
   CreateProductDto,
@@ -157,9 +162,7 @@ export class ProductsService {
         weight: dto.weight,
         hasVariants: dto.hasVariants ?? (variants && variants.length > 0),
         variantOptions: variantOptions as any,
-        variants: variantCreateData
-          ? { create: variantCreateData }
-          : undefined,
+        variants: variantCreateData ? { create: variantCreateData } : undefined,
         tags: tags
           ? {
               connectOrCreate: tags.map((tag) => ({
@@ -413,7 +416,9 @@ export class ProductsService {
 
     const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
     const inStockCount = variants.filter((v) => v.stock > 0).length;
-    const lowStockCount = variants.filter((v) => v.stock > 0 && v.stock <= v.lowStockThreshold).length;
+    const lowStockCount = variants.filter(
+      (v) => v.stock > 0 && v.stock <= v.lowStockThreshold,
+    ).length;
     const outOfStockCount = variants.filter((v) => v.stock === 0).length;
 
     return {
@@ -513,10 +518,12 @@ export class ProductsService {
       where: { id: productId },
       data: {
         hasVariants: true,
-        variantOptions: JSON.parse(JSON.stringify({
-          sizes: dto.sizes,
-          colors: dto.colors,
-        })),
+        variantOptions: JSON.parse(
+          JSON.stringify({
+            sizes: dto.sizes,
+            colors: dto.colors,
+          }),
+        ),
       },
     });
 

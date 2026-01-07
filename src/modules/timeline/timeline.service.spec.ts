@@ -239,7 +239,10 @@ describe('TimelineService', () => {
 
   describe('unlikePost', () => {
     it('should unlike a post', async () => {
-      mockPrismaService.postLike.findUnique.mockResolvedValue({ postId: 'post-1', userId: 'user-1' });
+      mockPrismaService.postLike.findUnique.mockResolvedValue({
+        postId: 'post-1',
+        userId: 'user-1',
+      });
       mockPrismaService.postLike.delete.mockResolvedValue({ postId: 'post-1', userId: 'user-1' });
       mockPrismaService.timelinePost.update.mockResolvedValue({ ...mockPost, likesCount: 0 });
 
@@ -270,7 +273,10 @@ describe('TimelineService', () => {
       mockPrismaService.timelinePost.findUnique.mockResolvedValue(mockPost);
       mockPrismaService.postComment.create.mockResolvedValue(mockComment);
       mockPrismaService.timelinePost.update.mockResolvedValue({ ...mockPost, commentsCount: 1 });
-      mockPrismaService.$transaction.mockResolvedValue([mockComment, { ...mockPost, commentsCount: 1 }]);
+      mockPrismaService.$transaction.mockResolvedValue([
+        mockComment,
+        { ...mockPost, commentsCount: 1 },
+      ]);
 
       const result = await service.addComment('post-1', 'user-1', 'Great post!');
 
@@ -280,7 +286,9 @@ describe('TimelineService', () => {
     it('should throw NotFoundException for non-existent post', async () => {
       mockPrismaService.timelinePost.findUnique.mockResolvedValue(null);
 
-      await expect(service.addComment('non-existent', 'user-1', 'Comment')).rejects.toThrow(NotFoundException);
+      await expect(service.addComment('non-existent', 'user-1', 'Comment')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -292,7 +300,9 @@ describe('TimelineService', () => {
       const result = await service.deletePost('post-1', 'user-1');
 
       expect(result).toEqual({ success: true });
-      expect(mockPrismaService.timelinePost.delete).toHaveBeenCalledWith({ where: { id: 'post-1' } });
+      expect(mockPrismaService.timelinePost.delete).toHaveBeenCalledWith({
+        where: { id: 'post-1' },
+      });
     });
 
     it('should throw NotFoundException for non-existent post', async () => {
@@ -476,4 +486,3 @@ describe('TimelineService', () => {
     });
   });
 });
-

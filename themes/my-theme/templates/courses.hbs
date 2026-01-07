@@ -91,11 +91,11 @@
       <article class="course-card" data-price-type="{{priceType}}" data-title="{{title}}">
         <div class="course-image-wrapper">
           {{#if featuredImage}}
-          <img src="{{featuredImage}}" alt="{{title}}" class="course-image" onerror="this.src='/api/lms/courses/placeholder-image'">
+          {{{responsiveImg featuredImage title class="course-image" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"}}}
           {{else if thumbnail}}
-          <img src="{{thumbnail}}" alt="{{title}}" class="course-image" onerror="this.src='/api/lms/courses/placeholder-image'">
+          {{{responsiveImg thumbnail title class="course-image" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"}}}
           {{else}}
-          <img src="/api/lms/courses/placeholder-image" alt="{{title}}" class="course-image">
+          <img src="/api/lms/courses/placeholder-image" alt="{{title}}" class="course-image" loading="lazy">
           {{/if}}
           {{#if level}}<span class="course-level">{{level}}</span>{{/if}}
           <span class="course-price-badge {{#if (eq priceType 'PAID')}}paid{{else}}free{{/if}}">

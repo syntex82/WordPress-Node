@@ -724,3 +724,74 @@ p, span, div, input, textarea {
   font-variant-emoji: emoji;
   text-rendering: optimizeLegibility;
 }
+
+/* ==================== ONBOARDING & TOUR STYLES ==================== */
+
+/* Onboarding highlight effect */
+.onboarding-highlight {
+  position: relative;
+  z-index: 9998;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  animation: pulse-highlight 2s ease-in-out infinite;
+}
+
+@keyframes pulse-highlight {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.7), 0 0 30px rgba(59, 130, 246, 0.5);
+  }
+}
+
+/* Onboarding overlay backdrop */
+.onboarding-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9997;
+  pointer-events: none;
+}
+
+/* Onboarding tooltip arrow */
+.onboarding-tooltip-arrow {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  transform: rotate(45deg);
+  border: inherit;
+}
+
+.onboarding-tooltip-arrow.top {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-bottom: none;
+  border-right: none;
+}
+
+.onboarding-tooltip-arrow.bottom {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-top: none;
+  border-left: none;
+}
+
+.onboarding-tooltip-arrow.left {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-top: none;
+  border-right: none;
+}
+
+.onboarding-tooltip-arrow.right {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-bottom: none;
+  border-left: none;
+}

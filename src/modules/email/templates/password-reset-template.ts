@@ -132,5 +132,7 @@ export function getPasswordResetTemplate(data: PasswordResetTemplateData): strin
     .replace(/\{\{expiresIn\}\}/g, expiresIn)
     .replace(/\{\{supportUrl\}\}/g, supportUrl);
 
-  return getBaseEmailTemplate(processedContent, { preheader: 'Reset your NodePress password securely' });
+  return getBaseEmailTemplate(processedContent, {
+    preheader: 'Reset your NodePress password securely',
+  });
 }

@@ -3,7 +3,18 @@
  * DTOs for the drag-and-drop visual theme editor
  */
 
-import { IsString, IsOptional, IsNumber, IsBoolean, IsObject, IsArray, ValidateNested, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsObject,
+  IsArray,
+  ValidateNested,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // ============ BLOCK POSITION & LAYOUT ============
@@ -313,4 +324,3 @@ export class ApplyAiThemeDto {
   @IsString({ each: true })
   excludeSettings?: string[]; // e.g., ['colors', 'typography']
 }
-

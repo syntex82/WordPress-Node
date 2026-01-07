@@ -2,17 +2,29 @@
  * Media Page
  * Manage media library with grid view and drag-drop upload
  * Per-user media libraries with admin storage dashboard
+ * Enhanced with beautiful upload zones, audio players, and responsive galleries
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { mediaApi } from '../services/api';
 import { useThemeClasses } from '../contexts/SiteThemeContext';
 import { useAuthStore } from '../stores/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import toast from 'react-hot-toast';
-import { FiUpload, FiTrash2, FiX, FiImage, FiDownload, FiHelpCircle, FiUsers, FiHardDrive, FiDatabase, FiUser } from 'react-icons/fi';
+import {
+  FiUpload, FiTrash2, FiX, FiImage, FiDownload, FiHelpCircle,
+  FiUsers, FiHardDrive, FiDatabase, FiUser, FiGrid, FiList,
+  FiMusic, FiVideo
+} from 'react-icons/fi';
 import Tooltip from '../components/Tooltip';
+import {
+  DragDropUploadZone,
+  EnhancedAudioPlayer,
+  ResponsiveMediaGallery,
+  type AudioTrack,
+  type MediaItem
+} from '../components/Media';
 
 // Tooltip content for media page
 const MEDIA_TOOLTIPS = {
@@ -68,6 +80,41 @@ export default function Media() {
   const [storageStats, setStorageStats] = useState<StorageStats | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [myStorageStats, setMyStorageStats] = useState<{ totalSize: number; fileCount: number } | null>(null);
+
+  // Enhanced UI state
+  const [displayMode, setDisplayMode] = useState<'grid' | 'gallery'>('grid');
+  const [selectedMediaIds, setSelectedMediaIds] = useState<Set<string>>(new Set());
+  const [showAudioPlayer, setShowAudioPlayer] = useState(false);
+
+  // Convert media items to gallery format
+  const galleryItems: MediaItem[] = useMemo(() => {
+    return media.map(item => ({
+      id: item.id,
+      type: item.mimeType.startsWith('image/') ? 'image' as const
+        : item.mimeType.startsWith('video/') ? 'video' as const
+        : item.mimeType.startsWith('audio/') ? 'audio' as const
+        : 'image' as const,
+      src: item.path,
+      thumbnail: item.mimeType.startsWith('image/') ? item.path : undefined,
+      title: item.originalName,
+      description: item.caption,
+      size: item.size,
+      duration: item.duration,
+    }));
+  }, [media]);
+
+  // Get audio tracks for the audio player
+  const audioTracks: AudioTrack[] = useMemo(() => {
+    return media
+      .filter(item => item.mimeType.startsWith('audio/'))
+      .map(item => ({
+        id: item.id,
+        src: item.path,
+        title: item.originalName.replace(/\.[^/.]+$/, ''),
+        artist: 'Unknown Artist',
+        duration: item.duration,
+      }));
+  }, [media]);
 
   useEffect(() => {
     fetchMedia();
@@ -456,51 +503,99 @@ export default function Media() {
             ))}
           </div>
 
-      {/* Drag and Drop Zone */}
-      <Tooltip title={MEDIA_TOOLTIPS.dragDrop.title} content={MEDIA_TOOLTIPS.dragDrop.content} position="top">
-        <div
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          className={`mb-6 border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-            dragActive
-              ? 'border-blue-500 bg-blue-500/10'
-              : theme.isDark ? 'border-slate-700/50 bg-slate-800/30' : 'border-gray-300 bg-gray-50'
-          }`}
-        >
-          <FiUpload className={`mx-auto mb-4 ${theme.textMuted}`} size={48} />
-          <p className={`mb-2 ${theme.textMuted}`}>Drag and drop files here, or click the button above</p>
-          <p className={`text-sm mb-4 ${theme.textMuted}`}>Supports: JPG, PNG, GIF, SVG, MP4, MP3, PDF</p>
+      {/* Enhanced Drag and Drop Upload Zone */}
+      <div className="mb-6">
+        <DragDropUploadZone
+          accept={fileTypeFilter === 'all' ? 'all' : fileTypeFilter}
+          onFilesSelected={async (files) => {
+            setUploading(true);
+            const uploadPromises = files.map(file => mediaApi.upload(file));
+            try {
+              await Promise.all(uploadPromises);
+              toast.success(`${files.length} file(s) uploaded successfully`);
+              fetchMedia();
+            } catch (error) {
+              toast.error('Failed to upload some files');
+            } finally {
+              setUploading(false);
+            }
+          }}
+          maxFiles={20}
+          maxFileSize={100}
+          disabled={uploading}
+        />
+      </div>
 
-          {/* Recommended Sizes */}
-          <div className={`mt-4 pt-4 border-t ${theme.border}`}>
-            <p className={`text-xs mb-2 ${theme.textMuted}`}>📐 Recommended Image Sizes:</p>
-            <div className="flex flex-wrap justify-center gap-4 text-xs">
-              <span className={`px-3 py-1 rounded-full ${theme.isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
-                <span className="text-purple-400">Courses:</span> <span className="text-blue-400">1280 × 720 px</span>
-              </span>
-              <span className={`px-3 py-1 rounded-full ${theme.isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
-                <span className="text-green-400">Products:</span> <span className="text-blue-400">800 × 600 px</span>
-              </span>
-              <span className={`px-3 py-1 rounded-full ${theme.isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
-                <span className="text-amber-400">Posts:</span> <span className="text-blue-400">1200 × 630 px</span>
-              </span>
-              <span className={`px-3 py-1 rounded-full ${theme.isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
-                <span className="text-pink-400">Logo:</span> <span className="text-blue-400">200 × 60 px</span>
-              </span>
-            </div>
-          </div>
+      {/* Display Mode Toggle & Audio Player Toggle */}
+      <div className="flex items-center gap-4 mb-6">
+        {/* Display Mode */}
+        <div className={`flex rounded-lg overflow-hidden border ${theme.border}`}>
+          <button
+            onClick={() => setDisplayMode('grid')}
+            className={`flex items-center gap-2 px-4 py-2 transition-all ${
+              displayMode === 'grid'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white'
+                : theme.isDark ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FiGrid size={16} />
+            Grid
+          </button>
+          <button
+            onClick={() => setDisplayMode('gallery')}
+            className={`flex items-center gap-2 px-4 py-2 transition-all ${
+              displayMode === 'gallery'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white'
+                : theme.isDark ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FiImage size={16} />
+            Gallery
+          </button>
         </div>
-      </Tooltip>
 
-      {uploading && (
-        <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-          <p className="text-blue-400">Uploading files...</p>
+        {/* Audio Player Toggle */}
+        {audioTracks.length > 0 && (
+          <button
+            onClick={() => setShowAudioPlayer(!showAudioPlayer)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              showAudioPlayer
+                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/20'
+                : theme.isDark ? 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white' : 'bg-white text-gray-600 border border-gray-300 hover:text-gray-900'
+            }`}
+          >
+            <FiMusic size={16} />
+            Audio Player ({audioTracks.length})
+          </button>
+        )}
+
+        {/* Selection Count */}
+        {selectedMediaIds.size > 0 && (
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${theme.isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+            <span>{selectedMediaIds.size} selected</span>
+            <button
+              onClick={() => setSelectedMediaIds(new Set())}
+              className="hover:text-white transition-colors"
+            >
+              <FiX size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Audio Player Section */}
+      {showAudioPlayer && audioTracks.length > 0 && (
+        <div className="mb-6">
+          <EnhancedAudioPlayer
+            tracks={audioTracks}
+            skin="modern"
+            showVisualization
+            showVinylAnimation
+          />
         </div>
       )}
 
-      {/* Media Grid */}
+      {/* Media Display */}
       {filteredMedia.length === 0 ? (
         <div className={`text-center py-12 rounded-xl border ${theme.card}`}>
           <FiImage className={`mx-auto mb-4 ${theme.textMuted}`} size={64} />
@@ -511,7 +606,40 @@ export default function Media() {
             }
           </p>
         </div>
+      ) : displayMode === 'gallery' ? (
+        /* Responsive Media Gallery */
+        <ResponsiveMediaGallery
+          items={galleryItems.filter(item => {
+            if (fileTypeFilter === 'all') return true;
+            return item.type === fileTypeFilter;
+          })}
+          onSelect={(item) => {
+            const mediaItem = media.find(m => m.id === item.id);
+            if (mediaItem) {
+              setSelectedMedia(mediaItem);
+              setMetadataForm({ alt: mediaItem.alt || '', caption: mediaItem.caption || '' });
+              setEditingMetadata(false);
+            }
+          }}
+          onDelete={async (id) => {
+            if (confirm('Are you sure you want to delete this file?')) {
+              try {
+                await mediaApi.delete(id);
+                toast.success('Media deleted successfully');
+                fetchMedia();
+              } catch {
+                toast.error('Failed to delete media');
+              }
+            }
+          }}
+          selectedIds={selectedMediaIds}
+          columns={{ sm: 2, md: 3, lg: 4, xl: 5 }}
+          aspectRatio="square"
+          showActions
+          draggable={false}
+        />
       ) : (
+        /* Classic Grid View */
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {filteredMedia.map((item) => (
             <div
@@ -529,16 +657,16 @@ export default function Media() {
                 <div className={`w-full h-32 flex items-center justify-center relative ${theme.isDark ? 'bg-slate-900' : 'bg-gray-200'}`}>
                   <video src={item.path} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <span className="text-4xl">▶️</span>
+                    <FiVideo className="text-white" size={32} />
                   </div>
                 </div>
               ) : item.mimeType.startsWith('audio/') ? (
-                <div className="w-full h-32 bg-gradient-to-br from-purple-500/50 to-pink-500/50 flex items-center justify-center">
-                  <span className="text-4xl">🎵</span>
+                <div className="w-full h-32 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <FiMusic className="text-white" size={32} />
                 </div>
               ) : (
                 <div className={`w-full h-32 flex items-center justify-center ${theme.isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
-                  <span className="text-4xl">📄</span>
+                  <FiImage className={theme.textMuted} size={32} />
                 </div>
               )}
               <div className="p-2">

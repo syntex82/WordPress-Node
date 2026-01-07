@@ -64,14 +64,8 @@ export class FeedController {
    * GET /api/feed/trending-users
    */
   @Get('trending-users')
-  async getTrendingUsers(
-    @Request() req,
-    @Query('limit') limit?: string,
-  ) {
-    return this.feedService.getTrendingUsers(
-      req.user.id,
-      parseInt(limit || '10'),
-    );
+  async getTrendingUsers(@Request() req, @Query('limit') limit?: string) {
+    return this.feedService.getTrendingUsers(req.user.id, parseInt(limit || '10'));
   }
 
   /**
@@ -97,10 +91,7 @@ export class FeedController {
    * POST /api/feed/posts
    */
   @Post('posts')
-  async createTimelinePost(
-    @Request() req,
-    @Body() dto: CreateTimelinePostDto,
-  ) {
+  async createTimelinePost(@Request() req, @Body() dto: CreateTimelinePostDto) {
     return this.feedService.createTimelinePost(req.user.id, dto);
   }
 
@@ -113,4 +104,3 @@ export class FeedController {
     return this.feedService.deleteActivity(id, req.user.id);
   }
 }
-

@@ -2,7 +2,7 @@
 <article class="single-post">
   <div class="container">
     {{#if post.featuredImage}}
-    <img src="{{post.featuredImage}}" alt="{{post.title}}" class="featured-image">
+    {{{responsiveImg post.featuredImage post.title class="featured-image" loading="eager" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1200px"}}}
     {{/if}}
     <h1>{{post.title}}</h1>
     <div class="post-meta">

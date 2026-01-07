@@ -15,7 +15,9 @@ let sharp: any = null;
 try {
   sharp = require('sharp');
 } catch {
-  console.warn('Sharp not installed - image optimization disabled. Install with: npm install sharp');
+  console.warn(
+    'Sharp not installed - image optimization disabled. Install with: npm install sharp',
+  );
 }
 
 // Responsive image breakpoints
@@ -166,9 +168,14 @@ export class MediaService {
   ): Promise<{ path: string; contentType: string }> {
     // Try responsive size first
     if (width && sharp) {
-      const targetSize = RESPONSIVE_SIZES.find((s) => s >= width) || RESPONSIVE_SIZES[RESPONSIVE_SIZES.length - 1];
+      const targetSize =
+        RESPONSIVE_SIZES.find((s) => s >= width) || RESPONSIVE_SIZES[RESPONSIVE_SIZES.length - 1];
       const baseName = filename.replace(/\.[^.]+$/, '');
-      const responsivePath = path.join(this.uploadDir, 'responsive', `${baseName}-${targetSize}w.webp`);
+      const responsivePath = path.join(
+        this.uploadDir,
+        'responsive',
+        `${baseName}-${targetSize}w.webp`,
+      );
 
       if (fsSync.existsSync(responsivePath)) {
         return { path: responsivePath, contentType: 'image/webp' };
@@ -187,7 +194,13 @@ export class MediaService {
     const originalPath = path.join(this.uploadDir, filename);
     const ext = path.extname(filename).toLowerCase();
     const contentType =
-      ext === '.png' ? 'image/png' : ext === '.gif' ? 'image/gif' : ext === '.svg' ? 'image/svg+xml' : 'image/jpeg';
+      ext === '.png'
+        ? 'image/png'
+        : ext === '.gif'
+          ? 'image/gif'
+          : ext === '.svg'
+            ? 'image/svg+xml'
+            : 'image/jpeg';
 
     return { path: originalPath, contentType };
   }

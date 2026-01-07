@@ -59,8 +59,9 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
 
   async handleConnection(client: Socket) {
     try {
-      const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
-      
+      const token =
+        client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
+
       if (!token) {
         this.logger.warn(`Client ${client.id} connection rejected: No token`);
         client.emit('error', { message: 'Authentication required' });
@@ -79,7 +80,7 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
 
       this.clients.set(client.id, editorClient);
       this.logger.log(`Client connected: ${client.id} (User: ${payload.sub})`);
-      
+
       client.emit('connected', { clientId: client.id });
     } catch (error) {
       this.logger.error(`Client ${client.id} connection failed: ${error.message}`);
@@ -90,7 +91,7 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
 
   handleDisconnect(client: Socket) {
     const editorClient = this.clients.get(client.id);
-    
+
     if (editorClient?.themeId) {
       const room = this.themeRooms.get(editorClient.themeId);
       if (room) {
@@ -100,14 +101,14 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
           this.previewStates.delete(editorClient.themeId);
         }
       }
-      
+
       // Notify others in the room
       this.server.to(`theme:${editorClient.themeId}`).emit('userLeft', {
         userId: editorClient.userId,
         clientId: client.id,
       });
     }
-    
+
     this.clients.delete(client.id);
     this.logger.log(`Client disconnected: ${client.id}`);
   }
@@ -189,10 +190,7 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   @SubscribeMessage('previewUpdate')
-  handlePreviewUpdate(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() update: PreviewUpdate,
-  ) {
+  handlePreviewUpdate(@ConnectedSocket() client: Socket, @MessageBody() update: PreviewUpdate) {
     const editorClient = this.clients.get(client.id);
     if (!editorClient?.themeId) return { success: false, error: 'Not in a theme room' };
 
@@ -214,10 +212,7 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   @SubscribeMessage('blockUpdate')
-  handleBlockUpdate(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() update: BlockUpdate,
-  ) {
+  handleBlockUpdate(@ConnectedSocket() client: Socket, @MessageBody() update: BlockUpdate) {
     const editorClient = this.clients.get(client.id);
     if (!editorClient?.themeId) return { success: false, error: 'Not in a theme room' };
 
@@ -295,10 +290,7 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   @SubscribeMessage('saveChanges')
-  handleSaveChanges(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { notify?: boolean },
-  ) {
+  handleSaveChanges(@ConnectedSocket() client: Socket, @MessageBody() data: { notify?: boolean }) {
     const editorClient = this.clients.get(client.id);
     if (!editorClient?.themeId) return;
 
@@ -317,12 +309,14 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   // Helper methods
-  private getActiveUsersInTheme(themeId: string): Array<{ userId: string; clientId: string; page?: string }> {
+  private getActiveUsersInTheme(
+    themeId: string,
+  ): Array<{ userId: string; clientId: string; page?: string }> {
     const room = this.themeRooms.get(themeId);
     if (!room) return [];
 
     return Array.from(room)
-      .map(clientId => {
+      .map((clientId) => {
         const client = this.clients.get(clientId);
         if (!client) return null;
         return {
@@ -347,4 +341,3 @@ export class VisualEditorGateway implements OnGatewayConnection, OnGatewayDiscon
     });
   }
 }
-

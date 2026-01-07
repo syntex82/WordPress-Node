@@ -145,8 +145,8 @@
       {{#each featuredCourses}}
       <article class="content-card">
         <div class="content-card-image">
-          {{#if featuredImage}}<img src="{{featuredImage}}" alt="{{title}}" onerror="this.src='/api/lms/courses/placeholder-image'">
-          {{else}}<img src="/api/lms/courses/placeholder-image" alt="{{title}}">{{/if}}
+          {{#if featuredImage}}{{{responsiveImg featuredImage title class="content-image" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"}}}
+          {{else}}<img src="/api/lms/courses/placeholder-image" alt="{{title}}" loading="lazy">{{/if}}
         </div>
         <div class="content-card-body">
           <h3><a href="/courses/{{slug}}">{{title}}</a></h3>
@@ -176,8 +176,8 @@
       {{#each featuredProducts}}
       <article class="content-card">
         <div class="content-card-image">
-          {{#if images.[0]}}<img src="{{images.[0]}}" alt="{{name}}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=225&fit=crop'">
-          {{else}}<img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=225&fit=crop" alt="{{name}}">{{/if}}
+          {{#if images.[0]}}{{{responsiveImg images.[0] name class="content-image" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"}}}
+          {{else}}<img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=225&fit=crop" alt="{{name}}" loading="lazy">{{/if}}
         </div>
         <div class="content-card-body">
           <h3><a href="/shop/product/{{slug}}">{{name}}</a></h3>
@@ -206,8 +206,8 @@
       {{#each posts}}
       <article class="content-card">
         <div class="content-card-image">
-          {{#if this.featuredImage}}<img src="{{this.featuredImage}}" alt="{{this.title}}" onerror="this.src='https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=225&fit=crop'">
-          {{else}}<img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=225&fit=crop" alt="{{this.title}}">{{/if}}
+          {{#if this.featuredImage}}{{{responsiveImg this.featuredImage this.title class="content-image" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"}}}
+          {{else}}<img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=225&fit=crop" alt="{{this.title}}" loading="lazy">{{/if}}
         </div>
         <div class="content-card-body">
           <h3><a href="/post/{{this.slug}}">{{this.title}}</a></h3>

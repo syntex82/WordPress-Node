@@ -19,8 +19,19 @@ export class SeoService implements OnModuleInit {
   private async initializeDefaultSeoSettings() {
     const seoSettings = [
       { key: 'seo_site_title', value: 'NodePress', type: 'string', group: 'seo' },
-      { key: 'seo_site_description', value: 'NodePress - A modern, powerful CMS built with Node.js. Create beautiful websites, blogs, and e-commerce stores.', type: 'string', group: 'seo' },
-      { key: 'seo_site_keywords', value: 'nodepress, cms, content management, nodejs, blog, ecommerce, lms', type: 'string', group: 'seo' },
+      {
+        key: 'seo_site_description',
+        value:
+          'NodePress - A modern, powerful CMS built with Node.js. Create beautiful websites, blogs, and e-commerce stores.',
+        type: 'string',
+        group: 'seo',
+      },
+      {
+        key: 'seo_site_keywords',
+        value: 'nodepress, cms, content management, nodejs, blog, ecommerce, lms',
+        type: 'string',
+        group: 'seo',
+      },
       { key: 'seo_og_image', value: '/images/og-nodepress.jpg', type: 'string', group: 'seo' },
       { key: 'seo_twitter_handle', value: '@nodepress', type: 'string', group: 'seo' },
       { key: 'seo_google_site_verification', value: '', type: 'string', group: 'seo' },
@@ -30,7 +41,12 @@ export class SeoService implements OnModuleInit {
       { key: 'seo_organization_logo', value: '', type: 'string', group: 'seo' },
       { key: 'seo_organization_address', value: '', type: 'string', group: 'seo' },
       { key: 'seo_organization_phone', value: '', type: 'string', group: 'seo' },
-      { key: 'seo_organization_email', value: 'support@nodepress.co.uk', type: 'string', group: 'seo' },
+      {
+        key: 'seo_organization_email',
+        value: 'support@nodepress.co.uk',
+        type: 'string',
+        group: 'seo',
+      },
       { key: 'seo_social_facebook', value: '', type: 'string', group: 'seo' },
       { key: 'seo_social_twitter', value: '@nodepress', type: 'string', group: 'seo' },
       { key: 'seo_social_instagram', value: '', type: 'string', group: 'seo' },
@@ -440,15 +456,18 @@ Sitemap: ${baseUrl}/api/seo/sitemap.xml
   }
 
   // ============ ARTICLE SCHEMA ============
-  async generateArticleSchema(baseUrl: string, article: {
-    title: string;
-    description: string;
-    slug: string;
-    publishedAt: Date;
-    updatedAt: Date;
-    authorName: string;
-    image?: string;
-  }) {
+  async generateArticleSchema(
+    baseUrl: string,
+    article: {
+      title: string;
+      description: string;
+      slug: string;
+      publishedAt: Date;
+      updatedAt: Date;
+      authorName: string;
+      image?: string;
+    },
+  ) {
     const settings = await this.getSeoSettings();
 
     return {
@@ -466,28 +485,37 @@ Sitemap: ${baseUrl}/api/seo/sitemap.xml
       publisher: {
         '@type': 'Organization',
         name: settings.organization_name || settings.site_title || 'Publisher',
-        logo: settings.organization_logo ? {
-          '@type': 'ImageObject',
-          url: settings.organization_logo.startsWith('http')
-            ? settings.organization_logo
-            : `${baseUrl}${settings.organization_logo}`,
-        } : undefined,
+        logo: settings.organization_logo
+          ? {
+              '@type': 'ImageObject',
+              url: settings.organization_logo.startsWith('http')
+                ? settings.organization_logo
+                : `${baseUrl}${settings.organization_logo}`,
+            }
+          : undefined,
       },
-      image: article.image ? (article.image.startsWith('http') ? article.image : `${baseUrl}${article.image}`) : undefined,
+      image: article.image
+        ? article.image.startsWith('http')
+          ? article.image
+          : `${baseUrl}${article.image}`
+        : undefined,
     };
   }
 
   // ============ PRODUCT SCHEMA ============
-  generateProductSchema(baseUrl: string, product: {
-    name: string;
-    description: string;
-    slug: string;
-    price: number;
-    currency?: string;
-    image?: string;
-    sku?: string;
-    inStock?: boolean;
-  }) {
+  generateProductSchema(
+    baseUrl: string,
+    product: {
+      name: string;
+      description: string;
+      slug: string;
+      price: number;
+      currency?: string;
+      image?: string;
+      sku?: string;
+      inStock?: boolean;
+    },
+  ) {
     return {
       '@context': 'https://schema.org',
       '@type': 'Product',
@@ -495,29 +523,37 @@ Sitemap: ${baseUrl}/api/seo/sitemap.xml
       description: product.description,
       url: `${baseUrl}/shop/${product.slug}`,
       sku: product.sku || product.slug,
-      image: product.image ? (product.image.startsWith('http') ? product.image : `${baseUrl}${product.image}`) : undefined,
+      image: product.image
+        ? product.image.startsWith('http')
+          ? product.image
+          : `${baseUrl}${product.image}`
+        : undefined,
       offers: {
         '@type': 'Offer',
         price: product.price,
         priceCurrency: product.currency || 'USD',
-        availability: product.inStock !== false
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
+        availability:
+          product.inStock !== false
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
         url: `${baseUrl}/shop/${product.slug}`,
       },
     };
   }
 
   // ============ COURSE SCHEMA ============
-  generateCourseSchema(baseUrl: string, course: {
-    name: string;
-    description: string;
-    slug: string;
-    instructorName: string;
-    price?: number;
-    currency?: string;
-    image?: string;
-  }) {
+  generateCourseSchema(
+    baseUrl: string,
+    course: {
+      name: string;
+      description: string;
+      slug: string;
+      instructorName: string;
+      price?: number;
+      currency?: string;
+      image?: string;
+    },
+  ) {
     return {
       '@context': 'https://schema.org',
       '@type': 'Course',
@@ -528,12 +564,18 @@ Sitemap: ${baseUrl}/api/seo/sitemap.xml
         '@type': 'Organization',
         name: course.instructorName,
       },
-      image: course.image ? (course.image.startsWith('http') ? course.image : `${baseUrl}${course.image}`) : undefined,
-      offers: course.price ? {
-        '@type': 'Offer',
-        price: course.price,
-        priceCurrency: course.currency || 'USD',
-      } : undefined,
+      image: course.image
+        ? course.image.startsWith('http')
+          ? course.image
+          : `${baseUrl}${course.image}`
+        : undefined,
+      offers: course.price
+        ? {
+            '@type': 'Offer',
+            price: course.price,
+            priceCurrency: course.currency || 'USD',
+          }
+        : undefined,
     };
   }
 
@@ -545,7 +587,11 @@ Sitemap: ${baseUrl}/api/seo/sitemap.xml
       title: settings.site_title || 'Website',
       description: settings.site_description || '',
       keywords: settings.site_keywords || '',
-      ogImage: settings.og_image ? (settings.og_image.startsWith('http') ? settings.og_image : `${baseUrl}${settings.og_image}`) : '',
+      ogImage: settings.og_image
+        ? settings.og_image.startsWith('http')
+          ? settings.og_image
+          : `${baseUrl}${settings.og_image}`
+        : '',
       twitterHandle: settings.twitter_handle || '',
       googleVerification: settings.google_site_verification || '',
       bingVerification: settings.bing_site_verification || '',

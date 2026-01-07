@@ -3,6 +3,7 @@
  * Advanced manager for images, content blocks, and links for the active theme
  * Features: Stats dashboard, live preview, templates, search/filter, bulk actions
  * With comprehensive tooltips for user guidance
+ * Integrated with Theme Customizer for seamless design workflow
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,7 +11,7 @@ import {
   FiImage, FiLayout, FiLink2, FiRefreshCw, FiAlertCircle, FiArrowLeft, FiEye,
   FiGrid, FiList, FiSearch, FiDownload, FiUpload,
   FiZap, FiPackage, FiX, FiExternalLink,
-  FiMonitor, FiSmartphone, FiTablet
+  FiMonitor, FiSmartphone, FiTablet, FiSettings, FiArrowRight
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
@@ -40,6 +41,7 @@ const TOOLTIPS = {
   desktopPreview: { title: 'Desktop Preview', content: 'Preview your site at desktop resolution (1200px wide).' },
   tabletPreview: { title: 'Tablet Preview', content: 'Preview your site at tablet resolution (768px wide).' },
   mobilePreview: { title: 'Mobile Preview', content: 'Preview your site at mobile resolution (375px wide).' },
+  customizer: { title: '🎨 Theme Customizer', content: 'Open the Theme Customizer to change colors, fonts, layout, and visual styling of your theme.' },
 };
 
 type TabType = 'dashboard' | 'images' | 'blocks' | 'links';
@@ -392,6 +394,15 @@ export default function ThemeContentManager() {
                     Preview
                   </button>
                 </Tooltip>
+                <Tooltip title={TOOLTIPS.customizer.title} content={TOOLTIPS.customizer.content} position="bottom">
+                  <Link
+                    to="/admin/customize"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl transition-all shadow-lg shadow-purple-500/20"
+                  >
+                    <FiSettings size={18} />
+                    Customize Theme
+                  </Link>
+                </Tooltip>
                 <Tooltip title={TOOLTIPS.viewSite.title} content={TOOLTIPS.viewSite.content} position="bottom">
                   <a
                     href="/"
@@ -403,6 +414,36 @@ export default function ThemeContentManager() {
                     View Site
                   </a>
                 </Tooltip>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Integration Banner - Quick Navigation */}
+        <div className="bg-gradient-to-r from-slate-800/80 to-slate-900/80 border-b border-slate-700/30">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-slate-400">Quick Navigation:</span>
+                <Link
+                  to="/admin/customize"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 hover:text-white transition-all"
+                >
+                  <FiSettings size={14} />
+                  <span>Colors & Fonts</span>
+                  <FiArrowRight size={12} className="text-slate-500" />
+                </Link>
+                <Link
+                  to="/admin/customize"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 hover:text-white transition-all"
+                >
+                  <FiLayout size={14} />
+                  <span>Header & Footer</span>
+                  <FiArrowRight size={12} className="text-slate-500" />
+                </Link>
+              </div>
+              <div className="text-xs text-slate-500">
+                Changes sync automatically • Last saved: {stats.lastUpdated}
               </div>
             </div>
           </div>

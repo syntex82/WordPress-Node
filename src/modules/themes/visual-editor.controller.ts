@@ -115,11 +115,7 @@ export class VisualEditorController {
 
   @Post('inline-edit/:themeId')
   @Roles('ADMIN', 'EDITOR')
-  async inlineEdit(
-    @Param('themeId') themeId: string,
-    @Body() dto: InlineEditDto,
-    @Req() req: any,
-  ) {
+  async inlineEdit(@Param('themeId') themeId: string, @Body() dto: InlineEditDto, @Req() req: any) {
     return this.visualEditorService.inlineEdit(themeId, req.user.id, dto);
   }
 
@@ -203,8 +199,16 @@ export class VisualEditorController {
       settings: {
         colors: { palette: generatedTheme.settings.colors },
         typography: {
-          headingFont: { name: generatedTheme.settings.typography.headingFont, family: generatedTheme.settings.typography.headingFont, source: 'google' as const },
-          bodyFont: { name: generatedTheme.settings.typography.bodyFont, family: generatedTheme.settings.typography.bodyFont, source: 'google' as const },
+          headingFont: {
+            name: generatedTheme.settings.typography.headingFont,
+            family: generatedTheme.settings.typography.headingFont,
+            source: 'google' as const,
+          },
+          bodyFont: {
+            name: generatedTheme.settings.typography.bodyFont,
+            family: generatedTheme.settings.typography.bodyFont,
+            source: 'google' as const,
+          },
           fontSizes: { base: generatedTheme.settings.typography.baseFontSize },
           lineHeight: generatedTheme.settings.typography.lineHeight,
           headingWeight: generatedTheme.settings.typography.headingWeight,
@@ -242,10 +246,7 @@ export class VisualEditorController {
 
   @Get('ai/suggestions/:themeId')
   @Roles('ADMIN', 'EDITOR')
-  async getAiSuggestions(
-    @Param('themeId') themeId: string,
-    @Query('context') context?: string,
-  ) {
+  async getAiSuggestions(@Param('themeId') themeId: string, @Query('context') context?: string) {
     // Get current theme settings
     const settings = await this.visualEditorService.getThemeSettings(themeId);
 
@@ -305,4 +306,3 @@ export class VisualEditorController {
     return { success: true };
   }
 }
-

@@ -213,8 +213,14 @@ export class ProfilesService {
 
     // Get both users for notification/activity
     const [follower, following] = await Promise.all([
-      this.prisma.user.findUnique({ where: { id: followerId }, select: { name: true, username: true, avatar: true } }),
-      this.prisma.user.findUnique({ where: { id: followingId }, select: { name: true, username: true } }),
+      this.prisma.user.findUnique({
+        where: { id: followerId },
+        select: { name: true, username: true, avatar: true },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: followingId },
+        select: { name: true, username: true },
+      }),
     ]);
 
     // Create follow relationship, update counts, and create activity
@@ -433,8 +439,14 @@ export class ProfilesService {
         const hasMedia = tp.media && tp.media.length > 0;
         const mediaType = hasMedia ? tp.media[0].type : null;
         const contentPreview = tp.content
-          ? (tp.content.length > 50 ? tp.content.substring(0, 50) + '...' : tp.content)
-          : (mediaType === 'VIDEO' ? 'Shared a video' : hasMedia ? 'Shared a photo' : 'Shared an update');
+          ? tp.content.length > 50
+            ? tp.content.substring(0, 50) + '...'
+            : tp.content
+          : mediaType === 'VIDEO'
+            ? 'Shared a video'
+            : hasMedia
+              ? 'Shared a photo'
+              : 'Shared an update';
         return {
           type: 'timeline_post',
           title: contentPreview,
@@ -597,20 +609,20 @@ export class ProfilesService {
     }
 
     // Calculate match score for each user
-    return suggestedUsers.map((user) => {
-      const sharedInterests = user.interests.filter((i) =>
-        currentUser?.interests?.includes(i)
-      ).length;
-      const sharedSkills = user.skills.filter((s) =>
-        currentUser?.skills?.includes(s)
-      ).length;
-      return {
-        ...user,
-        matchScore: sharedInterests + sharedSkills,
-        sharedInterests,
-        sharedSkills,
-      };
-    }).sort((a, b) => b.matchScore - a.matchScore);
+    return suggestedUsers
+      .map((user) => {
+        const sharedInterests = user.interests.filter((i) =>
+          currentUser?.interests?.includes(i),
+        ).length;
+        const sharedSkills = user.skills.filter((s) => currentUser?.skills?.includes(s)).length;
+        return {
+          ...user,
+          matchScore: sharedInterests + sharedSkills,
+          sharedInterests,
+          sharedSkills,
+        };
+      })
+      .sort((a, b) => b.matchScore - a.matchScore);
   }
 
   /**

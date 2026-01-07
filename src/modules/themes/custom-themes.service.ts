@@ -49,8 +49,8 @@ export interface CustomThemeSettings {
   layout: {
     sidebarPosition: 'left' | 'right' | 'none';
     contentWidth: number;
-    headerStyle: 'default' | 'centered' | 'minimal' | 'sticky';
-    footerStyle: 'default' | 'centered' | 'minimal';
+    headerStyle: 'default' | 'centered' | 'minimal' | 'sticky' | 'mega';
+    footerStyle: 'default' | 'centered' | 'minimal' | 'multicolumn';
   };
   spacing: {
     sectionPadding: number;
@@ -1321,7 +1321,10 @@ img { max-width: 100%; height: auto; display: block; }
 
       case 'about':
         const aboutStatsHTML = (props.stats || [])
-          .map((s: any) => `<div style="text-align: center;"><div style="font-size: 2rem; font-weight: 700; color: var(--color-primary);">${s.value}</div><div style="color: var(--color-text-muted);">${s.label}</div></div>`)
+          .map(
+            (s: any) =>
+              `<div style="text-align: center;"><div style="font-size: 2rem; font-weight: 700; color: var(--color-primary);">${s.value}</div><div style="color: var(--color-text-muted);">${s.label}</div></div>`,
+          )
           .join('');
         return `<section class="about-block" style="padding: var(--section-padding) 0;">
   <div class="container">
@@ -1445,7 +1448,10 @@ img { max-width: 100%; height: auto; display: block; }
 
       case 'footerSimple':
         const footerLinksHTML = (props.links || [])
-          .map((l: any) => `<a href="${l.url || '#'}" style="color: var(--color-text-muted); text-decoration: none;">${l.text || ''}</a>`)
+          .map(
+            (l: any) =>
+              `<a href="${l.url || '#'}" style="color: var(--color-text-muted); text-decoration: none;">${l.text || ''}</a>`,
+          )
           .join(' • ');
         return `<footer class="footer-simple" style="padding: 2rem 0; background: var(--color-surface); text-align: center;">
   <div class="container">

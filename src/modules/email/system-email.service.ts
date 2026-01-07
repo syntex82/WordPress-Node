@@ -44,12 +44,13 @@ export class SystemEmailService {
     const { html, subject } = await this.getTemplateContent(
       'password-reset',
       variables,
-      () => getPasswordResetTemplate({
-        user: { firstName: data.firstName },
-        resetUrl: data.resetUrl,
-        expiresIn: data.expiresIn,
-        supportUrl: data.supportUrl,
-      }),
+      () =>
+        getPasswordResetTemplate({
+          user: { firstName: data.firstName },
+          resetUrl: data.resetUrl,
+          expiresIn: data.expiresIn,
+          supportUrl: data.supportUrl,
+        }),
       'Reset Your Password',
     );
 
@@ -77,7 +78,11 @@ export class SystemEmailService {
     const variables = {
       user: { firstName: data.firstName, name: data.toName, email: data.to },
       loginUrl: data.loginUrl,
-      joinDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      joinDate: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
       site,
     };
 
@@ -248,4 +253,3 @@ export class SystemEmailService {
     return siteContext.site;
   }
 }
-

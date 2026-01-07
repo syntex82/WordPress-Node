@@ -1,12 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
-import { AiThemeGeneratorService, GeneratedThemeData, ThemeJsonConfig } from './ai-theme-generator.service';
-import { GenerateAiThemeDto, IndustryType, PageType } from './dto/generate-ai-theme.dto';
+import { AiThemeGeneratorService, GeneratedThemeData } from './ai-theme-generator.service';
 
 describe('AiThemeGeneratorService', () => {
   let service: AiThemeGeneratorService;
-  let configService: jest.Mocked<ConfigService>;
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
@@ -21,14 +18,10 @@ describe('AiThemeGeneratorService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AiThemeGeneratorService,
-        { provide: ConfigService, useValue: mockConfigService },
-      ],
+      providers: [AiThemeGeneratorService, { provide: ConfigService, useValue: mockConfigService }],
     }).compile();
 
     service = module.get<AiThemeGeneratorService>(AiThemeGeneratorService);
-    configService = module.get(ConfigService);
 
     jest.clearAllMocks();
   });
@@ -95,6 +88,7 @@ describe('AiThemeGeneratorService', () => {
         },
       ],
       features: ['darkMode', 'animations'],
+      generatedBy: 'ai',
     };
 
     it('should generate valid theme.json config', () => {
@@ -287,6 +281,7 @@ describe('AiThemeGeneratorService', () => {
         { id: 'p2', name: 'About', slug: 'about', isHomePage: false, blocks: [] },
       ],
       features: ['darkMode', 'animations', 'responsiveImages'],
+      generatedBy: 'ai',
     };
 
     it('should generate all theme files', () => {
@@ -322,4 +317,3 @@ describe('AiThemeGeneratorService', () => {
     });
   });
 });
-

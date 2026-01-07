@@ -177,4 +177,3 @@ export class TimelineGateway implements OnGatewayConnection, OnGatewayDisconnect
     return this.userSockets.has(userId);
   }
 }
-

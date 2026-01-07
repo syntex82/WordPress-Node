@@ -3,16 +3,7 @@
  * Validates input for AI-powered theme generation
  */
 
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsNumber,
-  IsBoolean,
-  IsArray,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean, IsArray, Min, Max } from 'class-validator';
 
 /**
  * Industry types for targeted theme generation
@@ -94,12 +85,25 @@ export interface ThemeFeatures {
   searchBar?: boolean;
   newsletter?: boolean;
   chatWidget?: boolean;
+  customFonts?: boolean;
+  parallax?: boolean;
+  breadcrumbs?: boolean;
+  rtlSupport?: boolean;
+  multiLanguage?: boolean;
 }
 
 export class GenerateAiThemeDto {
   @IsString()
-  @IsNotEmpty()
-  prompt: string;
+  @IsOptional()
+  prompt?: string;
+
+  @IsString()
+  @IsOptional()
+  presetId?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  usePreset?: boolean;
 
   @IsString()
   @IsOptional()

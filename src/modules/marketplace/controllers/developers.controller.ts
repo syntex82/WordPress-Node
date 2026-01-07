@@ -20,7 +20,12 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { DevelopersService } from '../services/developers.service';
-import { CreateDeveloperDto, UpdateDeveloperDto, AdminUpdateDeveloperDto, DeveloperStatus } from '../dto';
+import {
+  CreateDeveloperDto,
+  UpdateDeveloperDto,
+  AdminUpdateDeveloperDto,
+  DeveloperStatus,
+} from '../dto';
 import { DeveloperCategory as PrismaDeveloperCategory } from '@prisma/client';
 
 @Controller('api/marketplace/developers')

@@ -16,4 +16,3 @@ import { NotificationsModule } from '../notifications/notifications.module';
   exports: [FeedService],
 })
 export class FeedModule {}
-

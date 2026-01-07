@@ -1,15 +1,7 @@
 /**
  * Certificate Template DTOs
  */
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsInt,
-  Min,
-  Max,
-  IsHexColor,
-} from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsInt, Min, Max, IsHexColor } from 'class-validator';
 
 export class CreateCertificateTemplateDto {
   @IsString()
@@ -122,4 +114,3 @@ export class CreateCertificateTemplateDto {
 }
 
 export class UpdateCertificateTemplateDto extends CreateCertificateTemplateDto {}
-

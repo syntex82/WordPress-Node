@@ -210,14 +210,8 @@ export class SystemConfigService implements OnModuleInit {
         'support_email',
         this.configService.get('SUPPORT_EMAIL', 'support@nodepress.co.uk'),
       ),
-      siteName: await this.get(
-        'site_name',
-        this.configService.get('SITE_NAME', 'NodePress'),
-      ),
-      siteLogo: await this.get(
-        'site_logo',
-        this.configService.get('SITE_LOGO', ''),
-      ),
+      siteName: await this.get('site_name', this.configService.get('SITE_NAME', 'NodePress')),
+      siteLogo: await this.get('site_logo', this.configService.get('SITE_LOGO', '')),
       siteTagline: await this.get(
         'site_tagline',
         this.configService.get('SITE_TAGLINE', 'Modern Content Management System'),

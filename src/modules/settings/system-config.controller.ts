@@ -68,7 +68,9 @@ export class SystemConfigController {
     // Support both 'pass' and 'password' field names from frontend
     const pass = config.pass || config.password;
 
-    console.log(`[SMTP Save] Received config: host=${config.host}, user=${config.user}, hasPass=${!!pass}`);
+    console.log(
+      `[SMTP Save] Received config: host=${config.host}, user=${config.user}, hasPass=${!!pass}`,
+    );
 
     // Validate required fields
     if (!config.host || !config.user) {
