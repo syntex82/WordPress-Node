@@ -1,18 +1,38 @@
 /**
  * AI Theme Generator Modal
- * Allows users to generate themes using AI
+ * Generates complete, marketplace-ready themes with all pages and blocks
  */
 
 import { useState } from 'react';
-import { FiX, FiLoader, FiCheck, FiAlertCircle } from 'react-icons/fi';
+import { FiX, FiLoader, FiCheck, FiAlertCircle, FiShoppingCart, FiBook, FiFileText, FiVideo, FiUsers, FiMail } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { customThemesApi } from '../../services/api';
+
+type IndustryType = 'technology' | 'ecommerce' | 'education' | 'healthcare' | 'finance' | 'restaurant' | 'portfolio' | 'blog' | 'agency' | 'nonprofit' | 'entertainment' | 'fitness' | 'travel' | 'realestate' | 'saas' | 'general';
 
 interface AiThemeGeneratorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onThemeGenerated: (theme: any) => void;
 }
+
+const INDUSTRIES: { value: IndustryType; label: string }[] = [
+  { value: 'general', label: '🌐 General Purpose' },
+  { value: 'ecommerce', label: '🛒 E-commerce / Shop' },
+  { value: 'education', label: '📚 Education / Courses' },
+  { value: 'blog', label: '✍️ Blog / Magazine' },
+  { value: 'portfolio', label: '🎨 Portfolio / Creative' },
+  { value: 'agency', label: '💼 Agency / Business' },
+  { value: 'saas', label: '💻 SaaS / Technology' },
+  { value: 'restaurant', label: '🍕 Restaurant / Food' },
+  { value: 'fitness', label: '💪 Fitness / Gym' },
+  { value: 'healthcare', label: '🏥 Healthcare / Medical' },
+  { value: 'realestate', label: '🏠 Real Estate' },
+  { value: 'travel', label: '✈️ Travel / Tourism' },
+  { value: 'entertainment', label: '🎬 Entertainment' },
+  { value: 'nonprofit', label: '❤️ Nonprofit / Charity' },
+  { value: 'finance', label: '💰 Finance / Banking' },
+];
 
 export function AiThemeGeneratorModal({
   isOpen,
@@ -22,9 +42,13 @@ export function AiThemeGeneratorModal({
   const [prompt, setPrompt] = useState('');
   const [themeName, setThemeName] = useState('');
   const [description, setDescription] = useState('');
-  const [numberOfPages, setNumberOfPages] = useState(1);
+  const [numberOfPages, setNumberOfPages] = useState(5);
   const [style, setStyle] = useState<'modern' | 'minimal' | 'bold' | 'professional' | 'creative'>('modern');
   const [colorScheme, setColorScheme] = useState<'light' | 'dark' | 'auto'>('auto');
+  const [industry, setIndustry] = useState<IndustryType>('general');
+  const [includeEcommerce, setIncludeEcommerce] = useState(true);
+  const [includeBlog, setIncludeBlog] = useState(true);
+  const [includeCourses, setIncludeCourses] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +69,22 @@ export function AiThemeGeneratorModal({
         numberOfPages,
         style,
         colorScheme,
+        industry,
+        includeEcommerce,
+        includeBlog,
+        includeCourses,
+        generateFullTheme: true,
+        pageTypes: ['home', 'about', 'contact', ...(includeEcommerce ? ['shop', 'products'] : []), ...(includeBlog ? ['blog'] : []), ...(includeCourses ? ['courses'] : [])],
+        preferredBlocks: ['hero', 'features', 'testimonials', 'cta', 'newsletter', 'stats', ...(includeEcommerce ? ['productGrid', 'pricing'] : []), ...(includeBlog ? ['blogPosts'] : []), ...(includeCourses ? ['courseGrid'] : [])],
+        features: {
+          darkMode: colorScheme === 'auto' || colorScheme === 'dark',
+          animations: true,
+          responsiveImages: true,
+          lazyLoading: true,
+          stickyHeader: true,
+          backToTop: true,
+          newsletter: true,
+        },
       });
 
       toast.success('Theme generated successfully!');
@@ -126,6 +166,25 @@ export function AiThemeGeneratorModal({
             />
           </div>
 
+          {/* Industry Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Industry / Theme Type
+            </label>
+            <select
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value as IndustryType)}
+              disabled={loading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900 bg-white"
+            >
+              {INDUSTRIES.map((ind) => (
+                <option key={ind.value} value={ind.value}>
+                  {ind.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Grid: Style, Color Scheme, Pages */}
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -156,9 +215,9 @@ export function AiThemeGeneratorModal({
                 disabled={loading}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900 bg-white"
               >
-                <option value="auto">Auto</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
+                <option value="auto">Auto (Light + Dark)</option>
+                <option value="light">Light Only</option>
+                <option value="dark">Dark Only</option>
               </select>
             </div>
 
@@ -172,13 +231,60 @@ export function AiThemeGeneratorModal({
                 disabled={loading}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900 bg-white"
               >
-                {[1, 2, 3, 4, 5].map((n) => (
+                {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                   <option key={n} value={n}>
-                    {n} page{n > 1 ? 's' : ''}
+                    {n} pages
                   </option>
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Feature Toggles */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Include Features
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${includeEcommerce ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+                <input
+                  type="checkbox"
+                  checked={includeEcommerce}
+                  onChange={(e) => setIncludeEcommerce(e.target.checked)}
+                  disabled={loading}
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <FiShoppingCart className="text-gray-600" />
+                <span className="text-sm text-gray-700">Shop</span>
+              </label>
+
+              <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${includeBlog ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+                <input
+                  type="checkbox"
+                  checked={includeBlog}
+                  onChange={(e) => setIncludeBlog(e.target.checked)}
+                  disabled={loading}
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <FiFileText className="text-gray-600" />
+                <span className="text-sm text-gray-700">Blog</span>
+              </label>
+
+              <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${includeCourses ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+                <input
+                  type="checkbox"
+                  checked={includeCourses}
+                  onChange={(e) => setIncludeCourses(e.target.checked)}
+                  disabled={loading}
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <FiBook className="text-gray-600" />
+                <span className="text-sm text-gray-700">Courses</span>
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Selected features will include relevant pages, blocks, and content
+            </p>
           </div>
 
           {/* Error Message */}
