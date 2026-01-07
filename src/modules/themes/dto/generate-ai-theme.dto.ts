@@ -90,6 +90,7 @@ export interface ThemeFeatures {
   breadcrumbs?: boolean;
   rtlSupport?: boolean;
   multiLanguage?: boolean;
+  pwa?: boolean;
 }
 
 export class GenerateAiThemeDto {

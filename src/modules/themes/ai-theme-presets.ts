@@ -5642,6 +5642,1359 @@ const CYBERPUNK_NEON: AiThemePreset = {
 };
 
 // ============================================
+// MUSIC IMAGES LIBRARY
+// ============================================
+
+const PRESET_IMAGES_MUSIC = {
+  hero: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1920&h=1080&fit=crop',
+  studio: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1200&h=800&fit=crop',
+  concert: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=800&fit=crop',
+  dj: 'https://images.unsplash.com/photo-1571266028243-5ce70b7b0100?w=1200&h=800&fit=crop',
+  vinyl: 'https://images.unsplash.com/photo-1539375665275-f9de415ef9ac?w=800&h=800&fit=crop',
+  headphones: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop',
+  guitar: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&h=600&fit=crop',
+  albumArt: [
+    'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1619983081563-430f63602796?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1484755560615-a4c64e778a6c?w=400&h=400&fit=crop',
+  ],
+  artists: [
+    'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1529068755536-a5ade0dcb4e8?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=400&fit=crop',
+  ],
+};
+
+// ============================================
+// COMMON AUTH PAGES (Reusable across presets)
+// ============================================
+
+const createAuthPages = (colors: PresetColors, isLightTheme: boolean): PresetPage[] => [
+  {
+    name: 'Login',
+    slug: 'login',
+    isHomePage: false,
+    seo: {
+      title: 'Login | Sign In to Your Account',
+      description: 'Sign in to access your account and continue where you left off.',
+    },
+    blocks: [
+      {
+        type: 'loginForm',
+        props: {
+          title: 'Welcome Back',
+          subtitle: 'Sign in to your account to continue',
+          buttonText: 'Sign In',
+          buttonStyle: 'gradient',
+          buttonColor: colors.primary,
+          showSocialLogin: true,
+          showGoogleLogin: true,
+          showGithubLogin: true,
+          showRegisterLink: true,
+          registerText: "Don't have an account?",
+          registerLinkText: 'Sign up',
+          registerUrl: '/register',
+          showForgotPassword: true,
+          forgotPasswordUrl: '/forgot-password',
+          formStyle: 'card',
+          backgroundColor: isLightTheme ? colors.background : 'transparent',
+          cardBackground: colors.surface,
+          textColor: colors.text,
+          inputBackground: isLightTheme ? '#ffffff' : colors.surface,
+          inputBorderColor: colors.border,
+          inputTextColor: colors.text,
+          enable2FA: true,
+          twoFactorMethod: 'app',
+          animateOnLoad: true,
+        },
+      },
+    ],
+  },
+  {
+    name: 'Register',
+    slug: 'register',
+    isHomePage: false,
+    seo: {
+      title: 'Register | Create Your Account',
+      description: 'Create a free account to get started.',
+    },
+    blocks: [
+      {
+        type: 'loginForm',
+        props: {
+          title: 'Create Account',
+          subtitle: 'Join us today and get started',
+          buttonText: 'Create Account',
+          buttonStyle: 'gradient',
+          buttonColor: colors.primary,
+          showSocialLogin: true,
+          showGoogleLogin: true,
+          showGithubLogin: true,
+          showRegisterLink: true,
+          registerText: 'Already have an account?',
+          registerLinkText: 'Sign in',
+          registerUrl: '/login',
+          showForgotPassword: false,
+          formStyle: 'card',
+          backgroundColor: isLightTheme ? colors.background : 'transparent',
+          cardBackground: colors.surface,
+          textColor: colors.text,
+          inputBackground: isLightTheme ? '#ffffff' : colors.surface,
+          inputBorderColor: colors.border,
+          inputTextColor: colors.text,
+          animateOnLoad: true,
+        },
+      },
+    ],
+  },
+];
+
+// ============================================
+// PRESET 18: MUSIC STREAMING PLATFORM
+// ============================================
+
+const MUSIC_STREAMING: AiThemePreset = {
+  id: 'music-streaming',
+  name: 'Music Streaming Platform',
+  description:
+    'Modern music streaming platform with player, playlists, artist profiles, and album showcases. Perfect for music labels, streaming services, and audio platforms.',
+  category: 'creative',
+  thumbnail: PRESET_IMAGES_MUSIC.hero,
+  tags: ['music', 'streaming', 'audio', 'playlist', 'artist', 'album', 'player', 'spotify', 'soundcloud'],
+  industry: 'entertainment',
+  style: 'modern',
+  colorScheme: 'dark',
+  colors: {
+    primary: '#1DB954', // Spotify green
+    secondary: '#1ED760',
+    accent: '#FF6B35',
+    background: '#121212',
+    surface: '#181818',
+    text: '#B3B3B3',
+    textMuted: '#727272',
+    heading: '#FFFFFF',
+    link: '#1DB954',
+    linkHover: '#1ED760',
+    border: '#282828',
+    success: '#1DB954',
+    warning: '#FFB74D',
+    error: '#E91429',
+  },
+  typography: {
+    headingFont: 'Montserrat',
+    bodyFont: 'Inter',
+    baseFontSize: 16,
+    lineHeight: 1.6,
+    headingWeight: 700,
+  },
+  layout: {
+    sidebarPosition: 'left',
+    contentWidth: 1400,
+    headerStyle: 'sticky',
+    footerStyle: 'minimal',
+  },
+  spacing: { sectionPadding: 60, elementSpacing: 24, containerPadding: 24, blockGap: 48 },
+  borders: { radius: 8, width: 0 },
+  features: {
+    darkMode: true,
+    animations: true,
+    customFonts: true,
+    responsiveImages: true,
+    lazyLoading: true,
+    stickyHeader: true,
+    pwa: true,
+  },
+  headerStyle: 'sticky',
+  footerStyle: 'minimal',
+  pages: [
+    {
+      name: 'Home',
+      slug: 'home',
+      isHomePage: true,
+      seo: {
+        title: 'Music Streaming | Discover Your Sound',
+        description: 'Stream millions of songs, create playlists, and discover new artists on our platform.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Music Without Limits',
+            subtitle: 'Stream millions of songs, create playlists, and discover new artists. Your music, your way.',
+            backgroundImage: PRESET_IMAGES_MUSIC.hero,
+            ctaText: 'Start Listening',
+            ctaUrl: '/browse',
+            secondaryCtaText: 'Sign Up Free',
+            secondaryCtaUrl: '/register',
+            alignment: 'center',
+            overlayOpacity: 0.7,
+            overlayColor: 'linear-gradient(135deg, #121212 0%, rgba(29, 185, 84, 0.3) 100%)',
+          },
+        },
+        {
+          type: 'stats',
+          props: {
+            title: 'The Numbers Speak',
+            stats: [
+              { value: '70M+', label: 'Songs', icon: '🎵' },
+              { value: '4M+', label: 'Artists', icon: '🎤' },
+              { value: '500M+', label: 'Playlists', icon: '📀' },
+              { value: '456M', label: 'Listeners', icon: '🎧' },
+            ],
+            style: 'cards',
+          },
+        },
+        {
+          type: 'audio',
+          props: {
+            title: 'Now Playing',
+            artist: 'Featured Artist',
+            albumArt: PRESET_IMAGES_MUSIC.albumArt[0],
+            audioUrl: '',
+            showWaveform: true,
+            showPlaylist: false,
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Featured Albums',
+            subtitle: 'Trending releases this week',
+            columns: 4,
+            features: [
+              {
+                icon: '🎵',
+                title: 'Midnight Dreams',
+                description: 'The Soundscapes • 12 tracks • 2024',
+              },
+              {
+                icon: '🎸',
+                title: 'Electric Pulse',
+                description: 'Nova Wave • 10 tracks • 2024',
+              },
+              {
+                icon: '🎹',
+                title: 'Piano Reflections',
+                description: 'Clara Moon • 8 tracks • 2024',
+              },
+              {
+                icon: '🎤',
+                title: 'Urban Nights',
+                description: 'Metro Collective • 15 tracks • 2024',
+              },
+            ],
+          },
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Popular Artists',
+            layout: 'carousel',
+            columns: 4,
+            images: [
+              { src: PRESET_IMAGES_MUSIC.artists[0], caption: 'The Soundscapes', alt: 'Artist profile' },
+              { src: PRESET_IMAGES_MUSIC.artists[1], caption: 'Nova Wave', alt: 'Artist profile' },
+              { src: PRESET_IMAGES_MUSIC.artists[2], caption: 'Clara Moon', alt: 'Artist profile' },
+              { src: PRESET_IMAGES_MUSIC.albumArt[3], caption: 'Metro Collective', alt: 'Artist profile' },
+            ],
+          },
+        },
+        {
+          type: 'pricing',
+          props: {
+            title: 'Choose Your Plan',
+            subtitle: 'Start free, upgrade anytime',
+            plans: [
+              {
+                name: 'Free',
+                price: '$0',
+                period: '/month',
+                features: ['Ad-supported listening', 'Shuffle play', 'Basic audio quality', 'Mobile app access'],
+                highlighted: false,
+                buttonText: 'Get Started',
+              },
+              {
+                name: 'Premium',
+                price: '$9.99',
+                period: '/month',
+                features: [
+                  'Ad-free music',
+                  'Play any song',
+                  'High quality audio',
+                  'Offline listening',
+                  'Unlimited skips',
+                ],
+                highlighted: true,
+                buttonText: 'Try Free for 1 Month',
+              },
+              {
+                name: 'Family',
+                price: '$14.99',
+                period: '/month',
+                features: [
+                  '6 Premium accounts',
+                  'Block explicit music',
+                  'Playlist sharing',
+                  'Family mix playlists',
+                  'All Premium features',
+                ],
+                highlighted: false,
+                buttonText: 'Get Family',
+              },
+            ],
+          },
+        },
+        {
+          type: 'cta',
+          props: {
+            heading: 'Ready to Discover?',
+            description: 'Join millions of music lovers and start streaming today.',
+            buttonText: 'Sign Up Free',
+            buttonUrl: '/register',
+            backgroundType: 'gradient',
+            backgroundColor: '#1DB954',
+          },
+        },
+        {
+          type: 'newsletter',
+          props: {
+            title: 'Stay in the Loop',
+            description: 'Get the latest on new releases, playlists, and exclusive content.',
+            buttonText: 'Subscribe',
+            placeholder: 'Enter your email',
+            style: 'inline',
+          },
+        },
+      ],
+    },
+    {
+      name: 'Browse',
+      slug: 'browse',
+      isHomePage: false,
+      seo: {
+        title: 'Browse Music | Discover New Sounds',
+        description: 'Browse by genre, mood, or era. Find your next favorite song.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Browse Music',
+            subtitle: 'Explore by genre, mood, or let us surprise you',
+            backgroundImage: PRESET_IMAGES_MUSIC.concert,
+            alignment: 'center',
+            overlayOpacity: 0.8,
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Browse by Genre',
+            columns: 4,
+            features: [
+              { icon: '🎸', title: 'Rock', description: 'Classic to modern rock' },
+              { icon: '🎤', title: 'Hip-Hop', description: 'Beats and rhymes' },
+              { icon: '🎹', title: 'Electronic', description: 'EDM, house, techno' },
+              { icon: '🎷', title: 'Jazz', description: 'Smooth & soulful' },
+              { icon: '🎵', title: 'Pop', description: 'Chart toppers' },
+              { icon: '🎻', title: 'Classical', description: 'Timeless masterpieces' },
+              { icon: '🌍', title: 'World', description: 'Global sounds' },
+              { icon: '🎺', title: 'R&B/Soul', description: 'Rhythm & blues' },
+            ],
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Browse by Mood',
+            columns: 4,
+            features: [
+              { icon: '😊', title: 'Happy', description: 'Feel-good vibes' },
+              { icon: '😌', title: 'Chill', description: 'Relax and unwind' },
+              { icon: '💪', title: 'Workout', description: 'High energy tracks' },
+              { icon: '🎉', title: 'Party', description: 'Dance floor hits' },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      name: 'Artists',
+      slug: 'artists',
+      isHomePage: false,
+      seo: {
+        title: 'Artists | Discover Your Favorites',
+        description: 'Explore artist profiles, discographies, and upcoming shows.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Featured Artists',
+            subtitle: 'Discover the talent behind the music',
+            backgroundImage: PRESET_IMAGES_MUSIC.dj,
+            alignment: 'center',
+            overlayOpacity: 0.75,
+          },
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Trending Artists',
+            layout: 'grid',
+            columns: 4,
+            images: PRESET_IMAGES_MUSIC.artists.map((src, i) => ({
+              src,
+              caption: ['The Soundscapes', 'Nova Wave', 'Clara Moon'][i],
+              alt: 'Artist profile',
+            })),
+          },
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote:
+              "This platform has connected me with fans around the world. The analytics and promotion tools are incredible.",
+            author: 'Clara Moon',
+            role: 'Independent Artist',
+            avatar: PRESET_IMAGES_MUSIC.artists[2],
+            rating: 5,
+          },
+        },
+      ],
+    },
+    {
+      name: 'Events',
+      slug: 'events',
+      isHomePage: false,
+      seo: {
+        title: 'Live Events | Concerts & Shows',
+        description: 'Discover upcoming concerts, festivals, and live events near you.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Live Events',
+            subtitle: 'Experience music like never before',
+            backgroundImage: PRESET_IMAGES_MUSIC.concert,
+            ctaText: 'Browse Events',
+            ctaUrl: '#events',
+            alignment: 'center',
+            overlayOpacity: 0.6,
+          },
+        },
+        {
+          type: 'timeline',
+          props: {
+            title: 'Upcoming Events',
+            items: [
+              {
+                date: 'Jan 20, 2025',
+                title: 'Nova Wave Live',
+                description: 'Madison Square Garden, New York • Doors 7PM',
+              },
+              {
+                date: 'Feb 5, 2025',
+                title: 'Electro Nights Festival',
+                description: 'Miami Beach Convention Center • 3-day pass available',
+              },
+              {
+                date: 'Feb 14, 2025',
+                title: 'Clara Moon Acoustic',
+                description: 'The Blue Note, NYC • Intimate venue experience',
+              },
+            ],
+            style: 'left',
+          },
+        },
+        {
+          type: 'cta',
+          props: {
+            heading: 'Never Miss a Show',
+            description: 'Get notified about concerts from your favorite artists.',
+            buttonText: 'Enable Notifications',
+            buttonUrl: '/settings/notifications',
+            backgroundType: 'solid',
+            backgroundColor: '#1DB954',
+          },
+        },
+      ],
+    },
+    ...createAuthPages(
+      {
+        primary: '#1DB954',
+        secondary: '#1ED760',
+        accent: '#FF6B35',
+        background: '#121212',
+        surface: '#181818',
+        text: '#B3B3B3',
+        textMuted: '#727272',
+        heading: '#FFFFFF',
+        link: '#1DB954',
+        linkHover: '#1ED760',
+        border: '#282828',
+      },
+      false,
+    ),
+  ],
+};
+
+// ============================================
+// PRESET 19: ARTIST/BAND WEBSITE
+// ============================================
+
+const ARTIST_BAND_WEBSITE: AiThemePreset = {
+  id: 'artist-band',
+  name: 'Artist & Band Website',
+  description:
+    'Showcase your music, tour dates, and connect with fans. Perfect for solo artists, bands, and musicians.',
+  category: 'creative',
+  thumbnail: PRESET_IMAGES_MUSIC.guitar,
+  tags: ['music', 'artist', 'band', 'musician', 'tour', 'concerts', 'portfolio', 'entertainment'],
+  industry: 'entertainment',
+  style: 'bold',
+  colorScheme: 'dark',
+  colors: {
+    primary: '#FF2D55',
+    secondary: '#5856D6',
+    accent: '#FF9500',
+    background: '#000000',
+    surface: '#1C1C1E',
+    text: '#FFFFFF',
+    textMuted: '#8E8E93',
+    heading: '#FFFFFF',
+    link: '#FF2D55',
+    linkHover: '#FF6B7A',
+    border: '#38383A',
+    success: '#30D158',
+    warning: '#FF9F0A',
+    error: '#FF453A',
+  },
+  typography: {
+    headingFont: 'Bebas Neue',
+    bodyFont: 'Roboto',
+    baseFontSize: 16,
+    lineHeight: 1.7,
+    headingWeight: 400,
+  },
+  layout: {
+    sidebarPosition: 'none',
+    contentWidth: 1200,
+    headerStyle: 'sticky',
+    footerStyle: 'multicolumn',
+  },
+  spacing: { sectionPadding: 80, elementSpacing: 32, containerPadding: 24, blockGap: 60 },
+  borders: { radius: 0, width: 2 },
+  features: {
+    darkMode: true,
+    animations: true,
+    customFonts: true,
+    parallax: true,
+    lazyLoading: true,
+    stickyHeader: true,
+    pwa: true,
+    socialSharing: true,
+  },
+  headerStyle: 'sticky',
+  footerStyle: 'multicolumn',
+  pages: [
+    {
+      name: 'Home',
+      slug: 'home',
+      isHomePage: true,
+      seo: {
+        title: 'Artist Name | Official Website',
+        description: 'Official website featuring music, tour dates, videos, and exclusive content.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'THE NEW ALBUM IS HERE',
+            subtitle: '"Midnight Dreams" — Out Now on All Platforms',
+            backgroundImage: PRESET_IMAGES_MUSIC.hero,
+            ctaText: 'Listen Now',
+            ctaUrl: '/music',
+            secondaryCtaText: 'Watch Video',
+            secondaryCtaUrl: '/videos',
+            alignment: 'center',
+            overlayOpacity: 0.5,
+            style: 'fullscreen',
+          },
+        },
+        {
+          type: 'audio',
+          props: {
+            title: 'Featured Track',
+            artist: 'Artist Name',
+            albumArt: PRESET_IMAGES_MUSIC.albumArt[0],
+            audioUrl: '',
+            showWaveform: true,
+          },
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'Latest Music Video',
+            videoUrl: '',
+            posterUrl: PRESET_IMAGES_MUSIC.concert,
+            autoplay: false,
+          },
+        },
+        {
+          type: 'timeline',
+          props: {
+            title: 'TOUR DATES 2025',
+            items: [
+              { date: 'JAN 15', title: 'Los Angeles, CA', description: 'The Forum • Doors 7PM • Tickets Available' },
+              { date: 'JAN 22', title: 'New York, NY', description: 'Madison Square Garden • Doors 7PM • SOLD OUT' },
+              { date: 'FEB 5', title: 'London, UK', description: "The O2 Arena • Doors 6PM • Limited Tickets" },
+              { date: 'FEB 12', title: 'Paris, FR', description: 'Accor Arena • Doors 7PM • On Sale Now' },
+            ],
+            style: 'left',
+          },
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'DISCOGRAPHY',
+            layout: 'grid',
+            columns: 4,
+            images: PRESET_IMAGES_MUSIC.albumArt.map((src, i) => ({
+              src,
+              caption: ['Midnight Dreams (2024)', 'Electric Soul (2023)', 'First Light (2022)', 'Debut EP (2021)'][i],
+              alt: 'Album artwork',
+            })),
+          },
+        },
+        {
+          type: 'newsletter',
+          props: {
+            title: 'JOIN THE FAN CLUB',
+            description: 'Get exclusive content, early ticket access, and behind-the-scenes updates.',
+            buttonText: 'Sign Up',
+            placeholder: 'Your email address',
+            style: 'stacked',
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'CONNECT',
+            columns: 4,
+            features: [
+              { icon: '📸', title: 'Instagram', description: '@artistname' },
+              { icon: '🐦', title: 'Twitter', description: '@artistname' },
+              { icon: '🎵', title: 'Spotify', description: 'Follow on Spotify' },
+              { icon: '📺', title: 'YouTube', description: 'Subscribe' },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      name: 'Music',
+      slug: 'music',
+      isHomePage: false,
+      seo: {
+        title: 'Music | Artist Name',
+        description: 'Stream and download music, explore albums, and discover new tracks.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'MUSIC',
+            subtitle: 'Albums, Singles & EPs',
+            backgroundImage: PRESET_IMAGES_MUSIC.vinyl,
+            alignment: 'center',
+            overlayOpacity: 0.7,
+          },
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Albums',
+            layout: 'grid',
+            columns: 3,
+            images: PRESET_IMAGES_MUSIC.albumArt.slice(0, 3).map((src, i) => ({
+              src,
+              caption: ['Midnight Dreams', 'Electric Soul', 'First Light'][i],
+              alt: 'Album',
+            })),
+          },
+        },
+        {
+          type: 'audio',
+          props: {
+            title: 'Latest Single',
+            artist: 'Artist Name',
+            albumArt: PRESET_IMAGES_MUSIC.albumArt[0],
+            audioUrl: '',
+          },
+        },
+      ],
+    },
+    {
+      name: 'Tour',
+      slug: 'tour',
+      isHomePage: false,
+      seo: {
+        title: 'Tour Dates | Artist Name',
+        description: 'Find upcoming concerts and buy tickets to see Artist Name live.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'WORLD TOUR 2025',
+            subtitle: 'The Midnight Dreams Tour',
+            backgroundImage: PRESET_IMAGES_MUSIC.concert,
+            ctaText: 'Get Tickets',
+            ctaUrl: '#dates',
+            alignment: 'center',
+            overlayOpacity: 0.5,
+          },
+        },
+        {
+          type: 'timeline',
+          props: {
+            title: 'All Tour Dates',
+            items: [
+              { date: 'Jan 15', title: 'Los Angeles, CA', description: 'The Forum • $45-150' },
+              { date: 'Jan 18', title: 'San Francisco, CA', description: 'Chase Center • $45-150' },
+              { date: 'Jan 22', title: 'New York, NY', description: 'Madison Square Garden • SOLD OUT' },
+              { date: 'Jan 25', title: 'Boston, MA', description: 'TD Garden • $40-120' },
+              { date: 'Feb 5', title: 'London, UK', description: "The O2 • £35-100" },
+              { date: 'Feb 8', title: 'Manchester, UK', description: 'AO Arena • £35-100' },
+            ],
+            style: 'alternating',
+          },
+        },
+        {
+          type: 'imageText',
+          props: {
+            title: 'VIP Experience',
+            description:
+              'Get exclusive access with our VIP packages. Includes early entry, meet & greet, signed merchandise, and premium viewing area.',
+            image: PRESET_IMAGES_MUSIC.concert,
+            buttonText: 'Learn More',
+            buttonUrl: '/vip',
+            imagePosition: 'right',
+          },
+        },
+      ],
+    },
+    {
+      name: 'About',
+      slug: 'about',
+      isHomePage: false,
+      seo: {
+        title: 'About | Artist Name',
+        description: 'The story behind the music. Biography, influences, and journey.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'ABOUT',
+            subtitle: 'The Story',
+            backgroundImage: PRESET_IMAGES_MUSIC.studio,
+            alignment: 'center',
+            overlayOpacity: 0.6,
+          },
+        },
+        {
+          type: 'imageText',
+          props: {
+            title: 'The Beginning',
+            description:
+              'From small club shows to sold-out arenas, the journey has been nothing short of extraordinary. What started as a passion project in a garage studio has evolved into a global phenomenon.',
+            image: PRESET_IMAGES_MUSIC.guitar,
+            imagePosition: 'left',
+          },
+        },
+        {
+          type: 'stats',
+          props: {
+            stats: [
+              { value: '4', label: 'Studio Albums', icon: '💿' },
+              { value: '500M+', label: 'Streams', icon: '🎧' },
+              { value: '50+', label: 'Countries Toured', icon: '🌍' },
+              { value: '3', label: 'Grammy Nominations', icon: '🏆' },
+            ],
+            style: 'cards',
+          },
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote:
+              "One of the most electrifying live acts of this generation. Every show is a transcendent experience.",
+            author: 'Rolling Stone',
+            role: 'Music Magazine',
+            rating: 5,
+          },
+        },
+      ],
+    },
+    ...createAuthPages(
+      {
+        primary: '#FF2D55',
+        secondary: '#5856D6',
+        accent: '#FF9500',
+        background: '#000000',
+        surface: '#1C1C1E',
+        text: '#FFFFFF',
+        textMuted: '#8E8E93',
+        heading: '#FFFFFF',
+        link: '#FF2D55',
+        linkHover: '#FF6B7A',
+        border: '#38383A',
+      },
+      false,
+    ),
+  ],
+};
+
+// ============================================
+// PRESET 20: PODCAST PLATFORM
+// ============================================
+
+const PODCAST_PLATFORM: AiThemePreset = {
+  id: 'podcast-platform',
+  name: 'Podcast Platform',
+  description:
+    'Professional podcast hosting and discovery platform with episode players, show directories, and subscriber management.',
+  category: 'creative',
+  thumbnail: PRESET_IMAGES_MUSIC.headphones,
+  tags: ['podcast', 'audio', 'episodes', 'shows', 'streaming', 'media', 'entertainment'],
+  industry: 'entertainment',
+  style: 'modern',
+  colorScheme: 'light',
+  colors: {
+    primary: '#8B5CF6',
+    secondary: '#6366F1',
+    accent: '#EC4899',
+    background: '#FAFAFA',
+    surface: '#FFFFFF',
+    text: '#374151',
+    textMuted: '#6B7280',
+    heading: '#111827',
+    link: '#8B5CF6',
+    linkHover: '#7C3AED',
+    border: '#E5E7EB',
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+  },
+  typography: {
+    headingFont: 'Poppins',
+    bodyFont: 'Inter',
+    baseFontSize: 16,
+    lineHeight: 1.7,
+    headingWeight: 600,
+  },
+  layout: {
+    sidebarPosition: 'none',
+    contentWidth: 1200,
+    headerStyle: 'sticky',
+    footerStyle: 'multicolumn',
+  },
+  spacing: { sectionPadding: 80, elementSpacing: 28, containerPadding: 24, blockGap: 56 },
+  borders: { radius: 16, width: 1 },
+  features: {
+    darkMode: false,
+    animations: true,
+    customFonts: true,
+    responsiveImages: true,
+    lazyLoading: true,
+    stickyHeader: true,
+    pwa: true,
+    newsletter: true,
+  },
+  headerStyle: 'sticky',
+  footerStyle: 'multicolumn',
+  pages: [
+    {
+      name: 'Home',
+      slug: 'home',
+      isHomePage: true,
+      seo: {
+        title: 'Podcast Platform | Discover Amazing Shows',
+        description: 'Discover, subscribe, and listen to your favorite podcasts. New episodes daily.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Discover Your Next Favorite Podcast',
+            subtitle:
+              'Explore thousands of shows across every topic imaginable. From true crime to tech, comedy to culture.',
+            backgroundImage: PRESET_IMAGES_MUSIC.headphones,
+            ctaText: 'Start Listening',
+            ctaUrl: '/browse',
+            secondaryCtaText: 'Host Your Podcast',
+            secondaryCtaUrl: '/creators',
+            alignment: 'left',
+            overlayOpacity: 0.6,
+          },
+        },
+        {
+          type: 'stats',
+          props: {
+            stats: [
+              { value: '100K+', label: 'Podcasts', icon: '🎙️' },
+              { value: '5M+', label: 'Episodes', icon: '📻' },
+              { value: '50M', label: 'Listeners', icon: '👂' },
+              { value: '4.9★', label: 'App Rating', icon: '⭐' },
+            ],
+            style: 'minimal',
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Trending Shows',
+            subtitle: 'What everyone is listening to this week',
+            columns: 4,
+            features: [
+              { icon: '🎭', title: 'The Daily Talk', description: "News & Politics • 1.2M subscribers" },
+              { icon: '💡', title: 'Mind Matters', description: 'Self Improvement • 890K subscribers' },
+              { icon: '🔍', title: 'Mystery Hour', description: 'True Crime • 2.1M subscribers' },
+              { icon: '💻', title: 'Tech Today', description: 'Technology • 650K subscribers' },
+            ],
+          },
+        },
+        {
+          type: 'audio',
+          props: {
+            title: 'Featured Episode',
+            artist: 'The Daily Talk',
+            albumArt: 'https://picsum.photos/400/400?podcast',
+            audioUrl: '',
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Browse Categories',
+            columns: 4,
+            features: [
+              { icon: '📰', title: 'News & Politics', description: '15K shows' },
+              { icon: '😂', title: 'Comedy', description: '12K shows' },
+              { icon: '🧠', title: 'Education', description: '18K shows' },
+              { icon: '💼', title: 'Business', description: '9K shows' },
+              { icon: '🎮', title: 'Gaming', description: '7K shows' },
+              { icon: '🏃', title: 'Health & Fitness', description: '11K shows' },
+              { icon: '🎵', title: 'Music', description: '8K shows' },
+              { icon: '🔬', title: 'Science', description: '5K shows' },
+            ],
+          },
+        },
+        {
+          type: 'pricing',
+          props: {
+            title: 'For Creators',
+            subtitle: 'Everything you need to start and grow your podcast',
+            plans: [
+              {
+                name: 'Starter',
+                price: 'Free',
+                period: '',
+                features: ['5 hours/month', 'Basic analytics', 'RSS feed', 'Web player'],
+                highlighted: false,
+                buttonText: 'Get Started',
+              },
+              {
+                name: 'Creator',
+                price: '$12',
+                period: '/month',
+                features: [
+                  'Unlimited hours',
+                  'Advanced analytics',
+                  'Custom website',
+                  'Apple & Spotify distribution',
+                  'Monetization tools',
+                ],
+                highlighted: true,
+                buttonText: 'Start Free Trial',
+              },
+              {
+                name: 'Pro',
+                price: '$29',
+                period: '/month',
+                features: [
+                  'Everything in Creator',
+                  'Video podcasting',
+                  'Team access',
+                  'Priority support',
+                  'API access',
+                ],
+                highlighted: false,
+                buttonText: 'Contact Sales',
+              },
+            ],
+          },
+        },
+        {
+          type: 'newsletter',
+          props: {
+            title: 'Weekly Podcast Picks',
+            description: 'Get our curated selection of the best new episodes delivered to your inbox.',
+            buttonText: 'Subscribe',
+            placeholder: 'Your email',
+            style: 'inline',
+          },
+        },
+      ],
+    },
+    {
+      name: 'Browse',
+      slug: 'browse',
+      isHomePage: false,
+      seo: {
+        title: 'Browse Podcasts | Discover New Shows',
+        description: 'Explore podcasts by category, popularity, or new releases.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Browse Podcasts',
+            subtitle: 'Find your next binge-worthy show',
+            alignment: 'center',
+            overlayOpacity: 0,
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'All Categories',
+            columns: 4,
+            features: [
+              { icon: '📰', title: 'News', description: 'Stay informed' },
+              { icon: '😂', title: 'Comedy', description: 'Laugh out loud' },
+              { icon: '🔍', title: 'True Crime', description: 'Mysteries & investigations' },
+              { icon: '💼', title: 'Business', description: 'Entrepreneurship & finance' },
+              { icon: '🧠', title: 'Self-Help', description: 'Personal development' },
+              { icon: '🎮', title: 'Gaming', description: 'Reviews & culture' },
+              { icon: '📚', title: 'Storytelling', description: 'Fiction & narrative' },
+              { icon: '🏀', title: 'Sports', description: 'Analysis & commentary' },
+            ],
+          },
+        },
+      ],
+    },
+    ...createAuthPages(
+      {
+        primary: '#8B5CF6',
+        secondary: '#6366F1',
+        accent: '#EC4899',
+        background: '#FAFAFA',
+        surface: '#FFFFFF',
+        text: '#374151',
+        textMuted: '#6B7280',
+        heading: '#111827',
+        link: '#8B5CF6',
+        linkHover: '#7C3AED',
+        border: '#E5E7EB',
+      },
+      true,
+    ),
+  ],
+};
+
+// ============================================
+// PRESET 21: RECORD LABEL
+// ============================================
+
+const RECORD_LABEL: AiThemePreset = {
+  id: 'record-label',
+  name: 'Record Label',
+  description:
+    'Professional record label website showcasing roster, releases, licensing, and artist submissions.',
+  category: 'business',
+  thumbnail: PRESET_IMAGES_MUSIC.studio,
+  tags: ['music', 'label', 'records', 'releases', 'artists', 'licensing', 'entertainment', 'industry'],
+  industry: 'entertainment',
+  style: 'elegant',
+  colorScheme: 'dark',
+  colors: {
+    primary: '#D4AF37', // Gold
+    secondary: '#C0C0C0', // Silver
+    accent: '#E8D5B7',
+    background: '#0A0A0A',
+    surface: '#141414',
+    text: '#D4D4D4',
+    textMuted: '#737373',
+    heading: '#FFFFFF',
+    link: '#D4AF37',
+    linkHover: '#F5D76E',
+    border: '#262626',
+    success: '#4ADE80',
+    warning: '#FBBF24',
+    error: '#F87171',
+  },
+  typography: {
+    headingFont: 'Playfair Display',
+    bodyFont: 'Lato',
+    baseFontSize: 17,
+    lineHeight: 1.7,
+    headingWeight: 500,
+  },
+  layout: {
+    sidebarPosition: 'none',
+    contentWidth: 1200,
+    headerStyle: 'minimal',
+    footerStyle: 'multicolumn',
+  },
+  spacing: { sectionPadding: 100, elementSpacing: 32, containerPadding: 32, blockGap: 80 },
+  borders: { radius: 0, width: 1 },
+  features: {
+    darkMode: true,
+    animations: true,
+    customFonts: true,
+    parallax: true,
+    lazyLoading: true,
+    pwa: true,
+  },
+  headerStyle: 'minimal',
+  footerStyle: 'multicolumn',
+  pages: [
+    {
+      name: 'Home',
+      slug: 'home',
+      isHomePage: true,
+      seo: {
+        title: 'Record Label | Premium Music Label',
+        description: 'Home of award-winning artists. Explore our roster, latest releases, and licensing opportunities.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'WHERE MUSIC BECOMES LEGACY',
+            subtitle: 'Home to award-winning artists since 1985. Crafting timeless sounds for the next generation.',
+            backgroundImage: PRESET_IMAGES_MUSIC.studio,
+            ctaText: 'Explore Roster',
+            ctaUrl: '/artists',
+            secondaryCtaText: 'Latest Releases',
+            secondaryCtaUrl: '/releases',
+            alignment: 'center',
+            overlayOpacity: 0.7,
+          },
+        },
+        {
+          type: 'stats',
+          props: {
+            stats: [
+              { value: '40+', label: 'Years', icon: '🏆' },
+              { value: '150+', label: 'Artists', icon: '🎤' },
+              { value: '500+', label: 'Albums', icon: '💿' },
+              { value: '25', label: 'Grammy Awards', icon: '✨' },
+            ],
+            style: 'minimal',
+          },
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'LATEST RELEASES',
+            layout: 'grid',
+            columns: 4,
+            images: PRESET_IMAGES_MUSIC.albumArt.map((src, i) => ({
+              src,
+              caption: ['Midnight Dreams', 'Electric Soul', 'First Light', 'Debut EP'][i],
+              alt: 'Album release',
+            })),
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'FEATURED ARTISTS',
+            columns: 3,
+            features: [
+              { icon: '🌟', title: 'The Soundscapes', description: 'Alternative Rock • 3 Albums' },
+              { icon: '🌟', title: 'Nova Wave', description: 'Electronic • 2 Albums' },
+              { icon: '🌟', title: 'Clara Moon', description: 'Indie Pop • 4 Albums' },
+            ],
+          },
+        },
+        {
+          type: 'imageText',
+          props: {
+            title: 'LICENSING & SYNC',
+            description:
+              'Our catalog is available for film, television, advertising, and games. With over 500 albums spanning multiple genres, we have the perfect track for your project.',
+            image: PRESET_IMAGES_MUSIC.concert,
+            buttonText: 'Browse Catalog',
+            buttonUrl: '/licensing',
+            imagePosition: 'right',
+          },
+        },
+        {
+          type: 'cta',
+          props: {
+            heading: 'SUBMIT YOUR DEMO',
+            description:
+              'We are always looking for exceptional talent. If you believe your music belongs on our roster, we want to hear from you.',
+            buttonText: 'Submit Demo',
+            buttonUrl: '/submit',
+            backgroundType: 'gradient',
+          },
+        },
+      ],
+    },
+    {
+      name: 'Artists',
+      slug: 'artists',
+      isHomePage: false,
+      seo: {
+        title: 'Our Artists | Record Label',
+        description: 'Meet our roster of world-class artists.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'OUR ARTISTS',
+            subtitle: 'Meet the talent behind the music',
+            backgroundImage: PRESET_IMAGES_MUSIC.concert,
+            alignment: 'center',
+            overlayOpacity: 0.75,
+          },
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'The Roster',
+            layout: 'grid',
+            columns: 3,
+            images: PRESET_IMAGES_MUSIC.artists.map((src, i) => ({
+              src,
+              caption: ['The Soundscapes', 'Nova Wave', 'Clara Moon'][i],
+              alt: 'Artist',
+            })),
+          },
+        },
+      ],
+    },
+    {
+      name: 'Releases',
+      slug: 'releases',
+      isHomePage: false,
+      seo: {
+        title: 'Releases | Record Label',
+        description: 'Browse our complete catalog of albums and singles.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'DISCOGRAPHY',
+            subtitle: 'Our complete catalog',
+            backgroundImage: PRESET_IMAGES_MUSIC.vinyl,
+            alignment: 'center',
+            overlayOpacity: 0.7,
+          },
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: '2024 Releases',
+            layout: 'grid',
+            columns: 4,
+            images: PRESET_IMAGES_MUSIC.albumArt.map((src, i) => ({
+              src,
+              caption: ['Album Title', 'Album Title', 'Album Title', 'Album Title'][i],
+              alt: 'Album',
+            })),
+          },
+        },
+      ],
+    },
+    {
+      name: 'Licensing',
+      slug: 'licensing',
+      isHomePage: false,
+      seo: {
+        title: 'Licensing & Sync | Record Label',
+        description: 'License our music for film, TV, advertising, and more.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'LICENSING & SYNC',
+            subtitle: 'Premium music for your productions',
+            backgroundImage: PRESET_IMAGES_MUSIC.studio,
+            ctaText: 'Contact Us',
+            ctaUrl: '/contact',
+            alignment: 'center',
+            overlayOpacity: 0.7,
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Available For',
+            columns: 4,
+            features: [
+              { icon: '🎬', title: 'Film & TV', description: 'Feature films, series, documentaries' },
+              { icon: '📺', title: 'Advertising', description: 'Commercials and campaigns' },
+              { icon: '🎮', title: 'Video Games', description: 'In-game and trailers' },
+              { icon: '📱', title: 'Digital Media', description: 'Social, streaming, web' },
+            ],
+          },
+        },
+        {
+          type: 'accordion',
+          props: {
+            items: [
+              {
+                question: 'How do I license a track?',
+                answer:
+                  'Contact our licensing team with details about your project. We will provide a quote based on usage, territory, and duration.',
+              },
+              {
+                question: 'What genres are available?',
+                answer:
+                  'Our catalog spans rock, electronic, indie, pop, classical, jazz, and world music with over 500 albums.',
+              },
+              {
+                question: 'Can I get exclusive rights?',
+                answer:
+                  'Exclusive licensing is available for select tracks. Contact us for custom arrangements.',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    ...createAuthPages(
+      {
+        primary: '#D4AF37',
+        secondary: '#C0C0C0',
+        accent: '#E8D5B7',
+        background: '#0A0A0A',
+        surface: '#141414',
+        text: '#D4D4D4',
+        textMuted: '#737373',
+        heading: '#FFFFFF',
+        link: '#D4AF37',
+        linkHover: '#F5D76E',
+        border: '#262626',
+      },
+      false,
+    ),
+  ],
+};
+
+// ============================================
 // EXPORT ALL PRESETS
 // ============================================
 
@@ -5663,6 +7016,11 @@ export const AI_THEME_PRESETS: AiThemePreset[] = [
   EDUCATION_SCHOOL,
   AUTOMOTIVE,
   CYBERPUNK_NEON,
+  // Music-focused presets
+  MUSIC_STREAMING,
+  ARTIST_BAND_WEBSITE,
+  PODCAST_PLATFORM,
+  RECORD_LABEL,
 ];
 
 export const getPresetById = (id: string): AiThemePreset | undefined => {
