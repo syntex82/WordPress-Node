@@ -218,6 +218,181 @@ export class AiThemeGeneratorService {
   }
 
   /**
+   * Map unsupported preset block types to supported block types
+   * This ensures blocks from presets render correctly in the ThemeDesigner
+   */
+  private mapBlockToSupportedType(block: { type: string; props: Record<string, any> }): {
+    type: string;
+    props: Record<string, any>;
+  } {
+    const { type, props } = block;
+
+    // Block type mapping with prop transformations
+    switch (type) {
+      // Blog-related blocks -> use gallery or features blocks
+      case 'blogPosts':
+      case 'blogGrid': {
+        // Convert blog posts to a gallery with cards
+        const posts = props.posts || [];
+        return {
+          type: 'gallery',
+          props: {
+            layout: 'grid',
+            columns: props.columns || 3,
+            images: posts.slice(0, 6).map((post: any) => ({
+              src: post.image || 'https://picsum.photos/800/500',
+              caption: post.title || 'Blog Post',
+              alt: post.excerpt || post.title || 'Blog post image',
+            })),
+            title: props.title || 'Latest Articles',
+          },
+        };
+      }
+
+      case 'blogCategories':
+        // Convert to a simple divider or skip
+        return {
+          type: 'divider',
+          props: {
+            style: 'solid',
+            spacing: 40,
+          },
+        };
+
+      // About/content blocks -> use imageText block
+      case 'about':
+      case 'content': {
+        return {
+          type: 'imageText',
+          props: {
+            image: props.image || 'https://picsum.photos/600/400',
+            title: props.title || 'About Us',
+            description: props.content || props.subtitle || 'Learn more about our mission and values.',
+            buttonText: 'Learn More',
+            buttonUrl: '#',
+            imagePosition: props.imagePosition || 'left',
+            style: 'rounded',
+          },
+        };
+      }
+
+      // Team grid -> use features block with team members
+      case 'teamGrid': {
+        const members = props.members || [];
+        return {
+          type: 'features',
+          props: {
+            title: props.title || 'Our Team',
+            subtitle: props.subtitle || 'Meet the people behind our success',
+            columns: Math.min(members.length, 4) || 3,
+            features: members.slice(0, 4).map((member: any) => ({
+              icon: '👤',
+              title: member.name || 'Team Member',
+              description: `${member.role || 'Team Member'}${member.bio ? ' - ' + member.bio : ''}`,
+            })),
+          },
+        };
+      }
+
+      // Contact form -> use newsletter block (simpler form)
+      case 'contactForm': {
+        return {
+          type: 'newsletter',
+          props: {
+            title: props.title || 'Get in Touch',
+            description: props.subtitle || 'Send us a message and we\'ll get back to you.',
+            buttonText: props.submitText || 'Send Message',
+            placeholder: 'Enter your email',
+            style: 'stacked',
+          },
+        };
+      }
+
+      // Contact info -> use features block
+      case 'contactInfo': {
+        const features = [];
+        if (props.email) {
+          features.push({ icon: '📧', title: 'Email', description: props.email });
+        }
+        if (props.phone) {
+          features.push({ icon: '📞', title: 'Phone', description: props.phone });
+        }
+        if (props.address) {
+          features.push({ icon: '📍', title: 'Address', description: props.address });
+        }
+        if (props.social && Array.isArray(props.social)) {
+          features.push({
+            icon: '🌐',
+            title: 'Social',
+            description: props.social.map((s: any) => s.label || s.platform).join(' • '),
+          });
+        }
+        return {
+          type: 'features',
+          props: {
+            title: props.title || 'Contact Information',
+            columns: Math.min(features.length, 4) || 2,
+            features:
+              features.length > 0
+                ? features
+                : [
+                    { icon: '📧', title: 'Email', description: 'hello@example.com' },
+                    { icon: '📍', title: 'Location', description: 'New York, NY' },
+                  ],
+          },
+        };
+      }
+
+      // Course grid -> use features or pricing block
+      case 'courseGrid': {
+        const courses = props.courses || [];
+        return {
+          type: 'pricing',
+          props: {
+            plans: courses.slice(0, 3).map((course: any) => ({
+              name: course.title || 'Course',
+              price: course.price || '$99',
+              period: '',
+              features: [
+                course.duration || '10+ hours',
+                course.instructor ? `By ${course.instructor}` : 'Expert Instructor',
+                `${course.students || '1000+'} students`,
+                `${course.rating || 4.5}★ rating`,
+              ],
+              highlighted: false,
+              buttonText: 'Enroll Now',
+            })),
+          },
+        };
+      }
+
+      // Shop filters -> skip (not renderable as standalone)
+      case 'shopFilters':
+        return {
+          type: 'divider',
+          props: {
+            style: 'gradient',
+            spacing: 20,
+          },
+        };
+
+      // Footer -> skip (handled separately by theme system)
+      case 'footer':
+        return {
+          type: 'divider',
+          props: {
+            style: 'solid',
+            spacing: 60,
+          },
+        };
+
+      // Default: return as-is if it's a supported type
+      default:
+        return { type, props };
+    }
+  }
+
+  /**
    * Convert a preset to the GeneratedThemeData format
    */
   private convertPresetToThemeData(
@@ -266,17 +441,21 @@ export class AiThemeGeneratorService {
     };
 
     // Convert preset pages to ThemePageData format
+    // Map unsupported block types to supported equivalents
     const numberOfPages = dto.numberOfPages || preset.pages.length;
     const pages: ThemePageData[] = preset.pages.slice(0, numberOfPages).map((page) => ({
       id: uuid(),
       name: page.name,
       slug: page.slug,
       isHomePage: page.isHomePage,
-      blocks: page.blocks.map((block) => ({
-        id: uuid(),
-        type: block.type as ContentBlockType,
-        props: { ...block.props },
-      })),
+      blocks: page.blocks.map((block) => {
+        const mappedBlock = this.mapBlockToSupportedType(block);
+        return {
+          id: uuid(),
+          type: mappedBlock.type as ContentBlockType,
+          props: { ...mappedBlock.props },
+        };
+      }),
     }));
 
     return {
@@ -369,6 +548,9 @@ export class AiThemeGeneratorService {
       travel: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&h=1080&fit=crop',
       realestate:
         'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&h=1080&fit=crop',
+      cyberpunk:
+        'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1920&h=1080&fit=crop',
+      gaming: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1920&h=1080&fit=crop',
     },
     team: [
       'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop',
@@ -538,6 +720,58 @@ export class AiThemeGeneratorService {
           title: 'Progress Tracking',
           description:
             'Visual dashboards show learning progress, completed modules, and areas for improvement.',
+        },
+      ],
+      technology: [
+        {
+          icon: '🤖',
+          title: 'Artificial Intelligence',
+          description:
+            'Cutting-edge AI and machine learning insights. From neural networks to AGI, we cover the future of intelligence.',
+        },
+        {
+          icon: '🔐',
+          title: 'Cybersecurity',
+          description:
+            'Threat analysis, defense strategies, and security best practices for the digital age.',
+        },
+        {
+          icon: '⛓️',
+          title: 'Blockchain & Web3',
+          description:
+            'DeFi, smart contracts, and decentralized systems. The future of digital ownership.',
+        },
+        {
+          icon: '🚀',
+          title: 'Emerging Tech',
+          description:
+            'Quantum computing, AR/VR, neural interfaces, and innovations shaping tomorrow.',
+        },
+      ],
+      cyberpunk: [
+        {
+          icon: '⚡',
+          title: 'Real-time Everything',
+          description:
+            'Live updates, instant notifications, and real-time collaboration powered by WebSockets.',
+        },
+        {
+          icon: '🔒',
+          title: 'Secure Payments',
+          description:
+            'Stripe, crypto, and custom payment gateways. PCI-compliant and quantum-safe encryption.',
+        },
+        {
+          icon: '🧩',
+          title: 'Modular Architecture',
+          description:
+            'Headless CMS, API-first design. Build anything you can imagine in the digital frontier.',
+        },
+        {
+          icon: '🎨',
+          title: 'Neon Aesthetics',
+          description:
+            'Glassmorphism, holographic UI, and cyberpunk-styled components for the future.',
         },
       ],
     },
@@ -1467,13 +1701,39 @@ Generate COMPLETE, PROFESSIONAL content. Every block must be production-ready.`;
         title: 'Insights That Matter',
         subtitle: 'Thoughtful perspectives on the topics shaping our world',
       },
+      technology: {
+        title: 'Exploring the Digital Frontier',
+        subtitle: 'Deep dives into AI, blockchain, cybersecurity, and emerging tech',
+      },
+      cyberpunk: {
+        title: 'Welcome to the Neon District',
+        subtitle: 'Build. Learn. Sell. Connect — In the Future',
+      },
+      gaming: {
+        title: 'Level Up Your Experience',
+        subtitle: 'Immersive gaming content, reviews, and community',
+      },
       general: {
         title: 'Welcome to Excellence',
         subtitle: 'Innovative solutions designed to help you succeed',
       },
     };
 
-    const content = industryTitles[dto.industry || 'general'] || industryTitles.general;
+    // Check if prompt contains cyberpunk-related keywords
+    const promptLower = (dto.prompt || '').toLowerCase();
+    const isCyberpunk =
+      promptLower.includes('cyberpunk') ||
+      promptLower.includes('neon') ||
+      promptLower.includes('futuristic') ||
+      promptLower.includes('sci-fi') ||
+      promptLower.includes('dystopian');
+
+    const effectiveIndustry = isCyberpunk ? 'cyberpunk' : dto.industry || 'general';
+    const content = industryTitles[effectiveIndustry] || industryTitles.general;
+
+    // Cyberpunk-specific CTA text
+    const ctaText = isCyberpunk ? 'Explore Platform' : 'Get Started';
+    const secondaryCtaText = isCyberpunk ? 'Join Now' : 'Learn More';
 
     return {
       id: uuid(),
@@ -1481,31 +1741,50 @@ Generate COMPLETE, PROFESSIONAL content. Every block must be production-ready.`;
       props: {
         title: title || content.title,
         subtitle: dto.description || content.subtitle,
-        backgroundImage: this.getHeroImage(dto.industry),
-        ctaText: 'Get Started',
+        backgroundImage: this.getHeroImage(effectiveIndustry),
+        ctaText,
         ctaUrl: '/signup',
-        secondaryCtaText: 'Learn More',
+        secondaryCtaText,
         secondaryCtaUrl: '/about',
         alignment: 'center',
-        overlayOpacity: 0.5,
-        overlayColor: '#000000',
+        overlayOpacity: isCyberpunk ? 0.7 : 0.5,
+        overlayColor: isCyberpunk ? '#0A0A0F' : '#000000',
       },
     };
   }
 
   private createFeaturesBlock(dto: GenerateAiThemeDto): ContentBlockData {
+    // Check if prompt contains cyberpunk-related keywords
+    const promptLower = (dto.prompt || '').toLowerCase();
+    const isCyberpunk =
+      promptLower.includes('cyberpunk') ||
+      promptLower.includes('neon') ||
+      promptLower.includes('futuristic') ||
+      promptLower.includes('sci-fi') ||
+      promptLower.includes('dystopian');
+
+    const effectiveIndustry = isCyberpunk ? 'cyberpunk' : dto.industry;
+
     const features =
-      dto.industry &&
-      this.CONTENT_LIBRARY.features[dto.industry as keyof typeof this.CONTENT_LIBRARY.features]
-        ? this.CONTENT_LIBRARY.features[dto.industry as keyof typeof this.CONTENT_LIBRARY.features]
+      effectiveIndustry &&
+      this.CONTENT_LIBRARY.features[effectiveIndustry as keyof typeof this.CONTENT_LIBRARY.features]
+        ? this.CONTENT_LIBRARY.features[
+            effectiveIndustry as keyof typeof this.CONTENT_LIBRARY.features
+          ]
         : this.CONTENT_LIBRARY.features.general;
+
+    // Cyberpunk-themed titles
+    const title = isCyberpunk ? 'Platform Capabilities' : 'Why Choose Us';
+    const subtitle = isCyberpunk
+      ? 'Everything you need in one futuristic ecosystem'
+      : 'Everything you need to succeed, all in one place';
 
     return {
       id: uuid(),
       type: 'features',
       props: {
-        title: 'Why Choose Us',
-        subtitle: 'Everything you need to succeed, all in one place',
+        title,
+        subtitle,
         columns: 3,
         features: features.slice(0, 6).map((f) => ({
           ...f,
