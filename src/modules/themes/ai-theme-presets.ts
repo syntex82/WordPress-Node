@@ -89,9 +89,16 @@ export interface PresetPage {
   blocks: PresetBlock[];
 }
 
+export interface PresetBlockAnimation {
+  type: 'none' | 'fadeIn' | 'slideUp' | 'slideDown' | 'slideLeft' | 'slideRight' | 'zoomIn' | 'bounce';
+  duration: number;
+  delay: number;
+}
+
 export interface PresetBlock {
   type: ContentBlockType | string;
   props: Record<string, any>;
+  animation?: PresetBlockAnimation;
 }
 
 // ============================================
@@ -168,6 +175,360 @@ export const PRESET_IMAGES = {
       'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop',
     ],
   },
+  realEstate: {
+    hero: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&h=1080&fit=crop',
+    properties: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&h=600&fit=crop',
+    ],
+  },
+  fitness: {
+    hero: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&h=1080&fit=crop',
+    gym: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200&h=800&fit=crop',
+    trainers: [
+      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&h=400&fit=crop',
+    ],
+  },
+  automotive: {
+    hero: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920&h=1080&fit=crop',
+    cars: [
+      'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop',
+    ],
+  },
+  lawFirm: {
+    hero: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1920&h=1080&fit=crop',
+    office: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop',
+    attorneys: [
+      'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop',
+    ],
+  },
+};
+
+// ============================================
+// VIDEO LIBRARY - Embedded videos for presets
+// ============================================
+
+export const PRESET_VIDEOS = {
+  // YouTube video IDs for embedding
+  youtube: {
+    corporate: 'dQw4w9WgXcQ', // Placeholder - replace with actual corporate videos
+    product: 'ZWoUZJxsJyg',
+    tutorial: 'jNQXAC9IVRw',
+    testimonial: 'M7lc1UVf-VE',
+    fitness: 'ml6cT4AZdqI',
+    restaurant: 'dIZGAWq_Z2E',
+    realEstate: 'UoSSbmD9vqc',
+    automotive: 'FHCYHldJi_g',
+    education: 'FNQxxpM1yOs',
+    healthcare: 'LZQqG7bc5qE',
+    music: 'kJQP7kiw5Fk', // Music video placeholder
+  },
+  // Vimeo video IDs
+  vimeo: {
+    creative: '824804225',
+    portfolio: '824804225',
+    music: '824804225',
+  },
+  // Direct video URLs (for self-hosted content)
+  direct: {
+    heroBackground: 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-702-large.mp4',
+    abstract: 'https://assets.mixkit.co/videos/preview/mixkit-abstract-technology-network-connections-27611-large.mp4',
+    nature: 'https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4',
+    city: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-traffic-at-night-11-large.mp4',
+    office: 'https://assets.mixkit.co/videos/preview/mixkit-group-of-colleagues-in-a-meeting-4870-large.mp4',
+  },
+};
+
+// ============================================
+// MAP LOCATIONS - Business locations for presets
+// ============================================
+
+export const PRESET_MAP_LOCATIONS = {
+  restaurant: {
+    address: '123 Culinary Avenue, New York, NY 10001',
+    lat: 40.7484,
+    lng: -73.9857,
+    businessHours: 'Mon-Sat: 11AM-10PM, Sun: 12PM-9PM',
+    phone: '+1 (555) 123-4567',
+  },
+  healthcare: {
+    address: '456 Medical Center Drive, Los Angeles, CA 90001',
+    lat: 34.0522,
+    lng: -118.2437,
+    businessHours: 'Mon-Fri: 8AM-6PM, Sat: 9AM-2PM',
+    phone: '+1 (555) 234-5678',
+  },
+  lawFirm: {
+    address: '789 Justice Plaza, Chicago, IL 60601',
+    lat: 41.8781,
+    lng: -87.6298,
+    businessHours: 'Mon-Fri: 9AM-5PM',
+    phone: '+1 (555) 345-6789',
+  },
+  realEstate: {
+    address: '321 Property Lane, Miami, FL 33101',
+    lat: 25.7617,
+    lng: -80.1918,
+    businessHours: 'Mon-Sat: 9AM-7PM, Sun: 10AM-5PM',
+    phone: '+1 (555) 456-7890',
+  },
+  automotive: {
+    address: '555 Auto Drive, Houston, TX 77001',
+    lat: 29.7604,
+    lng: -95.3698,
+    businessHours: 'Mon-Sat: 9AM-8PM, Sun: 11AM-6PM',
+    phone: '+1 (555) 567-8901',
+  },
+  fitness: {
+    address: '888 Fitness Boulevard, San Francisco, CA 94101',
+    lat: 37.7749,
+    lng: -122.4194,
+    businessHours: 'Mon-Sun: 5AM-11PM',
+    phone: '+1 (555) 678-9012',
+  },
+};
+
+// ============================================
+// ANIMATION PRESETS for blocks
+// ============================================
+
+export const BLOCK_ANIMATIONS = {
+  fadeIn: { type: 'fadeIn' as const, duration: 600, delay: 0 },
+  fadeInSlow: { type: 'fadeIn' as const, duration: 1000, delay: 0 },
+  slideUp: { type: 'slideUp' as const, duration: 500, delay: 0 },
+  slideUpStagger1: { type: 'slideUp' as const, duration: 500, delay: 100 },
+  slideUpStagger2: { type: 'slideUp' as const, duration: 500, delay: 200 },
+  slideUpStagger3: { type: 'slideUp' as const, duration: 500, delay: 300 },
+  slideLeft: { type: 'slideLeft' as const, duration: 600, delay: 0 },
+  slideRight: { type: 'slideRight' as const, duration: 600, delay: 0 },
+  zoomIn: { type: 'zoomIn' as const, duration: 700, delay: 0 },
+  bounce: { type: 'bounce' as const, duration: 800, delay: 0 },
+};
+
+// ============================================
+// TESTIMONIALS LIBRARY
+// ============================================
+
+export const PRESET_TESTIMONIALS = {
+  corporate: [
+    {
+      quote: 'Working with this team transformed our business operations. Their expertise and dedication exceeded all expectations.',
+      author: 'Sarah Mitchell',
+      role: 'CEO, TechVentures Inc.',
+      avatar: 'https://i.pravatar.cc/150?u=sarah',
+      rating: 5,
+      company: 'TechVentures Inc.',
+    },
+    {
+      quote: 'The results speak for themselves. We saw a 300% increase in efficiency within the first quarter.',
+      author: 'Michael Chen',
+      role: 'Operations Director, GlobalCorp',
+      avatar: 'https://i.pravatar.cc/150?u=michael',
+      rating: 5,
+      company: 'GlobalCorp',
+    },
+    {
+      quote: 'Professional, innovative, and results-driven. They are the partner every business needs.',
+      author: 'Emily Rodriguez',
+      role: 'Marketing VP, Innovate Labs',
+      avatar: 'https://i.pravatar.cc/150?u=emily',
+      rating: 5,
+      company: 'Innovate Labs',
+    },
+  ],
+  healthcare: [
+    {
+      quote: 'The care and attention I received was exceptional. The doctors took time to explain everything thoroughly.',
+      author: 'Jennifer Adams',
+      role: 'Patient',
+      avatar: 'https://i.pravatar.cc/150?u=jennifer',
+      rating: 5,
+    },
+    {
+      quote: 'State-of-the-art facilities combined with compassionate care. I highly recommend this practice.',
+      author: 'Robert Thompson',
+      role: 'Patient',
+      avatar: 'https://i.pravatar.cc/150?u=robert',
+      rating: 5,
+    },
+  ],
+  fitness: [
+    {
+      quote: 'Lost 30 pounds in 3 months! The trainers here are incredibly motivating and knowledgeable.',
+      author: 'Amanda Foster',
+      role: 'Member since 2023',
+      avatar: 'https://i.pravatar.cc/150?u=amanda',
+      rating: 5,
+    },
+    {
+      quote: 'Best gym I have ever been to. Clean facilities, great equipment, and amazing community.',
+      author: 'David Park',
+      role: 'Member since 2022',
+      avatar: 'https://i.pravatar.cc/150?u=david',
+      rating: 5,
+    },
+  ],
+  restaurant: [
+    {
+      quote: 'An unforgettable culinary experience. Every dish was a masterpiece of flavor and presentation.',
+      author: 'Nicole Laurent',
+      role: 'Food Critic, Taste Magazine',
+      avatar: 'https://i.pravatar.cc/150?u=nicole',
+      rating: 5,
+    },
+    {
+      quote: 'Perfect for special occasions. The atmosphere, service, and food are all top-notch.',
+      author: 'James Wilson',
+      role: 'Regular Customer',
+      avatar: 'https://i.pravatar.cc/150?u=james',
+      rating: 5,
+    },
+  ],
+};
+
+// ============================================
+// PRICING TABLES LIBRARY
+// ============================================
+
+export const PRESET_PRICING = {
+  saas: [
+    {
+      name: 'Starter',
+      price: '$29',
+      period: '/month',
+      description: 'Perfect for small teams getting started',
+      features: [
+        { text: 'Up to 5 users', included: true },
+        { text: '10GB storage', included: true },
+        { text: 'Basic analytics', included: true },
+        { text: 'Email support', included: true },
+        { text: 'API access', included: false },
+        { text: 'Custom integrations', included: false },
+      ],
+      highlighted: false,
+      buttonText: 'Get Started',
+      buttonUrl: '/signup?plan=starter',
+    },
+    {
+      name: 'Professional',
+      price: '$79',
+      period: '/month',
+      description: 'For growing businesses with advanced needs',
+      features: [
+        { text: 'Up to 25 users', included: true },
+        { text: '100GB storage', included: true },
+        { text: 'Advanced analytics', included: true },
+        { text: 'Priority support', included: true },
+        { text: 'API access', included: true },
+        { text: 'Custom integrations', included: false },
+      ],
+      highlighted: true,
+      badge: 'Most Popular',
+      buttonText: 'Start Free Trial',
+      buttonUrl: '/signup?plan=pro',
+    },
+    {
+      name: 'Enterprise',
+      price: '$199',
+      period: '/month',
+      description: 'For large organizations with custom requirements',
+      features: [
+        { text: 'Unlimited users', included: true },
+        { text: 'Unlimited storage', included: true },
+        { text: 'Custom analytics', included: true },
+        { text: '24/7 dedicated support', included: true },
+        { text: 'Full API access', included: true },
+        { text: 'Custom integrations', included: true },
+      ],
+      highlighted: false,
+      buttonText: 'Contact Sales',
+      buttonUrl: '/contact?plan=enterprise',
+    },
+  ],
+  fitness: [
+    {
+      name: 'Basic',
+      price: '$29',
+      period: '/month',
+      features: ['Gym access', 'Locker room', 'Basic equipment', 'Group classes (2/week)'],
+      highlighted: false,
+      buttonText: 'Join Now',
+    },
+    {
+      name: 'Premium',
+      price: '$59',
+      period: '/month',
+      features: [
+        'Full gym access',
+        'All group classes',
+        'Personal trainer (1 session/month)',
+        'Sauna & spa access',
+        'Nutrition consultation',
+      ],
+      highlighted: true,
+      badge: 'Best Value',
+      buttonText: 'Start Free Trial',
+    },
+    {
+      name: 'Elite',
+      price: '$99',
+      period: '/month',
+      features: [
+        'VIP gym access',
+        'Unlimited group classes',
+        'Personal trainer (4 sessions/month)',
+        'Full spa access',
+        'Nutrition plan',
+        'Guest passes (2/month)',
+      ],
+      highlighted: false,
+      buttonText: 'Go Elite',
+    },
+  ],
+  streaming: [
+    {
+      name: 'Free',
+      price: '$0',
+      period: '/month',
+      features: ['Ad-supported listening', 'Shuffle play only', 'Basic audio quality', 'Limited skips'],
+      highlighted: false,
+      buttonText: 'Get Started',
+    },
+    {
+      name: 'Premium',
+      price: '$9.99',
+      period: '/month',
+      features: [
+        'Ad-free listening',
+        'Unlimited skips',
+        'High-quality audio',
+        'Offline downloads',
+        'Play any song',
+      ],
+      highlighted: true,
+      badge: 'Most Popular',
+      buttonText: 'Start Free Trial',
+    },
+    {
+      name: 'Family',
+      price: '$14.99',
+      period: '/month',
+      features: [
+        'Up to 6 accounts',
+        'All Premium features',
+        'Family mix playlists',
+        'Parental controls',
+        'Separate profiles',
+      ],
+      highlighted: false,
+      buttonText: 'Get Family',
+    },
+  ],
 };
 
 // ============================================
@@ -247,12 +608,27 @@ export const CYBERPUNK_TECH_BLOG: AiThemePreset = {
             backgroundImage: PRESET_IMAGES.cyberpunk.hero,
             ctaText: 'Start Reading',
             ctaUrl: '/blog',
-            secondaryCtaText: 'Subscribe',
-            secondaryCtaUrl: '/newsletter',
+            secondaryCtaText: 'Watch Intro',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.7,
             overlayColor: '#0A0A0F',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'Welcome to the Future',
+            subtitle: 'Explore the cutting edge of technology',
+            videoUrl: PRESET_VIDEOS.direct.abstract,
+            posterUrl: PRESET_IMAGES.cyberpunk.hero,
+            autoplay: false,
+            controls: true,
+            loop: true,
+            muted: true,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'stats',
@@ -265,7 +641,9 @@ export const CYBERPUNK_TECH_BLOG: AiThemePreset = {
               { value: '99%', label: 'Satisfaction', icon: '⭐' },
             ],
             columns: 4,
+            style: 'neon',
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'blogPosts',
@@ -309,6 +687,27 @@ export const CYBERPUNK_TECH_BLOG: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Visual Tech Stories',
+            layout: 'grid',
+            columns: 3,
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES.cyberpunk.blog[0], caption: 'Quantum Computing Lab', alt: 'Quantum computer' },
+              { src: PRESET_IMAGES.cyberpunk.blog[1], caption: 'Neural Interface Research', alt: 'Brain interface' },
+              { src: PRESET_IMAGES.cyberpunk.blog[2], caption: 'Blockchain Network', alt: 'Decentralized network' },
+            ],
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'features',
@@ -343,6 +742,7 @@ export const CYBERPUNK_TECH_BLOG: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
         },
         {
           type: 'newsletter',
@@ -355,6 +755,7 @@ export const CYBERPUNK_TECH_BLOG: AiThemePreset = {
             privacyText: 'No spam. Unsubscribe anytime.',
             backgroundColor: '#12121A',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -604,11 +1005,27 @@ export const LMS_PLATFORM: AiThemePreset = {
             backgroundImage: PRESET_IMAGES.lms.hero,
             ctaText: 'Explore Courses',
             ctaUrl: '/courses',
-            secondaryCtaText: 'Start Free Trial',
-            secondaryCtaUrl: '/signup',
+            secondaryCtaText: 'Watch How It Works',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.5,
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'See How Learning Works',
+            subtitle: 'Discover our interactive learning experience',
+            videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.education,
+            posterUrl: PRESET_IMAGES.lms.hero,
+            autoplay: false,
+            controls: true,
+            loop: false,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'stats',
@@ -621,7 +1038,9 @@ export const LMS_PLATFORM: AiThemePreset = {
               { value: '4.8/5', label: 'Average Rating', icon: '⭐' },
             ],
             columns: 4,
+            style: 'cards',
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'courseGrid',
@@ -665,6 +1084,27 @@ export const LMS_PLATFORM: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Course Previews',
+            layout: 'grid',
+            columns: 3,
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES.lms.courses[0], caption: 'Web Development Course', alt: 'Web dev course' },
+              { src: PRESET_IMAGES.lms.courses[1], caption: 'Data Science Course', alt: 'Data science course' },
+              { src: PRESET_IMAGES.lms.courses[2], caption: 'Digital Marketing Course', alt: 'Marketing course' },
+            ],
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'features',
@@ -699,34 +1139,33 @@ export const LMS_PLATFORM: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
         },
         {
-          type: 'testimonials',
+          type: 'testimonial',
           props: {
-            title: 'Student Success Stories',
-            subtitle: 'Hear from learners who transformed their careers',
-            layout: 'grid',
-            testimonials: [
-              {
-                quote:
-                  'This platform helped me transition from marketing to data science. Within 6 months, I landed my dream job at a top tech company.',
-                author: 'Emily Chen',
-                role: 'Data Scientist',
-                company: 'Google',
-                avatar: PRESET_IMAGES.corporate.team[1],
-                rating: 5,
-              },
-              {
-                quote:
-                  'The web development bootcamp was incredible. The projects gave me a portfolio that impressed employers.',
-                author: 'Michael Torres',
-                role: 'Frontend Developer',
-                company: 'Stripe',
-                avatar: PRESET_IMAGES.corporate.team[0],
-                rating: 5,
-              },
-            ],
+            quote:
+              'This platform helped me transition from marketing to data science. Within 6 months, I landed my dream job at a top tech company.',
+            author: 'Emily Chen',
+            role: 'Data Scientist, Google',
+            avatar: PRESET_IMAGES.corporate.team[1],
+            rating: 5,
+            layout: 'centered',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote:
+              'The web development bootcamp was incredible. The projects gave me a portfolio that impressed employers.',
+            author: 'Michael Torres',
+            role: 'Frontend Developer, Stripe',
+            avatar: PRESET_IMAGES.corporate.team[0],
+            rating: 5,
+            layout: 'centered',
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'pricing',
@@ -784,19 +1223,21 @@ export const LMS_PLATFORM: AiThemePreset = {
             billingToggle: true,
             annualDiscount: 20,
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
           props: {
-            title: 'Ready to Start Learning?',
-            subtitle: 'Join 500,000+ learners and start your journey today',
-            ctaText: 'Get Started Free',
-            ctaUrl: '/signup',
-            secondaryCtaText: 'Browse Courses',
-            secondaryCtaUrl: '/courses',
-            style: 'gradient',
+            heading: 'Ready to Start Learning?',
+            description: 'Join 500,000+ learners and start your journey today',
+            buttonText: 'Get Started Free',
+            buttonUrl: '/signup',
+            secondaryButtonText: 'Browse Courses',
+            secondaryButtonUrl: '/courses',
+            backgroundType: 'gradient',
             backgroundColor: '#4F46E5',
           },
+          animation: BLOCK_ANIMATIONS.bounce,
         },
       ],
     },
@@ -1105,6 +1546,7 @@ export const ECOMMERCE_STORE: AiThemePreset = {
             alignment: 'left',
             overlayOpacity: 0.4,
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'productGrid',
@@ -1150,6 +1592,7 @@ export const ECOMMERCE_STORE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'features',
@@ -1163,6 +1606,7 @@ export const ECOMMERCE_STORE: AiThemePreset = {
               { icon: '💬', title: '24/7 Support', description: 'Always here to help' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'testimonials',
@@ -1188,6 +1632,7 @@ export const ECOMMERCE_STORE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'newsletter',
@@ -1201,6 +1646,7 @@ export const ECOMMERCE_STORE: AiThemePreset = {
             privacyText: 'By subscribing, you agree to our Privacy Policy.',
             backgroundColor: '#F8FAFC',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -1412,11 +1858,26 @@ export const CORPORATE_BUSINESS: AiThemePreset = {
             backgroundImage: PRESET_IMAGES.corporate.hero,
             ctaText: 'Schedule Consultation',
             ctaUrl: '/contact',
-            secondaryCtaText: 'Our Services',
-            secondaryCtaUrl: '/services',
+            secondaryCtaText: 'Watch Our Story',
+            secondaryCtaUrl: '#video',
             alignment: 'left',
             overlayOpacity: 0.6,
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'See How We Drive Results',
+            videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.corporate,
+            posterUrl: PRESET_IMAGES.corporate.office,
+            autoplay: false,
+            controls: true,
+            loop: false,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'stats',
@@ -1429,7 +1890,9 @@ export const CORPORATE_BUSINESS: AiThemePreset = {
               { value: '98%', label: 'Client Retention', icon: '🎯' },
             ],
             columns: 4,
+            style: 'cards',
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'features',
@@ -1460,45 +1923,75 @@ export const CORPORATE_BUSINESS: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
-          type: 'testimonials',
+          type: 'gallery',
           props: {
-            title: 'Client Success Stories',
-            subtitle: 'Hear from leaders who transformed their businesses',
+            title: 'Our Work in Action',
             layout: 'grid',
-            testimonials: [
-              {
-                quote:
-                  'Pinnacle helped us increase revenue by 40% in just one year. Their strategic insights were invaluable.',
-                author: 'Jennifer Walsh',
-                role: 'CEO',
-                company: 'TechForward Inc.',
-                avatar: PRESET_IMAGES.corporate.team[1],
-                rating: 5,
-              },
-              {
-                quote:
-                  'The digital transformation roadmap they created has positioned us as industry leaders.',
-                author: 'Robert Chen',
-                role: 'CTO',
-                company: 'GlobalScale',
-                avatar: PRESET_IMAGES.corporate.team[0],
-                rating: 5,
-              },
+            columns: 3,
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES.corporate.office, caption: 'Strategic Planning Session', alt: 'Team in meeting' },
+              { src: PRESET_IMAGES.corporate.team[0], caption: 'Executive Coaching', alt: 'Business leader' },
+              { src: PRESET_IMAGES.corporate.team[1], caption: 'Client Workshop', alt: 'Workshop session' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote:
+              'Pinnacle helped us increase revenue by 40% in just one year. Their strategic insights were invaluable.',
+            author: 'Jennifer Walsh',
+            role: 'CEO, TechForward Inc.',
+            avatar: PRESET_IMAGES.corporate.team[1],
+            rating: 5,
+            layout: 'centered',
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote:
+              'The digital transformation roadmap they created has positioned us as industry leaders.',
+            author: 'Robert Chen',
+            role: 'CTO, GlobalScale',
+            avatar: PRESET_IMAGES.corporate.team[0],
+            rating: 5,
+            layout: 'centered',
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
+        },
+        {
+          type: 'logoCloud',
+          props: {
+            title: 'Trusted by Industry Leaders',
+            logos: [
+              { name: 'TechForward', url: 'https://via.placeholder.com/150x50?text=TechForward' },
+              { name: 'GlobalScale', url: 'https://via.placeholder.com/150x50?text=GlobalScale' },
+              { name: 'InnovateCo', url: 'https://via.placeholder.com/150x50?text=InnovateCo' },
+              { name: 'FutureTech', url: 'https://via.placeholder.com/150x50?text=FutureTech' },
+              { name: 'DataDriven', url: 'https://via.placeholder.com/150x50?text=DataDriven' },
+            ],
+            style: 'grayscale',
+          },
+          animation: BLOCK_ANIMATIONS.fadeInSlow,
         },
         {
           type: 'cta',
           props: {
-            title: 'Ready to Transform Your Business?',
-            subtitle: 'Schedule a free consultation with our experts',
-            ctaText: 'Get Started',
-            ctaUrl: '/contact',
-            style: 'gradient',
+            heading: 'Ready to Transform Your Business?',
+            description: 'Schedule a free consultation with our experts',
+            buttonText: 'Get Started',
+            buttonUrl: '/contact',
+            backgroundType: 'gradient',
             backgroundColor: '#1E40AF',
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
       ],
     },
@@ -1713,6 +2206,22 @@ export const CORPORATE_BUSINESS: AiThemePreset = {
             phone: '+1 (212) 555-0100',
             address: '350 Fifth Avenue, Suite 4500, New York, NY 10118',
           },
+          animation: BLOCK_ANIMATIONS.slideLeft,
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'Visit Our Headquarters',
+            address: '350 Fifth Avenue, Suite 4500, New York, NY 10118',
+            lat: 40.7484,
+            lng: -73.9857,
+            zoom: 15,
+            height: 400,
+            showMarker: true,
+            markerLabel: 'Pinnacle Consulting',
+            style: 'roadmap',
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -1795,17 +2304,73 @@ export const CREATIVE_PORTFOLIO: AiThemePreset = {
             backgroundImage: PRESET_IMAGES.portfolio.hero,
             ctaText: 'View Work',
             ctaUrl: '/work',
-            secondaryCtaText: 'Get in Touch',
-            secondaryCtaUrl: '/contact',
+            secondaryCtaText: 'Watch Showreel',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.3,
           },
+          animation: BLOCK_ANIMATIONS.fadeInSlow,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'Design Showreel 2024',
+            subtitle: 'A glimpse into my creative process',
+            videoUrl: '',
+            vimeoId: PRESET_VIDEOS.vimeo.portfolio,
+            posterUrl: PRESET_IMAGES.portfolio.hero,
+            autoplay: false,
+            controls: true,
+            loop: true,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Selected Work',
+            subtitle: 'A curated selection of recent projects',
+            layout: 'masonry',
+            columns: 2,
+            lightbox: true,
+            images: [
+              {
+                src: PRESET_IMAGES.portfolio.projects[0],
+                caption: 'Lumina Brand Identity - Complete brand identity for a sustainable lighting company',
+                alt: 'Lumina branding project',
+              },
+              {
+                src: PRESET_IMAGES.portfolio.projects[1],
+                caption: 'Wanderlust Magazine - Art direction for travel and lifestyle publication',
+                alt: 'Wanderlust editorial design',
+              },
+              {
+                src: PRESET_IMAGES.portfolio.projects[2],
+                caption: 'Horizon App Design - Mobile app design for meditation and wellness',
+                alt: 'Horizon app UI/UX',
+              },
+              {
+                src: PRESET_IMAGES.portfolio.projects[3],
+                caption: 'Artisan Coffee Co. - Packaging design for specialty coffee brand',
+                alt: 'Artisan Coffee packaging',
+              },
+            ],
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+              slideshow: true,
+              slideshowSpeed: 4000,
+            },
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'projectGrid',
           props: {
-            title: 'Selected Work',
-            subtitle: 'A curated selection of recent projects',
+            title: 'Project Details',
+            subtitle: 'Click to explore each project',
             columns: 2,
             projects: [
               {
@@ -1838,6 +2403,7 @@ export const CREATIVE_PORTFOLIO: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'about',
@@ -1852,29 +2418,33 @@ export const CREATIVE_PORTFOLIO: AiThemePreset = {
               { value: '25+', label: 'Awards Won' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideLeft,
         },
         {
-          type: 'clientLogos',
+          type: 'logoCloud',
           props: {
             title: 'Clients & Collaborators',
             logos: [
-              { name: 'Apple', url: '#' },
-              { name: 'Nike', url: '#' },
-              { name: 'Spotify', url: '#' },
-              { name: 'Airbnb', url: '#' },
-              { name: 'Google', url: '#' },
+              { name: 'Apple', url: 'https://via.placeholder.com/150x50?text=Apple' },
+              { name: 'Nike', url: 'https://via.placeholder.com/150x50?text=Nike' },
+              { name: 'Spotify', url: 'https://via.placeholder.com/150x50?text=Spotify' },
+              { name: 'Airbnb', url: 'https://via.placeholder.com/150x50?text=Airbnb' },
+              { name: 'Google', url: 'https://via.placeholder.com/150x50?text=Google' },
             ],
+            style: 'grayscale',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'cta',
           props: {
-            title: 'Let us Create Something Beautiful',
-            subtitle: 'Available for select projects starting Q2 2024',
-            ctaText: 'Start a Project',
-            ctaUrl: '/contact',
-            style: 'minimal',
+            heading: 'Let us Create Something Beautiful',
+            description: 'Available for select projects starting Q2 2024',
+            buttonText: 'Start a Project',
+            buttonUrl: '/contact',
+            backgroundType: 'minimal',
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
       ],
     },
@@ -2131,23 +2701,41 @@ export const SAAS_PRODUCT: AiThemePreset = {
             ctaText: 'Start Free Trial',
             ctaUrl: '/signup',
             secondaryCtaText: 'Watch Demo',
-            secondaryCtaUrl: '/demo',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.3,
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
-          type: 'clientLogos',
+          type: 'video',
+          props: {
+            title: 'See FlowSync in Action',
+            subtitle: 'Watch how teams use FlowSync to collaborate better',
+            videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.product,
+            posterUrl: PRESET_IMAGES.saas.features,
+            autoplay: false,
+            controls: true,
+            loop: false,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'logoCloud',
           props: {
             title: 'Trusted by innovative teams',
             logos: [
-              { name: 'Stripe' },
-              { name: 'Notion' },
-              { name: 'Figma' },
-              { name: 'Linear' },
-              { name: 'Vercel' },
+              { name: 'Stripe', url: 'https://via.placeholder.com/150x50?text=Stripe' },
+              { name: 'Notion', url: 'https://via.placeholder.com/150x50?text=Notion' },
+              { name: 'Figma', url: 'https://via.placeholder.com/150x50?text=Figma' },
+              { name: 'Linear', url: 'https://via.placeholder.com/150x50?text=Linear' },
+              { name: 'Vercel', url: 'https://via.placeholder.com/150x50?text=Vercel' },
             ],
+            style: 'grayscale',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'features',
@@ -2195,6 +2783,7 @@ export const SAAS_PRODUCT: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'stats',
@@ -2207,102 +2796,80 @@ export const SAAS_PRODUCT: AiThemePreset = {
               { value: '4.9/5', label: 'Rating', icon: '⭐' },
             ],
             columns: 4,
+            style: 'cards',
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
-          type: 'testimonials',
+          type: 'testimonial',
           props: {
-            title: 'Loved by Teams',
-            subtitle: 'See what our customers have to say',
-            layout: 'grid',
-            testimonials: [
-              {
-                quote:
-                  'FlowSync transformed how our team works. We shipped 40% faster after switching.',
-                author: 'Sarah Chen',
-                role: 'Engineering Manager',
-                company: 'TechCorp',
-                avatar: PRESET_IMAGES.corporate.team[1],
-                rating: 5,
-              },
-              {
-                quote: 'The automation features alone save us 10+ hours per week. Game changer.',
-                author: 'Mike Johnson',
-                role: 'Product Lead',
-                company: 'StartupXYZ',
-                avatar: PRESET_IMAGES.corporate.team[0],
-                rating: 5,
-              },
-            ],
+            quote:
+              'FlowSync transformed how our team works. We shipped 40% faster after switching.',
+            author: 'Sarah Chen',
+            role: 'Engineering Manager, TechCorp',
+            avatar: PRESET_IMAGES.corporate.team[1],
+            rating: 5,
+            layout: 'centered',
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote: 'The automation features alone save us 10+ hours per week. Game changer.',
+            author: 'Mike Johnson',
+            role: 'Product Lead, StartupXYZ',
+            avatar: PRESET_IMAGES.corporate.team[0],
+            rating: 5,
+            layout: 'centered',
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'pricing',
           props: {
             title: 'Simple, Transparent Pricing',
             subtitle: 'Start free, upgrade when you need to',
-            plans: [
-              {
-                name: 'Free',
-                price: '$0',
-                period: '/month',
-                description: 'For small teams',
-                features: ['Up to 5 users', 'Basic features', '5GB storage', 'Community support'],
-                ctaText: 'Get Started',
-                ctaUrl: '/signup',
-                featured: false,
-              },
-              {
-                name: 'Pro',
-                price: '$12',
-                period: '/user/month',
-                description: 'For growing teams',
-                features: [
-                  'Unlimited users',
-                  'All features',
-                  '100GB storage',
-                  'Priority support',
-                  'Advanced analytics',
-                  'Custom integrations',
-                ],
-                ctaText: 'Start Free Trial',
-                ctaUrl: '/signup?plan=pro',
-                featured: true,
-              },
-              {
-                name: 'Enterprise',
-                price: 'Custom',
-                period: '',
-                description: 'For large organizations',
-                features: [
-                  'Everything in Pro',
-                  'Unlimited storage',
-                  'SSO & SAML',
-                  'Dedicated support',
-                  'Custom contracts',
-                  'SLA guarantee',
-                ],
-                ctaText: 'Contact Sales',
-                ctaUrl: '/contact',
-                featured: false,
-              },
-            ],
+            plans: PRESET_PRICING.saas,
             billingToggle: true,
             annualDiscount: 20,
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'faq',
+          props: {
+            title: 'Frequently Asked Questions',
+            items: [
+              {
+                question: 'How does the free trial work?',
+                answer: 'Start with a 14-day free trial of our Pro plan. No credit card required. Cancel anytime.',
+              },
+              {
+                question: 'Can I change plans later?',
+                answer: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.',
+              },
+              {
+                question: 'Is my data secure?',
+                answer: 'Absolutely. We are SOC 2 compliant with enterprise-grade encryption and security measures.',
+              },
+            ],
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'cta',
           props: {
-            title: 'Ready to Transform Your Workflow?',
-            subtitle: 'Start your free 14-day trial. No credit card required.',
-            ctaText: 'Start Free Trial',
-            ctaUrl: '/signup',
-            secondaryCtaText: 'Talk to Sales',
-            secondaryCtaUrl: '/contact',
-            style: 'gradient',
+            heading: 'Ready to Transform Your Workflow?',
+            description: 'Start your free 14-day trial. No credit card required.',
+            buttonText: 'Start Free Trial',
+            buttonUrl: '/signup',
+            secondaryButtonText: 'Talk to Sales',
+            secondaryButtonUrl: '/contact',
+            backgroundType: 'gradient',
             backgroundColor: '#6366F1',
           },
+          animation: BLOCK_ANIMATIONS.bounce,
         },
       ],
     },
@@ -2569,11 +3136,27 @@ export const RESTAURANT: AiThemePreset = {
             backgroundImage: PRESET_IMAGES.restaurant.hero,
             ctaText: 'Reserve a Table',
             ctaUrl: '/reservations',
-            secondaryCtaText: 'View Menu',
-            secondaryCtaUrl: '/menu',
+            secondaryCtaText: 'Watch Our Story',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.5,
           },
+          animation: BLOCK_ANIMATIONS.fadeInSlow,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'The Art of French Cuisine',
+            subtitle: 'A glimpse into our kitchen',
+            videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.restaurant,
+            posterUrl: PRESET_IMAGES.restaurant.hero,
+            autoplay: false,
+            controls: true,
+            loop: false,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'about',
@@ -2584,6 +3167,32 @@ export const RESTAURANT: AiThemePreset = {
               'For nearly four decades, La Maison has been a destination for those who appreciate the finer things in life. Our kitchen, led by Chef Jean-Pierre Dubois, celebrates the rich traditions of French cuisine while embracing modern techniques and local ingredients.',
             image: PRESET_IMAGES.restaurant.hero,
           },
+          animation: BLOCK_ANIMATIONS.slideLeft,
+        },
+        {
+          type: 'audio',
+          props: {
+            title: 'Ambiance',
+            subtitle: 'Experience our atmosphere',
+            tracks: [
+              {
+                title: 'Evening Jazz',
+                artist: 'La Maison House Band',
+                src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+                duration: '3:45',
+              },
+              {
+                title: 'French Café',
+                artist: 'Ambient Collection',
+                src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+                duration: '4:12',
+              },
+            ],
+            showPlaylist: true,
+            autoplay: false,
+            style: 'minimal',
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'menuPreview',
@@ -2616,40 +3225,75 @@ export const RESTAURANT: AiThemePreset = {
             ctaText: 'View Full Menu',
             ctaUrl: '/menu',
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'gallery',
-          props: { title: 'The Experience', images: PRESET_IMAGES.restaurant.food, columns: 3 },
+          props: {
+            title: 'The Experience',
+            images: [
+              { src: PRESET_IMAGES.restaurant.food[0], caption: 'Signature Appetizers', alt: 'Gourmet appetizer' },
+              { src: PRESET_IMAGES.restaurant.food[1], caption: 'Main Courses', alt: 'Main dish' },
+              { src: PRESET_IMAGES.restaurant.food[2], caption: 'Desserts', alt: 'Dessert' },
+            ],
+            columns: 3,
+            lightbox: true,
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
-          type: 'testimonials',
+          type: 'testimonial',
           props: {
-            title: 'Guest Reviews',
-            layout: 'carousel',
-            testimonials: [
-              {
-                quote: 'An extraordinary dining experience. Every dish was a masterpiece.',
-                author: 'The New York Times',
-                rating: 5,
-              },
-              {
-                quote: 'The best French restaurant outside of Paris. Simply magnificent.',
-                author: 'Michelin Guide',
-                rating: 5,
-              },
-            ],
+            quote: 'An extraordinary dining experience. Every dish was a masterpiece.',
+            author: 'The New York Times',
+            rating: 5,
+            layout: 'centered',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote: 'The best French restaurant outside of Paris. Simply magnificent.',
+            author: 'Michelin Guide',
+            rating: 5,
+            layout: 'centered',
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'Find Us',
+            address: PRESET_MAP_LOCATIONS.restaurant.address,
+            lat: PRESET_MAP_LOCATIONS.restaurant.lat,
+            lng: PRESET_MAP_LOCATIONS.restaurant.lng,
+            zoom: 16,
+            height: 350,
+            showMarker: true,
+            markerLabel: 'La Maison',
+            style: 'satellite',
+            businessHours: PRESET_MAP_LOCATIONS.restaurant.businessHours,
+            phone: PRESET_MAP_LOCATIONS.restaurant.phone,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
           props: {
-            title: 'Reserve Your Table',
-            subtitle: 'Join us for an unforgettable evening',
-            ctaText: 'Make a Reservation',
-            ctaUrl: '/reservations',
-            style: 'elegant',
+            heading: 'Reserve Your Table',
+            description: 'Join us for an unforgettable evening',
+            buttonText: 'Make a Reservation',
+            buttonUrl: '/reservations',
+            backgroundType: 'solid',
             backgroundColor: '#1A1A1A',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -2930,11 +3574,27 @@ export const HEALTHCARE: AiThemePreset = {
             backgroundImage: PRESET_IMAGES.healthcare.hero,
             ctaText: 'Book Appointment',
             ctaUrl: '/appointments',
-            secondaryCtaText: 'Our Services',
-            secondaryCtaUrl: '/services',
+            secondaryCtaText: 'Watch Our Story',
+            secondaryCtaUrl: '#video',
             alignment: 'left',
             overlayOpacity: 0.4,
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'Welcome to Wellness Medical Center',
+            subtitle: 'See why patients choose us for their healthcare needs',
+            videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.healthcare,
+            posterUrl: PRESET_IMAGES.healthcare.hero,
+            autoplay: false,
+            controls: true,
+            loop: false,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'features',
@@ -2981,6 +3641,7 @@ export const HEALTHCARE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'stats',
@@ -2993,7 +3654,29 @@ export const HEALTHCARE: AiThemePreset = {
               { value: '4.9/5', label: 'Patient Rating', icon: '⭐' },
             ],
             columns: 4,
+            style: 'cards',
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Our Facilities',
+            layout: 'grid',
+            columns: 3,
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES.healthcare.hero, caption: 'Main Reception', alt: 'Medical center lobby' },
+              { src: PRESET_IMAGES.healthcare.doctors[0], caption: 'Expert Care', alt: 'Doctor consultation' },
+              { src: PRESET_IMAGES.healthcare.doctors[1], caption: 'Modern Equipment', alt: 'Medical equipment' },
+            ],
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'teamGrid',
@@ -3024,42 +3707,62 @@ export const HEALTHCARE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
         },
         {
-          type: 'testimonials',
+          type: 'testimonial',
           props: {
-            title: 'Patient Stories',
-            layout: 'grid',
-            testimonials: [
-              {
-                quote:
-                  'The care I received was exceptional. The doctors took time to listen and explain everything thoroughly.',
-                author: 'Jennifer M.',
-                role: 'Patient',
-                rating: 5,
-              },
-              {
-                quote:
-                  'From scheduling to follow-up, every interaction was professional and caring. Highly recommend!',
-                author: 'Robert T.',
-                role: 'Patient',
-                rating: 5,
-              },
-            ],
+            quote:
+              'The care I received was exceptional. The doctors took time to listen and explain everything thoroughly.',
+            author: 'Jennifer M.',
+            role: 'Patient',
+            rating: 5,
+            layout: 'centered',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote:
+              'From scheduling to follow-up, every interaction was professional and caring. Highly recommend!',
+            author: 'Robert T.',
+            role: 'Patient',
+            rating: 5,
+            layout: 'centered',
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'Visit Our Medical Center',
+            address: PRESET_MAP_LOCATIONS.healthcare.address,
+            lat: PRESET_MAP_LOCATIONS.healthcare.lat,
+            lng: PRESET_MAP_LOCATIONS.healthcare.lng,
+            zoom: 15,
+            height: 400,
+            showMarker: true,
+            markerLabel: 'Wellness Medical Center',
+            style: 'roadmap',
+            businessHours: PRESET_MAP_LOCATIONS.healthcare.businessHours,
+            phone: PRESET_MAP_LOCATIONS.healthcare.phone,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
           props: {
-            title: 'Ready to Take the Next Step?',
-            subtitle: 'Schedule your appointment today and experience the difference',
-            ctaText: 'Book Appointment',
-            ctaUrl: '/appointments',
-            secondaryCtaText: 'Call Us: (555) 123-4567',
-            secondaryCtaUrl: 'tel:5551234567',
-            style: 'gradient',
+            heading: 'Ready to Take the Next Step?',
+            description: 'Schedule your appointment today and experience the difference',
+            buttonText: 'Book Appointment',
+            buttonUrl: '/appointments',
+            secondaryButtonText: 'Call Us: (555) 123-4567',
+            secondaryButtonUrl: 'tel:5551234567',
+            backgroundType: 'gradient',
             backgroundColor: '#0891B2',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -3338,9 +4041,27 @@ const REAL_ESTATE: AiThemePreset = {
             backgroundImage: PRESET_IMAGES_REALESTATE.hero,
             ctaText: 'View Properties',
             ctaUrl: '/properties',
+            secondaryCtaText: 'Watch Tour',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.4,
           },
+          animation: BLOCK_ANIMATIONS.fadeInSlow,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'Experience Luxury Living',
+            subtitle: 'Take a virtual tour of our featured properties',
+            videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.realEstate,
+            posterUrl: PRESET_IMAGES_REALESTATE.hero,
+            autoplay: false,
+            controls: true,
+            loop: false,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'propertySearch',
@@ -3349,6 +4070,7 @@ const REAL_ESTATE: AiThemePreset = {
             showFilters: true,
             filters: ['location', 'type', 'price', 'bedrooms'],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'features',
@@ -3373,6 +4095,27 @@ const REAL_ESTATE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'Property Showcase',
+            layout: 'masonry',
+            columns: 3,
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES_REALESTATE.properties[0], caption: 'Modern Villa - Beverly Hills', alt: 'Luxury villa' },
+              { src: PRESET_IMAGES_REALESTATE.properties[1], caption: 'Waterfront Estate - Malibu', alt: 'Waterfront property' },
+              { src: PRESET_IMAGES_REALESTATE.properties[2], caption: 'Contemporary Home - Santa Monica', alt: 'Modern home' },
+            ],
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'propertyGrid',
@@ -3408,6 +4151,7 @@ const REAL_ESTATE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'teamGrid',
@@ -3431,15 +4175,34 @@ const REAL_ESTATE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'Visit Our Office',
+            address: PRESET_MAP_LOCATIONS.realEstate.address,
+            lat: PRESET_MAP_LOCATIONS.realEstate.lat,
+            lng: PRESET_MAP_LOCATIONS.realEstate.lng,
+            zoom: 14,
+            height: 400,
+            showMarker: true,
+            markerLabel: 'Sterling Properties',
+            style: 'roadmap',
+            businessHours: PRESET_MAP_LOCATIONS.realEstate.businessHours,
+            phone: PRESET_MAP_LOCATIONS.realEstate.phone,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
           props: {
-            title: 'Ready to Find Your Perfect Home?',
-            ctaText: 'Schedule Consultation',
-            ctaUrl: '/contact',
-            style: 'gradient',
+            heading: 'Ready to Find Your Perfect Home?',
+            buttonText: 'Schedule Consultation',
+            buttonUrl: '/contact',
+            backgroundType: 'gradient',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -3585,9 +4348,27 @@ const FITNESS_GYM: AiThemePreset = {
             backgroundImage: PRESET_IMAGES_FITNESS.hero,
             ctaText: 'Start Free Trial',
             ctaUrl: '/membership',
+            secondaryCtaText: 'Watch Video',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.6,
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
+        },
+        {
+          type: 'video',
+          props: {
+            title: 'See Our Gym in Action',
+            subtitle: 'Experience the Power Fitness difference',
+            videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.fitness,
+            posterUrl: PRESET_IMAGES_FITNESS.hero,
+            autoplay: false,
+            controls: true,
+            loop: false,
+            muted: false,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'stats',
@@ -3599,7 +4380,40 @@ const FITNESS_GYM: AiThemePreset = {
               { value: '24/7', label: 'Open Access' },
             ],
             columns: 4,
+            style: 'cards',
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
+        },
+        {
+          type: 'audio',
+          props: {
+            title: 'WORKOUT PLAYLISTS',
+            subtitle: 'Get pumped with our curated playlists',
+            tracks: [
+              {
+                title: 'High Energy Cardio Mix',
+                artist: 'Power Fitness DJ',
+                src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+                duration: '45:00',
+              },
+              {
+                title: 'Strength Training Beats',
+                artist: 'Power Fitness DJ',
+                src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+                duration: '60:00',
+              },
+              {
+                title: 'Cool Down & Stretch',
+                artist: 'Zen Fitness',
+                src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+                duration: '20:00',
+              },
+            ],
+            showPlaylist: true,
+            autoplay: false,
+            style: 'modern',
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'features',
@@ -3627,41 +4441,48 @@ const FITNESS_GYM: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'OUR FACILITIES',
+            layout: 'masonry',
+            columns: 3,
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES_FITNESS.hero, caption: 'Main Training Floor', alt: 'Gym floor' },
+              { src: PRESET_IMAGES_FITNESS.classes[0], caption: 'Weight Room', alt: 'Weight training area' },
+              { src: PRESET_IMAGES_FITNESS.classes[1], caption: 'Cardio Zone', alt: 'Cardio equipment' },
+              { src: PRESET_IMAGES_FITNESS.classes[2], caption: 'Yoga Studio', alt: 'Yoga room' },
+            ],
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'pricing',
           props: {
             title: 'MEMBERSHIP PLANS',
-            plans: [
-              {
-                name: 'Basic',
-                price: '$29',
-                period: '/month',
-                features: ['Gym Access', 'Locker Room', 'Free WiFi'],
-                ctaText: 'Get Started',
-              },
-              {
-                name: 'Pro',
-                price: '$59',
-                period: '/month',
-                features: [
-                  'All Basic Features',
-                  'Unlimited Classes',
-                  'Personal Training Session',
-                  'Nutrition Plan',
-                ],
-                popular: true,
-                ctaText: 'Get Started',
-              },
-              {
-                name: 'Elite',
-                price: '$99',
-                period: '/month',
-                features: ['All Pro Features', 'Private Locker', 'Spa Access', 'Guest Passes'],
-                ctaText: 'Get Started',
-              },
-            ],
+            plans: PRESET_PRICING.fitness,
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'testimonial',
+          props: {
+            quote: 'Lost 30 pounds in 3 months! The trainers here are incredibly motivating and knowledgeable.',
+            author: 'Amanda Foster',
+            role: 'Member since 2023',
+            avatar: 'https://i.pravatar.cc/150?u=amanda',
+            rating: 5,
+            layout: 'centered',
+          },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'teamGrid',
@@ -3685,16 +4506,35 @@ const FITNESS_GYM: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger3,
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'FIND US',
+            address: PRESET_MAP_LOCATIONS.fitness.address,
+            lat: PRESET_MAP_LOCATIONS.fitness.lat,
+            lng: PRESET_MAP_LOCATIONS.fitness.lng,
+            zoom: 15,
+            height: 350,
+            showMarker: true,
+            markerLabel: 'Power Fitness',
+            style: 'roadmap',
+            businessHours: PRESET_MAP_LOCATIONS.fitness.businessHours,
+            phone: PRESET_MAP_LOCATIONS.fitness.phone,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
           props: {
-            title: 'START YOUR TRANSFORMATION TODAY',
-            ctaText: 'Join Now - First Week Free',
-            ctaUrl: '/membership',
-            style: 'gradient',
+            heading: 'START YOUR TRANSFORMATION TODAY',
+            buttonText: 'Join Now - First Week Free',
+            buttonUrl: '/membership',
+            backgroundType: 'gradient',
             backgroundColor: '#FF4D4D',
           },
+          animation: BLOCK_ANIMATIONS.bounce,
         },
       ],
     },
@@ -3879,20 +4719,37 @@ const NONPROFIT: AiThemePreset = {
           type: 'testimonials',
           props: {
             title: 'Stories of Hope',
+            layout: 'carousel',
+            autoplay: true,
             testimonials: [
               {
                 quote:
                   'Thanks to the foundation, my children can now attend school and dream of a better future.',
                 author: 'Maria S.',
                 role: 'Program Beneficiary',
+                avatar: 'https://i.pravatar.cc/150?u=maria',
               },
               {
                 quote: 'Volunteering here has been the most rewarding experience of my life.',
                 author: 'David K.',
-                role: 'Volunteer',
+                role: 'Volunteer since 2020',
+                avatar: 'https://i.pravatar.cc/150?u=david',
+              },
+              {
+                quote: 'The transparency and impact of this organization is remarkable. Every dollar truly makes a difference.',
+                author: 'Jennifer L.',
+                role: 'Monthly Donor',
+                avatar: 'https://i.pravatar.cc/150?u=jennifer',
+              },
+              {
+                quote: 'Our community has been transformed. Clean water, education, and hope for the future.',
+                author: 'Emmanuel O.',
+                role: 'Community Leader',
+                avatar: 'https://i.pravatar.cc/150?u=emmanuel',
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'donationForm',
@@ -3902,6 +4759,7 @@ const NONPROFIT: AiThemePreset = {
             customAmount: true,
             recurring: true,
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
@@ -4076,14 +4934,20 @@ const TRAVEL_TOURISM: AiThemePreset = {
           props: {
             title: 'Popular Destinations',
             layout: 'masonry',
+            columns: 4,
+            lightbox: true,
             images: PRESET_IMAGES_TRAVEL.destinations.map((img, i) => ({
               src: img,
-              alt: ['Tropical Paradise', 'Beach Resort', 'Mountain Views', 'Cultural Experience'][
-                i
-              ],
+              alt: ['Tropical Paradise', 'Beach Resort', 'Mountain Views', 'Cultural Experience'][i],
               caption: ['Maldives', 'Bali', 'Swiss Alps', 'Morocco'][i],
             })),
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'features',
@@ -4097,6 +4961,7 @@ const TRAVEL_TOURISM: AiThemePreset = {
               { icon: '🎯', title: 'Local Experts', description: 'Authentic experiences' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'tourPackages',
@@ -4123,19 +4988,39 @@ const TRAVEL_TOURISM: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'testimonials',
           props: {
             title: 'Traveler Stories',
+            layout: 'carousel',
+            autoplay: true,
             testimonials: [
               {
                 quote: "The best vacation we've ever had! Every detail was perfectly planned.",
                 author: 'The Johnson Family',
+                role: 'Bali Trip 2024',
                 rating: 5,
+                avatar: 'https://i.pravatar.cc/150?u=johnson',
+              },
+              {
+                quote: 'From booking to return, everything was seamless. The local guides were exceptional!',
+                author: 'Sarah Mitchell',
+                role: 'Morocco Adventure',
+                rating: 5,
+                avatar: 'https://i.pravatar.cc/150?u=sarah',
+              },
+              {
+                quote: 'We discovered hidden gems we never would have found on our own. Truly unforgettable.',
+                author: 'David & Emma Chen',
+                role: 'Swiss Alps Tour',
+                rating: 5,
+                avatar: 'https://i.pravatar.cc/150?u=chen',
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'newsletter',
@@ -4144,6 +5029,7 @@ const TRAVEL_TOURISM: AiThemePreset = {
             subtitle: 'Subscribe for exclusive deals and travel tips',
             buttonText: 'Subscribe',
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
       ],
     },
@@ -4405,6 +5291,7 @@ const LAW_FIRM: AiThemePreset = {
             alignment: 'left',
             overlayOpacity: 0.6,
           },
+          animation: BLOCK_ANIMATIONS.fadeInSlow,
         },
         {
           type: 'features',
@@ -4432,6 +5319,7 @@ const LAW_FIRM: AiThemePreset = {
               { icon: '🚗', title: 'Personal Injury', description: 'Accident and injury claims' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'stats',
@@ -4444,6 +5332,7 @@ const LAW_FIRM: AiThemePreset = {
             ],
             columns: 4,
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'teamGrid',
@@ -4470,20 +5359,43 @@ const LAW_FIRM: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
         },
         {
           type: 'testimonials',
           props: {
             title: 'Client Testimonials',
+            layout: 'carousel',
+            autoplay: true,
             testimonials: [
               {
                 quote:
                   'Sterling Law handled my case with professionalism and achieved an excellent outcome.',
                 author: 'Michael T.',
                 role: 'Business Owner',
+                avatar: 'https://i.pravatar.cc/150?u=michaelt',
+              },
+              {
+                quote: 'Their expertise in real estate law saved us from a potentially costly mistake. Highly recommended.',
+                author: 'Jennifer & Mark S.',
+                role: 'Home Buyers',
+                avatar: 'https://i.pravatar.cc/150?u=jennifers',
+              },
+              {
+                quote: 'Compassionate and thorough during a difficult family matter. They truly cared about our wellbeing.',
+                author: 'Amanda R.',
+                role: 'Family Law Client',
+                avatar: 'https://i.pravatar.cc/150?u=amandar',
+              },
+              {
+                quote: 'The corporate team helped us navigate a complex merger with precision and expertise.',
+                author: 'David Chen',
+                role: 'CEO, Tech Startup',
+                avatar: 'https://i.pravatar.cc/150?u=davidchen',
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'cta',
@@ -4495,6 +5407,7 @@ const LAW_FIRM: AiThemePreset = {
             style: 'solid',
             backgroundColor: '#1B3A4B',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -4570,6 +5483,23 @@ const LAW_FIRM: AiThemePreset = {
             email: 'contact@sterlinglaw.com',
             hours: 'Monday - Friday: 9AM - 6PM',
           },
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'Our Office Location',
+            address: '500 Legal Plaza, Suite 1000, New York, NY 10001',
+            lat: 40.7128,
+            lng: -74.006,
+            zoom: 15,
+            height: 400,
+            showMarker: true,
+            markerLabel: 'Sterling Law',
+            style: 'roadmap',
+            businessHours: 'Monday - Friday: 9AM - 6PM',
+            phone: '+1 (555) 123-4567',
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
       ],
     },
@@ -4659,6 +5589,7 @@ const EDUCATION_SCHOOL: AiThemePreset = {
             alignment: 'center',
             overlayOpacity: 0.4,
           },
+          animation: BLOCK_ANIMATIONS.fadeInSlow,
         },
         {
           type: 'stats',
@@ -4671,6 +5602,7 @@ const EDUCATION_SCHOOL: AiThemePreset = {
             ],
             columns: 4,
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'features',
@@ -4698,30 +5630,56 @@ const EDUCATION_SCHOOL: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'gallery',
           props: {
             title: 'Campus Life',
             layout: 'grid',
+            columns: 3,
+            lightbox: true,
             images: PRESET_IMAGES_EDUCATION.campus.map((img, i) => ({
               src: img,
               alt: ['Library', 'Student Center', 'Sports Complex'][i],
+              caption: ['State-of-the-art Library', 'Modern Student Center', 'Olympic Sports Complex'][i],
             })),
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'testimonials',
           props: {
             title: 'Student Success Stories',
+            layout: 'carousel',
+            autoplay: true,
             testimonials: [
               {
                 quote: 'Bright Academy gave me the skills and network to launch my career.',
                 author: 'Emma Chen',
                 role: 'Class of 2023, Software Engineer at Google',
+                avatar: 'https://i.pravatar.cc/150?u=emma',
+              },
+              {
+                quote: 'The professors here truly care about your success. Best decision I ever made.',
+                author: 'Marcus Johnson',
+                role: 'Class of 2022, Data Scientist at Meta',
+                avatar: 'https://i.pravatar.cc/150?u=marcus',
+              },
+              {
+                quote: 'The hands-on projects and industry connections opened doors I never imagined.',
+                author: 'Priya Patel',
+                role: 'Class of 2024, Startup Founder',
+                avatar: 'https://i.pravatar.cc/150?u=priya',
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
@@ -4733,6 +5691,7 @@ const EDUCATION_SCHOOL: AiThemePreset = {
             secondaryCtaUrl: '/brochure',
             style: 'gradient',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -4879,8 +5838,13 @@ const AUTOMOTIVE: AiThemePreset = {
             alignment: 'center',
             overlayOpacity: 0.5,
           },
+          animation: BLOCK_ANIMATIONS.fadeInSlow,
         },
-        { type: 'vehicleSearch', props: { filters: ['make', 'model', 'year', 'price'] } },
+        {
+          type: 'vehicleSearch',
+          props: { filters: ['make', 'model', 'year', 'price'] },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
         {
           type: 'vehicleGrid',
           props: {
@@ -4912,6 +5876,7 @@ const AUTOMOTIVE: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'features',
@@ -4925,20 +5890,40 @@ const AUTOMOTIVE: AiThemePreset = {
               { icon: '🚗', title: 'Trade-In', description: 'Top dollar for your vehicle' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'testimonials',
           props: {
             title: 'Customer Reviews',
+            layout: 'carousel',
+            autoplay: true,
             testimonials: [
               {
                 quote:
                   "The best car buying experience I've ever had. Professional and transparent.",
                 author: 'James R.',
+                role: 'Porsche 911 Owner',
                 rating: 5,
+                avatar: 'https://i.pravatar.cc/150?u=james',
+              },
+              {
+                quote: 'Found my dream car at a great price. The financing process was smooth and hassle-free.',
+                author: 'Michelle T.',
+                role: 'BMW M4 Owner',
+                rating: 5,
+                avatar: 'https://i.pravatar.cc/150?u=michelle',
+              },
+              {
+                quote: 'Their service department is top-notch. They treat my car like it is their own.',
+                author: 'Robert K.',
+                role: 'Mercedes AMG Owner',
+                rating: 5,
+                avatar: 'https://i.pravatar.cc/150?u=robert',
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'cta',
@@ -4949,6 +5934,7 @@ const AUTOMOTIVE: AiThemePreset = {
             style: 'gradient',
             backgroundColor: '#DC2626',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -5005,6 +5991,23 @@ const AUTOMOTIVE: AiThemePreset = {
             email: 'sales@elitemotors.com',
             hours: 'Monday - Saturday: 9AM - 8PM, Sunday: 11AM - 5PM',
           },
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'Visit Our Showroom',
+            address: PRESET_MAP_LOCATIONS.automotive.address,
+            lat: PRESET_MAP_LOCATIONS.automotive.lat,
+            lng: PRESET_MAP_LOCATIONS.automotive.lng,
+            zoom: 15,
+            height: 400,
+            showMarker: true,
+            markerLabel: 'Elite Motors',
+            style: 'roadmap',
+            businessHours: PRESET_MAP_LOCATIONS.automotive.businessHours,
+            phone: PRESET_MAP_LOCATIONS.automotive.phone,
+          },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
       ],
     },
@@ -5831,6 +6834,7 @@ const MUSIC_STREAMING: AiThemePreset = {
             overlayOpacity: 0.7,
             overlayColor: 'linear-gradient(135deg, #121212 0%, rgba(29, 185, 84, 0.3) 100%)',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'stats',
@@ -5844,47 +6848,49 @@ const MUSIC_STREAMING: AiThemePreset = {
             ],
             style: 'cards',
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'audio',
           props: {
             title: 'Now Playing',
-            artist: 'Featured Artist',
+            artist: 'The Soundscapes',
             albumArt: PRESET_IMAGES_MUSIC.albumArt[0],
             audioUrl: '',
             showWaveform: true,
-            showPlaylist: false,
+            showPlaylist: true,
+            skin: 'modern',
+            playlist: [
+              { title: 'Midnight Dreams', artist: 'The Soundscapes', duration: '4:32', albumArt: PRESET_IMAGES_MUSIC.albumArt[0] },
+              { title: 'Electric Pulse', artist: 'Nova Wave', duration: '3:45', albumArt: PRESET_IMAGES_MUSIC.albumArt[1] },
+              { title: 'Piano Reflections', artist: 'Clara Moon', duration: '5:18', albumArt: PRESET_IMAGES_MUSIC.albumArt[2] },
+              { title: 'Urban Nights', artist: 'Metro Collective', duration: '4:02', albumArt: PRESET_IMAGES_MUSIC.albumArt[3] },
+              { title: 'Neon Skyline', artist: 'The Soundscapes', duration: '3:56', albumArt: PRESET_IMAGES_MUSIC.albumArt[0] },
+            ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
-          type: 'features',
+          type: 'gallery',
           props: {
             title: 'Featured Albums',
             subtitle: 'Trending releases this week',
+            layout: 'grid',
             columns: 4,
-            features: [
-              {
-                icon: '🎵',
-                title: 'Midnight Dreams',
-                description: 'The Soundscapes • 12 tracks • 2024',
-              },
-              {
-                icon: '🎸',
-                title: 'Electric Pulse',
-                description: 'Nova Wave • 10 tracks • 2024',
-              },
-              {
-                icon: '🎹',
-                title: 'Piano Reflections',
-                description: 'Clara Moon • 8 tracks • 2024',
-              },
-              {
-                icon: '🎤',
-                title: 'Urban Nights',
-                description: 'Metro Collective • 15 tracks • 2024',
-              },
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES_MUSIC.albumArt[0], caption: 'Midnight Dreams - The Soundscapes', alt: 'Album cover' },
+              { src: PRESET_IMAGES_MUSIC.albumArt[1], caption: 'Electric Pulse - Nova Wave', alt: 'Album cover' },
+              { src: PRESET_IMAGES_MUSIC.albumArt[2], caption: 'Piano Reflections - Clara Moon', alt: 'Album cover' },
+              { src: PRESET_IMAGES_MUSIC.albumArt[3], caption: 'Urban Nights - Metro Collective', alt: 'Album cover' },
             ],
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'gallery',
@@ -5899,51 +6905,31 @@ const MUSIC_STREAMING: AiThemePreset = {
               { src: PRESET_IMAGES_MUSIC.albumArt[3], caption: 'Metro Collective', alt: 'Artist profile' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Why Choose Us',
+            subtitle: 'The ultimate music experience',
+            columns: 4,
+            features: [
+              { icon: '🎧', title: 'Hi-Fi Audio', description: 'Lossless quality up to 24-bit/192kHz' },
+              { icon: '📱', title: 'Cross-Platform', description: 'Listen on any device, anywhere' },
+              { icon: '🎵', title: 'Smart Playlists', description: 'AI-curated based on your taste' },
+              { icon: '🔊', title: 'Spatial Audio', description: 'Immersive 3D sound experience' },
+            ],
+          },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
         },
         {
           type: 'pricing',
           props: {
             title: 'Choose Your Plan',
             subtitle: 'Start free, upgrade anytime',
-            plans: [
-              {
-                name: 'Free',
-                price: '$0',
-                period: '/month',
-                features: ['Ad-supported listening', 'Shuffle play', 'Basic audio quality', 'Mobile app access'],
-                highlighted: false,
-                buttonText: 'Get Started',
-              },
-              {
-                name: 'Premium',
-                price: '$9.99',
-                period: '/month',
-                features: [
-                  'Ad-free music',
-                  'Play any song',
-                  'High quality audio',
-                  'Offline listening',
-                  'Unlimited skips',
-                ],
-                highlighted: true,
-                buttonText: 'Try Free for 1 Month',
-              },
-              {
-                name: 'Family',
-                price: '$14.99',
-                period: '/month',
-                features: [
-                  '6 Premium accounts',
-                  'Block explicit music',
-                  'Playlist sharing',
-                  'Family mix playlists',
-                  'All Premium features',
-                ],
-                highlighted: false,
-                buttonText: 'Get Family',
-              },
-            ],
+            plans: PRESET_PRICING.streaming,
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'cta',
@@ -5955,6 +6941,7 @@ const MUSIC_STREAMING: AiThemePreset = {
             backgroundType: 'gradient',
             backgroundColor: '#1DB954',
           },
+          animation: BLOCK_ANIMATIONS.bounce,
         },
         {
           type: 'newsletter',
@@ -5965,6 +6952,7 @@ const MUSIC_STREAMING: AiThemePreset = {
             placeholder: 'Enter your email',
             style: 'inline',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
@@ -6218,11 +7206,12 @@ const ARTIST_BAND_WEBSITE: AiThemePreset = {
             ctaText: 'Listen Now',
             ctaUrl: '/music',
             secondaryCtaText: 'Watch Video',
-            secondaryCtaUrl: '/videos',
+            secondaryCtaUrl: '#video',
             alignment: 'center',
             overlayOpacity: 0.5,
             style: 'fullscreen',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'audio',
@@ -6232,16 +7221,29 @@ const ARTIST_BAND_WEBSITE: AiThemePreset = {
             albumArt: PRESET_IMAGES_MUSIC.albumArt[0],
             audioUrl: '',
             showWaveform: true,
+            showPlaylist: true,
+            skin: 'vinyl',
+            playlist: [
+              { title: 'Midnight Dreams', artist: 'Artist Name', duration: '4:32', albumArt: PRESET_IMAGES_MUSIC.albumArt[0] },
+              { title: 'Electric Soul', artist: 'Artist Name', duration: '3:45', albumArt: PRESET_IMAGES_MUSIC.albumArt[1] },
+              { title: 'First Light', artist: 'Artist Name', duration: '5:18', albumArt: PRESET_IMAGES_MUSIC.albumArt[2] },
+              { title: 'Neon Nights', artist: 'Artist Name', duration: '4:02', albumArt: PRESET_IMAGES_MUSIC.albumArt[3] },
+            ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'video',
           props: {
             title: 'Latest Music Video',
+            subtitle: 'Watch "Midnight Dreams" Official Video',
             videoUrl: '',
+            youtubeId: PRESET_VIDEOS.youtube.music,
             posterUrl: PRESET_IMAGES_MUSIC.concert,
             autoplay: false,
+            controls: true,
           },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'timeline',
@@ -6255,6 +7257,7 @@ const ARTIST_BAND_WEBSITE: AiThemePreset = {
             ],
             style: 'left',
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'gallery',
@@ -6262,12 +7265,34 @@ const ARTIST_BAND_WEBSITE: AiThemePreset = {
             title: 'DISCOGRAPHY',
             layout: 'grid',
             columns: 4,
+            lightbox: true,
             images: PRESET_IMAGES_MUSIC.albumArt.map((src, i) => ({
               src,
               caption: ['Midnight Dreams (2024)', 'Electric Soul (2023)', 'First Light (2022)', 'Debut EP (2021)'][i],
               alt: 'Album artwork',
             })),
+            lightboxOptions: {
+              showThumbnails: true,
+              showCaption: true,
+              enableZoom: true,
+            },
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
+        },
+        {
+          type: 'gallery',
+          props: {
+            title: 'LIVE PHOTOS',
+            layout: 'masonry',
+            columns: 3,
+            lightbox: true,
+            images: [
+              { src: PRESET_IMAGES_MUSIC.concert, caption: 'Live at The Forum', alt: 'Concert photo' },
+              { src: PRESET_IMAGES_MUSIC.dj, caption: 'Festival Performance', alt: 'Festival photo' },
+              { src: PRESET_IMAGES_MUSIC.guitar, caption: 'Backstage', alt: 'Backstage photo' },
+            ],
+          },
+          animation: BLOCK_ANIMATIONS.zoomIn,
         },
         {
           type: 'newsletter',
@@ -6278,6 +7303,7 @@ const ARTIST_BAND_WEBSITE: AiThemePreset = {
             placeholder: 'Your email address',
             style: 'stacked',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'features',
@@ -6291,6 +7317,7 @@ const ARTIST_BAND_WEBSITE: AiThemePreset = {
               { icon: '📺', title: 'YouTube', description: 'Subscribe' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
         },
       ],
     },
@@ -6541,6 +7568,7 @@ const PODCAST_PLATFORM: AiThemePreset = {
             alignment: 'left',
             overlayOpacity: 0.6,
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
         {
           type: 'stats',
@@ -6553,6 +7581,7 @@ const PODCAST_PLATFORM: AiThemePreset = {
             ],
             style: 'minimal',
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger1,
         },
         {
           type: 'features',
@@ -6567,6 +7596,7 @@ const PODCAST_PLATFORM: AiThemePreset = {
               { icon: '💻', title: 'Tech Today', description: 'Technology • 650K subscribers' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'audio',
@@ -6575,7 +7605,17 @@ const PODCAST_PLATFORM: AiThemePreset = {
             artist: 'The Daily Talk',
             albumArt: 'https://picsum.photos/400/400?podcast',
             audioUrl: '',
+            showWaveform: true,
+            showPlaylist: true,
+            skin: 'podcast',
+            playlist: [
+              { title: 'Episode 245: The Future of AI', artist: 'The Daily Talk', duration: '45:32', albumArt: 'https://picsum.photos/400/400?podcast1' },
+              { title: 'Episode 244: Climate Solutions', artist: 'The Daily Talk', duration: '38:15', albumArt: 'https://picsum.photos/400/400?podcast2' },
+              { title: 'Episode 243: Tech Giants', artist: 'The Daily Talk', duration: '52:08', albumArt: 'https://picsum.photos/400/400?podcast3' },
+              { title: 'Episode 242: Space Exploration', artist: 'The Daily Talk', duration: '41:22', albumArt: 'https://picsum.photos/400/400?podcast4' },
+            ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'features',
@@ -6593,6 +7633,7 @@ const PODCAST_PLATFORM: AiThemePreset = {
               { icon: '🔬', title: 'Science', description: '5K shows' },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUpStagger2,
         },
         {
           type: 'pricing',
@@ -6638,6 +7679,7 @@ const PODCAST_PLATFORM: AiThemePreset = {
               },
             ],
           },
+          animation: BLOCK_ANIMATIONS.slideUp,
         },
         {
           type: 'newsletter',
@@ -6648,6 +7690,7 @@ const PODCAST_PLATFORM: AiThemePreset = {
             placeholder: 'Your email',
             style: 'inline',
           },
+          animation: BLOCK_ANIMATIONS.fadeIn,
         },
       ],
     },
