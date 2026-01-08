@@ -44,8 +44,7 @@ import { VideoModule } from './modules/video/video.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { TimelineModule } from './modules/timeline/timeline.module';
-// DemoModule disabled - incomplete feature with missing dependencies
-// import { DemoModule } from './modules/demo/demo.module';
+import { DemoModule } from './modules/demo/demo.module';
 
 // Check if admin dist exists
 const adminDistPath = join(process.cwd(), 'admin', 'dist');
@@ -117,7 +116,7 @@ const staticModules = adminDistExists
     SubscriptionsModule,
     FeedModule,
     TimelineModule,
-    // DemoModule, // Disabled - incomplete feature
+    DemoModule,
   ],
 })
 export class AppModule {}

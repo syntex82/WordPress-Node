@@ -38,14 +38,36 @@ export interface SocialLink {
   enabled: boolean;
 }
 
-// Types
-export type BlockType = 'header' | 'text' | 'image' | 'button' | 'divider' | 'spacer' | 'footer' | 'hero' | 'social' | 'features' | 'cta' | 'testimonial' | 'columns';
+// Types - Enhanced with all block types
+export type BlockType =
+  // Layout
+  | 'header' | 'footer' | 'divider' | 'spacer' | 'columns' | 'section'
+  // Content
+  | 'text' | 'image' | 'button' | 'hero' | 'cta' | 'features' | 'testimonial' | 'social'
+  // E-commerce
+  | 'productShowcase' | 'productGrid' | 'cartAbandonment' | 'orderConfirmation'
+  | 'productRecommendations' | 'discountCode' | 'saleAnnouncement'
+  // LMS/Course
+  | 'courseCard' | 'lessonProgress' | 'certificateAnnouncement' | 'achievement'
+  | 'courseRecommendations' | 'instructorSpotlight'
+  // Blog/Content
+  | 'featuredArticle' | 'blogSummary' | 'authorBio' | 'relatedPosts' | 'newsletterSignup'
+  // Interactive
+  | 'countdown' | 'progressBar' | 'rating' | 'videoEmbed' | 'imageGallery'
+  // Advanced Layout
+  | 'accordion' | 'tabs' | 'iconList' | 'statsGrid';
 
 export interface EmailBlock {
   id: string;
   type: BlockType;
   content: Record<string, any>;
   styles: Record<string, any>;
+  conditional?: {
+    enabled: boolean;
+    field: string;
+    operator: 'equals' | 'notEquals' | 'contains' | 'greaterThan' | 'lessThan' | 'exists';
+    value: string;
+  };
 }
 
 export interface EmailDesign {
@@ -55,8 +77,10 @@ export interface EmailDesign {
     contentWidth: number;
     fontFamily: string;
     primaryColor: string;
+    secondaryColor: string;
     textColor: string;
     linkColor: string;
+    borderRadius: number;
   };
 }
 
@@ -69,23 +93,16 @@ interface MediaItem {
   mimeType: string;
 }
 
-// Default block configurations
+// Default block configurations - Enhanced with all block types
 const DEFAULT_BLOCKS: Record<BlockType, Partial<EmailBlock>> = {
+  // === LAYOUT BLOCKS ===
   header: {
     content: { logoUrl: '', title: 'Your Brand' },
     styles: { backgroundColor: '#ffffff', padding: 32, textAlign: 'center' }
   },
-  text: {
-    content: { text: 'Write your message here.' },
-    styles: { backgroundColor: '#ffffff', padding: 24, fontSize: 16, lineHeight: 1.7, textAlign: 'left', color: '#374151' }
-  },
-  image: {
-    content: { src: '', alt: 'Image', link: '' },
-    styles: { backgroundColor: '#ffffff', padding: 16, borderRadius: 8 }
-  },
-  button: {
-    content: { text: 'Get Started', link: '#' },
-    styles: { backgroundColor: '#4F46E5', textColor: '#ffffff', padding: 16, borderRadius: 8, fontSize: 16, align: 'center' }
+  footer: {
+    content: { companyName: '{{site.name}}', address: '123 Main St', unsubscribeText: 'Unsubscribe' },
+    styles: { backgroundColor: '#1f2937', padding: 40, textAlign: 'center', color: '#9ca3af' }
   },
   divider: {
     content: {},
@@ -95,140 +112,280 @@ const DEFAULT_BLOCKS: Record<BlockType, Partial<EmailBlock>> = {
     content: {},
     styles: { height: 40 }
   },
-  footer: {
-    content: { companyName: '{{site.name}}', address: '123 Main St', unsubscribeText: 'Unsubscribe' },
-    styles: { backgroundColor: '#1f2937', padding: 40, textAlign: 'center', color: '#9ca3af' }
+  columns: {
+    content: { columns: 2, column1: 'Left column content', column2: 'Right column content', column3: 'Third column content' },
+    styles: { backgroundColor: '#ffffff', padding: 24, gap: 16 }
+  },
+  section: {
+    content: { title: 'Section Title', showTitle: true },
+    styles: { backgroundColor: '#f9fafb', padding: 32, borderRadius: 12 }
+  },
+
+  // === CONTENT BLOCKS ===
+  text: {
+    content: { text: 'Write your message here.' },
+    styles: { backgroundColor: '#ffffff', padding: 24, fontSize: 16, lineHeight: 1.7, textAlign: 'left', color: '#374151' }
+  },
+  image: {
+    content: { src: '', alt: 'Image', link: '' },
+    styles: { backgroundColor: '#ffffff', padding: 16, borderRadius: 8 }
+  },
+  button: {
+    content: { text: 'Get Started', link: '#', trackClicks: true },
+    styles: { backgroundColor: '#4F46E5', textColor: '#ffffff', padding: 16, borderRadius: 8, fontSize: 16, align: 'center' }
   },
   hero: {
-    content: { title: 'Welcome!', subtitle: 'Discover something amazing.', buttonText: 'Get Started', buttonLink: '#' },
-    styles: { backgroundColor: '#4F46E5', textColor: '#ffffff', padding: 64, textAlign: 'center' }
-  },
-  social: {
-    content: {
-      title: 'Follow Us',
-      links: [
-        { platform: 'facebook', url: 'https://facebook.com/', enabled: true },
-        { platform: 'twitter', url: 'https://x.com/', enabled: true },
-        { platform: 'instagram', url: 'https://instagram.com/', enabled: true },
-        { platform: 'linkedin', url: 'https://linkedin.com/', enabled: false },
-        { platform: 'youtube', url: 'https://youtube.com/', enabled: false },
-        { platform: 'tiktok', url: 'https://tiktok.com/', enabled: false },
-      ]
-    },
-    styles: { backgroundColor: '#f9fafb', padding: 32, align: 'center', iconSize: 32, iconSpacing: 12, iconStyle: 'colored' }
-  },
-  features: {
-    content: { title: 'Features', features: [{ icon: '⚡', title: 'Fast', desc: 'Quick' }] },
-    styles: { backgroundColor: '#ffffff', padding: 40 }
+    content: { title: 'Welcome!', subtitle: 'Discover something amazing.', buttonText: 'Get Started', buttonLink: '#', backgroundImage: '' },
+    styles: { backgroundColor: '#4F46E5', textColor: '#ffffff', padding: 64, textAlign: 'center', overlay: true, overlayOpacity: 0.5 }
   },
   cta: {
     content: { title: 'Ready?', subtitle: 'Join now.', buttonText: 'Start', buttonLink: '#' },
-    styles: { backgroundColor: '#f3f4f6', padding: 48, textAlign: 'center' }
+    styles: { backgroundColor: '#f3f4f6', padding: 48, textAlign: 'center', buttonColor: '#4F46E5', buttonTextColor: '#ffffff' }
+  },
+  features: {
+    content: { title: 'Features', features: [{ icon: '⚡', title: 'Fast', desc: 'Lightning quick performance' }, { icon: '🔒', title: 'Secure', desc: 'Enterprise-grade security' }, { icon: '💡', title: 'Smart', desc: 'Intelligent automation' }] },
+    styles: { backgroundColor: '#ffffff', padding: 40, columns: 3, iconSize: 32 }
   },
   testimonial: {
-    content: { quote: '"Amazing!"', author: 'Jane', role: 'CEO' },
-    styles: { backgroundColor: '#ffffff', padding: 40, textAlign: 'center' }
+    content: { quote: '"This product changed my life! Highly recommended."', author: 'Jane Smith', role: 'CEO, TechCorp', avatar: '', rating: 5 },
+    styles: { backgroundColor: '#ffffff', padding: 40, textAlign: 'center', showRating: true, showAvatar: true }
   },
-  columns: {
-    content: {
-      columns: 2,
-      column1: 'Left column content',
-      column2: 'Right column content',
-      column3: 'Third column content'
-    },
-    styles: { backgroundColor: '#ffffff', padding: 24, gap: 16 }
+  social: {
+    content: { title: 'Follow Us', links: [{ platform: 'facebook', url: 'https://facebook.com/', enabled: true }, { platform: 'twitter', url: 'https://x.com/', enabled: true }, { platform: 'instagram', url: 'https://instagram.com/', enabled: true }] },
+    styles: { backgroundColor: '#f9fafb', padding: 32, align: 'center', iconSize: 32, iconSpacing: 12, iconStyle: 'colored' }
+  },
+
+  // === E-COMMERCE BLOCKS ===
+  productShowcase: {
+    content: { productName: 'Amazing Product', productImage: '', price: '$99.99', originalPrice: '$149.99', description: 'Premium quality product with exceptional value.', buttonText: 'Shop Now', buttonLink: '#', badge: 'Best Seller', rating: 4.5, reviewCount: 128 },
+    styles: { backgroundColor: '#ffffff', padding: 32, borderRadius: 12, showBadge: true, showRating: true, showOriginalPrice: true, buttonColor: '#4F46E5', accentColor: '#EF4444' }
+  },
+  productGrid: {
+    content: { title: 'Featured Products', products: [{ name: 'Product 1', image: '', price: '$49.99', link: '#' }, { name: 'Product 2', image: '', price: '$59.99', link: '#' }, { name: 'Product 3', image: '', price: '$39.99', link: '#' }, { name: 'Product 4', image: '', price: '$79.99', link: '#' }] },
+    styles: { backgroundColor: '#f9fafb', padding: 32, columns: 2, gap: 16, productCardBg: '#ffffff', borderRadius: 8 }
+  },
+  cartAbandonment: {
+    content: { headline: 'You left something behind!', subheadline: 'Your cart is waiting for you.', items: [{ name: 'Product Name', image: '', price: '$99.99', quantity: 1 }], buttonText: 'Complete Your Order', buttonLink: '#', urgencyText: 'Only 3 left!', discountCode: 'COMEBACK10', discountText: 'Use code for 10% off' },
+    styles: { backgroundColor: '#ffffff', padding: 32, accentColor: '#EF4444', buttonColor: '#4F46E5', showUrgency: true, showDiscount: true }
+  },
+  orderConfirmation: {
+    content: { headline: 'Order Confirmed! 🎉', orderNumber: '{{order.number}}', orderDate: '{{order.date}}', items: [{ name: 'Product Name', quantity: 1, price: '$99.99' }], subtotal: '{{order.subtotal}}', shipping: '{{order.shipping}}', total: '{{order.total}}', estimatedDelivery: '3-5 business days', trackingLink: '#' },
+    styles: { backgroundColor: '#ffffff', padding: 32, accentColor: '#10B981', borderRadius: 12 }
+  },
+  productRecommendations: {
+    content: { title: 'You Might Also Like', subtitle: 'Based on your purchase', products: [{ name: 'Recommended 1', image: '', price: '$49.99', link: '#' }, { name: 'Recommended 2', image: '', price: '$59.99', link: '#' }, { name: 'Recommended 3', image: '', price: '$39.99', link: '#' }] },
+    styles: { backgroundColor: '#f9fafb', padding: 32, columns: 3, buttonColor: '#4F46E5' }
+  },
+  discountCode: {
+    content: { headline: 'Special Offer!', description: 'Use this exclusive code', code: 'SAVE20', discount: '20% OFF', expiryText: 'Expires in 48 hours', buttonText: 'Shop Now', buttonLink: '#', terms: 'Valid on orders over $50' },
+    styles: { backgroundColor: '#4F46E5', textColor: '#ffffff', padding: 40, codeBackground: '#ffffff', codeColor: '#4F46E5', borderRadius: 12, borderStyle: 'dashed' }
+  },
+  saleAnnouncement: {
+    content: { preheadline: 'Limited Time Only', headline: 'SUMMER SALE', discount: 'UP TO 50% OFF', description: 'Shop our biggest sale of the season.', buttonText: 'Shop the Sale', buttonLink: '#', showCountdown: false },
+    styles: { backgroundColor: '#EF4444', textColor: '#ffffff', padding: 48, backgroundImage: '', overlay: true, overlayOpacity: 0.7, textAlign: 'center' }
+  },
+
+  // === LMS/COURSE BLOCKS ===
+  courseCard: {
+    content: { courseTitle: 'Introduction to Web Development', courseImage: '', instructor: 'John Smith', duration: '8 hours', lessons: 24, level: 'Beginner', rating: 4.8, students: 1250, price: '$49.99', description: 'Learn the fundamentals of web development.', buttonText: 'Enroll Now', buttonLink: '#', tags: ['HTML', 'CSS', 'JavaScript'] },
+    styles: { backgroundColor: '#ffffff', padding: 24, borderRadius: 16, showRating: true, showInstructor: true, showTags: true, accentColor: '#8B5CF6', buttonColor: '#8B5CF6' }
+  },
+  lessonProgress: {
+    content: { courseTitle: 'Your Course Progress', courseName: 'Introduction to Web Development', completedLessons: 12, totalLessons: 24, percentComplete: 50, currentLesson: 'Working with CSS Grid', nextLesson: 'Responsive Design', timeRemaining: '4 hours', buttonText: 'Continue Learning', buttonLink: '#', streak: 5 },
+    styles: { backgroundColor: '#ffffff', padding: 32, progressColor: '#10B981', progressBgColor: '#E5E7EB', showStreak: true, showTimeRemaining: true, borderRadius: 12 }
+  },
+  certificateAnnouncement: {
+    content: { headline: 'Congratulations! 🎓', subheadline: 'You have completed', courseName: 'Introduction to Web Development', studentName: '{{user.name}}', completionDate: '{{completion.date}}', skills: ['HTML5', 'CSS3', 'JavaScript'], buttonText: 'View Certificate', buttonLink: '#', shareText: 'Share your achievement' },
+    styles: { backgroundColor: '#1F2937', textColor: '#ffffff', padding: 48, accentColor: '#F59E0B', showSkills: true, textAlign: 'center' }
+  },
+  achievement: {
+    content: { badgeIcon: '🏆', badgeName: 'Fast Learner', description: 'Completed 5 lessons in one day', earnedDate: 'Just now', points: 100, level: 'Gold', shareText: 'Share this achievement' },
+    styles: { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', textColor: '#92400E', padding: 24, borderRadius: 16, showPoints: true }
+  },
+  courseRecommendations: {
+    content: { title: 'Continue Your Learning Journey', subtitle: 'Based on your interests', courses: [{ title: 'Advanced JavaScript', image: '', duration: '12 hours', rating: 4.9, link: '#' }, { title: 'React Fundamentals', image: '', duration: '10 hours', rating: 4.8, link: '#' }] },
+    styles: { backgroundColor: '#F3F4F6', padding: 32, columns: 2, accentColor: '#8B5CF6' }
+  },
+  instructorSpotlight: {
+    content: { name: 'Dr. Sarah Johnson', avatar: '', title: 'Senior Developer', company: 'Tech Corp', bio: '15+ years experience. Taught over 50,000 students.', courses: 12, students: 50000, rating: 4.9, buttonText: 'View Courses', buttonLink: '#' },
+    styles: { backgroundColor: '#ffffff', padding: 32, avatarSize: 100, layout: 'centered', showStats: true, accentColor: '#8B5CF6' }
+  },
+
+  // === BLOG/CONTENT BLOCKS ===
+  featuredArticle: {
+    content: { category: 'Technology', title: 'The Future of AI in Web Development', excerpt: 'Discover how artificial intelligence is revolutionizing the way we build websites.', image: '', author: 'Jane Smith', authorAvatar: '', publishDate: 'January 8, 2026', readTime: '5 min read', buttonText: 'Read Article', buttonLink: '#' },
+    styles: { backgroundColor: '#ffffff', padding: 0, borderRadius: 16, imageHeight: 240, showCategory: true, showAuthor: true, showReadTime: true, categoryColor: '#8B5CF6' }
+  },
+  blogSummary: {
+    content: { category: 'Tutorial', title: 'Getting Started with Next.js', excerpt: 'A comprehensive guide to building modern React applications.', image: '', publishDate: 'January 7, 2026', readTime: '8 min', buttonText: 'Continue Reading →', buttonLink: '#' },
+    styles: { backgroundColor: '#ffffff', padding: 24, borderRadius: 12, showImage: true, imagePosition: 'left', imageWidth: 120 }
+  },
+  authorBio: {
+    content: { name: 'Sarah Williams', avatar: '', role: 'Senior Tech Writer', bio: 'Sarah has been writing about technology for over 10 years.', email: 'sarah@example.com', website: '', articleCount: 45, buttonText: 'View All Articles', buttonLink: '#' },
+    styles: { backgroundColor: '#F9FAFB', padding: 32, borderRadius: 16, avatarSize: 80, layout: 'horizontal', showArticleCount: true, accentColor: '#4F46E5' }
+  },
+  relatedPosts: {
+    content: { title: 'You Might Also Enjoy', posts: [{ title: 'Building Responsive Layouts', category: 'CSS', image: '', link: '#', readTime: '4 min' }, { title: 'JavaScript Best Practices', category: 'JavaScript', image: '', link: '#', readTime: '6 min' }] },
+    styles: { backgroundColor: '#ffffff', padding: 32, columns: 2, showImages: true, showCategory: true, accentColor: '#4F46E5' }
+  },
+  newsletterSignup: {
+    content: { headline: 'Stay Updated', subheadline: 'Get the latest articles delivered to your inbox.', placeholder: 'Enter your email', buttonText: 'Subscribe', privacyText: 'We respect your privacy.', incentive: 'Free ebook!', showIncentive: true, frequency: 'Weekly digest' },
+    styles: { backgroundColor: '#4F46E5', textColor: '#ffffff', padding: 48, borderRadius: 16, inputStyle: 'pill', buttonColor: '#ffffff', buttonTextColor: '#4F46E5' }
+  },
+
+  // === INTERACTIVE BLOCKS ===
+  countdown: {
+    content: { headline: 'Sale Ends In', endDate: '', expiredText: 'This offer has expired', labels: { days: 'Days', hours: 'Hours', minutes: 'Minutes', seconds: 'Seconds' }, buttonText: 'Shop Now', buttonLink: '#', showButton: true },
+    styles: { backgroundColor: '#EF4444', textColor: '#ffffff', padding: 40, timerStyle: 'boxes', boxColor: '#ffffff', boxTextColor: '#EF4444', fontSize: 'large', textAlign: 'center' }
+  },
+  progressBar: {
+    content: { title: 'Campaign Progress', current: 75, goal: 100, unit: '%', description: '75% of our goal reached!', showPercentage: true, showNumbers: false },
+    styles: { backgroundColor: '#ffffff', padding: 32, progressColor: '#10B981', trackColor: '#E5E7EB', height: 12, borderRadius: 6, animated: true }
+  },
+  rating: {
+    content: { title: 'How would you rate your experience?', subtitle: 'Click a star to rate', currentRating: 0, maxRating: 5, ratingLabels: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'], showLabels: true, feedbackUrl: '#' },
+    styles: { backgroundColor: '#ffffff', padding: 32, starColor: '#F59E0B', starEmptyColor: '#D1D5DB', starSize: 40, textAlign: 'center' }
+  },
+  videoEmbed: {
+    content: { thumbnailUrl: '', videoUrl: '', title: 'Watch Our Latest Video', description: 'Click to play', duration: '3:45', playButtonText: 'Watch Now', platform: 'youtube' },
+    styles: { backgroundColor: '#000000', padding: 0, borderRadius: 12, aspectRatio: '16:9', showPlayButton: true, playButtonColor: '#EF4444', overlayOpacity: 0.3 }
+  },
+  imageGallery: {
+    content: { title: 'Gallery', images: [{ url: '', alt: 'Image 1', caption: '' }, { url: '', alt: 'Image 2', caption: '' }, { url: '', alt: 'Image 3', caption: '' }, { url: '', alt: 'Image 4', caption: '' }] },
+    styles: { backgroundColor: '#ffffff', padding: 24, columns: 2, gap: 12, borderRadius: 8, showCaptions: false, aspectRatio: 'square' }
+  },
+
+  // === ADVANCED LAYOUT BLOCKS ===
+  accordion: {
+    content: { title: 'Frequently Asked Questions', items: [{ question: 'How do I get started?', answer: 'Simply sign up for an account and follow our guide.' }, { question: 'What payment methods do you accept?', answer: 'We accept all major credit cards and PayPal.' }], defaultOpen: 0 },
+    styles: { backgroundColor: '#ffffff', padding: 32, itemBorderColor: '#E5E7EB', questionColor: '#1F2937', answerColor: '#6B7280', iconColor: '#4F46E5', borderRadius: 8 }
+  },
+  tabs: {
+    content: { tabs: [{ label: 'Tab 1', content: 'Content for tab 1' }, { label: 'Tab 2', content: 'Content for tab 2' }], activeTab: 0 },
+    styles: { backgroundColor: '#ffffff', padding: 24, tabColor: '#4F46E5', tabBgColor: '#E5E7EB', activeTabBg: '#4F46E5', activeTabColor: '#ffffff' }
+  },
+  iconList: {
+    content: { title: "What's Included", items: [{ icon: '✓', text: 'Unlimited access to all features', highlight: false }, { icon: '✓', text: 'Priority customer support', highlight: false }, { icon: '✓', text: '30-day money-back guarantee', highlight: true }] },
+    styles: { backgroundColor: '#ffffff', padding: 32, iconColor: '#10B981', iconBgColor: '#D1FAE5', textColor: '#374151', highlightColor: '#4F46E5', iconSize: 24, spacing: 16 }
+  },
+  statsGrid: {
+    content: { title: 'By The Numbers', stats: [{ value: '10K+', label: 'Happy Customers', icon: '👥' }, { value: '99%', label: 'Satisfaction Rate', icon: '⭐' }, { value: '24/7', label: 'Support Available', icon: '💬' }, { value: '50+', label: 'Countries Served', icon: '🌍' }] },
+    styles: { backgroundColor: '#4F46E5', textColor: '#ffffff', padding: 40, columns: 4, showIcons: true, statValueSize: 36, labelSize: 14 }
   }
 };
 
 const BLOCK_CATEGORIES: Record<string, BlockType[]> = {
-  'Layout': ['header', 'footer', 'divider', 'spacer', 'columns'],
-  'Content': ['text', 'image', 'button'],
-  'Marketing': ['hero', 'cta', 'features', 'testimonial', 'social']
+  'Layout': ['header', 'footer', 'divider', 'spacer', 'columns', 'section'],
+  'Content': ['text', 'image', 'button', 'hero', 'cta'],
+  'Marketing': ['features', 'testimonial', 'social', 'statsGrid'],
+  'E-commerce': ['productShowcase', 'productGrid', 'cartAbandonment', 'orderConfirmation', 'productRecommendations', 'discountCode', 'saleAnnouncement'],
+  'Courses': ['courseCard', 'lessonProgress', 'certificateAnnouncement', 'achievement', 'courseRecommendations', 'instructorSpotlight'],
+  'Blog': ['featuredArticle', 'blogSummary', 'authorBio', 'relatedPosts', 'newsletterSignup'],
+  'Interactive': ['countdown', 'progressBar', 'rating', 'videoEmbed', 'imageGallery'],
+  'Advanced': ['accordion', 'tabs', 'iconList']
 };
 
-const BLOCK_INFO: Record<BlockType, { label: string; icon: any }> = {
-  header: { label: 'Header', icon: FiLayout },
-  text: { label: 'Text', icon: FiType },
-  image: { label: 'Image', icon: FiImage },
-  button: { label: 'Button', icon: FiSquare },
-  divider: { label: 'Divider', icon: FiMinus },
-  spacer: { label: 'Spacer', icon: FiGrid },
-  footer: { label: 'Footer', icon: FiLayout },
-  hero: { label: 'Hero', icon: FiStar },
-  social: { label: 'Social', icon: FiLink },
-  features: { label: 'Features', icon: FiCheck },
-  cta: { label: 'CTA', icon: FiMail },
-  testimonial: { label: 'Quote', icon: FiStar },
-  columns: { label: 'Columns', icon: FiColumns }
+const BLOCK_INFO: Record<BlockType, { label: string; icon: any; description?: string }> = {
+  // Layout
+  header: { label: 'Header', icon: FiLayout, description: 'Logo and brand header' },
+  footer: { label: 'Footer', icon: FiLayout, description: 'Footer with links' },
+  divider: { label: 'Divider', icon: FiMinus, description: 'Horizontal separator' },
+  spacer: { label: 'Spacer', icon: FiGrid, description: 'Vertical spacing' },
+  columns: { label: 'Columns', icon: FiColumns, description: 'Multi-column layout' },
+  section: { label: 'Section', icon: FiLayout, description: 'Grouped content' },
+  // Content
+  text: { label: 'Text', icon: FiType, description: 'Rich text content' },
+  image: { label: 'Image', icon: FiImage, description: 'Single image' },
+  button: { label: 'Button', icon: FiSquare, description: 'CTA button' },
+  hero: { label: 'Hero', icon: FiStar, description: 'Hero banner' },
+  cta: { label: 'CTA', icon: FiMail, description: 'Call to action' },
+  features: { label: 'Features', icon: FiCheck, description: 'Feature list' },
+  testimonial: { label: 'Testimonial', icon: FiStar, description: 'Customer quote' },
+  social: { label: 'Social', icon: FiLink, description: 'Social icons' },
+  // E-commerce
+  productShowcase: { label: 'Product', icon: FiSquare, description: 'Featured product' },
+  productGrid: { label: 'Products', icon: FiGrid, description: 'Product grid' },
+  cartAbandonment: { label: 'Cart', icon: FiSquare, description: 'Abandoned cart' },
+  orderConfirmation: { label: 'Order', icon: FiCheck, description: 'Order summary' },
+  productRecommendations: { label: 'Recs', icon: FiStar, description: 'Recommendations' },
+  discountCode: { label: 'Discount', icon: FiSquare, description: 'Promo code' },
+  saleAnnouncement: { label: 'Sale', icon: FiStar, description: 'Sale banner' },
+  // Courses
+  courseCard: { label: 'Course', icon: FiLayout, description: 'Course card' },
+  lessonProgress: { label: 'Progress', icon: FiLayout, description: 'Lesson progress' },
+  certificateAnnouncement: { label: 'Certificate', icon: FiStar, description: 'Certificate earned' },
+  achievement: { label: 'Achievement', icon: FiStar, description: 'Badge earned' },
+  courseRecommendations: { label: 'Courses', icon: FiGrid, description: 'Course suggestions' },
+  instructorSpotlight: { label: 'Instructor', icon: FiLayout, description: 'Instructor bio' },
+  // Blog
+  featuredArticle: { label: 'Article', icon: FiLayout, description: 'Featured post' },
+  blogSummary: { label: 'Post', icon: FiType, description: 'Blog summary' },
+  authorBio: { label: 'Author', icon: FiLayout, description: 'Author info' },
+  relatedPosts: { label: 'Related', icon: FiGrid, description: 'Related posts' },
+  newsletterSignup: { label: 'Newsletter', icon: FiMail, description: 'Email signup' },
+  // Interactive
+  countdown: { label: 'Countdown', icon: FiLayout, description: 'Timer' },
+  progressBar: { label: 'Progress', icon: FiLayout, description: 'Progress bar' },
+  rating: { label: 'Rating', icon: FiStar, description: 'Star rating' },
+  videoEmbed: { label: 'Video', icon: FiLayout, description: 'Video embed' },
+  imageGallery: { label: 'Gallery', icon: FiImage, description: 'Image grid' },
+  // Advanced
+  accordion: { label: 'FAQ', icon: FiLayout, description: 'Expandable' },
+  tabs: { label: 'Tabs', icon: FiColumns, description: 'Tabbed content' },
+  iconList: { label: 'Icon List', icon: FiCheck, description: 'List with icons' },
+  statsGrid: { label: 'Stats', icon: FiGrid, description: 'Statistics' }
 };
 
 // Block tooltips for user guidance
 const BLOCK_TOOLTIPS: Record<BlockType, { title: string; content: string; example?: string }> = {
-  header: {
-    title: '📌 Header Block',
-    content: 'Add your company logo and brand name at the top of your email.',
-    example: 'Use for: Brand identity, email header'
-  },
-  text: {
-    title: '✏️ Text Block',
-    content: 'Add formatted text content like paragraphs, headings, or descriptions.',
-    example: 'Use for: Messages, descriptions, instructions'
-  },
-  image: {
-    title: '🖼️ Image Block',
-    content: 'Insert images from your media library with optional link.',
-    example: 'Use for: Product photos, banners, graphics'
-  },
-  button: {
-    title: '🔘 Button Block',
-    content: 'Add a clickable call-to-action button with customizable colors.',
-    example: 'Use for: CTAs, links, navigation'
-  },
-  divider: {
-    title: '➖ Divider Block',
-    content: 'Add a horizontal line to separate sections of your email.',
-    example: 'Use for: Visual separation between content'
-  },
-  spacer: {
-    title: '↕️ Spacer Block',
-    content: 'Add vertical spacing between blocks for better readability.',
-    example: 'Use for: Improving layout and breathing room'
-  },
-  footer: {
-    title: '🦶 Footer Block',
-    content: 'Add company info, address, and unsubscribe link at the bottom.',
-    example: 'Use for: Legal info, contact details, unsubscribe'
-  },
-  hero: {
-    title: '⭐ Hero Block',
-    content: 'Create an eye-catching banner with title, subtitle, and button.',
-    example: 'Use for: Main message, announcements, promotions'
-  },
-  social: {
-    title: '🔗 Social Block',
-    content: 'Add social media icons linking to your profiles.',
-    example: 'Use for: Social media links, community building'
-  },
-  features: {
-    title: '✨ Features Block',
-    content: 'Showcase multiple features or benefits in a grid layout.',
-    example: 'Use for: Product features, service highlights'
-  },
-  cta: {
-    title: '📣 CTA Block',
-    content: 'Create a prominent call-to-action section with heading and button.',
-    example: 'Use for: Conversions, sign-ups, purchases'
-  },
-  testimonial: {
-    title: '💬 Quote Block',
-    content: 'Display a customer testimonial or quote with attribution.',
-    example: 'Use for: Social proof, reviews, endorsements'
-  },
-  columns: {
-    title: '📊 Columns Block',
-    content: 'Create multi-column layouts for side-by-side content.',
-    example: 'Use for: Comparisons, multiple items, organized content'
-  }
+  // Layout
+  header: { title: '📌 Header', content: 'Company logo and brand name.', example: 'Brand identity' },
+  footer: { title: '🦶 Footer', content: 'Company info and unsubscribe.', example: 'Legal info' },
+  divider: { title: '➖ Divider', content: 'Horizontal separator line.', example: 'Visual separation' },
+  spacer: { title: '↕️ Spacer', content: 'Vertical spacing.', example: 'Breathing room' },
+  columns: { title: '📊 Columns', content: 'Multi-column layout.', example: 'Side-by-side content' },
+  section: { title: '📦 Section', content: 'Group related content.', example: 'Organized sections' },
+  // Content
+  text: { title: '✏️ Text', content: 'Rich text content.', example: 'Messages, descriptions' },
+  image: { title: '🖼️ Image', content: 'Insert images.', example: 'Photos, banners' },
+  button: { title: '🔘 Button', content: 'Call-to-action button.', example: 'CTAs, links' },
+  hero: { title: '⭐ Hero', content: 'Eye-catching banner.', example: 'Announcements' },
+  cta: { title: '📣 CTA', content: 'Call-to-action section.', example: 'Conversions' },
+  features: { title: '✨ Features', content: 'Feature grid layout.', example: 'Product benefits' },
+  testimonial: { title: '💬 Testimonial', content: 'Customer quote.', example: 'Social proof' },
+  social: { title: '🔗 Social', content: 'Social media icons.', example: 'Community building' },
+  // E-commerce
+  productShowcase: { title: '🛍️ Product', content: 'Featured product display.', example: 'Product highlight' },
+  productGrid: { title: '📦 Products', content: 'Multiple products grid.', example: 'Product collection' },
+  cartAbandonment: { title: '🛒 Cart', content: 'Abandoned cart reminder.', example: 'Cart recovery' },
+  orderConfirmation: { title: '✅ Order', content: 'Order confirmation details.', example: 'Purchase receipt' },
+  productRecommendations: { title: '💡 Recommendations', content: 'Suggested products.', example: 'Cross-sell' },
+  discountCode: { title: '🎟️ Discount', content: 'Promo code display.', example: 'Special offers' },
+  saleAnnouncement: { title: '🏷️ Sale', content: 'Sale announcement.', example: 'Promotions' },
+  // Courses
+  courseCard: { title: '📚 Course', content: 'Course preview card.', example: 'Course promotion' },
+  lessonProgress: { title: '📈 Progress', content: 'Learning progress.', example: 'Student engagement' },
+  certificateAnnouncement: { title: '🎓 Certificate', content: 'Completion certificate.', example: 'Achievement' },
+  achievement: { title: '🏆 Achievement', content: 'Badge or reward.', example: 'Gamification' },
+  courseRecommendations: { title: '📖 Courses', content: 'Suggested courses.', example: 'Learning path' },
+  instructorSpotlight: { title: '👨‍🏫 Instructor', content: 'Instructor profile.', example: 'Teacher bio' },
+  // Blog
+  featuredArticle: { title: '📰 Article', content: 'Featured blog post.', example: 'Content highlight' },
+  blogSummary: { title: '📝 Post', content: 'Blog post summary.', example: 'Article preview' },
+  authorBio: { title: '✍️ Author', content: 'Author information.', example: 'Writer profile' },
+  relatedPosts: { title: '🔗 Related', content: 'Related articles.', example: 'More content' },
+  newsletterSignup: { title: '📬 Newsletter', content: 'Email subscription.', example: 'List building' },
+  // Interactive
+  countdown: { title: '⏰ Countdown', content: 'Timer countdown.', example: 'Urgency' },
+  progressBar: { title: '📊 Progress', content: 'Progress indicator.', example: 'Goal tracking' },
+  rating: { title: '⭐ Rating', content: 'Star rating.', example: 'Feedback' },
+  videoEmbed: { title: '🎬 Video', content: 'Video thumbnail.', example: 'Media content' },
+  imageGallery: { title: '🖼️ Gallery', content: 'Image gallery.', example: 'Visual showcase' },
+  // Advanced
+  accordion: { title: '📋 FAQ', content: 'Expandable sections.', example: 'Q&A' },
+  tabs: { title: '📑 Tabs', content: 'Tabbed content.', example: 'Organized info' },
+  iconList: { title: '✓ Icon List', content: 'List with icons.', example: 'Features, benefits' },
+  statsGrid: { title: '📈 Stats', content: 'Statistics display.', example: 'Numbers, metrics' }
 };
 
 const FONTS = [
@@ -253,10 +410,28 @@ const DEFAULT_DESIGN: EmailDesign = {
     contentWidth: 600,
     fontFamily: 'Arial, sans-serif',
     primaryColor: '#4F46E5',
+    secondaryColor: '#10B981',
     textColor: '#333333',
-    linkColor: '#4F46E5'
+    linkColor: '#4F46E5',
+    borderRadius: 8
   }
 };
+
+// Pre-built professional templates
+const TEMPLATE_PRESETS = [
+  { id: 'ecom-welcome', name: 'Welcome Series', category: 'ecommerce', description: 'Welcome new customers', icon: '🛒' },
+  { id: 'ecom-cart', name: 'Abandoned Cart', category: 'ecommerce', description: 'Recover abandoned carts', icon: '🛒' },
+  { id: 'ecom-order', name: 'Order Confirmation', category: 'ecommerce', description: 'Order receipts', icon: '🛒' },
+  { id: 'ecom-sale', name: 'Sale Announcement', category: 'ecommerce', description: 'Promote sales', icon: '🛒' },
+  { id: 'edu-enroll', name: 'Course Enrollment', category: 'education', description: 'Welcome students', icon: '🎓' },
+  { id: 'edu-progress', name: 'Progress Update', category: 'education', description: 'Learning progress', icon: '🎓' },
+  { id: 'edu-cert', name: 'Certificate', category: 'education', description: 'Completion certificate', icon: '🎓' },
+  { id: 'blog-newsletter', name: 'Newsletter', category: 'blog', description: 'Content digest', icon: '📝' },
+  { id: 'blog-post', name: 'New Post', category: 'blog', description: 'Article notification', icon: '📝' },
+  { id: 'saas-onboard', name: 'Onboarding', category: 'saas', description: 'User onboarding', icon: '💻' },
+  { id: 'saas-feature', name: 'Feature Update', category: 'saas', description: 'Announce features', icon: '💻' },
+  { id: 'saas-usage', name: 'Usage Report', category: 'saas', description: 'Monthly stats', icon: '💻' },
+];
 
 export default function EmailTemplateDesigner() {
   const [design, setDesign] = useState<EmailDesign>(DEFAULT_DESIGN);
@@ -265,6 +440,8 @@ export default function EmailTemplateDesigner() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showMediaModal, setShowMediaModal] = useState(false);
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
+  const [templateFilter, setTemplateFilter] = useState<string>('all');
   const [mediaTarget, setMediaTarget] = useState<{ blockId: string; field: string } | null>(null);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [mediaSearch, setMediaSearch] = useState('');
@@ -274,6 +451,105 @@ export default function EmailTemplateDesigner() {
   const [saving, setSaving] = useState(false);
 
   const selectedBlock = design.blocks.find(b => b.id === selectedBlockId);
+
+  // Load a template preset
+  const loadTemplatePreset = (templateId: string) => {
+    const presetBlocks: Record<string, EmailBlock[]> = {
+      'ecom-welcome': [
+        { ...createBlock('header'), content: { logoUrl: '', title: '{{site.name}}' } },
+        { ...createBlock('hero'), content: { title: 'Welcome to {{site.name}}! 🎉', subtitle: "We're thrilled to have you join our community.", buttonText: 'Start Shopping', buttonLink: '#' }, styles: { ...DEFAULT_BLOCKS.hero.styles, backgroundColor: '#4F46E5' } },
+        { ...createBlock('discountCode'), content: { headline: 'Your Welcome Gift', description: 'Enjoy 20% off your first order', code: 'WELCOME20', discount: '20% OFF', expiryText: 'Valid for 7 days', buttonText: 'Shop Now', buttonLink: '#' } },
+        { ...createBlock('productGrid'), content: { title: 'Popular Products', products: DEFAULT_BLOCKS.productGrid.content?.products } },
+        { ...createBlock('footer') }
+      ],
+      'ecom-cart': [
+        { ...createBlock('header') },
+        { ...createBlock('text'), content: { text: 'Hi {{user.name}},' } },
+        { ...createBlock('cartAbandonment') },
+        { ...createBlock('discountCode'), content: { ...DEFAULT_BLOCKS.discountCode.content, headline: 'Need a little push?', code: 'COMEBACK10', discount: '10% OFF' }, styles: { ...DEFAULT_BLOCKS.discountCode.styles, backgroundColor: '#FEF3C7', textColor: '#92400E' } },
+        { ...createBlock('footer') }
+      ],
+      'ecom-order': [
+        { ...createBlock('header') },
+        { ...createBlock('orderConfirmation') },
+        { ...createBlock('productRecommendations') },
+        { ...createBlock('footer') }
+      ],
+      'ecom-sale': [
+        { ...createBlock('header') },
+        { ...createBlock('saleAnnouncement') },
+        { ...createBlock('countdown'), content: { ...DEFAULT_BLOCKS.countdown.content, headline: 'Sale Ends In' } },
+        { ...createBlock('productGrid') },
+        { ...createBlock('footer') }
+      ],
+      'edu-enroll': [
+        { ...createBlock('header') },
+        { ...createBlock('hero'), content: { title: "You're Enrolled! 🎉", subtitle: 'Get ready to start learning', buttonText: 'Go to Course', buttonLink: '#' }, styles: { ...DEFAULT_BLOCKS.hero.styles, backgroundColor: '#8B5CF6' } },
+        { ...createBlock('courseCard') },
+        { ...createBlock('iconList'), content: { title: "What You'll Learn", items: [{ icon: '✓', text: 'Core concepts and fundamentals' }, { icon: '✓', text: 'Hands-on practical exercises' }, { icon: '✓', text: 'Real-world project experience' }] } },
+        { ...createBlock('footer') }
+      ],
+      'edu-progress': [
+        { ...createBlock('header') },
+        { ...createBlock('lessonProgress') },
+        { ...createBlock('text'), content: { text: "You're making great progress! Keep the momentum going." } },
+        { ...createBlock('courseRecommendations') },
+        { ...createBlock('footer') }
+      ],
+      'edu-cert': [
+        { ...createBlock('certificateAnnouncement') },
+        { ...createBlock('social'), content: { title: 'Share Your Achievement' } },
+        { ...createBlock('courseRecommendations'), content: { ...DEFAULT_BLOCKS.courseRecommendations.content, title: 'Continue Learning' } }
+      ],
+      'blog-newsletter': [
+        { ...createBlock('header'), styles: { ...DEFAULT_BLOCKS.header.styles, backgroundColor: '#3B82F6', textColor: '#ffffff' } },
+        { ...createBlock('text'), content: { text: "This week's highlights from our blog" }, styles: { ...DEFAULT_BLOCKS.text.styles, textAlign: 'center', fontSize: 18 } },
+        { ...createBlock('featuredArticle') },
+        { ...createBlock('divider') },
+        { ...createBlock('relatedPosts'), content: { title: 'More This Week' } },
+        { ...createBlock('newsletterSignup'), content: { headline: 'Enjoying our content?', buttonText: 'Share with a Friend' } },
+        { ...createBlock('footer') }
+      ],
+      'blog-post': [
+        { ...createBlock('header') },
+        { ...createBlock('featuredArticle') },
+        { ...createBlock('authorBio') },
+        { ...createBlock('relatedPosts') },
+        { ...createBlock('footer') }
+      ],
+      'saas-onboard': [
+        { ...createBlock('header') },
+        { ...createBlock('hero'), content: { title: 'Welcome to {{site.name}}!', subtitle: "Let's get you set up", buttonText: 'Get Started', buttonLink: '#' } },
+        { ...createBlock('progressBar'), content: { title: 'Your Setup Progress', current: 25, goal: 100, description: 'Complete your profile to unlock all features' } },
+        { ...createBlock('iconList'), content: { title: 'Quick Start Checklist', items: [{ icon: '1', text: 'Complete your profile' }, { icon: '2', text: 'Connect your accounts' }, { icon: '3', text: 'Invite team members' }] } },
+        { ...createBlock('cta'), content: { title: 'Need Help?', subtitle: 'Our support team is here for you', buttonText: 'Contact Support' } },
+        { ...createBlock('footer') }
+      ],
+      'saas-feature': [
+        { ...createBlock('header') },
+        { ...createBlock('hero'), content: { title: "🚀 What's New", subtitle: 'Exciting updates just for you', buttonText: 'See All Updates' }, styles: { ...DEFAULT_BLOCKS.hero.styles, backgroundColor: '#10B981' } },
+        { ...createBlock('features') },
+        { ...createBlock('cta'), content: { title: 'Try It Now', buttonText: 'Open Dashboard' } },
+        { ...createBlock('footer') }
+      ],
+      'saas-usage': [
+        { ...createBlock('header') },
+        { ...createBlock('text'), content: { text: 'Your Monthly Report - {{report.month}}' }, styles: { ...DEFAULT_BLOCKS.text.styles, fontSize: 24, textAlign: 'center' } },
+        { ...createBlock('statsGrid'), content: { stats: [{ value: '1,234', label: 'Active Users', icon: '👥' }, { value: '5,678', label: 'Actions', icon: '⚡' }, { value: '+12%', label: 'Growth', icon: '📈' }] } },
+        { ...createBlock('progressBar'), content: { title: 'Plan Usage', current: 65, goal: 100, description: '65% of your monthly limit used' } },
+        { ...createBlock('cta'), content: { title: 'Need More?', subtitle: 'Upgrade your plan for unlimited access', buttonText: 'View Plans' } },
+        { ...createBlock('footer') }
+      ]
+    };
+
+    const blocks = presetBlocks[templateId];
+    if (blocks) {
+      setDesign(prev => ({ ...prev, blocks: blocks.map(b => ({ ...b, id: generateId() })) }));
+      setShowTemplateLibrary(false);
+      setSelectedBlockId(null);
+      toast.success('Template loaded! Customize it to fit your needs.');
+    }
+  };
 
   // Load media library
   const loadMedia = useCallback(async () => {
@@ -504,9 +780,142 @@ export default function EmailTemplateDesigner() {
             <table width="100%" cellpadding="0" cellspacing="0"><tr>${colsHtml}</tr></table>
           </td></tr>`;
 
+        case 'section':
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;border-radius:${styles.borderRadius || 0}px;">
+            ${content.showTitle && content.title ? `<h3 style="margin:0 0 16px;font-size:20px;font-weight:600;color:${globalStyles.textColor};">${content.title}</h3>` : ''}
+          </td></tr>`;
+
+        // E-commerce blocks
+        case 'productShowcase':
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${content.productImage ? `<tr><td><img src="${content.productImage}" alt="${content.productName}" style="width:100%;max-width:400px;border-radius:8px;display:block;margin:0 auto 16px;"/></td></tr>` : ''}
+              ${styles.showBadge && content.badge ? `<tr><td style="text-align:center;"><span style="display:inline-block;background:${styles.accentColor || '#EF4444'};color:#fff;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-bottom:8px;">${content.badge}</span></td></tr>` : ''}
+              <tr><td style="text-align:center;"><h3 style="margin:0 0 8px;font-size:24px;color:${globalStyles.textColor};">${content.productName}</h3></td></tr>
+              ${styles.showRating ? `<tr><td style="text-align:center;color:#F59E0B;font-size:14px;margin-bottom:8px;">${'★'.repeat(Math.floor(content.rating || 0))}${'☆'.repeat(5 - Math.floor(content.rating || 0))} (${content.reviewCount} reviews)</td></tr>` : ''}
+              <tr><td style="text-align:center;"><span style="font-size:28px;font-weight:bold;color:${globalStyles.primaryColor};">${content.price}</span>${styles.showOriginalPrice && content.originalPrice ? `<span style="text-decoration:line-through;color:#9CA3AF;margin-left:8px;">${content.originalPrice}</span>` : ''}</td></tr>
+              <tr><td style="padding:16px 0;text-align:center;color:${globalStyles.textColor};font-size:14px;">${content.description}</td></tr>
+              <tr><td style="text-align:center;"><a href="${content.buttonLink}" style="display:inline-block;background:${styles.buttonColor || globalStyles.primaryColor};color:${styles.buttonTextColor || '#fff'};padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">${content.buttonText}</a></td></tr>
+            </table>
+          </td></tr>`;
+
+        case 'productGrid':
+          const productsHtml = (content.products || []).map((p: any) =>
+            `<td style="width:${100 / (styles.columns || 2)}%;padding:8px;vertical-align:top;">
+              <div style="background:${styles.productCardBg || '#fff'};border-radius:${styles.borderRadius || 8}px;padding:12px;text-align:center;">
+                ${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;margin-bottom:8px;"/>` : '<div style="width:100%;aspect-ratio:1;background:#f3f4f6;border-radius:6px;margin-bottom:8px;"></div>'}
+                <p style="margin:0 0 4px;font-weight:600;color:${globalStyles.textColor};">${p.name}</p>
+                <p style="margin:0;color:${globalStyles.primaryColor};font-weight:bold;">${p.price}</p>
+              </div>
+            </td>`
+          ).join('');
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;">
+            ${content.title ? `<h3 style="margin:0 0 16px;font-size:20px;text-align:center;color:${globalStyles.textColor};">${content.title}</h3>` : ''}
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>${productsHtml}</tr></table>
+          </td></tr>`;
+
+        case 'discountCode':
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;text-align:center;border-radius:${styles.borderRadius || 0}px;">
+            <h2 style="margin:0 0 8px;font-size:24px;color:${styles.textColor || '#fff'};">${content.headline}</h2>
+            <p style="margin:0 0 20px;color:${styles.textColor || '#fff'};opacity:0.9;">${content.description}</p>
+            <div style="display:inline-block;background:${styles.codeBackground || '#fff'};padding:16px 32px;border-radius:8px;border:2px ${styles.borderStyle || 'dashed'} ${styles.codeColor || globalStyles.primaryColor};margin-bottom:16px;">
+              <span style="font-size:28px;font-weight:bold;color:${styles.codeColor || globalStyles.primaryColor};letter-spacing:2px;">${content.code}</span>
+            </div>
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:${styles.textColor || '#fff'};">${content.discount}</p>
+            <p style="margin:0 0 20px;font-size:14px;color:${styles.textColor || '#fff'};opacity:0.8;">${content.expiryText}</p>
+            <a href="${content.buttonLink}" style="display:inline-block;background:${styles.codeBackground || '#fff'};color:${styles.backgroundColor};padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">${content.buttonText}</a>
+            ${content.terms ? `<p style="margin:16px 0 0;font-size:11px;color:${styles.textColor || '#fff'};opacity:0.7;">${content.terms}</p>` : ''}
+          </td></tr>`;
+
+        case 'countdown':
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;text-align:center;">
+            <h2 style="margin:0 0 20px;font-size:24px;color:${styles.textColor || '#fff'};">${content.headline}</h2>
+            <table cellpadding="0" cellspacing="0" style="margin:0 auto 20px;">
+              <tr>
+                <td style="padding:0 8px;text-align:center;">
+                  <div style="background:${styles.boxColor || '#fff'};padding:16px 20px;border-radius:8px;min-width:60px;">
+                    <span style="font-size:32px;font-weight:bold;color:${styles.boxTextColor || globalStyles.primaryColor};">00</span>
+                  </div>
+                  <p style="margin:8px 0 0;font-size:12px;color:${styles.textColor || '#fff'};">${content.labels?.days || 'Days'}</p>
+                </td>
+                <td style="padding:0 8px;text-align:center;">
+                  <div style="background:${styles.boxColor || '#fff'};padding:16px 20px;border-radius:8px;min-width:60px;">
+                    <span style="font-size:32px;font-weight:bold;color:${styles.boxTextColor || globalStyles.primaryColor};">00</span>
+                  </div>
+                  <p style="margin:8px 0 0;font-size:12px;color:${styles.textColor || '#fff'};">${content.labels?.hours || 'Hours'}</p>
+                </td>
+                <td style="padding:0 8px;text-align:center;">
+                  <div style="background:${styles.boxColor || '#fff'};padding:16px 20px;border-radius:8px;min-width:60px;">
+                    <span style="font-size:32px;font-weight:bold;color:${styles.boxTextColor || globalStyles.primaryColor};">00</span>
+                  </div>
+                  <p style="margin:8px 0 0;font-size:12px;color:${styles.textColor || '#fff'};">${content.labels?.minutes || 'Mins'}</p>
+                </td>
+              </tr>
+            </table>
+            ${content.showButton ? `<a href="${content.buttonLink}" style="display:inline-block;background:${styles.boxColor || '#fff'};color:${styles.backgroundColor};padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">${content.buttonText}</a>` : ''}
+          </td></tr>`;
+
+        case 'progressBar':
+          const percent = Math.min(100, Math.max(0, (content.current / content.goal) * 100));
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;">
+            ${content.title ? `<h3 style="margin:0 0 12px;font-size:18px;color:${globalStyles.textColor};">${content.title}</h3>` : ''}
+            <div style="background:${styles.trackColor || '#E5E7EB'};height:${styles.height || 12}px;border-radius:${styles.borderRadius || 6}px;overflow:hidden;">
+              <div style="background:${styles.progressColor || '#10B981'};height:100%;width:${percent}%;border-radius:${styles.borderRadius || 6}px;"></div>
+            </div>
+            ${content.showPercentage ? `<p style="margin:8px 0 0;font-size:14px;color:${globalStyles.textColor};">${Math.round(percent)}% complete</p>` : ''}
+            ${content.description ? `<p style="margin:4px 0 0;font-size:14px;color:#6B7280;">${content.description}</p>` : ''}
+          </td></tr>`;
+
+        case 'statsGrid':
+          const statsHtml = (content.stats || []).map((s: any) =>
+            `<td style="padding:12px;text-align:center;">
+              ${styles.showIcons && s.icon ? `<div style="font-size:24px;margin-bottom:8px;">${s.icon}</div>` : ''}
+              <div style="font-size:${styles.statValueSize || 36}px;font-weight:bold;color:${styles.textColor || '#fff'};">${s.value}</div>
+              <div style="font-size:${styles.labelSize || 14}px;color:${styles.textColor || '#fff'};opacity:0.8;">${s.label}</div>
+            </td>`
+          ).join('');
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;">
+            ${content.title ? `<h3 style="margin:0 0 20px;text-align:center;font-size:20px;color:${styles.textColor || '#fff'};">${content.title}</h3>` : ''}
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>${statsHtml}</tr></table>
+          </td></tr>`;
+
+        case 'iconList':
+          const listHtml = (content.items || []).map((item: any) =>
+            `<tr><td style="padding:${(styles.spacing || 16) / 2}px 0;">
+              <table cellpadding="0" cellspacing="0"><tr>
+                <td style="width:${styles.iconSize || 24}px;height:${styles.iconSize || 24}px;background:${styles.iconBgColor || '#D1FAE5'};border-radius:50%;text-align:center;vertical-align:middle;color:${styles.iconColor || '#10B981'};font-size:14px;">${item.icon}</td>
+                <td style="padding-left:12px;color:${item.highlight ? styles.highlightColor || '#4F46E5' : styles.textColor || '#374151'};font-weight:${item.highlight ? '600' : '400'};">${item.text}</td>
+              </tr></table>
+            </td></tr>`
+          ).join('');
+          return `<tr><td style="background:${styles.backgroundColor};padding:${styles.padding}px;">
+            ${content.title ? `<h3 style="margin:0 0 16px;font-size:18px;color:${globalStyles.textColor};">${content.title}</h3>` : ''}
+            <table width="100%" cellpadding="0" cellspacing="0">${listHtml}</table>
+          </td></tr>`;
+
         default:
           return '';
       }
+    };
+
+    // Wrapper function that applies conditional logic
+    const renderBlockWithConditional = (block: EmailBlock): string => {
+      const html = renderBlock(block);
+      if (!block.conditional?.enabled || !html) return html;
+
+      const { field, operator, value } = block.conditional;
+      const conditionStr = operator === 'exists'
+        ? `{{#if ${field}}}`
+        : operator === 'equals'
+          ? `{{#ifEquals ${field} "${value}"}}`
+          : operator === 'notEquals'
+            ? `{{#ifNotEquals ${field} "${value}"}}`
+            : operator === 'contains'
+              ? `{{#ifContains ${field} "${value}"}}`
+              : operator === 'greaterThan'
+                ? `{{#ifGt ${field} ${value}}}`
+                : `{{#ifLt ${field} ${value}}}`;
+      return `${conditionStr}${html}{{/if}}`;
     };
 
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Email</title></head>
@@ -514,7 +923,7 @@ export default function EmailTemplateDesigner() {
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${globalStyles.backgroundColor};">
 <tr><td align="center" style="padding:20px;">
 <table role="presentation" cellpadding="0" cellspacing="0" width="${globalStyles.contentWidth}" style="max-width:${globalStyles.contentWidth}px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.05);">
-${blocks.map(renderBlock).join('')}
+${blocks.map(renderBlockWithConditional).join('')}
 </table></td></tr></table></body></html>`;
   }, [design]);
 
@@ -732,8 +1141,234 @@ ${blocks.map(renderBlock).join('')}
           </div>
         );
 
+      case 'section':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, borderRadius: styles.borderRadius }}>
+            {content.showTitle && content.title && <h3 className="text-lg font-semibold text-gray-800 mb-3">{content.title}</h3>}
+            <p className="text-gray-400 text-sm italic">Section content area</p>
+          </div>
+        );
+
+      // E-commerce Blocks
+      case 'productShowcase':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding }}>
+            <div className="text-center">
+              {content.productImage ? (
+                <img src={content.productImage} alt={content.productName} className="w-48 h-48 object-cover rounded-lg mx-auto mb-4" />
+              ) : (
+                <div className="w-48 h-48 bg-gray-100 rounded-lg mx-auto mb-4 flex items-center justify-center text-gray-400">
+                  <FiImage size={48} />
+                </div>
+              )}
+              {styles.showBadge && content.badge && (
+                <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full text-white mb-2" style={{ background: styles.accentColor || '#EF4444' }}>{content.badge}</span>
+              )}
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{content.productName}</h3>
+              {styles.showRating && <div className="text-yellow-400 text-sm mb-2">{'★'.repeat(Math.floor(content.rating || 0))}{'☆'.repeat(5 - Math.floor(content.rating || 0))} <span className="text-gray-500">({content.reviewCount})</span></div>}
+              <div className="mb-3">
+                <span className="text-2xl font-bold" style={{ color: styles.buttonColor || '#4F46E5' }}>{content.price}</span>
+                {styles.showOriginalPrice && content.originalPrice && <span className="text-gray-400 line-through ml-2">{content.originalPrice}</span>}
+              </div>
+              <p className="text-gray-600 text-sm mb-4">{content.description}</p>
+              <button className="px-6 py-3 rounded-lg text-white font-semibold" style={{ background: styles.buttonColor || '#4F46E5' }}>{content.buttonText}</button>
+            </div>
+          </div>
+        );
+
+      case 'productGrid':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding }}>
+            {content.title && <h3 className="text-lg font-semibold text-gray-800 text-center mb-4">{content.title}</h3>}
+            <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${styles.columns || 2}, 1fr)` }}>
+              {(content.products || []).slice(0, 4).map((p: any, i: number) => (
+                <div key={i} className="p-3 rounded-lg text-center" style={{ background: styles.productCardBg || '#fff' }}>
+                  {p.image ? <img src={p.image} alt={p.name} className="w-full aspect-square object-cover rounded-md mb-2" /> : <div className="w-full aspect-square bg-gray-100 rounded-md mb-2" />}
+                  <p className="text-sm font-medium text-gray-700">{p.name}</p>
+                  <p className="text-sm font-bold" style={{ color: design.globalStyles.primaryColor }}>{p.price}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'discountCode':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, borderRadius: styles.borderRadius, textAlign: 'center' }}>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: styles.textColor || '#fff' }}>{content.headline}</h2>
+            <p className="mb-4 opacity-90" style={{ color: styles.textColor || '#fff' }}>{content.description}</p>
+            <div className="inline-block px-8 py-4 rounded-lg mb-3" style={{ background: styles.codeBackground || '#fff', border: `2px ${styles.borderStyle || 'dashed'} ${styles.codeColor || '#4F46E5'}` }}>
+              <span className="text-2xl font-bold tracking-widest" style={{ color: styles.codeColor || '#4F46E5' }}>{content.code}</span>
+            </div>
+            <p className="text-xl font-bold mb-1" style={{ color: styles.textColor || '#fff' }}>{content.discount}</p>
+            <p className="text-sm opacity-80 mb-4" style={{ color: styles.textColor || '#fff' }}>{content.expiryText}</p>
+            <button className="px-6 py-3 rounded-lg font-semibold" style={{ background: styles.codeBackground || '#fff', color: styles.backgroundColor }}>{content.buttonText}</button>
+          </div>
+        );
+
+      case 'countdown':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, textAlign: 'center' }}>
+            <h2 className="text-2xl font-bold mb-5" style={{ color: styles.textColor || '#fff' }}>{content.headline}</h2>
+            <div className="flex justify-center gap-3 mb-5">
+              {['days', 'hours', 'minutes'].map((unit) => (
+                <div key={unit} className="text-center">
+                  <div className="px-5 py-3 rounded-lg mb-1" style={{ background: styles.boxColor || '#fff' }}>
+                    <span className="text-3xl font-bold" style={{ color: styles.boxTextColor || '#4F46E5' }}>00</span>
+                  </div>
+                  <span className="text-xs" style={{ color: styles.textColor || '#fff' }}>{content.labels?.[unit] || unit}</span>
+                </div>
+              ))}
+            </div>
+            {content.showButton && <button className="px-6 py-3 rounded-lg font-semibold" style={{ background: styles.boxColor || '#fff', color: styles.backgroundColor }}>{content.buttonText}</button>}
+          </div>
+        );
+
+      case 'progressBar':
+        const progressPercent = Math.min(100, Math.max(0, (content.current / content.goal) * 100));
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding }}>
+            {content.title && <h3 className="text-lg font-semibold text-gray-800 mb-3">{content.title}</h3>}
+            <div className="rounded-full overflow-hidden" style={{ background: styles.trackColor || '#E5E7EB', height: styles.height || 12 }}>
+              <div className="h-full rounded-full transition-all" style={{ background: styles.progressColor || '#10B981', width: `${progressPercent}%` }} />
+            </div>
+            {content.showPercentage && <p className="text-sm text-gray-600 mt-2">{Math.round(progressPercent)}% complete</p>}
+            {content.description && <p className="text-sm text-gray-500 mt-1">{content.description}</p>}
+          </div>
+        );
+
+      case 'statsGrid':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, textAlign: 'center' }}>
+            {content.title && <h3 className="text-xl font-semibold mb-5" style={{ color: styles.textColor || '#fff' }}>{content.title}</h3>}
+            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${styles.columns || 4}, 1fr)` }}>
+              {(content.stats || []).map((s: any, i: number) => (
+                <div key={i}>
+                  {styles.showIcons && s.icon && <div className="text-2xl mb-2">{s.icon}</div>}
+                  <div className="font-bold" style={{ fontSize: styles.statValueSize || 36, color: styles.textColor || '#fff' }}>{s.value}</div>
+                  <div style={{ fontSize: styles.labelSize || 14, color: styles.textColor || '#fff', opacity: 0.8 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'iconList':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding }}>
+            {content.title && <h3 className="text-lg font-semibold text-gray-800 mb-4">{content.title}</h3>}
+            <div className="space-y-3">
+              {(content.items || []).map((item: any, i: number) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-sm" style={{ background: styles.iconBgColor || '#D1FAE5', color: styles.iconColor || '#10B981' }}>{item.icon}</span>
+                  <span className={item.highlight ? 'font-semibold' : ''} style={{ color: item.highlight ? styles.highlightColor || '#4F46E5' : styles.textColor || '#374151' }}>{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      // Course/LMS Blocks
+      case 'courseCard':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, borderRadius: styles.borderRadius || 16 }}>
+            {content.courseImage ? <img src={content.courseImage} alt={content.courseTitle} className="w-full h-32 object-cover rounded-lg mb-4" /> : <div className="w-full h-32 bg-gray-100 rounded-lg mb-4 flex items-center justify-center text-gray-400"><FiImage size={32} /></div>}
+            {styles.showTags && content.tags && <div className="flex gap-2 mb-2">{content.tags.map((t: string, i: number) => <span key={i} className="px-2 py-1 text-xs rounded" style={{ background: `${styles.accentColor || '#8B5CF6'}20`, color: styles.accentColor || '#8B5CF6' }}>{t}</span>)}</div>}
+            <h3 className="text-lg font-bold text-gray-800 mb-2">{content.courseTitle}</h3>
+            {styles.showInstructor && <p className="text-sm text-gray-500 mb-2">by {content.instructor}</p>}
+            <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+              <span>{content.duration}</span>
+              <span>{content.lessons} lessons</span>
+              <span>{content.level}</span>
+            </div>
+            {styles.showRating && <div className="text-yellow-400 text-sm mb-3">{'★'.repeat(Math.floor(content.rating || 0))} <span className="text-gray-500">{content.rating} ({content.students} students)</span></div>}
+            <div className="flex items-center justify-between">
+              <span className="text-xl font-bold" style={{ color: styles.accentColor || '#8B5CF6' }}>{content.price}</span>
+              <button className="px-4 py-2 rounded-lg text-white text-sm font-semibold" style={{ background: styles.buttonColor || '#8B5CF6' }}>{content.buttonText}</button>
+            </div>
+          </div>
+        );
+
+      case 'lessonProgress':
+        const lessonPercent = content.percentComplete || 0;
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, borderRadius: styles.borderRadius || 12 }}>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">{content.courseTitle}</h3>
+            <p className="text-sm text-gray-500 mb-4">{content.courseName}</p>
+            <div className="rounded-full overflow-hidden mb-2" style={{ background: styles.progressBgColor || '#E5E7EB', height: 8 }}>
+              <div className="h-full rounded-full" style={{ background: styles.progressColor || '#10B981', width: `${lessonPercent}%` }} />
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 mb-4">
+              <span>{content.completedLessons}/{content.totalLessons} lessons</span>
+              <span>{lessonPercent}%</span>
+            </div>
+            <p className="text-sm mb-1"><strong>Current:</strong> {content.currentLesson}</p>
+            <p className="text-sm text-gray-500 mb-4"><strong>Next:</strong> {content.nextLesson}</p>
+            {styles.showStreak && <p className="text-sm text-orange-500 mb-3">🔥 {content.streak} day streak!</p>}
+            <button className="w-full py-2 rounded-lg text-white font-semibold" style={{ background: styles.progressColor || '#10B981' }}>{content.buttonText}</button>
+          </div>
+        );
+
+      case 'certificateAnnouncement':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, textAlign: 'center' }}>
+            <h2 className="text-3xl font-bold mb-2" style={{ color: styles.textColor || '#fff' }}>{content.headline}</h2>
+            <p className="text-lg mb-2" style={{ color: styles.textColor || '#fff', opacity: 0.9 }}>{content.subheadline}</p>
+            <p className="text-xl font-semibold mb-4" style={{ color: styles.accentColor || '#F59E0B' }}>{content.courseName}</p>
+            <div className="inline-block border-4 rounded-lg px-8 py-4 mb-4" style={{ borderColor: styles.accentColor || '#F59E0B' }}>
+              <p className="text-2xl font-bold" style={{ color: styles.textColor || '#fff' }}>{content.studentName}</p>
+            </div>
+            {styles.showSkills && content.skills && (
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {content.skills.map((s: string, i: number) => <span key={i} className="px-3 py-1 rounded-full text-sm" style={{ background: `${styles.accentColor || '#F59E0B'}30`, color: styles.accentColor || '#F59E0B' }}>{s}</span>)}
+              </div>
+            )}
+            <button className="px-6 py-3 rounded-lg font-semibold" style={{ background: styles.accentColor || '#F59E0B', color: '#1F2937' }}>{content.buttonText}</button>
+          </div>
+        );
+
+      // Blog Blocks
+      case 'featuredArticle':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, borderRadius: styles.borderRadius || 16, overflow: 'hidden' }}>
+            {content.image ? <img src={content.image} alt={content.title} className="w-full object-cover" style={{ height: styles.imageHeight || 240 }} /> : <div className="w-full bg-gray-100 flex items-center justify-center text-gray-400" style={{ height: styles.imageHeight || 240 }}><FiImage size={48} /></div>}
+            <div className="p-6">
+              {styles.showCategory && content.category && <span className="text-sm font-semibold" style={{ color: styles.categoryColor || '#8B5CF6' }}>{content.category}</span>}
+              <h3 className="text-xl font-bold text-gray-800 mt-1 mb-2">{content.title}</h3>
+              <p className="text-gray-600 text-sm mb-4">{content.excerpt}</p>
+              {styles.showAuthor && (
+                <div className="flex items-center gap-2 mb-4">
+                  {content.authorAvatar ? <img src={content.authorAvatar} alt={content.author} className="w-8 h-8 rounded-full" /> : <div className="w-8 h-8 rounded-full bg-gray-200" />}
+                  <span className="text-sm text-gray-600">{content.author}</span>
+                  {styles.showReadTime && <span className="text-sm text-gray-400">· {content.readTime}</span>}
+                </div>
+              )}
+              <button className="px-4 py-2 rounded-lg text-white text-sm font-semibold" style={{ background: styles.categoryColor || '#8B5CF6' }}>{content.buttonText}</button>
+            </div>
+          </div>
+        );
+
+      case 'newsletterSignup':
+        return (
+          <div className={wrapperClass} style={{ background: styles.backgroundColor, padding: styles.padding, borderRadius: styles.borderRadius || 16, textAlign: 'center' }}>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: styles.textColor || '#fff' }}>{content.headline}</h2>
+            <p className="mb-4 opacity-90" style={{ color: styles.textColor || '#fff' }}>{content.subheadline}</p>
+            {content.showIncentive && content.incentive && <p className="text-sm mb-4 font-semibold" style={{ color: styles.buttonColor || '#fff' }}>🎁 {content.incentive}</p>}
+            <div className="flex gap-2 max-w-md mx-auto mb-3">
+              <input type="email" placeholder={content.placeholder} className="flex-1 px-4 py-3 rounded-full border-0 text-gray-700" style={{ borderRadius: styles.inputStyle === 'pill' ? 9999 : styles.inputStyle === 'underline' ? 0 : 8 }} />
+              <button className="px-6 py-3 font-semibold" style={{ background: styles.buttonColor || '#fff', color: styles.buttonTextColor || '#4F46E5', borderRadius: styles.inputStyle === 'pill' ? 9999 : 8 }}>{content.buttonText}</button>
+            </div>
+            <p className="text-xs opacity-70" style={{ color: styles.textColor || '#fff' }}>{content.privacyText}</p>
+          </div>
+        );
+
       default:
-        return <div className={wrapperClass} style={{ padding: 20 }}>Unknown block</div>;
+        return (
+          <div className={wrapperClass} style={{ padding: 20, background: '#f9fafb', textAlign: 'center' }}>
+            <p className="text-gray-500 text-sm">🧩 {BLOCK_INFO[type]?.label || type} Block</p>
+            <p className="text-gray-400 text-xs mt-1">{BLOCK_INFO[type]?.description || 'Click to configure'}</p>
+          </div>
+        );
     }
   };
 
@@ -1257,6 +1892,94 @@ ${blocks.map(renderBlock).join('')}
             <input type="range" min="0" max="80" value={styles.padding} onChange={(e) => updateBlockStyles(block.id, { padding: +e.target.value })} className="w-full accent-violet-500" />
           </div>
         )}
+
+        {/* Conditional Content */}
+        <div className="pt-4 border-t border-slate-700/50">
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <FiCheck size={14} /> Conditional Display
+            </label>
+            <button
+              onClick={() => {
+                const conditional = block.conditional?.enabled
+                  ? { ...block.conditional, enabled: false }
+                  : { enabled: true, field: 'user.name', operator: 'exists' as const, value: '' };
+                setDesign(prev => ({
+                  ...prev,
+                  blocks: prev.blocks.map(b => b.id === block.id ? { ...b, conditional } : b)
+                }));
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${block.conditional?.enabled ? 'bg-violet-500/20 text-violet-400 border border-violet-500/50' : 'bg-slate-700/50 text-slate-400 border border-slate-600/50'}`}
+            >
+              {block.conditional?.enabled ? 'Enabled' : 'Disabled'}
+            </button>
+          </div>
+          {block.conditional?.enabled && (
+            <div className="space-y-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30">
+              <p className="text-xs text-slate-400">Show this block only when:</p>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={block.conditional.field}
+                  onChange={(e) => setDesign(prev => ({
+                    ...prev,
+                    blocks: prev.blocks.map(b => b.id === block.id ? { ...b, conditional: { ...b.conditional!, field: e.target.value } } : b)
+                  }))}
+                  className="p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white"
+                >
+                  <optgroup label="User Data">
+                    <option value="user.name">User Name</option>
+                    <option value="user.email">User Email</option>
+                    <option value="user.role">User Role</option>
+                  </optgroup>
+                  <optgroup label="E-commerce">
+                    <option value="order.total">Order Total</option>
+                    <option value="order.items">Order Items</option>
+                    <option value="cart.abandoned">Cart Abandoned</option>
+                    <option value="customer.purchases">Total Purchases</option>
+                  </optgroup>
+                  <optgroup label="Courses">
+                    <option value="course.enrolled">Course Enrolled</option>
+                    <option value="course.progress">Course Progress</option>
+                    <option value="course.completed">Course Completed</option>
+                  </optgroup>
+                  <optgroup label="Custom">
+                    <option value="custom">Custom Field</option>
+                  </optgroup>
+                </select>
+                <select
+                  value={block.conditional.operator}
+                  onChange={(e) => setDesign(prev => ({
+                    ...prev,
+                    blocks: prev.blocks.map(b => b.id === block.id ? { ...b, conditional: { ...b.conditional!, operator: e.target.value as any } } : b)
+                  }))}
+                  className="p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white"
+                >
+                  <option value="exists">Exists</option>
+                  <option value="equals">Equals</option>
+                  <option value="notEquals">Not Equals</option>
+                  <option value="contains">Contains</option>
+                  <option value="greaterThan">Greater Than</option>
+                  <option value="lessThan">Less Than</option>
+                </select>
+              </div>
+              {block.conditional.operator !== 'exists' && (
+                <input
+                  type="text"
+                  value={block.conditional.value}
+                  onChange={(e) => setDesign(prev => ({
+                    ...prev,
+                    blocks: prev.blocks.map(b => b.id === block.id ? { ...b, conditional: { ...b.conditional!, value: e.target.value } } : b)
+                  }))}
+                  placeholder="Value to compare..."
+                  className="w-full p-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-500"
+                />
+              )}
+              <p className="text-xs text-slate-500">
+                💡 Use merge tags like {'{{user.name}}'} in your content
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -1280,6 +2003,9 @@ ${blocks.map(renderBlock).join('')}
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={() => setShowTemplateLibrary(true)} className="flex items-center gap-2 px-4 py-2 text-slate-300 bg-slate-700/50 border border-slate-600/50 rounded-xl hover:bg-slate-700 transition-colors">
+            <FiLayout size={18} /> Templates
+          </button>
           <button onClick={() => setShowPreviewModal(true)} className="flex items-center gap-2 px-4 py-2 text-slate-300 bg-slate-700/50 border border-slate-600/50 rounded-xl hover:bg-slate-700 transition-colors">
             <FiEye size={18} /> Preview
           </button>
@@ -1562,6 +2288,54 @@ ${blocks.map(renderBlock).join('')}
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Library Modal */}
+      {showTemplateLibrary && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-slate-700/50">
+            <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Template Library</h2>
+                <p className="text-sm text-slate-400">Start with a professionally designed template</p>
+              </div>
+              <button onClick={() => setShowTemplateLibrary(false)} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white">
+                <FiX size={20} />
+              </button>
+            </div>
+            <div className="p-4 border-b border-slate-700/50">
+              <div className="flex gap-2">
+                {['all', 'ecommerce', 'education', 'blog', 'saas'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setTemplateFilter(cat)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${templateFilter === cat ? 'bg-violet-600 text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'}`}
+                  >
+                    {cat === 'all' ? '🎨 All' : cat === 'ecommerce' ? '🛒 E-commerce' : cat === 'education' ? '🎓 Education' : cat === 'blog' ? '📝 Blog' : '💻 SaaS'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 overflow-auto p-4 bg-slate-900/30">
+              <div className="grid grid-cols-3 gap-4">
+                {TEMPLATE_PRESETS.filter(t => templateFilter === 'all' || t.category === templateFilter).map(template => (
+                  <button
+                    key={template.id}
+                    onClick={() => loadTemplatePreset(template.id)}
+                    className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/50 hover:border-violet-500 hover:bg-slate-700/50 transition-all text-left group"
+                  >
+                    <div className="text-3xl mb-3">{template.icon}</div>
+                    <h3 className="font-semibold text-white group-hover:text-violet-400 transition-colors">{template.name}</h3>
+                    <p className="text-sm text-slate-400 mt-1">{template.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-700/50 text-center">
+              <p className="text-sm text-slate-400">Templates are fully customizable after loading</p>
             </div>
           </div>
         </div>

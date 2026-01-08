@@ -1,122 +1,121 @@
-{{!-- Developer Marketplace Page --}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  {{> partials/head title=title}}
-</head>
-<body class="bg-gray-50">
-  {{> partials/header user=user}}
+{{> header}}
 
-  <main class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Hero Section -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 md:p-12 text-white mb-12">
-      <h1 class="text-4xl md:text-5xl font-bold mb-4">Developer Marketplace</h1>
-      <p class="text-xl text-blue-100 max-w-2xl mb-6">
-        Connect with top-tier developers ready to bring your vision to life. 
-        From web apps to mobile solutions, find the perfect match for your project.
-      </p>
-      <div class="flex flex-wrap gap-4">
-        <a href="/hire-developer" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition">
-          Browse All Developers
-        </a>
-        {{#unless user}}
-        <a href="/admin/login" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition">
-          Post a Project
-        </a>
-        {{/unless}}
-      </div>
+<style>
+  .dm-page { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
+  .dm-hero { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); padding: 60px 20px; text-align: center; color: #fff; }
+  .dm-hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+  .dm-hero p { font-size: 1.15rem; opacity: 0.9; max-width: 700px; margin: 0 auto 2rem; }
+  .dm-hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .dm-hero-btn { padding: 14px 28px; border-radius: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+  .dm-hero-btn.primary { background: #fff; color: #3b82f6; }
+  .dm-hero-btn.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 2px solid rgba(255,255,255,0.3); }
+  .dm-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+  .dm-section { margin-bottom: 3rem; }
+  .dm-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .dm-section-header h2 { color: #fff; font-size: 1.5rem; margin: 0; }
+  .dm-section-header a { color: #10b981; text-decoration: none; font-size: 0.9rem; }
+  .dm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+  .dm-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; transition: all 0.3s; }
+  .dm-card:hover { border-color: rgba(16, 185, 129, 0.4); transform: translateY(-4px); }
+  .dm-card-header { height: 80px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+  .dm-card-body { padding: 1.5rem; margin-top: -40px; }
+  .dm-card-avatar { width: 80px; height: 80px; border-radius: 12px; border: 4px solid #1e293b; object-fit: cover; background: #334155; }
+  .dm-card-name { color: #fff; font-size: 1.1rem; font-weight: 700; margin: 1rem 0 0.25rem; }
+  .dm-card-headline { color: #94a3b8; font-size: 0.85rem; margin: 0; }
+  .dm-card-rating { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; font-size: 0.85rem; color: #fbbf24; }
+  .dm-card-rating span { color: #fff; }
+  .dm-card-skills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+  .dm-skill-tag { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
+  .dm-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); }
+  .dm-card-rate { color: #10b981; font-size: 1.25rem; font-weight: 700; }
+  .dm-card-link { color: #3b82f6; font-size: 0.85rem; text-decoration: none; }
+  .dm-cta { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 60px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
+  .dm-cta h2 { color: #fff; font-size: 2rem; margin-bottom: 1rem; }
+  .dm-cta p { color: #94a3b8; max-width: 600px; margin: 0 auto 2rem; }
+  .dm-cta-btn { display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #10b981 0%, #6366f1 100%); color: #fff; border-radius: 12px; font-weight: 600; text-decoration: none; }
+  @media (max-width: 640px) { .dm-hero h1 { font-size: 2rem; } .dm-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="dm-page">
+  <section class="dm-hero">
+    <h1>Developer Marketplace</h1>
+    <p>Connect with top-tier developers ready to bring your vision to life. From web apps to mobile solutions, find the perfect match for your project.</p>
+    <div class="dm-hero-btns">
+      <a href="/hire-developer" class="dm-hero-btn primary">Browse All Developers</a>
+      {{#unless user}}
+      <a href="/admin/login" class="dm-hero-btn secondary">Post a Project</a>
+      {{/unless}}
     </div>
+  </section>
 
-    <!-- Featured Developers -->
+  <div class="dm-container">
+    {{!-- Featured Developers --}}
     {{#if featured.length}}
-    <section class="mb-12">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Featured Developers</h2>
-        <a href="/hire-developer?sortBy=rating" class="text-blue-600 hover:underline">View all →</a>
+    <section class="dm-section">
+      <div class="dm-section-header">
+        <h2>⭐ Featured Developers</h2>
+        <a href="/hire-developer?sortBy=rating">View all →</a>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="dm-grid">
         {{#each featured}}
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition group">
-          <div class="h-24 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-          <div class="p-6 -mt-12">
-            <img src="{{#if profileImage}}{{profileImage}}{{else}}/images/default-avatar.png{{/if}}" 
-              alt="{{displayName}}" class="w-20 h-20 rounded-full border-4 border-white object-cover mb-4">
-            <h3 class="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition">{{displayName}}</h3>
-            <p class="text-sm text-gray-500 mb-2">{{headline}}</p>
-            <div class="flex items-center gap-2 mb-3">
-              <div class="flex text-yellow-400">
-                {{#times 5}}
-                {{#if (lte this ../rating)}}★{{else}}☆{{/if}}
-                {{/times}}
-              </div>
-              <span class="text-sm text-gray-500">({{reviewCount}})</span>
+        <article class="dm-card">
+          <div class="dm-card-header"></div>
+          <div class="dm-card-body">
+            <img src="{{#if profileImage}}{{profileImage}}{{else}}/images/default-avatar.png{{/if}}" alt="{{displayName}}" class="dm-card-avatar">
+            <h3 class="dm-card-name">{{displayName}}</h3>
+            <p class="dm-card-headline">{{headline}}</p>
+            <div class="dm-card-rating">★ <span>{{rating}}</span> ({{reviewCount}} reviews)</div>
+            <div class="dm-card-skills">
+              {{#each skills}}{{#if (lt @index 3)}}<span class="dm-skill-tag">{{this}}</span>{{/if}}{{/each}}
             </div>
-            <div class="flex flex-wrap gap-1 mb-4">
-              {{#each skills}}
-              {{#if (lt @index 3)}}
-              <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{{this}}</span>
-              {{/if}}
-              {{/each}}
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-lg font-bold text-green-600">${{hourlyRate}}/hr</span>
-              <a href="/developer/{{slug}}" class="text-blue-600 hover:underline text-sm font-medium">View Profile</a>
+            <div class="dm-card-footer">
+              <span class="dm-card-rate">${{hourlyRate}}/hr</span>
+              <a href="/developer/{{slug}}" class="dm-card-link">View Profile →</a>
             </div>
           </div>
-        </div>
+        </article>
         {{/each}}
       </div>
     </section>
     {{/if}}
 
-    <!-- Developers by Category -->
+    {{!-- Developers by Category --}}
     {{#each byCategory}}
     {{#if developers.length}}
-    <section class="mb-12">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">{{label}} Developers</h2>
-        <a href="/hire-developer?category={{category}}" class="text-blue-600 hover:underline">View all →</a>
+    <section class="dm-section">
+      <div class="dm-section-header">
+        <h2>{{label}} Developers</h2>
+        <a href="/hire-developer?category={{category}}">View all →</a>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="dm-grid">
         {{#each developers}}
-        <a href="/developer/{{slug}}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition block">
-          <div class="flex items-center gap-3 mb-3">
-            <img src="{{#if profileImage}}{{profileImage}}{{else}}/images/default-avatar.png{{/if}}" 
-              alt="{{displayName}}" class="w-12 h-12 rounded-full object-cover">
-            <div>
-              <h3 class="font-semibold text-gray-900">{{displayName}}</h3>
-              <div class="flex items-center gap-1 text-sm">
-                <span class="text-yellow-400">★</span>
-                <span>{{rating}}</span>
-              </div>
+        <article class="dm-card">
+          <div class="dm-card-header"></div>
+          <div class="dm-card-body">
+            <img src="{{#if profileImage}}{{profileImage}}{{else}}/images/default-avatar.png{{/if}}" alt="{{displayName}}" class="dm-card-avatar">
+            <h3 class="dm-card-name">{{displayName}}</h3>
+            <p class="dm-card-headline">{{headline}}</p>
+            <div class="dm-card-rating">★ <span>{{rating}}</span></div>
+            <div class="dm-card-footer">
+              <span style="color: #94a3b8; font-size: 0.85rem;">{{projectsCompleted}} projects</span>
+              <span class="dm-card-rate">${{hourlyRate}}/hr</span>
             </div>
           </div>
-          <p class="text-sm text-gray-500 line-clamp-2 mb-2">{{headline}}</p>
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-gray-400">{{projectsCompleted}} projects</span>
-            <span class="font-semibold text-green-600">${{hourlyRate}}/hr</span>
-          </div>
-        </a>
+        </article>
         {{/each}}
       </div>
     </section>
     {{/if}}
     {{/each}}
+  </div>
 
-    <!-- CTA Section -->
-    <section class="bg-gray-900 rounded-2xl p-8 md:p-12 text-center text-white">
-      <h2 class="text-3xl font-bold mb-4">Are You a Developer?</h2>
-      <p class="text-gray-300 max-w-2xl mx-auto mb-6">
-        Join our marketplace and connect with clients looking for your skills. 
-        Set your own rates, choose your projects, and grow your freelance career.
-      </p>
-      <a href="/admin/marketplace/apply" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-        Apply as Developer
-      </a>
-    </section>
-  </main>
+  {{!-- CTA Section --}}
+  <section class="dm-cta">
+    <h2>Are You a Developer?</h2>
+    <p>Join our marketplace and connect with clients looking for your skills. Set your own rates, choose your projects, and grow your freelance career.</p>
+    <a href="/admin/dev-marketplace/apply" class="dm-cta-btn">Apply as Developer</a>
+  </section>
+</div>
 
-  {{> partials/footer}}
-</body>
-</html>
+{{> footer}}
 
