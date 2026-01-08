@@ -1957,7 +1957,7 @@ model User {
   id String @id @default(cuid())
   email                                                   String                    @unique
   name                                                    String
-  password                                                String
+  password                                                String?
   role                                                    UserRole                  @default(AUTHOR)
   avatar                                                  String?
   bio                                                     String?
@@ -1971,6 +1971,9 @@ model User {
   recoveryCodes                                           Json?
   twoFactorEnabled                                        Boolean                   @default(false)
   twoFactorSecret                                         String?
+  // Google OAuth fields
+  googleId                                                String?                   @unique
+  authProvider                                            String                    @default("local")
   about                                                   String?
   company                                                 String?
   coursesCount                                            Int                       @default(0)
@@ -2596,4 +2599,108 @@ enum VideoProvider {
   HLS
   YOUTUBE
   VIMEO
+}
+
+// ==================== DEMO SYSTEM ====================
+
+model DemoInstance {
+  id              String            @id @default(cuid())
+  subdomain       String            @unique
+  name            String
+  email           String
+  company         String?
+  phone           String?
+
+  // Instance configuration
+  databaseName    String            @unique
+  port            Int               @unique
+  containerId     String?
+  status          DemoStatus        @default(PENDING)
+
+  // Access credentials
+  adminEmail      String
+  adminPassword   String            // Hashed
+  accessToken     String            @unique @default(cuid())
+
+  // Lifecycle
+  expiresAt       DateTime
+  createdAt       DateTime          @default(now())
+  startedAt       DateTime?
+  lastAccessedAt  DateTime?
+
+  // Resource usage
+  cpuUsage        Float?
+  memoryUsage     Float?
+  diskUsage       Float?
+  requestCount    Int               @default(0)
+
+  // Analytics
+  featuresUsed    Json?             // Track which features were explored
+  pagesVisited    Json?             // Track page visits
+  actionsPerformed Json?            // Track actions taken
+
+  // Conversion tracking
+  upgradeRequested Boolean          @default(false)
+  upgradeRequestedAt DateTime?
+  notes           String?
+
+  // Relations
+  accessLogs      DemoAccessLog[]
+  featureUsage    DemoFeatureUsage[]
+
+  @@index([status])
+  @@index([email])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model DemoAccessLog {
+  id              String        @id @default(cuid())
+  demoInstanceId  String
+  ipAddress       String?
+  userAgent       String?
+  path            String
+  method          String
+  statusCode      Int?
+  responseTime    Int?          // milliseconds
+  createdAt       DateTime      @default(now())
+
+  demoInstance    DemoInstance  @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
+
+  @@index([demoInstanceId])
+  @@index([createdAt])
+  @@index([path])
+}
+
+model DemoFeatureUsage {
+  id              String        @id @default(cuid())
+  demoInstanceId  String
+  feature         String        // e.g., "ai_theme_generator", "ecommerce", "lms"
+  action          String        // e.g., "view", "create", "edit", "delete"
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+
+  demoInstance    DemoInstance  @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
+
+  @@index([demoInstanceId])
+  @@index([feature])
+  @@index([createdAt])
+}
+
+model DemoConfig {
+  id              String        @id @default(cuid())
+  key             String        @unique
+  value           String
+  description     String?
+  updatedAt       DateTime      @updatedAt
+}
+
+enum DemoStatus {
+  PENDING
+  PROVISIONING
+  RUNNING
+  PAUSED
+  EXPIRED
+  TERMINATED
+  ERROR
 }

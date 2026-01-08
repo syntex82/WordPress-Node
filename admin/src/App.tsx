@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
 import { SiteThemeProvider, useSiteTheme } from './contexts/SiteThemeContext';
+import { TourProvider } from './components/GuidedTour';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -300,11 +301,13 @@ function AppContent() {
   );
 }
 
-// Main App component wrapped with SiteThemeProvider
+// Main App component wrapped with SiteThemeProvider and TourProvider
 function App() {
   return (
     <SiteThemeProvider>
-      <AppContent />
+      <TourProvider>
+        <AppContent />
+      </TourProvider>
     </SiteThemeProvider>
   );
 }

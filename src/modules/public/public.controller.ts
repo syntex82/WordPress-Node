@@ -704,6 +704,27 @@ Sitemap: ${baseUrl}/sitemap.xml
   }
 
   /**
+   * Try Demo page - request a free demo instance
+   * GET /try-demo
+   */
+  @Get('try-demo')
+  @UseGuards(OptionalJwtAuthGuard)
+  async tryDemo(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = (req as any).user;
+      const html = await this.themeRenderer.render('try-demo', {
+        title: 'Try NodePress Free | 24-Hour Demo',
+        description: 'Get instant access to a fully-featured NodePress CMS demo. No credit card required.',
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering try-demo page:', error);
+      res.status(500).send(`Error rendering try-demo page: ${error.message}`);
+    }
+  }
+
+  /**
    * Shop page
    * GET /shop
    */

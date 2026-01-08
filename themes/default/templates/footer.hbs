@@ -127,6 +127,157 @@
       }
     }
   </script>
+
+  <!-- Floating Demo Widget -->
+  {{#unless user}}
+  {{#unless hideDemoWidget}}
+  <div id="demo-widget" class="demo-floating-widget">
+    <button id="demo-widget-toggle" class="demo-widget-btn" aria-label="Try Demo">
+      <span class="demo-widget-icon">🚀</span>
+      <span class="demo-widget-text">Try Demo</span>
+    </button>
+    <div id="demo-widget-popup" class="demo-widget-popup" style="display: none;">
+      <button class="demo-popup-close" onclick="closeDemoPopup()">&times;</button>
+      <h3>Try NodePress Free!</h3>
+      <p>Get instant access to a fully-featured demo. No credit card required.</p>
+      <ul class="demo-popup-features">
+        <li>✓ Full admin access</li>
+        <li>✓ AI theme generator</li>
+        <li>✓ LMS & eCommerce</li>
+        <li>✓ 24 hours free</li>
+      </ul>
+      <a href="/try-demo" class="demo-popup-cta">Start Free Demo →</a>
+    </div>
+  </div>
+  <style>
+    .demo-floating-widget {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .demo-widget-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+      transition: all 0.3s ease;
+    }
+    .demo-widget-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+    }
+    .demo-widget-icon { font-size: 18px; }
+    .demo-widget-popup {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      width: 300px;
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .demo-popup-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #94a3b8;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .demo-widget-popup h3 {
+      margin: 0 0 8px;
+      font-size: 1.25rem;
+      color: #1e293b;
+    }
+    .demo-widget-popup p {
+      margin: 0 0 16px;
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .demo-popup-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px;
+    }
+    .demo-popup-features li {
+      padding: 6px 0;
+      color: #475569;
+      font-size: 0.9rem;
+    }
+    .demo-popup-cta {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .demo-popup-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    @media (max-width: 480px) {
+      .demo-widget-text { display: none; }
+      .demo-widget-btn { padding: 14px; border-radius: 50%; }
+      .demo-widget-popup { width: calc(100vw - 48px); right: -12px; }
+    }
+  </style>
+  <script>
+    (function() {
+      var toggle = document.getElementById('demo-widget-toggle');
+      var popup = document.getElementById('demo-widget-popup');
+      var isOpen = false;
+
+      toggle.addEventListener('click', function() {
+        isOpen = !isOpen;
+        popup.style.display = isOpen ? 'block' : 'none';
+      });
+
+      window.closeDemoPopup = function() {
+        isOpen = false;
+        popup.style.display = 'none';
+      };
+
+      // Close on click outside
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#demo-widget')) {
+          popup.style.display = 'none';
+          isOpen = false;
+        }
+      });
+
+      // Hide on /try-demo page
+      if (window.location.pathname === '/try-demo') {
+        document.getElementById('demo-widget').style.display = 'none';
+      }
+    })();
+  </script>
+  {{/unless}}
+  {{/unless}}
 </body>
 </html>
 

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Admin | NodePress</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    
+    .demo-banner {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+    }
+    .demo-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .demo-banner-timer {
+      background: rgba(0,0,0,0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .demo-banner a {
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 6px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .demo-banner a:hover { background: rgba(255,255,255,0.3); }
+    
+    .demo-credentials {
+      background: #1e293b;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      font-size: 0.9rem;
+    }
+    .demo-credentials code {
+      background: rgba(255,255,255,0.1);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .demo-credentials .copy-btn {
+      background: #10b981;
+      border: none;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    
+    .admin-frame {
+      width: 100%;
+      height: calc(100vh - 84px);
+      border: none;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 84px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(16, 185, 129, 0.2);
+      border-top-color: #10b981;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: #94a3b8; }
+    
+    @media (max-width: 768px) {
+      .demo-banner { flex-direction: column; gap: 8px; text-align: center; }
+      .demo-credentials { flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Demo Mode Banner -->
+  <div class="demo-banner">
+    <div class="demo-banner-left">
+      🚀 <strong>Demo Mode</strong>
+      <span class="demo-banner-timer" id="timer">{{demo.remainingHours}}h remaining</span>
+    </div>
+    <div>
+      <a href="/try-demo">← Back</a>
+      <a href="/pricing" style="margin-left: 8px;">Upgrade →</a>
+    </div>
+  </div>
+  
+  <!-- Demo Credentials -->
+  <div class="demo-credentials">
+    <span>
+      📧 <strong>Email:</strong> 
+      <code id="demo-email">{{demo.adminEmail}}</code>
+      <button class="copy-btn" onclick="copyToClipboard('demo-email')">Copy</button>
+    </span>
+    <span>
+      🔐 <strong>Password:</strong> 
+      <code id="demo-pass">demo123</code>
+      <button class="copy-btn" onclick="copyToClipboard('demo-pass')">Copy</button>
+    </span>
+    <span style="color: #94a3b8; font-size: 0.8rem;">
+      ℹ️ Some features are restricted in demo mode
+    </span>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading Admin Panel...</div>
+  </div>
+  
+  <!-- Admin Panel iFrame (or embedded) -->
+  <iframe 
+    src="/admin?demo={{demo.subdomain}}" 
+    class="admin-frame" 
+    id="admin-frame"
+    onload="document.getElementById('loading').style.display='none';"
+  ></iframe>
+  
+  <script>
+    function copyToClipboard(id) {
+      var text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        alert('Copied: ' + text);
+      });
+    }
+    
+    // Countdown timer
+    var expiresAt = new Date('{{demo.expiresAt}}');
+    function updateTimer() {
+      var now = new Date();
+      var diff = expiresAt - now;
+      if (diff <= 0) {
+        document.getElementById('timer').textContent = 'Expired';
+        return;
+      }
+      var hours = Math.floor(diff / (1000 * 60 * 60));
+      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      document.getElementById('timer').textContent = hours + 'h ' + minutes + 'm remaining';
+    }
+    updateTimer();
+    setInterval(updateTimer, 60000);
+  </script>
+</body>
+</html>
+

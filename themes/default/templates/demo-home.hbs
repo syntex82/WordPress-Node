@@ -1,0 +1,205 @@
+{{> header}}
+
+<style>
+  .demo-banner {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .demo-banner strong { font-weight: 700; }
+  .demo-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    padding: 60px 20px;
+  }
+  .demo-card {
+    max-width: 600px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+  }
+  .demo-logo {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 auto 24px;
+  }
+  .demo-card h1 {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  .demo-card h1 span {
+    background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .demo-card .subtitle {
+    color: #94a3b8;
+    margin-bottom: 32px;
+  }
+  .demo-info {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+  .demo-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .demo-info-row:last-child { border-bottom: none; }
+  .demo-info-label { color: #94a3b8; }
+  .demo-info-value { color: white; font-weight: 600; }
+  .demo-timer {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .demo-timer-label { color: #f87171; font-size: 0.85rem; margin-bottom: 4px; }
+  .demo-timer-value { color: #fecaca; font-size: 1.5rem; font-weight: 700; }
+  .demo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .demo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  .demo-btn-primary {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+  }
+  .demo-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  }
+  .demo-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+  .demo-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  .demo-features {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    text-align: left;
+  }
+  .demo-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+  }
+  .demo-feature-icon {
+    width: 24px;
+    height: 24px;
+    background: rgba(16, 185, 129, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  @media (max-width: 600px) {
+    .demo-features { grid-template-columns: 1fr; }
+    .demo-card { padding: 24px; }
+  }
+</style>
+
+<!-- Demo Mode Banner -->
+<div class="demo-banner">
+  🚀 <strong>Demo Mode</strong> — You have <strong>{{demo.remainingHours}} hours</strong> remaining. 
+  <a href="/pricing" style="color: white; text-decoration: underline;">Upgrade to full version</a>
+</div>
+
+<section class="demo-container">
+  <div class="demo-card">
+    <div class="demo-logo">NP</div>
+    <h1>Welcome to Your <span>NodePress</span> Demo</h1>
+    <p class="subtitle">Explore all features with full admin access</p>
+
+    <div class="demo-timer">
+      <div class="demo-timer-label">⏱️ Demo Expires In</div>
+      <div class="demo-timer-value" id="countdown">{{demo.remainingHours}}h 00m</div>
+    </div>
+
+    <div class="demo-actions">
+      <a href="{{adminUrl}}" class="demo-btn demo-btn-primary">
+        ⚙️ Open Admin Panel
+      </a>
+      <a href="{{demoBaseUrl}}/shop" class="demo-btn demo-btn-secondary">
+        🛒 Browse Demo Shop
+      </a>
+      <a href="{{demoBaseUrl}}/courses" class="demo-btn demo-btn-secondary">
+        📚 Explore Courses
+      </a>
+    </div>
+
+    <div class="demo-features">
+      <div class="demo-feature"><div class="demo-feature-icon">✓</div> Full Admin Access</div>
+      <div class="demo-feature"><div class="demo-feature-icon">✓</div> AI Theme Generator</div>
+      <div class="demo-feature"><div class="demo-feature-icon">✓</div> LMS & Courses</div>
+      <div class="demo-feature"><div class="demo-feature-icon">✓</div> eCommerce Shop</div>
+      <div class="demo-feature"><div class="demo-feature-icon">✓</div> Sample Content</div>
+      <div class="demo-feature"><div class="demo-feature-icon">✓</div> All Plugins</div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Countdown timer
+  var expiresAt = new Date('{{demo.expiresAt}}');
+  function updateCountdown() {
+    var now = new Date();
+    var diff = expiresAt - now;
+    if (diff <= 0) {
+      document.getElementById('countdown').textContent = 'Expired';
+      return;
+    }
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    document.getElementById('countdown').textContent = hours + 'h ' + minutes + 'm';
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+</script>
+
+{{> footer}}
+

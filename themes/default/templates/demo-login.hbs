@@ -1,0 +1,179 @@
+{{> header}}
+
+<style>
+  .demo-login-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .demo-login-card {
+    max-width: 420px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+  }
+  .demo-login-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .demo-login-logo {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 auto 16px;
+  }
+  .demo-login-header h1 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+  .demo-login-header p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+  
+  .demo-credentials-box {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .demo-credentials-title {
+    color: #10b981;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .demo-credential-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .demo-credential-row:last-child { border-bottom: none; }
+  .demo-credential-label {
+    color: #94a3b8;
+    font-size: 0.85rem;
+  }
+  .demo-credential-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .demo-credential-value code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: white;
+    font-size: 0.9rem;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    color: #10b981;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+  }
+  
+  .demo-login-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+  .demo-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  }
+  
+  .demo-timer-small {
+    text-align: center;
+    margin-top: 20px;
+    color: #f87171;
+    font-size: 0.85rem;
+  }
+</style>
+
+<section class="demo-login-container">
+  <div class="demo-login-card">
+    <div class="demo-login-header">
+      <div class="demo-login-logo">NP</div>
+      <h1>Demo Admin Login</h1>
+      <p>Use the credentials below to access your demo</p>
+    </div>
+    
+    <div class="demo-credentials-box">
+      <div class="demo-credentials-title">🔑 Your Demo Credentials</div>
+      <div class="demo-credential-row">
+        <span class="demo-credential-label">Email</span>
+        <span class="demo-credential-value">
+          <code id="email">{{demo.adminEmail}}</code>
+          <button class="copy-btn" onclick="copy('email')">Copy</button>
+        </span>
+      </div>
+      <div class="demo-credential-row">
+        <span class="demo-credential-label">Password</span>
+        <span class="demo-credential-value">
+          <code id="pass">demo123</code>
+          <button class="copy-btn" onclick="copy('pass')">Copy</button>
+        </span>
+      </div>
+    </div>
+    
+    <a href="{{demoBaseUrl}}/admin" class="demo-login-btn">
+      ⚙️ Enter Admin Panel
+    </a>
+    
+    <div class="demo-timer-small">
+      ⏱️ Demo expires in <strong>{{demo.remainingHours}} hours</strong>
+    </div>
+  </div>
+</section>
+
+<script>
+  function copy(id) {
+    var text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text);
+    event.target.textContent = 'Copied!';
+    setTimeout(function() { event.target.textContent = 'Copy'; }, 1500);
+  }
+</script>
+
+{{> footer}}
+

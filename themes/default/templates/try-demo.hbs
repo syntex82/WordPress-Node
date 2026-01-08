@@ -1,0 +1,335 @@
+{{> header}}
+
+<style>
+  .demo-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .demo-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .demo-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  @media (max-width: 900px) {
+    .demo-container { grid-template-columns: 1fr; gap: 40px; }
+  }
+  .demo-info h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+  .demo-info h1 span {
+    background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .demo-info p {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+  .demo-features {
+    display: grid;
+    gap: 1rem;
+  }
+  .demo-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #e2e8f0;
+    font-size: 1rem;
+  }
+  .demo-feature-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .demo-form-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+  }
+  .demo-form-card h2 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+  .demo-form-card .subtitle {
+    color: #94a3b8;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  .form-group label {
+    display: block;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  }
+  .form-group input::placeholder { color: #64748b; }
+  .demo-submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+  }
+  .demo-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+  }
+  .demo-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .demo-terms {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+  }
+  .demo-terms a { color: #10b981; }
+  .demo-success, .demo-error {
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .demo-success {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid #10b981;
+    color: #10b981;
+  }
+  .demo-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    color: #ef4444;
+  }
+  .demo-credentials {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 1rem;
+  }
+  .demo-credentials h3 { color: #a5b4fc; margin-bottom: 1rem; font-size: 1rem; }
+  .demo-credentials .credential-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    color: white;
+  }
+  .demo-credentials .label { color: #94a3b8; }
+  .demo-access-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+  }
+  .demo-access-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4); }
+</style>
+
+<section class="demo-hero">
+  <div class="demo-container">
+    <div class="demo-info">
+      <h1>Try <span>NodePress</span> Free for 24 Hours</h1>
+      <p>Get instant access to a fully-featured NodePress instance. No credit card required. Explore all features including the LMS, eCommerce, AI theme generator, and more.</p>
+      
+      <div class="demo-features">
+        <div class="demo-feature">
+          <div class="demo-feature-icon">✓</div>
+          <span>Full admin access with sample data</span>
+        </div>
+        <div class="demo-feature">
+          <div class="demo-feature-icon">✓</div>
+          <span>AI-powered theme generator</span>
+        </div>
+        <div class="demo-feature">
+          <div class="demo-feature-icon">✓</div>
+          <span>Complete LMS & eCommerce modules</span>
+        </div>
+        <div class="demo-feature">
+          <div class="demo-feature-icon">✓</div>
+          <span>Plugin ecosystem & marketplace</span>
+        </div>
+        <div class="demo-feature">
+          <div class="demo-feature-icon">✓</div>
+          <span>No installation required</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-form-card">
+      <h2>🚀 Start Your Free Demo</h2>
+      <p class="subtitle">Fill in your details and get instant access</p>
+
+      <div id="demo-result"></div>
+
+      <form id="demo-request-form">
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" placeholder="John Smith" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Work Email *</label>
+          <input type="email" id="email" name="email" placeholder="john@company.com" required>
+        </div>
+        <div class="form-group">
+          <label for="company">Company Name</label>
+          <input type="text" id="company" name="company" placeholder="Your Company">
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567">
+        </div>
+        
+        <button type="submit" class="demo-submit-btn" id="submit-btn">
+          Create My Demo →
+        </button>
+        
+        <p class="demo-terms">
+          By requesting a demo, you agree to our <a href="/terms">Terms of Service</a> 
+          and <a href="/privacy">Privacy Policy</a>.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+document.getElementById('demo-request-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const btn = document.getElementById('submit-btn');
+  const resultDiv = document.getElementById('demo-result');
+  const form = e.target;
+  
+  btn.disabled = true;
+  btn.textContent = 'Creating your demo...';
+  resultDiv.innerHTML = '';
+  
+  try {
+    const response = await fetch('/api/demos/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.name.value,
+        email: form.email.value,
+        company: form.company.value || undefined,
+        phone: form.phone.value || undefined,
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to create demo');
+    }
+    
+    form.style.display = 'none';
+    resultDiv.innerHTML = `
+      <div class="demo-success">
+        <h3>🎉 Your Demo is Ready!</h3>
+        <p>We've also sent these details to your email.</p>
+      </div>
+      <div class="demo-credentials">
+        <h3>📋 Your Demo Credentials</h3>
+        <div class="credential-row">
+          <span class="label">Demo URL:</span>
+          <span>${data.accessUrl || '/demo/' + data.subdomain}</span>
+        </div>
+        <div class="credential-row">
+          <span class="label">Admin Email:</span>
+          <span>${data.adminEmail}</span>
+        </div>
+        <div class="credential-row">
+          <span class="label">Password:</span>
+          <span>${data.adminPassword}</span>
+        </div>
+        <div class="credential-row">
+          <span class="label">Expires:</span>
+          <span>${new Date(data.expiresAt).toLocaleString()}</span>
+        </div>
+        <a href="${data.accessUrl || '/demo/' + data.subdomain}/admin"
+           class="demo-access-btn">
+          Access Your Demo →
+        </a>
+      </div>
+    `;
+  } catch (err) {
+    resultDiv.innerHTML = `<div class="demo-error">${err.message}</div>`;
+    btn.disabled = false;
+    btn.textContent = 'Create My Demo →';
+  }
+});
+</script>
+
+{{> footer}}
+

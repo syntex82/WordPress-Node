@@ -1,0 +1,35 @@
+# NodePress Demo Orchestrator
+# Manages demo instance lifecycle: creation, monitoring, and cleanup
+
+FROM node:20-alpine
+
+LABEL maintainer="NodePress <team@nodepress.io>"
+LABEL description="Demo orchestrator for NodePress CMS"
+
+# Install required tools
+RUN apk add --no-cache \
+    docker-cli \
+    curl \
+    bash \
+    postgresql-client
+
+WORKDIR /app
+
+# Copy orchestrator package
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy orchestrator source
+COPY orchestrator/ ./
+
+# Health check script
+RUN echo '#!/bin/bash\ncurl -sf http://localhost:3000/health || exit 1' > /healthcheck.sh && \
+    chmod +x /healthcheck.sh
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD /healthcheck.sh
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
+

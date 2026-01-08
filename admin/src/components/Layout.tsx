@@ -17,6 +17,7 @@ import CommandPalette from './CommandPalette';
 import NotificationCenter from './NotificationCenter';
 import VideoCall from './VideoCall';
 import ThemeToggle from './ThemeToggle';
+import { TourLauncher } from './GuidedTour';
 import { useSiteTheme, useThemeClasses } from '../contexts/SiteThemeContext';
 
 // Get the frontend URL - in production it's same origin (without /admin), in development uses domain config
@@ -228,6 +229,7 @@ export default function Layout() {
   const systemNavigation: Array<{ name: string; path: string; icon: any; permission: keyof RolePermissions; badge?: number; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [
     { name: 'Users', path: '/users', icon: FiUsers, permission: 'users', tooltipKey: 'users' },
     { name: 'Security', path: '/security', icon: FiShield, permission: 'security', tooltipKey: 'security' },
+    { name: 'Demos', path: '/demos', icon: FiZap, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Backups', path: '/backups', icon: FiHardDrive, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Updates', path: '/updates', icon: FiArrowUp, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Settings', path: '/settings', icon: FiSettings, permission: 'settings', tooltipKey: 'settings' },
@@ -314,6 +316,7 @@ export default function Layout() {
           <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Admin</span>
         </div>
         <div className="flex items-center gap-2">
+          <TourLauncher />
           <ThemeToggle />
           <NotificationCenter />
           <div className="relative">
@@ -1350,6 +1353,7 @@ export default function Layout() {
       <main className={`flex-1 overflow-y-auto lg:pt-0 pt-[60px] ${theme.page}`}>
         {/* Top Bar with Notifications - Hidden on mobile (using mobile header instead) */}
         <div className={`hidden lg:flex sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3 backdrop-blur-xl border-b items-center justify-end gap-4 ${theme.header}`}>
+          <TourLauncher />
           <ThemeToggle />
           <NotificationCenter />
           <div className={`w-px h-6 ${theme.divider}`} />

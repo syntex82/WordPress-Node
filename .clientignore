@@ -1,0 +1,38 @@
+# Files excluded from client installations
+# These are only needed for demo hosting infrastructure
+
+# Demo hosting system
+docker/demo/
+src/modules/demo/demo.controller.ts
+src/modules/demo/demo.service.ts
+src/modules/demo/demo.module.ts
+src/modules/demo/demo-provisioning.service.ts
+src/modules/demo/demo-notification.service.ts
+src/modules/demo/sample-data-seeder.service.ts
+src/modules/demo/dto/
+src/modules/demo/templates/
+src/modules/demo/*.spec.ts
+
+# Demo page template
+themes/default/templates/try-demo.hbs
+
+# Test files
+**/*.spec.ts
+**/*.test.ts
+**/__tests__/
+jest.config.js
+coverage/
+
+# Development files
+.github/
+examples/
+.vscode/
+*.md
+!README.md
+
+# Source files (dist is shipped instead)
+src/
+admin/src/
+tsconfig*.json
+nest-cli.json
+

@@ -7,6 +7,8 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "build:client": "node scripts/build-client.js",
+    "build:all": "npm run build && npm run admin:build",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "start": "nest start",
     "dev": "nest start --watch",

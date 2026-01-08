@@ -23,6 +23,8 @@ Welcome to the official NodePress Developer Tutorial! This comprehensive guide w
 13. [Deployment](#13-deployment)
 14. [Advanced Topics](#14-advanced-topics)
 15. [Production Cheatsheet](#15-production-cheatsheet---linux-database--server-management)
+16. [Demo System](#16-demo-system)
+17. [Client Deployment](#17-client-deployment)
 
 ---
 
@@ -3519,6 +3521,386 @@ pm2 restart all
 # Clear Redis cache
 redis-cli FLUSHDB
 ```
+
+---
+
+## 16. Demo System
+
+NodePress includes a complete demo hosting system for letting potential clients try the platform before purchasing. The demo system creates isolated, time-limited instances with all features enabled.
+
+### 16.1 Demo System Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    DEMO HOSTING SERVER                            │
+│                    (demo.nodepress.io)                            │
+├──────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐   │
+│  │   Main App      │  │  Orchestrator   │  │   Cleanup       │   │
+│  │   (NestJS)      │  │   Service       │  │   Service       │   │
+│  │                 │  │                 │  │                 │   │
+│  │  • /try-demo    │  │  • Provision    │  │  • Expire demos │   │
+│  │  • /api/demos   │  │  • Start/Stop   │  │  • Drop DBs     │   │
+│  │  • Analytics    │  │  • Health check │  │  • Clean orphans│   │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘   │
+│                                                                   │
+│  ┌───────────────────────────────────────────────────────────┐   │
+│  │              Demo Instances (Docker Containers)            │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │   │
+│  │  │ demo-abc │  │ demo-def │  │ demo-ghi │  │   ...    │   │   │
+│  │  │ :4001    │  │ :4002    │  │ :4003    │  │          │   │   │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │   │
+│  └───────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 16.2 Demo Components
+
+| Component | Location | Description |
+|-----------|----------|-------------|
+| Demo Module | `src/modules/demo/` | Demo API, provisioning, notifications |
+| Demo Controller | `src/modules/demo/demo.controller.ts` | REST endpoints for demo management |
+| Demo Service | `src/modules/demo/demo.service.ts` | Business logic for demos |
+| Provisioning Service | `src/modules/demo/demo-provisioning.service.ts` | Container/database provisioning |
+| Notification Service | `src/modules/demo/demo-notification.service.ts` | Email notifications |
+| Sample Data Seeder | `src/modules/demo/sample-data-seeder.service.ts` | Populate demo with sample content |
+| Docker Orchestrator | `docker/demo/orchestrator/` | Container orchestration |
+| Cleanup Service | `docker/demo/cleanup/` | Expired demo cleanup |
+| Try Demo Page | `themes/default/templates/try-demo.hbs` | Demo request landing page |
+| Floating Widget | `themes/default/templates/footer.hbs` | "Try Demo" floating button |
+| Analytics Tracker | `public/demo-tracker.js` | Feature usage tracking |
+
+### 16.3 Demo API Endpoints
+
+**Public Endpoints:**
+```typescript
+POST /api/demos/request          // Request a new demo
+POST /api/demos/access           // Access an existing demo
+POST /api/demos/upgrade          // Request upgrade from demo
+POST /api/demos/track            // Track feature usage
+```
+
+**Admin Endpoints (require ADMIN role):**
+```typescript
+GET    /api/demos                // List all demos (paginated)
+GET    /api/demos/analytics      // Demo analytics & metrics
+GET    /api/demos/:id            // Get demo details
+POST   /api/demos/:id/extend     // Extend demo expiration
+DELETE /api/demos/:id            // Terminate a demo
+```
+
+### 16.4 Demo Request Flow
+
+1. **User visits `/try-demo`** - Fills out name, email, optional company
+2. **API creates demo** - `POST /api/demos/request`
+3. **Provisioning service**:
+   - Creates isolated database
+   - Spins up Docker container
+   - Seeds sample data (posts, products, courses)
+   - Generates unique subdomain
+4. **Email sent** - Welcome email with credentials and links
+5. **User accesses demo** - Full NodePress with all features
+6. **Auto-expiration** - Demo terminates after 24-72 hours
+7. **Cleanup service** - Removes database, container, and files
+
+### 16.5 Demo Email Notifications
+
+| Template | Trigger | Description |
+|----------|---------|-------------|
+| `demo-welcome` | Demo created | Welcome email with credentials |
+| `demo-expiring` | 2 hours before expiry | Warning notification |
+| `demo-expired` | Demo expired | Follow-up with upgrade CTA |
+| `demo-extension` | Demo extended | Confirmation email |
+| `feature-usage-report` | Weekly | Admin report on demo activity |
+| `admin-notification` | Various | Admin alerts for upgrades, issues |
+
+### 16.6 Running the Demo System
+
+```bash
+# Start with Docker Compose (includes orchestrator + cleanup)
+cd docker/demo
+docker-compose up -d
+
+# Or run components separately
+node docker/demo/orchestrator/index.js  # Provisioning service
+node docker/demo/cleanup/index.js       # Cleanup service
+```
+
+### 16.7 Demo Configuration
+
+Add to `.env`:
+```env
+# Demo System
+DEMO_ENABLED=true
+DEMO_DURATION_HOURS=24
+DEMO_MAX_CONCURRENT=50
+DEMO_BASE_URL=https://demo.nodepress.io
+DEMO_ADMIN_EMAIL=admin@nodepress.io
+
+# Demo Database
+DEMO_DB_HOST=localhost
+DEMO_DB_PORT=5432
+DEMO_DB_USER=demo_admin
+DEMO_DB_PASSWORD=secure_password
+
+# Demo Container
+DEMO_CONTAINER_IMAGE=nodepress:latest
+DEMO_PORT_RANGE_START=4001
+DEMO_PORT_RANGE_END=4100
+```
+
+---
+
+## 17. Client Deployment
+
+When deploying NodePress to a client's production server, they should receive the complete CMS platform **without** any demo hosting infrastructure.
+
+### 17.1 Build for Client Deployment
+
+```bash
+# Build client-ready package (excludes demo infrastructure)
+npm run build:client
+```
+
+This creates a `dist-client/` folder ready for deployment.
+
+### 17.2 What's Included vs Excluded
+
+**✅ INCLUDED (Full NodePress CMS):**
+| Feature | Included |
+|---------|----------|
+| Posts, Pages, Media | ✅ |
+| LMS (courses, quizzes, certificates) | ✅ |
+| eCommerce (products, orders, shipping) | ✅ |
+| AI Theme Generator | ✅ |
+| Theme Designer & Customizer | ✅ |
+| User Management & Roles | ✅ |
+| SEO & Analytics | ✅ |
+| Email System | ✅ |
+| Security Features | ✅ |
+| Messaging & Video Calls | ✅ |
+| Developer Marketplace | ✅ |
+| Plugin System | ✅ |
+| Admin Panel | ✅ |
+| All 21 Theme Presets | ✅ |
+
+**❌ EXCLUDED (Demo Infrastructure):**
+| Item | Excluded |
+|------|----------|
+| `docker/demo/` | ✅ Demo orchestration |
+| `src/modules/demo/` | ✅ Demo API & services |
+| `themes/*/templates/try-demo.hbs` | ✅ Demo request page |
+| `public/demo-tracker.js` | ✅ Analytics tracker |
+| Floating demo widget | ✅ Stripped from footer |
+| "Try Free Demo" buttons | ✅ Replaced with "Get Started" |
+
+### 17.3 Client Build Output Structure
+
+```
+dist-client/
+├── dist/                    # Compiled backend (NO demo module)
+├── admin/dist/              # Built admin React app
+├── themes/                  # Themes (NO demo widget, NO try-demo.hbs)
+├── prisma/                  # Database schema & migrations
+├── package.json             # Production dependencies only
+├── Dockerfile               # Production Docker config
+├── docker-compose.yml       # Production compose file
+├── install.sh               # Linux/Mac install script
+├── install.bat              # Windows install script
+└── .env.example             # Configuration template
+```
+
+### 17.4 Client Installation Steps
+
+**Option 1: Manual Installation**
+
+```bash
+# On your development machine
+npm run build:client
+
+# Copy to client server
+scp -r dist-client/* user@client-server:/opt/nodepress/
+
+# SSH into client server
+ssh user@client-server
+cd /opt/nodepress
+
+# Run installation
+./install.sh
+
+# Configure environment
+nano .env
+
+# Run database migrations
+npx prisma migrate deploy
+
+# Start the application
+npm start
+```
+
+**Option 2: Docker Installation**
+
+```bash
+# Copy dist-client to server, then:
+cd /opt/nodepress
+docker-compose up -d
+```
+
+### 17.5 Client Environment Configuration
+
+The client should configure `.env` with these essential settings:
+
+```env
+# ===========================================
+# REQUIRED SETTINGS
+# ===========================================
+
+# Database connection string
+DATABASE_URL="postgresql://user:password@localhost:5432/nodepress"
+
+# JWT secret key (generate a secure random string)
+JWT_SECRET="your-super-secret-jwt-key-change-this"
+
+# ===========================================
+# RECOMMENDED SETTINGS
+# ===========================================
+
+# Server settings
+PORT=3000
+HOST=0.0.0.0
+NODE_ENV=production
+
+# Site settings
+SITE_URL=https://client-domain.com
+SITE_NAME="Client Site Name"
+
+# Redis (for caching and queues)
+REDIS_URL=redis://localhost:6379
+
+# ===========================================
+# OPTIONAL INTEGRATIONS
+# ===========================================
+
+# Email (SMTP)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-smtp-user
+SMTP_PASS=your-smtp-password
+SMTP_FROM="Site Name <noreply@client-domain.com>"
+
+# Stripe (for payments)
+# STRIPE_SECRET_KEY=sk_live_xxx
+# STRIPE_WEBHOOK_SECRET=whsec_xxx
+
+# OpenAI (for AI features)
+# OPENAI_API_KEY=sk-xxx
+
+# Storage (S3/R2)
+# STORAGE_PROVIDER=s3
+# AWS_ACCESS_KEY_ID=xxx
+# AWS_SECRET_ACCESS_KEY=xxx
+# AWS_REGION=us-east-1
+# AWS_S3_BUCKET=bucket-name
+```
+
+### 17.6 Deployment Checklist
+
+Before deploying to a client:
+
+- [ ] Run `npm run build:client` to create clean build
+- [ ] Verify `dist-client/` contains no demo files
+- [ ] Test the build locally with a fresh database
+- [ ] Prepare client-specific `.env` configuration
+- [ ] Set up SSL certificate (Let's Encrypt recommended)
+- [ ] Configure reverse proxy (Nginx/Caddy)
+- [ ] Set up automated backups
+- [ ] Configure firewall (allow only 80, 443, 22)
+- [ ] Set up PM2 or systemd for process management
+- [ ] Test all features after deployment
+
+### 17.7 Production Nginx Configuration
+
+```nginx
+server {
+    listen 80;
+    server_name client-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name client-domain.com;
+
+    ssl_certificate /etc/letsencrypt/live/client-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/client-domain.com/privkey.pem;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript;
+
+    # Static files
+    location /uploads/ {
+        alias /opt/nodepress/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location /themes/ {
+        alias /opt/nodepress/themes/;
+        expires 7d;
+    }
+
+    # Proxy to Node.js
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### 17.8 PM2 Process Management
+
+```bash
+# Install PM2
+npm install -g pm2
+
+# Start NodePress
+pm2 start dist/main.js --name nodepress
+
+# Auto-restart on reboot
+pm2 startup
+pm2 save
+
+# Monitor
+pm2 monit
+
+# View logs
+pm2 logs nodepress
+```
+
+### 17.9 Comparison: Demo Server vs Client Server
+
+| Aspect | Demo Server | Client Server |
+|--------|-------------|---------------|
+| Purpose | Try before buy | Production site |
+| Demo module | ✅ Included | ❌ Excluded |
+| `/try-demo` page | ✅ Available | ❌ Not available |
+| Floating widget | ✅ Shows on all pages | ❌ Removed |
+| Docker orchestrator | ✅ Running | ❌ Not included |
+| Multi-tenant | ✅ Many demos | ❌ Single instance |
+| Build command | `npm run build` | `npm run build:client` |
 
 ---
 

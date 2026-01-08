@@ -1,0 +1,105 @@
+# NodePress Demo Cleanup Service
+# Periodically removes expired demo instances and their resources
+
+FROM node:20-alpine
+
+LABEL maintainer="NodePress <team@nodepress.io>"
+LABEL description="Demo cleanup service for NodePress CMS"
+
+# Install required tools
+RUN apk add --no-cache \
+    docker-cli \
+    curl \
+    bash \
+    postgresql-client
+
+WORKDIR /app
+
+# Copy cleanup package
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy cleanup scripts
+COPY cleanup/ ./
+
+# Main cleanup script
+RUN cat > /app/cleanup.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "[$(date)] Starting cleanup cycle..."
+
+# Connect to postgres and get expired demos
+EXPIRED_DEMOS=$(PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d nodepress -t -c \
+  "SELECT subdomain FROM demo_instances WHERE status = 'RUNNING' AND expires_at < NOW();")
+
+for SUBDOMAIN in $EXPIRED_DEMOS; do
+  SUBDOMAIN=$(echo $SUBDOMAIN | xargs)  # Trim whitespace
+  if [ -n "$SUBDOMAIN" ]; then
+    echo "[$(date)] Cleaning up demo: $SUBDOMAIN"
+    
+    # Stop the container
+    docker stop "nodepress-demo-$SUBDOMAIN" 2>/dev/null || true
+    docker rm "nodepress-demo-$SUBDOMAIN" 2>/dev/null || true
+    
+    # Drop the database
+    PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d postgres -c \
+      "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'demo_${SUBDOMAIN//-/_}';" 2>/dev/null || true
+    PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d postgres -c \
+      "DROP DATABASE IF EXISTS demo_${SUBDOMAIN//-/_};" 2>/dev/null || true
+    
+    # Update status in main database
+    PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d nodepress -c \
+      "UPDATE demo_instances SET status = 'TERMINATED', terminated_at = NOW() WHERE subdomain = '$SUBDOMAIN';"
+    
+    echo "[$(date)] Cleaned up demo: $SUBDOMAIN"
+  fi
+done
+
+# Cleanup orphaned containers (containers that are running but not in database)
+echo "[$(date)] Checking for orphaned containers..."
+RUNNING_CONTAINERS=$(docker ps --filter "name=nodepress-demo-" --format "{{.Names}}" 2>/dev/null || true)
+for CONTAINER in $RUNNING_CONTAINERS; do
+  SUBDOMAIN=${CONTAINER#nodepress-demo-}
+  EXISTS=$(PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d nodepress -t -c \
+    "SELECT COUNT(*) FROM demo_instances WHERE subdomain = '$SUBDOMAIN' AND status = 'RUNNING';" | xargs)
+  if [ "$EXISTS" = "0" ]; then
+    echo "[$(date)] Removing orphaned container: $CONTAINER"
+    docker stop "$CONTAINER" 2>/dev/null || true
+    docker rm "$CONTAINER" 2>/dev/null || true
+  fi
+done
+
+# Prune unused images older than 7 days
+echo "[$(date)] Pruning old images..."
+docker image prune -a --force --filter "until=168h" 2>/dev/null || true
+
+echo "[$(date)] Cleanup cycle complete"
+EOF
+
+RUN chmod +x /app/cleanup.sh
+
+# Entrypoint that runs cleanup on a schedule
+RUN cat > /app/entrypoint.sh << 'EOF'
+#!/bin/bash
+set -e
+
+CLEANUP_INTERVAL=${CLEANUP_INTERVAL:-300}  # Default: 5 minutes
+
+echo "[$(date)] Demo cleanup service starting..."
+echo "[$(date)] Cleanup interval: ${CLEANUP_INTERVAL}s"
+
+while true; do
+  /app/cleanup.sh
+  sleep $CLEANUP_INTERVAL
+done
+EOF
+
+RUN chmod +x /app/entrypoint.sh
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=10s --start-period=10s --retries=3 \
+    CMD pgrep -f "entrypoint.sh" || exit 1
+
+CMD ["/app/entrypoint.sh"]
+
