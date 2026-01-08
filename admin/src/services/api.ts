@@ -111,8 +111,11 @@ export const usersApi = {
 // Settings API
 export const settingsApi = {
   getAll: (group?: string) => api.get('/settings', { params: { group } }),
+  getSettings: (keys: string[]) => api.get('/settings', { params: { keys: keys.join(',') } }),
   set: (key: string, value: any, type: string, group?: string) =>
     api.post('/settings', { key, value, type, group }),
+  updateSetting: (key: string, data: { key: string; value: any; type: string; group?: string }) =>
+    api.post('/settings', data),
 };
 
 // System Configuration API (for production-ready settings)

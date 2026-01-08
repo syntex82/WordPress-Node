@@ -17,6 +17,8 @@ import { PluginsModule } from '../plugins/plugins.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { SeoModule } from '../seo/seo.module';
 import { MediaModule } from '../media/media.module';
+import { SettingsModule } from '../settings/settings.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { MediaModule } from '../media/media.module';
     forwardRef(() => SubscriptionsModule),
     forwardRef(() => SeoModule),
     forwardRef(() => MediaModule),
+    forwardRef(() => SettingsModule),
+    forwardRef(() => EmailModule),
   ],
   controllers: [PublicController],
 })

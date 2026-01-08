@@ -190,28 +190,82 @@ export class EmailService implements OnModuleInit {
    * Get site context for email templates (uses database config with env fallback)
    */
   async getSiteContext(): Promise<{
-    site: { name: string; logo?: string; address?: string };
+    site: { name: string; logo?: string; address?: string; url?: string };
     year: number;
     loginUrl: string;
     supportEmail: string;
     helpUrl: string;
+    docsUrl: string;
     frontendUrl: string;
     adminUrl: string;
   }> {
     const domainConfig = await this.systemConfig.getDomainConfig();
+
+    // Get email settings from database
+    const emailSettings = await this.getEmailSettings();
+
     return {
       site: {
-        name: domainConfig.siteName || 'NodePress CMS',
-        logo: undefined, // Can be extended to support logo from config
-        address: undefined, // Can be extended to support address from config
+        name: emailSettings.siteName || domainConfig.siteName || 'NodePress CMS',
+        logo: emailSettings.logoUrl || undefined,
+        address: emailSettings.companyAddress || undefined,
+        url: domainConfig.frontendUrl,
       },
       year: new Date().getFullYear(),
       loginUrl: `${domainConfig.adminUrl}/login`,
-      supportEmail: domainConfig.supportEmail || 'support@example.com',
-      helpUrl: `${domainConfig.frontendUrl}/help`,
+      supportEmail: emailSettings.supportEmail || domainConfig.supportEmail || 'support@nodepress.co.uk',
+      helpUrl: emailSettings.helpUrl || `${domainConfig.frontendUrl}/help`,
+      docsUrl: emailSettings.docsUrl || `${domainConfig.frontendUrl}/docs`,
       frontendUrl: domainConfig.frontendUrl,
       adminUrl: domainConfig.adminUrl,
     };
+  }
+
+  /**
+   * Get email settings from database
+   */
+  private async getEmailSettings(): Promise<{
+    siteName?: string;
+    logoUrl?: string;
+    supportEmail?: string;
+    companyAddress?: string;
+    helpUrl?: string;
+    docsUrl?: string;
+  }> {
+    try {
+      const settings = await this.prisma.setting.findMany({
+        where: {
+          key: {
+            in: [
+              'email_site_name',
+              'email_logo_url',
+              'email_support_email',
+              'email_company_address',
+              'email_help_url',
+              'email_docs_url',
+            ],
+          },
+        },
+      });
+
+      const result: Record<string, string> = {};
+      for (const setting of settings) {
+        const key = setting.key.replace('email_', '').replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+        result[key] = String(setting.value);
+      }
+
+      return {
+        siteName: result['siteName'],
+        logoUrl: result['logoUrl'],
+        supportEmail: result['supportEmail'],
+        companyAddress: result['companyAddress'],
+        helpUrl: result['helpUrl'],
+        docsUrl: result['docsUrl'],
+      };
+    } catch (error) {
+      this.logger.warn('Failed to load email settings from database');
+      return {};
+    }
   }
 
   /**

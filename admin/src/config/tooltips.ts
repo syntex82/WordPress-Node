@@ -137,6 +137,10 @@ export const NAV_TOOLTIPS = {
     title: 'Email Logs',
     content: 'Track sent emails. View delivery status, open rates, and troubleshoot issues.',
   },
+  emailSettings: {
+    title: 'Email Settings',
+    content: 'Configure email branding, logo, support email, and company information for all email templates.',
+  },
 
   // Theme
   styleCustomizer: {

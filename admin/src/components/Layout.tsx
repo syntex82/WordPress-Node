@@ -255,6 +255,7 @@ export default function Layout() {
     { name: 'Designer', path: '/email/designer', icon: FiLayout, tooltipKey: 'emailDesigner' },
     { name: 'Composer', path: '/email/composer', icon: FiMail, tooltipKey: 'emailComposer' },
     { name: 'Logs', path: '/email/logs', icon: FiInfo, tooltipKey: 'emailLogs' },
+    { name: 'Settings', path: '/email/settings', icon: FiSettings, tooltipKey: 'emailSettings' },
   ];
 
   const devMarketplaceNavigation: Array<{ name: string; path: string; icon: any; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [

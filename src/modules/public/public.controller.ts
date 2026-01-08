@@ -39,6 +39,8 @@ import { PluginMarketplaceService } from '../plugins/plugin-marketplace.service'
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { SeoService } from '../seo/seo.service';
 import { MediaService } from '../media/media.service';
+import { SettingsService } from '../settings/settings.service';
+import { EmailService } from '../email/email.service';
 import { PostStatus } from '@prisma/client';
 import { CourseLevel, CoursePriceType } from '../lms/dto/course.dto';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
@@ -72,6 +74,10 @@ export class PublicController {
     private seoService: SeoService,
     @Inject(forwardRef(() => MediaService))
     private mediaService: MediaService,
+    @Inject(forwardRef(() => SettingsService))
+    private settingsService: SettingsService,
+    @Inject(forwardRef(() => EmailService))
+    private emailService: EmailService,
   ) {}
 
   // ==================== SEO ROUTES (must be before catch-all) ====================
@@ -721,6 +727,170 @@ Sitemap: ${baseUrl}/sitemap.xml
     } catch (error) {
       console.error('Error rendering try-demo page:', error);
       res.status(500).send(`Error rendering try-demo page: ${error.message}`);
+    }
+  }
+
+  /**
+   * Demo Upgrade / Conversion page
+   * GET /demo/upgrade
+   */
+  @Get('demo/upgrade')
+  @UseGuards(OptionalJwtAuthGuard)
+  async demoUpgrade(
+    @Req() req: Request,
+    @Query('ref') demoId: string,
+    @Query('email') email: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const user = (req as any).user;
+
+      // Get demo stats if available
+      let demoStats = null;
+      let demoEmail = email || '';
+      let demoName = '';
+      let company = '';
+
+      if (demoId) {
+        try {
+          const demoData = await this.settingsService.findByKey(`demo_${demoId}`);
+          if (demoData) {
+            const parsed = JSON.parse(String(demoData.value));
+            demoStats = {
+              posts: parsed.postsCreated || 0,
+              pages: parsed.pagesCreated || 0,
+              hoursUsed: parsed.hoursUsed || 0,
+            };
+            demoEmail = parsed.email || email;
+            demoName = parsed.name || '';
+            company = parsed.company || '';
+          }
+        } catch (e) {
+          // Demo data not found, continue without it
+        }
+      }
+
+      const html = await this.themeRenderer.render('demo-upgrade', {
+        title: 'Upgrade Your NodePress Experience',
+        description: 'Choose custom development services or self-host with Hostinger VPS',
+        user,
+        demoId: demoId || '',
+        email: demoEmail,
+        name: demoName,
+        company,
+        demoStats,
+        demoHoursUsed: demoStats?.hoursUsed || 0,
+        featuresUsed: [],
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering demo upgrade page:', error);
+      res.status(500).send(`Error rendering demo upgrade page: ${error.message}`);
+    }
+  }
+
+  /**
+   * Track conversion page view
+   * POST /api/demo/track-conversion-view
+   */
+  @Post('api/demo/track-conversion-view')
+  async trackConversionView(@Body() body: any, @Res() res: Response) {
+    try {
+      // Store conversion view event
+      await this.settingsService.set(
+        `conversion_view_${body.demoId || 'direct'}_${Date.now()}`,
+        JSON.stringify({
+          ...body,
+          eventType: 'page_view',
+          timestamp: new Date().toISOString(),
+        }),
+        'json',
+        'analytics',
+      );
+      res.json({ success: true });
+    } catch (error) {
+      res.json({ success: false });
+    }
+  }
+
+  /**
+   * Track conversion CTA click
+   * POST /api/demo/track-conversion-click
+   */
+  @Post('api/demo/track-conversion-click')
+  async trackConversionClick(@Body() body: any, @Res() res: Response) {
+    try {
+      await this.settingsService.set(
+        `conversion_click_${body.demoId || 'direct'}_${Date.now()}`,
+        JSON.stringify({
+          ...body,
+          eventType: 'cta_click',
+          timestamp: new Date().toISOString(),
+        }),
+        'json',
+        'analytics',
+      );
+      res.json({ success: true });
+    } catch (error) {
+      res.json({ success: false });
+    }
+  }
+
+  /**
+   * Handle upgrade inquiry form submission
+   * POST /api/demo/upgrade-inquiry
+   */
+  @Post('api/demo/upgrade-inquiry')
+  async handleUpgradeInquiry(@Body() body: any, @Res() res: Response) {
+    try {
+      // Store the inquiry
+      await this.settingsService.set(
+        `upgrade_inquiry_${Date.now()}`,
+        JSON.stringify({
+          ...body,
+          submittedAt: new Date().toISOString(),
+        }),
+        'json',
+        'leads',
+      );
+
+      // Send admin notification email
+      const adminEmail = process.env.ADMIN_EMAIL || 'support@nodepress.co.uk';
+      await this.emailService.send({
+        to: adminEmail,
+        subject: `🎯 New Upgrade Inquiry: ${body.service}`,
+        html: `
+          <h2>New Upgrade Inquiry from Demo User</h2>
+          <table style="border-collapse: collapse; width: 100%;">
+            <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Name</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.name}</td></tr>
+            <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Email</strong></td><td style="padding: 8px; border: 1px solid #ddd;"><a href="mailto:${body.email}">${body.email}</a></td></tr>
+            <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Company</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.company || 'N/A'}</td></tr>
+            <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Service</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.service}</td></tr>
+            <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Message</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.message || 'No message'}</td></tr>
+            <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Demo ID</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.demoId || 'Direct'}</td></tr>
+          </table>
+        `,
+      });
+
+      // Send confirmation to user
+      await this.emailService.send({
+        to: body.email,
+        subject: 'Thanks for your interest in NodePress!',
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #6366f1;">Thanks for Reaching Out!</h2>
+            <p>Hi ${body.name},</p>
+            <p>We've received your inquiry about <strong>${body.service}</strong> and will get back to you within 24 hours.</p>
+            <p>In the meantime, feel free to reply to this email if you have any questions.</p>
+            <p>Best regards,<br>The NodePress Team</p>
+          </div>
+        `,
+      });
+
+      res.json({ success: true, message: 'Inquiry submitted successfully' });
+    } catch (error) {
+      console.error('Error handling upgrade inquiry:', error);
+      res.status(500).json({ success: false, message: 'Failed to submit inquiry' });
     }
   }
 

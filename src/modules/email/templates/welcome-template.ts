@@ -117,7 +117,7 @@ export function getWelcomeTemplate(): string {
           </td>
           <td style="vertical-align: top;">
             <h4 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #f1f5f9;">Read the Documentation</h4>
-            <p style="margin: 0; font-size: 14px; color: #94a3b8;">Check out our docs at nodepress.co.uk/docs to get the most out of NodePress</p>
+            <p style="margin: 0; font-size: 14px; color: #94a3b8;">Check out our <a href="{{docsUrl}}" style="color: #10b981; text-decoration: none; font-weight: 600;">documentation</a> to get the most out of {{site.name}}</p>
           </td>
         </tr>
       </table>
@@ -141,7 +141,7 @@ export function getWelcomeTemplate(): string {
   <tr>
     <td style="padding-top: 24px; border-top: 1px solid #334155;">
       <p style="margin: 0 0 12px; font-size: 14px; color: #94a3b8;">
-        <strong style="color: #f1f5f9;">Need help?</strong> Our support team is here for you. Visit our <a href="https://nodepress.co.uk/docs" style="color: #10b981; text-decoration: none; font-weight: 600;">documentation</a> or <a href="mailto:support@nodepress.co.uk" style="color: #10b981; text-decoration: none; font-weight: 600;">contact us</a>.
+        <strong style="color: #f1f5f9;">Need help?</strong> Our support team is here for you. Visit our <a href="{{docsUrl}}" style="color: #10b981; text-decoration: none; font-weight: 600;">documentation</a> or <a href="mailto:{{supportEmail}}" style="color: #10b981; text-decoration: none; font-weight: 600;">contact us</a>.
       </p>
     </td>
   </tr>

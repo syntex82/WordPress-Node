@@ -109,6 +109,7 @@ const EmailTemplates = lazy(() => import('./pages/email/EmailTemplates'));
 const EmailComposer = lazy(() => import('./pages/email/EmailComposer'));
 const EmailLogs = lazy(() => import('./pages/email/EmailLogs'));
 const EmailTemplateDesigner = lazy(() => import('./pages/email/EmailTemplateDesigner'));
+const EmailSettings = lazy(() => import('./pages/email/EmailSettings'));
 
 // Lazy-loaded pages - Developer Marketplace
 const MarketplaceDashboard = lazy(() => import('./pages/marketplace').then(m => ({ default: m.MarketplaceDashboard })));
@@ -255,6 +256,7 @@ function AppContent() {
                 <Route path="email/designer" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailTemplateDesigner /></ProtectedRoute>} />
                 <Route path="email/composer" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailComposer /></ProtectedRoute>} />
                 <Route path="email/logs" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailLogs /></ProtectedRoute>} />
+                <Route path="email/settings" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailSettings /></ProtectedRoute>} />
 
                 {/* Backups */}
                 <Route path="backups" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Backups /></ProtectedRoute>} />

@@ -74,7 +74,7 @@ export class SystemEmailService {
     firstName: string;
     loginUrl: string;
   }) {
-    const site = await this.getSiteInfo();
+    const siteContext = await this.emailService.getSiteContext();
     const variables = {
       user: { firstName: data.firstName, name: data.toName, email: data.to },
       loginUrl: data.loginUrl,
@@ -83,14 +83,18 @@ export class SystemEmailService {
         month: 'long',
         day: 'numeric',
       }),
-      site,
+      site: siteContext.site,
+      docsUrl: siteContext.docsUrl,
+      helpUrl: siteContext.helpUrl,
+      supportEmail: siteContext.supportEmail,
+      year: siteContext.year,
     };
 
     const { html, subject } = await this.getTemplateContent(
       'welcome-email',
       variables,
       () => getWelcomeTemplate(),
-      `Welcome to ${site.name}! 🎉`,
+      `Welcome to ${siteContext.site.name}! 🎉`,
     );
 
     return this.emailService.send({

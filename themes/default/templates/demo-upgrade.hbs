@@ -1,0 +1,828 @@
+{{!-- Demo Upgrade / Conversion Page --}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upgrade Your NodePress Experience | Get Started Today</title>
+  <meta name="description" content="Ready to launch your NodePress site? Choose custom development services or self-host with Hostinger VPS.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #10b981;
+      --accent: #f59e0b;
+      --dark: #1e293b;
+      --gray: #64748b;
+      --light: #f8fafc;
+      --white: #ffffff;
+      --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    /* Hero Section */
+    .hero {
+      background: var(--gradient);
+      color: white;
+      padding: 80px 0 120px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .hero-content { position: relative; z-index: 1; }
+    
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+    
+    .hero p {
+      font-size: 1.25rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto 24px;
+    }
+    
+    .demo-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    
+    .stat { text-align: center; }
+    .stat-value { font-size: 2.5rem; font-weight: 800; }
+    .stat-label { font-size: 0.875rem; opacity: 0.8; }
+    
+    /* Options Section */
+    .options {
+      padding: 80px 0;
+      margin-top: -60px;
+    }
+    
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 32px;
+    }
+    
+    .option-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .option-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow);
+    }
+    
+    .option-card.featured {
+      border: 3px solid var(--primary);
+    }
+    
+    .option-card.featured::before {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: 20px; right: -35px;
+      background: var(--primary);
+      color: white;
+      padding: 6px 40px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      transform: rotate(45deg);
+    }
+    
+    .option-icon {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 28px;
+    }
+    
+    .option-icon.dev { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+    .option-icon.host { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    
+    .option-card h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .option-card .subtitle {
+      color: var(--gray);
+      margin-bottom: 24px;
+    }
+    
+    .feature-list {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+    
+    .feature-list li {
+      padding: 12px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .feature-list li:last-child { border-bottom: none; }
+    
+    .feature-list .check {
+      color: var(--secondary);
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    
+    .price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+    
+    .price span { font-size: 1rem; font-weight: 400; color: var(--gray); }
+    
+    .btn {
+      display: inline-block;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+    }
+    
+    .btn-primary {
+      background: var(--gradient);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #059669;
+      transform: translateY(-2px);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
+    }
+    
+    /* VPS Plans Section */
+    .vps-section {
+      background: var(--dark);
+      color: white;
+      padding: 80px 0;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .section-header h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    
+    .section-header p {
+      color: #94a3b8;
+      font-size: 1.125rem;
+    }
+    
+    .vps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    
+    .vps-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .vps-card:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-4px);
+    }
+    
+    .vps-card.popular {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--primary);
+    }
+    
+    .vps-badge {
+      background: var(--accent);
+      color: var(--dark);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+    
+    .vps-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .vps-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--secondary);
+    }
+    
+    .vps-price span { font-size: 1rem; opacity: 0.7; }
+    
+    .vps-specs {
+      margin: 24px 0;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    
+    .vps-specs div { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .vps-specs div:last-child { border-bottom: none; }
+    
+    /* Testimonials */
+    .testimonials {
+      padding: 80px 0;
+      background: var(--white);
+    }
+    
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+    }
+    
+    .testimonial {
+      background: var(--light);
+      border-radius: 20px;
+      padding: 32px;
+    }
+    
+    .testimonial-text {
+      font-size: 1.1rem;
+      font-style: italic;
+      margin-bottom: 24px;
+      color: var(--dark);
+    }
+    
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .author-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+    }
+    
+    .author-name { font-weight: 600; }
+    .author-role { font-size: 0.875rem; color: var(--gray); }
+    
+    /* Contact Form */
+    .contact-section {
+      padding: 80px 0;
+      background: var(--light);
+    }
+    
+    .contact-form {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--white);
+      padding: 48px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .form-group { margin-bottom: 24px; }
+    
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .form-group textarea { min-height: 120px; resize: vertical; }
+    
+    /* Footer CTA */
+    .final-cta {
+      background: var(--gradient);
+      color: white;
+      padding: 80px 0;
+      text-align: center;
+    }
+    
+    .final-cta h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    
+    .final-cta p {
+      font-size: 1.125rem;
+      opacity: 0.9;
+      margin-bottom: 32px;
+    }
+    
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .cta-buttons .btn { width: auto; min-width: 200px; }
+    
+    .btn-white {
+      background: white;
+      color: var(--primary);
+    }
+    
+    .btn-white:hover {
+      background: #f1f5f9;
+      transform: translateY(-2px);
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .hero { padding: 60px 0 100px; }
+      .options-grid { grid-template-columns: 1fr; }
+      .demo-stats { gap: 24px; }
+      .stat-value { font-size: 2rem; }
+      .option-card { padding: 32px 24px; }
+      .contact-form { padding: 32px 24px; }
+      .vps-grid { grid-template-columns: 1fr; }
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate { animation: fadeInUp 0.6s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+  <!-- Conversion Tracking -->
+  <script>
+    window.demoUpgradeData = {
+      demoId: '{{demoId}}',
+      email: '{{email}}',
+      demoHoursUsed: {{demoHoursUsed}},
+      featuresUsed: {{{json featuresUsed}}},
+      timestamp: new Date().toISOString()
+    };
+  </script>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero-content">
+      <h1>🚀 Ready to Launch Your Site?</h1>
+      <p>You've experienced the power of NodePress. Now let's make it yours – permanently.</p>
+      
+      {{#if demoStats}}
+      <div class="demo-stats">
+        <div class="stat">
+          <div class="stat-value">{{demoStats.posts}}</div>
+          <div class="stat-label">Posts Created</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">{{demoStats.pages}}</div>
+          <div class="stat-label">Pages Built</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">{{demoStats.hoursUsed}}</div>
+          <div class="stat-label">Hours Explored</div>
+        </div>
+      </div>
+      {{/if}}
+    </div>
+  </section>
+
+  <!-- Main Options -->
+  <section class="options">
+    <div class="container">
+      <div class="options-grid">
+        
+        <!-- Option 1: Custom Development -->
+        <div class="option-card featured animate">
+          <div class="option-icon dev">💻</div>
+          <h2>Custom Development Services</h2>
+          <p class="subtitle">Let us build and manage your perfect NodePress site</p>
+          
+          <ul class="feature-list">
+            <li><span class="check">✓</span> Full NodePress setup & configuration</li>
+            <li><span class="check">✓</span> Custom theme design to match your brand</li>
+            <li><span class="check">✓</span> Plugin development & integrations</li>
+            <li><span class="check">✓</span> E-commerce & payment setup</li>
+            <li><span class="check">✓</span> LMS course platform configuration</li>
+            <li><span class="check">✓</span> SEO optimization & analytics</li>
+            <li><span class="check">✓</span> Ongoing support & maintenance</li>
+            <li><span class="check">✓</span> Training & documentation</li>
+          </ul>
+          
+          <div class="price">From £499 <span>one-time</span></div>
+          <p style="color: var(--gray); margin-bottom: 24px; font-size: 0.9rem;">
+            Or £99/month for managed hosting + support
+          </p>
+          
+          <a href="#contact" class="btn btn-primary">Get a Free Quote</a>
+          <a href="https://calendly.com/YOUR_CALENDLY" target="_blank" class="btn btn-outline" style="margin-top: 12px;">
+            📅 Schedule a Call
+          </a>
+        </div>
+        
+        <!-- Option 2: Self-Host -->
+        <div class="option-card animate delay-1">
+          <div class="option-icon host">🖥️</div>
+          <h2>Self-Host with Hostinger VPS</h2>
+          <p class="subtitle">Deploy NodePress on your own server in minutes</p>
+          
+          <ul class="feature-list">
+            <li><span class="check">✓</span> Full control over your server</li>
+            <li><span class="check">✓</span> One-click NodePress installation</li>
+            <li><span class="check">✓</span> Free SSL certificates included</li>
+            <li><span class="check">✓</span> 99.9% uptime guarantee</li>
+            <li><span class="check">✓</span> 24/7 customer support</li>
+            <li><span class="check">✓</span> Weekly backups included</li>
+            <li><span class="check">✓</span> Easy scaling as you grow</li>
+            <li><span class="check">✓</span> 30-day money-back guarantee</li>
+          </ul>
+          
+          <div class="price">From £5.99 <span>/month</span></div>
+          <p style="color: var(--gray); margin-bottom: 24px; font-size: 0.9rem;">
+            Special 20% discount with code: NODEPRESS
+          </p>
+          
+          <a href="https://hostinger.co.uk?REFERRALCODE=LRMMICKYBJ9K" target="_blank" class="btn btn-secondary" onclick="trackHostingerClick()">
+            Get Hostinger VPS →
+          </a>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- VPS Plans Comparison -->
+  <section class="vps-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Hostinger VPS Plans for NodePress</h2>
+        <p>Choose the right plan based on your traffic and needs</p>
+      </div>
+      
+      <div class="vps-grid">
+        <!-- KVM 1 -->
+        <div class="vps-card">
+          <div class="vps-name">KVM 1</div>
+          <div class="vps-price">£5.99<span>/mo</span></div>
+          <div class="vps-specs">
+            <div><strong>1 vCPU</strong></div>
+            <div><strong>4 GB</strong> RAM</div>
+            <div><strong>50 GB</strong> NVMe SSD</div>
+            <div><strong>4 TB</strong> Bandwidth</div>
+          </div>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">
+            Perfect for blogs & small sites
+          </p>
+          <a href="https://hostinger.co.uk?REFERRALCODE=LRMMICKYBJ9K" target="_blank" class="btn btn-outline" style="border-color: white; color: white;" onclick="trackHostingerClick()">
+            Select Plan
+          </a>
+        </div>
+
+        <!-- KVM 2 - Popular -->
+        <div class="vps-card popular">
+          <span class="vps-badge">BEST VALUE</span>
+          <div class="vps-name">KVM 2</div>
+          <div class="vps-price">£9.99<span>/mo</span></div>
+          <div class="vps-specs">
+            <div><strong>2 vCPU</strong></div>
+            <div><strong>8 GB</strong> RAM</div>
+            <div><strong>100 GB</strong> NVMe SSD</div>
+            <div><strong>8 TB</strong> Bandwidth</div>
+          </div>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">
+            Ideal for e-commerce & LMS sites
+          </p>
+          <a href="https://hostinger.co.uk?REFERRALCODE=LRMMICKYBJ9K" target="_blank" class="btn btn-secondary" onclick="trackHostingerClick()">
+            Select Plan
+          </a>
+        </div>
+
+        <!-- KVM 4 -->
+        <div class="vps-card">
+          <div class="vps-name">KVM 4</div>
+          <div class="vps-price">£16.99<span>/mo</span></div>
+          <div class="vps-specs">
+            <div><strong>4 vCPU</strong></div>
+            <div><strong>16 GB</strong> RAM</div>
+            <div><strong>200 GB</strong> NVMe SSD</div>
+            <div><strong>16 TB</strong> Bandwidth</div>
+          </div>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">
+            For high-traffic & enterprise sites
+          </p>
+          <a href="https://hostinger.co.uk?REFERRALCODE=LRMMICKYBJ9K" target="_blank" class="btn btn-outline" style="border-color: white; color: white;" onclick="trackHostingerClick()">
+            Select Plan
+          </a>
+        </div>
+      </div>
+      
+      <p style="text-align: center; margin-top: 32px; color: #94a3b8; font-size: 0.9rem;">
+        💡 All plans include: Free domain, SSH access, dedicated IP, and full root access
+      </p>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header" style="color: var(--dark);">
+        <h2>What Our Clients Say</h2>
+        <p style="color: var(--gray);">Join hundreds of happy NodePress users</p>
+      </div>
+      
+      <div class="testimonial-grid">
+        <div class="testimonial animate">
+          <p class="testimonial-text">
+            "The custom development service was fantastic. They set up my entire e-commerce store in a week, and it's been running flawlessly ever since."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">JD</div>
+            <div>
+              <div class="author-name">James Davidson</div>
+              <div class="author-role">E-commerce Store Owner</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial animate delay-1">
+          <p class="testimonial-text">
+            "I tried the demo and was sold immediately. Self-hosting on Hostinger was incredibly easy with their documentation. Saved me thousands compared to WordPress hosting."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">SP</div>
+            <div>
+              <div class="author-name">Sarah Phillips</div>
+              <div class="author-role">Blogger & Content Creator</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial animate delay-2">
+          <p class="testimonial-text">
+            "The LMS features are incredible. We launched our online course platform and enrolled 500+ students in the first month. Highly recommend the managed service."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">MK</div>
+            <div>
+              <div class="author-name">Michael Kumar</div>
+              <div class="author-role">Online Course Creator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Form -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="section-header" style="color: var(--dark);">
+        <h2>Get Your Free Quote</h2>
+        <p style="color: var(--gray);">Tell us about your project and we'll get back to you within 24 hours</p>
+      </div>
+      
+      <form class="contact-form" action="/api/demo/upgrade-inquiry" method="POST" id="upgradeForm">
+        <input type="hidden" name="demoId" value="{{demoId}}">
+        <input type="hidden" name="source" value="demo-upgrade-page">
+        
+        <div class="form-group">
+          <label for="name">Your Name *</label>
+          <input type="text" id="name" name="name" required value="{{name}}">
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" name="email" required value="{{email}}">
+        </div>
+        
+        <div class="form-group">
+          <label for="company">Company / Website</label>
+          <input type="text" id="company" name="company" value="{{company}}">
+        </div>
+        
+        <div class="form-group">
+          <label for="service">What are you interested in? *</label>
+          <select id="service" name="service" required>
+            <option value="">Select an option...</option>
+            <option value="custom-full">Full Custom Development (from £499)</option>
+            <option value="custom-theme">Custom Theme Design (from £299)</option>
+            <option value="managed-hosting">Managed Hosting + Support (£99/mo)</option>
+            <option value="self-host-help">Self-Host Setup Assistance (£149)</option>
+            <option value="consultation">Free 30-Min Consultation</option>
+            <option value="other">Other (describe below)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="message">Tell us about your project</label>
+          <textarea id="message" name="message" placeholder="What features do you need? What's your timeline? Any specific requirements?"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Send Inquiry →</button>
+        
+        <p style="text-align: center; margin-top: 16px; font-size: 0.875rem; color: var(--gray);">
+          Or email us directly at <a href="mailto:hello@nodepress.co.uk" style="color: var(--primary);">hello@nodepress.co.uk</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="container">
+      <h2>Still Have Questions?</h2>
+      <p>We're here to help you make the right choice for your project</p>
+      <div class="cta-buttons">
+        <a href="mailto:hello@nodepress.co.uk" class="btn btn-white">📧 Email Us</a>
+        <a href="https://calendly.com/YOUR_CALENDLY" target="_blank" class="btn btn-outline" style="border-color: white; color: white;">
+          📅 Book a Call
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analytics & Tracking Script -->
+  <script>
+    // Track page view
+    if (window.demoUpgradeData) {
+      fetch('/api/demo/track-conversion-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(window.demoUpgradeData)
+      }).catch(() => {});
+    }
+
+    // Track Hostinger affiliate clicks
+    function trackHostingerClick() {
+      fetch('/api/demo/track-conversion-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          demoId: window.demoUpgradeData?.demoId,
+          action: 'hostinger_click',
+          target: 'hostinger_affiliate',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {});
+    }
+
+    // Track CTA clicks
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const action = this.textContent.trim();
+        const href = this.getAttribute('href') || '';
+        
+        fetch('/api/demo/track-conversion-click', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            demoId: window.demoUpgradeData?.demoId,
+            action: action,
+            target: href.includes('hostinger') ? 'hostinger' : 
+                    href.includes('calendly') ? 'calendly' : 
+                    href.includes('#contact') ? 'contact-form' : 'other',
+            timestamp: new Date().toISOString()
+          })
+        }).catch(() => {});
+      });
+    });
+    
+    // Form submission tracking
+    document.getElementById('upgradeForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+      
+      fetch('/api/demo/upgrade-inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          this.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+              <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+              <h3 style="margin-bottom: 12px;">Thank You!</h3>
+              <p style="color: var(--gray);">We've received your inquiry and will get back to you within 24 hours.</p>
+            </div>
+          `;
+        } else {
+          alert('Something went wrong. Please try again or email us directly.');
+        }
+      })
+      .catch(() => {
+        alert('Something went wrong. Please try again or email us directly.');
+      });
+    });
+  </script>
+</body>
+</html>
+
