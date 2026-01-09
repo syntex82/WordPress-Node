@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2DFDK58XN9"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-2DFDK58XN9');
+  </script>
+
   <!-- Primary SEO Meta Tags -->
   <title>{{#if metaTitle}}{{metaTitle}}{{else}}{{#if title}}{{title}} | {{siteName}}{{else}}{{siteName}} - Modern CMS Built with Node.js{{/if}}{{/if}}</title>
   <meta name="description" content="{{#if metaDescription}}{{metaDescription}}{{else}}A blazing-fast, enterprise-grade CMS built with NestJS, React, Prisma, and PostgreSQL. Full LMS, eCommerce, analytics, and plugin ecosystem.{{/if}}">
