@@ -1951,9 +1951,11 @@ document.addEventListener('keydown', function(e) {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
 }
 .license-modal-backdrop {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -1967,10 +1969,13 @@ document.addEventListener('keydown', function(e) {
   border-radius: 20px;
   padding: 40px;
   max-width: 460px;
-  width: 90%;
+  width: 100%;
   text-align: center;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: auto;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 .license-modal-close {
   position: absolute;
@@ -2103,6 +2108,65 @@ document.addEventListener('keydown', function(e) {
 }
 .license-secure svg {
   fill: #10b981;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 480px) {
+  .license-modal {
+    padding: 10px;
+  }
+  .license-modal-content {
+    padding: 24px 20px;
+    border-radius: 16px;
+    max-height: calc(100vh - 20px);
+  }
+  .license-modal-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+  }
+  .license-modal-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+  .license-modal-header {
+    margin-bottom: 16px;
+  }
+  .license-modal-header h2 {
+    font-size: 1.35rem;
+  }
+  .license-modal-header p {
+    font-size: 0.9rem;
+  }
+  .license-price-box {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .license-price {
+    font-size: 2.25rem;
+  }
+  .license-features {
+    margin-bottom: 16px;
+  }
+  .license-features li {
+    padding: 6px 0;
+    font-size: 0.85rem;
+  }
+  .license-form input {
+    padding: 14px 16px;
+    font-size: 0.95rem;
+  }
+  .license-btn {
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+  .license-modal-close {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
 }
 </style>
 
