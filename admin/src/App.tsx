@@ -4,7 +4,7 @@
  * Uses React.lazy for code-splitting to reduce initial bundle size
  */
 
-import { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
@@ -127,10 +127,19 @@ const HiringRequestDetail = lazy(() => import('./pages/marketplace').then(m => (
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 
-
+// Demo mode components
+import { useDemoStore } from './stores/demoStore';
+import { DemoBanner } from './components/DemoBanner';
+import { DemoUpgradePrompt } from './components/DemoUpgradePrompt';
 
 function AppContent() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
+  const { initFromCookie, isDemo } = useDemoStore();
+
+  // Initialize demo mode from cookie on mount
+  useEffect(() => {
+    initFromCookie();
+  }, [initFromCookie]);
 
   // Wait for Zustand to rehydrate from localStorage before rendering auth-dependent routes
   if (!_hasHydrated) {
@@ -140,6 +149,10 @@ function AppContent() {
   return (
     <>
       <Toaster />
+      {/* Demo mode banner - shows at top when in demo mode */}
+      {isDemo && <DemoBanner />}
+      {/* Demo upgrade prompt modal */}
+      <DemoUpgradePrompt />
       <BrowserRouter basename="/admin">
         <Suspense fallback={<PageLoader />}>
           <Routes>

@@ -289,6 +289,9 @@ model Course {
   requirements        Json?
   createdAt           DateTime         @default(now())
   updatedAt DateTime @updatedAt
+  // Demo isolation
+  demoInstanceId      String?
+  demoInstance        DemoInstance?    @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
   CartItem            CartItem[]
   Certificate         Certificate[]
   instructor          User             @relation(fields: [instructorId], references: [id], onDelete: Cascade)
@@ -305,6 +308,7 @@ model Course {
   @@index([priceType])
   @@index([slug])
   @@index([status])
+  @@index([demoInstanceId])
 }
 
 model CourseModule {
@@ -891,10 +895,14 @@ model Media {
   uploadedById String
   createdAt    DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // Demo isolation
+  demoInstanceId String?
+  demoInstance   DemoInstance? @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
   uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 
   @@index([mimeType])
   @@index([uploadedById])
+  @@index([demoInstanceId])
 }
 
 model Menu {
@@ -1029,6 +1037,9 @@ model Page {
   parentId          String?
   createdAt         DateTime           @default(now())
   updatedAt DateTime @updatedAt
+  // Demo isolation
+  demoInstanceId    String?
+  demoInstance      DemoInstance?      @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
   MenuItem          MenuItem[]
   author              User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
   parent            Page?              @relation("PageToPage", fields: [parentId], references: [id])
@@ -1038,6 +1049,7 @@ model Page {
   @@index([authorId])
   @@index([slug])
   @@index([status])
+  @@index([demoInstanceId])
 }
 
 model PageCustomization {
@@ -1168,6 +1180,9 @@ model Post {
   customFields      Json?
   createdAt         DateTime           @default(now())
   updatedAt DateTime @updatedAt
+  // Demo isolation - null for real posts, set for demo posts
+  demoInstanceId    String?
+  demoInstance      DemoInstance?      @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
   MenuItem          MenuItem[]
   author              User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
   PostCustomization PostCustomization?
@@ -1175,6 +1190,7 @@ model Post {
   @@index([authorId])
   @@index([slug])
   @@index([status])
+  @@index([demoInstanceId])
 }
 
 model PostCustomization {
@@ -1231,6 +1247,9 @@ model Product {
   updatedAt DateTime @updatedAt
   hasVariants       Boolean          @default(false)
   variantOptions    Json?
+  // Demo isolation
+  demoInstanceId    String?
+  demoInstance      DemoInstance?    @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
   CartItem          CartItem[]
   OrderItem         OrderItem[]
   category          ProductCategory? @relation(fields: [categoryId], references: [id])
@@ -1243,6 +1262,7 @@ model Product {
   @@index([sku])
   @@index([slug])
   @@index([status])
+  @@index([demoInstanceId])
 }
 
 model ProductCategory {
@@ -1974,6 +1994,9 @@ model User {
   // Google OAuth fields
   googleId                                                String?                   @unique
   authProvider                                            String                    @default("local")
+  // Demo isolation - null for real users, set for demo users
+  demoInstanceId                                          String?
+  demoInstance                                            DemoInstance?             @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
   about                                                   String?
   company                                                 String?
   coursesCount                                            Int                       @default(0)
@@ -2647,6 +2670,14 @@ model DemoInstance {
   // Relations
   accessLogs      DemoAccessLog[]
   featureUsage    DemoFeatureUsage[]
+
+  // Demo data (isolated per demo instance)
+  demoUsers       User[]
+  demoPosts       Post[]
+  demoPages       Page[]
+  demoProducts    Product[]
+  demoCourses     Course[]
+  demoMedia       Media[]
 
   @@index([status])
   @@index([email])

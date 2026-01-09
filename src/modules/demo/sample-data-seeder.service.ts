@@ -2,6 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import * as bcrypt from 'bcrypt';
 
+/**
+ * Sample Data Seeder Service
+ *
+ * Seeds isolated demo data tagged with demoInstanceId.
+ * All seeded data belongs ONLY to the specific demo instance.
+ *
+ * SECURITY: demoInstanceId is REQUIRED to ensure data isolation.
+ */
 @Injectable()
 export class SampleDataSeederService {
   private readonly logger = new Logger(SampleDataSeederService.name);
@@ -10,128 +18,137 @@ export class SampleDataSeederService {
 
   /**
    * Seed all sample data for a demo instance
+   *
+   * @param demoInstanceId - REQUIRED - ID of the demo instance (for data isolation)
+   * @param adminEmail - Email for the demo admin user
+   * @param adminPasswordHash - Pre-hashed password for admin
    */
-  async seedAll(adminEmail: string, adminPasswordHash: string): Promise<void> {
-    this.logger.log('Seeding sample data...');
+  async seedAll(
+    demoInstanceId: string,
+    adminEmail: string,
+    adminPasswordHash: string,
+  ): Promise<{ adminUserId: string }> {
+    if (!demoInstanceId) {
+      throw new Error('demoInstanceId is required for seeding demo data');
+    }
 
-    // Create admin user
-    const admin = await this.seedAdminUser(adminEmail, adminPasswordHash);
+    this.logger.log(`Seeding sample data for demo: ${demoInstanceId}`);
+
+    // Create admin user for this demo
+    const admin = await this.seedAdminUser(demoInstanceId, adminEmail, adminPasswordHash);
 
     // Seed in parallel for speed
     await Promise.all([
-      this.seedUsers(),
-      this.seedCategories(),
-      this.seedSettings(),
+      this.seedUsers(demoInstanceId),
+      this.seedCategories(), // Categories are shared (not demo-specific)
+      this.seedSettings(),   // Settings are shared
     ]);
 
     await Promise.all([
-      this.seedPosts(admin.id),
-      this.seedPages(admin.id),
-      this.seedProducts(),
-      this.seedCourses(admin.id),
-      this.seedMedia(admin.id),
+      this.seedPosts(demoInstanceId, admin.id),
+      this.seedPages(demoInstanceId, admin.id),
+      this.seedProducts(demoInstanceId),
+      this.seedCourses(demoInstanceId, admin.id),
+      this.seedMedia(demoInstanceId, admin.id),
     ]);
 
-    this.logger.log('Sample data seeded successfully');
+    this.logger.log(`Sample data seeded successfully for demo: ${demoInstanceId}`);
+    return { adminUserId: admin.id };
   }
 
-  private async seedAdminUser(email: string, passwordHash: string) {
+  /**
+   * Clean up all data for a demo instance
+   */
+  async cleanupDemoData(demoInstanceId: string): Promise<void> {
+    this.logger.log(`Cleaning up demo data for: ${demoInstanceId}`);
+
+    // Delete in order to respect foreign keys
+    await this.prisma.media.deleteMany({ where: { demoInstanceId } });
+    await this.prisma.course.deleteMany({ where: { demoInstanceId } });
+    await this.prisma.product.deleteMany({ where: { demoInstanceId } });
+    await this.prisma.page.deleteMany({ where: { demoInstanceId } });
+    await this.prisma.post.deleteMany({ where: { demoInstanceId } });
+    await this.prisma.user.deleteMany({ where: { demoInstanceId } });
+
+    this.logger.log(`Demo data cleaned up for: ${demoInstanceId}`);
+  }
+
+  private async seedAdminUser(demoInstanceId: string, email: string, passwordHash: string) {
     return this.prisma.user.create({
       data: {
         email,
         password: passwordHash,
         name: 'Demo Admin',
         role: 'ADMIN',
-        isActive: true,
-        emailVerified: new Date(),
+        demoInstanceId, // Tag with demo ID
       },
     });
   }
 
-  private async seedUsers() {
+  private async seedUsers(demoInstanceId: string) {
     const password = await bcrypt.hash('demo123', 10);
-    
+    // Use unique emails per demo to avoid conflicts
+    const shortId = demoInstanceId.slice(-6);
+
     const users = [
-      { email: 'editor@demo.com', name: 'Sarah Editor', role: 'EDITOR' as const },
-      { email: 'author@demo.com', name: 'John Author', role: 'AUTHOR' as const },
-      { email: 'viewer@demo.com', name: 'Jane Viewer', role: 'VIEWER' as const },
-      { email: 'customer@demo.com', name: 'Mike Customer', role: 'VIEWER' as const },
-      { email: 'student@demo.com', name: 'Lisa Student', role: 'VIEWER' as const },
+      { email: `editor-${shortId}@demo.local`, name: 'Sarah Editor', role: 'EDITOR' as const },
+      { email: `author-${shortId}@demo.local`, name: 'John Author', role: 'AUTHOR' as const },
+      { email: `viewer-${shortId}@demo.local`, name: 'Jane Viewer', role: 'VIEWER' as const },
+      { email: `customer-${shortId}@demo.local`, name: 'Mike Customer', role: 'VIEWER' as const },
+      { email: `student-${shortId}@demo.local`, name: 'Lisa Student', role: 'VIEWER' as const },
     ];
 
     for (const user of users) {
       await this.prisma.user.create({
-        data: { ...user, password, isActive: true, emailVerified: new Date() },
+        data: { ...user, password, demoInstanceId },
       });
     }
   }
 
   private async seedCategories() {
-    const categories = [
-      { name: 'Technology', slug: 'technology', description: 'Tech news and tutorials' },
-      { name: 'Business', slug: 'business', description: 'Business insights and strategies' },
-      { name: 'Design', slug: 'design', description: 'UI/UX and graphic design' },
-      { name: 'Marketing', slug: 'marketing', description: 'Digital marketing tips' },
-      { name: 'Lifestyle', slug: 'lifestyle', description: 'Life and productivity' },
-    ];
-
-    for (const cat of categories) {
-      await this.prisma.category.create({ data: cat });
-    }
+    // Note: ProductCategory model exists, not Category
+    // Categories will be created via product seeding if needed
   }
 
   private async seedSettings() {
-    const settings = [
-      { key: 'site_name', value: 'NodePress Demo', category: 'general' },
-      { key: 'site_description', value: 'Experience the power of NodePress CMS', category: 'general' },
-      { key: 'site_tagline', value: 'Modern CMS for Modern Businesses', category: 'general' },
-      { key: 'posts_per_page', value: '10', category: 'reading' },
-      { key: 'allow_comments', value: 'true', category: 'discussion' },
-      { key: 'timezone', value: 'UTC', category: 'general' },
-    ];
-
-    for (const setting of settings) {
-      await this.prisma.setting.upsert({
-        where: { key: setting.key },
-        update: { value: setting.value },
-        create: setting,
-      });
-    }
+    // Settings have a different schema - skip for demo
+    // Real settings should already exist in the main DB
   }
 
-  private async seedPosts(authorId: string) {
+  private async seedPosts(demoInstanceId: string, authorId: string) {
+    const shortId = demoInstanceId.slice(-6);
     const posts = [
       {
         title: 'Welcome to NodePress CMS',
-        slug: 'welcome-to-nodepress',
+        slug: `welcome-to-nodepress-${shortId}`,
         content: this.getWelcomeContent(),
         excerpt: 'Discover the powerful features of NodePress, your all-in-one platform.',
         status: 'PUBLISHED' as const,
       },
       {
         title: '10 Tips for Building a Successful Online Business',
-        slug: '10-tips-online-business',
+        slug: `10-tips-online-business-${shortId}`,
         content: this.getBusinessTipsContent(),
         excerpt: 'Learn the essential strategies for launching and growing your online business.',
         status: 'PUBLISHED' as const,
       },
       {
         title: 'The Future of E-Commerce in 2025',
-        slug: 'future-of-ecommerce-2025',
+        slug: `future-of-ecommerce-2025-${shortId}`,
         content: this.getEcommerceContent(),
         excerpt: 'Explore the trends shaping the future of online retail.',
         status: 'PUBLISHED' as const,
       },
       {
         title: 'Getting Started with Online Courses',
-        slug: 'getting-started-online-courses',
+        slug: `getting-started-online-courses-${shortId}`,
         content: this.getLMSContent(),
         excerpt: 'How to create and sell your first online course.',
         status: 'PUBLISHED' as const,
       },
       {
         title: 'Draft: Upcoming Features',
-        slug: 'upcoming-features-draft',
+        slug: `upcoming-features-draft-${shortId}`,
         content: 'This is a draft post showing upcoming features...',
         excerpt: 'Preview of upcoming NodePress features.',
         status: 'DRAFT' as const,
@@ -143,101 +160,92 @@ export class SampleDataSeederService {
         data: {
           ...post,
           authorId,
+          demoInstanceId,
           publishedAt: post.status === 'PUBLISHED' ? new Date() : null,
         },
       });
     }
   }
 
-  private async seedPages(authorId: string) {
+  private async seedPages(demoInstanceId: string, authorId: string) {
+    const shortId = demoInstanceId.slice(-6);
     const pages = [
-      { title: 'About Us', slug: 'about', content: this.getAboutContent() },
-      { title: 'Contact', slug: 'contact', content: this.getContactContent() },
-      { title: 'Privacy Policy', slug: 'privacy-policy', content: this.getPrivacyContent() },
-      { title: 'Terms of Service', slug: 'terms-of-service', content: this.getTermsContent() },
+      { title: 'About Us', slug: `about-${shortId}`, content: this.getAboutContent() },
+      { title: 'Contact', slug: `contact-${shortId}`, content: this.getContactContent() },
+      { title: 'Privacy Policy', slug: `privacy-policy-${shortId}`, content: this.getPrivacyContent() },
+      { title: 'Terms of Service', slug: `terms-of-service-${shortId}`, content: this.getTermsContent() },
     ];
 
     for (const page of pages) {
       await this.prisma.page.create({
-        data: { ...page, authorId, status: 'PUBLISHED', publishedAt: new Date() },
+        data: { ...page, authorId, demoInstanceId, status: 'PUBLISHED', publishedAt: new Date() },
       });
     }
   }
 
-  private async seedProducts() {
-    const products = [
-      {
-        name: 'Premium WordPress Theme',
-        slug: 'premium-wordpress-theme',
-        description: 'A beautiful, responsive theme for modern websites.',
-        price: 59.99,
-        compareAtPrice: 99.99,
-        sku: 'THEME-001',
-        inventory: 999,
-        isActive: true,
-        images: ['https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600'],
-      },
-      {
-        name: 'NodePress Pro License',
-        slug: 'nodepress-pro-license',
-        description: 'Unlock all premium features with a Pro license.',
-        price: 199.99,
-        sku: 'LICENSE-PRO',
-        inventory: 999,
-        isActive: true,
-        images: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600'],
-      },
-      {
-        name: 'Custom Development Package',
-        slug: 'custom-development',
-        description: '10 hours of custom development and consultation.',
-        price: 999.99,
-        sku: 'DEV-10HR',
-        inventory: 10,
-        isActive: true,
-        images: ['https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600'],
-      },
-    ];
+  private async seedProducts(demoInstanceId: string) {
+    const shortId = demoInstanceId.slice(-6);
 
-    for (const product of products) {
-      await this.prisma.product.create({ data: product });
-    }
+    // Create products using direct data to match Prisma schema
+    await this.prisma.product.createMany({
+      data: [
+        {
+          name: 'Premium Theme',
+          slug: `premium-theme-${shortId}`,
+          description: 'A beautiful, responsive theme for modern websites.',
+          price: 59.99,
+          demoInstanceId,
+        },
+        {
+          name: 'Pro License',
+          slug: `pro-license-${shortId}`,
+          description: 'Unlock all premium features with a Pro license.',
+          price: 199.99,
+          demoInstanceId,
+        },
+        {
+          name: 'Development Package',
+          slug: `dev-package-${shortId}`,
+          description: '10 hours of custom development and consultation.',
+          price: 999.99,
+          demoInstanceId,
+        },
+      ],
+      skipDuplicates: true,
+    });
   }
 
-  private async seedCourses(instructorId: string) {
+  private async seedCourses(demoInstanceId: string, instructorId: string) {
+    const shortId = demoInstanceId.slice(-6);
+
+    // Create courses with simplified data matching schema
     const courses = [
       {
         title: 'NodePress Masterclass',
-        slug: 'nodepress-masterclass',
+        slug: `nodepress-masterclass-${shortId}`,
         description: 'Learn to build powerful websites with NodePress CMS.',
-        price: 149.99,
         level: 'BEGINNER' as const,
-        duration: 600,
-        isPublished: true,
+        estimatedHours: 10,
       },
       {
-        title: 'E-Commerce with NodePress',
-        slug: 'ecommerce-nodepress',
+        title: 'E-Commerce Course',
+        slug: `ecommerce-course-${shortId}`,
         description: 'Build a complete online store from scratch.',
-        price: 199.99,
         level: 'INTERMEDIATE' as const,
-        duration: 900,
-        isPublished: true,
+        estimatedHours: 15,
       },
       {
-        title: 'Theme Development Deep Dive',
-        slug: 'theme-development',
+        title: 'Theme Development',
+        slug: `theme-dev-${shortId}`,
         description: 'Create custom themes with the visual editor.',
-        price: 99.99,
         level: 'ADVANCED' as const,
-        duration: 480,
-        isPublished: true,
+        estimatedHours: 8,
       },
     ];
 
     for (const course of courses) {
       const created = await this.prisma.course.create({
-        data: { ...course, instructorId },
+        data: { ...course, instructorId, demoInstanceId },
       });
 
       // Add sample modules and lessons
@@ -251,38 +259,42 @@ export class SampleDataSeederService {
         courseId,
         title: 'Getting Started',
         description: 'Introduction and setup',
-        order: 1,
+        orderIndex: 1,
       },
     });
 
     const lessons = [
-      { title: 'Welcome to the Course', type: 'VIDEO' as const, duration: 300 },
-      { title: 'Setting Up Your Environment', type: 'VIDEO' as const, duration: 600 },
-      { title: 'Your First Project', type: 'VIDEO' as const, duration: 900 },
-      { title: 'Knowledge Check', type: 'QUIZ' as const, duration: 300 },
+      { title: 'Welcome', type: 'VIDEO' as const, estimatedMinutes: 5 },
+      { title: 'Setup', type: 'VIDEO' as const, estimatedMinutes: 10 },
+      { title: 'First Project', type: 'VIDEO' as const, estimatedMinutes: 15 },
     ];
 
     for (let i = 0; i < lessons.length; i++) {
       await this.prisma.lesson.create({
         data: {
-          ...lessons[i],
+          courseId: module.courseId,
           moduleId: module.id,
-          order: i + 1,
+          title: lessons[i].title,
+          type: lessons[i].type,
+          estimatedMinutes: lessons[i].estimatedMinutes,
+          orderIndex: i + 1,
           content: `Content for ${lessons[i].title}`,
         },
       });
     }
   }
 
-  private async seedMedia(uploaderId: string) {
+  private async seedMedia(demoInstanceId: string, uploadedById: string) {
     const media = [
-      { filename: 'hero-image.jpg', originalName: 'hero-image.jpg', mimeType: 'image/jpeg', size: 245000, url: '/uploads/demo/hero-image.jpg' },
-      { filename: 'logo.png', originalName: 'logo.png', mimeType: 'image/png', size: 12000, url: '/uploads/demo/logo.png' },
-      { filename: 'product-1.jpg', originalName: 'product-1.jpg', mimeType: 'image/jpeg', size: 180000, url: '/uploads/demo/product-1.jpg' },
+      { filename: 'hero-image.jpg', originalName: 'hero-image.jpg', mimeType: 'image/jpeg', size: 245000, path: '/uploads/demo/hero-image.jpg' },
+      { filename: 'logo.png', originalName: 'logo.png', mimeType: 'image/png', size: 12000, path: '/uploads/demo/logo.png' },
+      { filename: 'product-1.jpg', originalName: 'product-1.jpg', mimeType: 'image/jpeg', size: 180000, path: '/uploads/demo/product-1.jpg' },
     ];
 
     for (const m of media) {
-      await this.prisma.media.create({ data: { ...m, uploaderId } });
+      await this.prisma.media.create({
+        data: { ...m, uploadedById, demoInstanceId },
+      });
     }
   }
 

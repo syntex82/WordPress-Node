@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../../database/prisma.module';
 import { EmailModule } from '../email/email.module';
 import { ThemesModule } from '../themes/themes.module';
@@ -15,12 +16,22 @@ import { DemoAnalyticsService } from './demo-analytics.service';
 import { DemoFollowupScheduler } from './demo-followup.scheduler';
 import { DemoModeMiddleware } from './middleware/demo-mode.middleware';
 import { SampleDataSeederService } from './sample-data-seeder.service';
+import { DemoContextService } from './demo-context.service';
 
 @Module({
   imports: [
     PrismaModule,
     ConfigModule,
     ScheduleModule.forRoot(),
+    // JWT for generating demo user tokens
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
+        signOptions: { expiresIn: '24h' },
+      }),
+      inject: [ConfigService],
+    }),
     forwardRef(() => EmailModule),
     forwardRef(() => ThemesModule),
   ],
@@ -33,8 +44,15 @@ import { SampleDataSeederService } from './sample-data-seeder.service';
     DemoAnalyticsService,
     DemoFollowupScheduler,
     SampleDataSeederService,
+    DemoContextService,
   ],
-  exports: [DemoService, DemoNotificationService, DemoConversionService, DemoAnalyticsService],
+  exports: [
+    DemoService,
+    DemoNotificationService,
+    DemoConversionService,
+    DemoAnalyticsService,
+    DemoContextService,
+  ],
 })
 export class DemoModule {}
 

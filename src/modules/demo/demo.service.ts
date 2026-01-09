@@ -11,6 +11,7 @@ import { CreateDemoDto, ExtendDemoDto } from './dto/create-demo.dto';
 import { DemoStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
+import { SampleDataSeederService } from './sample-data-seeder.service';
 
 @Injectable()
 export class DemoService {
@@ -22,7 +23,10 @@ export class DemoService {
   private readonly BASE_PORT = 4000;
   private readonly MAX_CONCURRENT_DEMOS = 50;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sampleDataSeeder: SampleDataSeederService,
+  ) {}
 
   /**
    * Create a new demo instance
@@ -315,6 +319,11 @@ export class DemoService {
 
   /**
    * Provision demo instance (async)
+   *
+   * SIMULATED DEMO MODE:
+   * - Seeds isolated sample data tagged with demoInstanceId
+   * - Demo users can only see/modify their own demo data
+   * - Real data (demoInstanceId = null) is never accessible to demos
    */
   private async provisionDemo(demoId: string) {
     const demo = await this.prisma.demoInstance.findUnique({ where: { id: demoId } });
@@ -328,14 +337,17 @@ export class DemoService {
 
       this.logger.log(`Provisioning demo: ${demo.subdomain}`);
 
-      // In production, this would:
-      // 1. Create a new PostgreSQL database
-      // 2. Run migrations
-      // 3. Seed sample data
-      // 4. Start Docker container or PM2 process
-      // 5. Configure Nginx/Traefik routing
+      // Seed isolated sample data for this demo
+      // All data is tagged with demoInstanceId for security isolation
+      const { adminUserId } = await this.sampleDataSeeder.seedAll(
+        demoId, // demoInstanceId - CRITICAL for isolation
+        demo.adminEmail,
+        demo.adminPassword, // Already hashed
+      );
 
-      // For now, we'll mark as running (placeholder)
+      this.logger.log(`Demo data seeded for: ${demo.subdomain}, admin: ${adminUserId}`);
+
+      // Mark as running
       await this.prisma.demoInstance.update({
         where: { id: demoId },
         data: { status: 'RUNNING', startedAt: new Date() },
@@ -355,15 +367,18 @@ export class DemoService {
 
   /**
    * Cleanup demo resources
+   * Deletes all data tagged with the demo's ID
    */
   private async cleanupDemoResources(demo: any) {
     this.logger.log(`Cleaning up demo: ${demo.subdomain}`);
 
-    // In production, this would:
-    // 1. Stop Docker container or PM2 process
-    // 2. Drop PostgreSQL database
-    // 3. Remove uploaded files
-    // 4. Remove Nginx/Traefik config
+    try {
+      // Delete all seeded demo data (uses cascade delete via demoInstanceId)
+      await this.sampleDataSeeder.cleanupDemoData(demo.id);
+      this.logger.log(`Demo data cleaned up for: ${demo.subdomain}`);
+    } catch (error) {
+      this.logger.error(`Failed to cleanup demo data for ${demo.subdomain}:`, error);
+    }
   }
 
   // ==================== SCHEDULED TASKS ====================

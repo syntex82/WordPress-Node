@@ -3,42 +3,74 @@ import { Request, Response, NextFunction } from 'express';
 
 /**
  * Demo Mode Middleware
- * 
- * Applies restrictions when running in demo mode:
+ *
+ * Applies restrictions when running in demo mode (either via env var or cookie):
  * - Blocks real email sending
  * - Blocks external payment processing
- * - Blocks certain dangerous operations
- * - Adds demo banner/watermark
+ * - Blocks certain dangerous operations (delete, settings changes)
+ * - Adds demo mode headers for frontend
+ *
+ * Demo mode is active when:
+ * 1. DEMO_MODE=true environment variable is set (global demo)
+ * 2. demo_mode cookie is present (simulated demo for individual users)
  */
 @Injectable()
 export class DemoModeMiddleware implements NestMiddleware {
+  // Completely blocked endpoints - never allowed in demo
   private readonly BLOCKED_ENDPOINTS = [
     // Email endpoints that send real emails
     { method: 'POST', path: '/api/email/send' },
     { method: 'POST', path: '/api/email/bulk' },
     { method: 'POST', path: '/api/email/test' },
-    
+
     // Payment endpoints
     { method: 'POST', path: '/api/shop/checkout/create-payment-intent' },
     { method: 'POST', path: '/api/subscriptions/create' },
     { method: 'POST', path: '/api/marketplace/payments' },
-    
+
     // System-level operations
     { method: 'POST', path: '/api/updates/apply' },
     { method: 'POST', path: '/api/backups/restore' },
-    { method: 'DELETE', path: '/api/users' }, // Bulk user deletion
+    { method: 'DELETE', path: '/api/users' },
+
+    // Delete operations (demo users shouldn't delete real data)
+    { method: 'DELETE', path: '/api/posts' },
+    { method: 'DELETE', path: '/api/pages' },
+    { method: 'DELETE', path: '/api/products' },
+    { method: 'DELETE', path: '/api/courses' },
+    { method: 'DELETE', path: '/api/media' },
   ];
 
+  // Paths where POST/PUT/DELETE are restricted
   private readonly DEMO_RESTRICTED_PATHS = [
-    '/api/settings/smtp', // SMTP configuration
-    '/api/settings/stripe', // Stripe configuration
-    '/api/settings/ai', // AI API keys
+    '/api/settings/smtp',
+    '/api/settings/stripe',
+    '/api/settings/ai',
+    '/api/settings/site',
+    '/api/auth/change-password',
+    '/api/users/password',
+    '/api/webhooks',
+    '/api/api-keys',
   ];
 
   use(req: Request, res: Response, next: NextFunction) {
-    // Only apply in demo mode
-    if (process.env.DEMO_MODE !== 'true') {
+    // Check if in demo mode (env var or cookie)
+    const isEnvDemo = process.env.DEMO_MODE === 'true';
+    const demoCookie = req.cookies?.demo_mode;
+    const isDemoMode = isEnvDemo || !!demoCookie;
+
+    if (!isDemoMode) {
       return next();
+    }
+
+    // Parse demo info from cookie if present
+    let demoInfo: any = null;
+    if (demoCookie) {
+      try {
+        demoInfo = JSON.parse(demoCookie);
+      } catch {
+        // Invalid cookie, ignore
+      }
     }
 
     const { method, path } = req;
@@ -52,6 +84,7 @@ export class DemoModeMiddleware implements NestMiddleware {
       throw new ForbiddenException({
         message: 'This action is disabled in demo mode',
         code: 'DEMO_RESTRICTED',
+        action: this.getActionFromPath(method, path),
         suggestion: 'Upgrade to a full license to access this feature',
       });
     }
@@ -63,23 +96,55 @@ export class DemoModeMiddleware implements NestMiddleware {
         throw new ForbiddenException({
           message: 'Configuration changes are disabled in demo mode',
           code: 'DEMO_CONFIG_RESTRICTED',
-          suggestion: 'Contact sales to upgrade your demo',
+          action: this.getActionFromPath(method, path),
+          suggestion: 'Upgrade to unlock all features',
         });
       }
     }
 
-    // Add demo mode headers
+    // Add demo mode headers for frontend
     res.setHeader('X-Demo-Mode', 'true');
-    res.setHeader('X-Demo-Subdomain', process.env.DEMO_SUBDOMAIN || 'demo');
-    
-    // Calculate remaining demo time
-    const expiresAt = process.env.DEMO_EXPIRES_AT;
-    if (expiresAt) {
-      const remaining = new Date(expiresAt).getTime() - Date.now();
-      res.setHeader('X-Demo-Remaining-Ms', Math.max(0, remaining).toString());
+
+    if (demoInfo) {
+      res.setHeader('X-Demo-Id', demoInfo.id || '');
+      res.setHeader('X-Demo-Subdomain', demoInfo.subdomain || '');
+      if (demoInfo.expiresAt) {
+        const remaining = new Date(demoInfo.expiresAt).getTime() - Date.now();
+        res.setHeader('X-Demo-Remaining-Ms', Math.max(0, remaining).toString());
+      }
+    } else {
+      res.setHeader('X-Demo-Subdomain', process.env.DEMO_SUBDOMAIN || 'demo');
+      const expiresAt = process.env.DEMO_EXPIRES_AT;
+      if (expiresAt) {
+        const remaining = new Date(expiresAt).getTime() - Date.now();
+        res.setHeader('X-Demo-Remaining-Ms', Math.max(0, remaining).toString());
+      }
     }
 
     next();
+  }
+
+  /**
+   * Map path to a human-readable action name for frontend
+   */
+  private getActionFromPath(method: string, path: string): string {
+    if (method === 'DELETE') {
+      if (path.includes('/users')) return 'delete_user';
+      if (path.includes('/posts')) return 'delete_post';
+      if (path.includes('/pages')) return 'delete_page';
+      if (path.includes('/products')) return 'delete_product';
+      if (path.includes('/courses')) return 'delete_course';
+      if (path.includes('/media')) return 'delete_media';
+    }
+    if (path.includes('/settings/smtp') || path.includes('/email')) return 'update_email_settings';
+    if (path.includes('/settings/stripe') || path.includes('/payment')) return 'update_payment_settings';
+    if (path.includes('/settings')) return 'update_site_settings';
+    if (path.includes('/password')) return 'change_password';
+    if (path.includes('/api-keys')) return 'manage_api_keys';
+    if (path.includes('/webhooks')) return 'manage_webhooks';
+    if (path.includes('/export')) return 'export_data';
+    if (path.includes('/import')) return 'import_data';
+    return 'restricted_action';
   }
 }
 
