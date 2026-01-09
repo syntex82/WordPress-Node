@@ -144,6 +144,8 @@ async function bootstrap() {
                 'https://cdn.tailwindcss.com',
                 'https://www.googletagmanager.com',
                 'https://www.google-analytics.com',
+                'https://googleads.g.doubleclick.net',
+                'https://www.googleadservices.com',
               ],
               scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
               connectSrc: [
@@ -154,6 +156,9 @@ async function bootstrap() {
                 'https://js.stripe.com',
                 'https://www.google-analytics.com',
                 'https://www.googletagmanager.com',
+                'https://www.google.com',
+                'https://google.com',
+                'https://stats.g.doubleclick.net',
                 'wss:',
                 'ws:',
               ],
@@ -163,6 +168,7 @@ async function bootstrap() {
                 'https://www.youtube.com',
                 'https://youtube.com',
                 'https://www.youtube-nocookie.com',
+                'https://www.googletagmanager.com',
                 'https://player.vimeo.com',
                 'https://www.openstreetmap.org',
                 'https://maps.google.com',
@@ -173,7 +179,7 @@ async function bootstrap() {
           }
         : false,
       frameguard: false, // Handled by custom middleware below
-      hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true } : false,
+      hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
     }),
   );
 
@@ -181,7 +187,7 @@ async function bootstrap() {
   app.use((req, res, next) => {
     res.setHeader(
       'Permissions-Policy',
-      'camera=(self), microphone=(self), geolocation=(self), fullscreen=(self)',
+      'camera=(self), microphone=(self), geolocation=(self), fullscreen=*',
     );
     next();
   });
