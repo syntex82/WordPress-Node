@@ -15,7 +15,7 @@ import toast from 'react-hot-toast';
 import {
   FiUpload, FiTrash2, FiX, FiImage, FiDownload, FiHelpCircle,
   FiUsers, FiHardDrive, FiDatabase, FiUser, FiGrid, FiList,
-  FiMusic, FiVideo
+  FiMusic, FiVideo, FiZap
 } from 'react-icons/fi';
 import Tooltip from '../components/Tooltip';
 import {
@@ -85,6 +85,7 @@ export default function Media() {
   const [displayMode, setDisplayMode] = useState<'grid' | 'gallery'>('grid');
   const [selectedMediaIds, setSelectedMediaIds] = useState<Set<string>>(new Set());
   const [showAudioPlayer, setShowAudioPlayer] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
 
   // Convert media items to gallery format
   const galleryItems: MediaItem[] = useMemo(() => {
@@ -260,6 +261,28 @@ export default function Media() {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
+  const handleOptimizeAll = async () => {
+    setOptimizing(true);
+    try {
+      const response = await mediaApi.optimizeAll();
+      const { optimized, skipped, failed, savedBytes } = response.data;
+      if (optimized > 0) {
+        toast.success(`Optimized ${optimized} images! Saved ${formatFileSize(savedBytes)}`);
+        fetchMedia(); // Refresh to show updated images
+      } else if (skipped > 0 && failed === 0) {
+        toast.success('All images are already optimized!');
+      } else if (failed > 0) {
+        toast.error(`${failed} images failed to optimize`);
+      } else {
+        toast.success('No images need optimization');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to optimize media');
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
   if (loading && !storageStats) return <LoadingSpinner />;
 
   return (
@@ -284,6 +307,20 @@ export default function Media() {
               </span>
             </div>
           )}
+          <Tooltip title="Optimize All Images" content="Convert all images to WebP format for faster loading and smaller file sizes." position="left">
+            <button
+              onClick={handleOptimizeAll}
+              disabled={optimizing}
+              className={`flex items-center px-4 py-2 rounded-xl transition-all ${
+                optimizing
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/20'
+              } text-white`}
+            >
+              <FiZap className={`mr-2 ${optimizing ? 'animate-pulse' : ''}`} size={18} />
+              {optimizing ? 'Optimizing...' : 'Optimize All'}
+            </button>
+          </Tooltip>
           <Tooltip title={MEDIA_TOOLTIPS.upload.title} content={MEDIA_TOOLTIPS.upload.content} position="left">
             <button
               onClick={() => fileInputRef.current?.click()}

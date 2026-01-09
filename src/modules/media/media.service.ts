@@ -414,4 +414,113 @@ export class MediaService {
 
     return srcsetParts.join(', ');
   }
+
+  /**
+   * Optimize all unoptimized images for a user (convert to WebP)
+   * Returns stats about optimization results
+   */
+  async optimizeAllMedia(userId?: string): Promise<{
+    total: number;
+    optimized: number;
+    skipped: number;
+    failed: number;
+    savedBytes: number;
+  }> {
+    if (!sharp) {
+      throw new BadRequestException('Sharp is not installed. Image optimization is unavailable.');
+    }
+
+    // Find all images that need optimization (not already WebP or SVG)
+    const where: any = {
+      mimeType: {
+        startsWith: 'image/',
+        not: { in: ['image/webp', 'image/svg+xml'] },
+      },
+    };
+
+    if (userId) {
+      where.uploadedById = userId;
+    }
+
+    const images = await this.prisma.media.findMany({ where });
+
+    const stats = {
+      total: images.length,
+      optimized: 0,
+      skipped: 0,
+      failed: 0,
+      savedBytes: 0,
+    };
+
+    for (const image of images) {
+      try {
+        const originalPath = path.join(this.uploadDir, image.filename);
+
+        // Check if file exists
+        if (!fsSync.existsSync(originalPath)) {
+          this.logger.warn(`File not found: ${originalPath}`);
+          stats.skipped++;
+          continue;
+        }
+
+        // Check if WebP already exists
+        const webpFilename = image.filename.replace(/\.[^.]+$/, '.webp');
+        const webpPath = path.join(this.uploadDir, webpFilename);
+
+        if (fsSync.existsSync(webpPath)) {
+          stats.skipped++;
+          continue;
+        }
+
+        // Get original file size
+        const originalStats = fsSync.statSync(originalPath);
+        const originalSize = originalStats.size;
+
+        // Convert to WebP
+        const buffer = await fs.readFile(originalPath);
+        await sharp(buffer).webp({ quality: WEBP_QUALITY }).toFile(webpPath);
+
+        // Get new file size
+        const webpStats = fsSync.statSync(webpPath);
+        const webpSize = webpStats.size;
+        const saved = originalSize - webpSize;
+
+        // Generate responsive sizes if image is large enough
+        const metadata = await sharp(buffer).metadata();
+        if (metadata.width && metadata.width > 640) {
+          await this.generateResponsiveSizes(buffer, image.filename);
+        }
+
+        // Update database record
+        await this.prisma.media.update({
+          where: { id: image.id },
+          data: {
+            mimeType: 'image/webp',
+            path: `/uploads/${webpFilename}`,
+          },
+        });
+
+        stats.optimized++;
+        stats.savedBytes += saved > 0 ? saved : 0;
+        this.logger.log(`✅ Optimized: ${image.filename} → ${webpFilename} (saved ${this.formatBytes(saved)})`);
+      } catch (error) {
+        this.logger.error(`Failed to optimize ${image.filename}: ${error.message}`);
+        stats.failed++;
+      }
+    }
+
+    this.logger.log(`📊 Optimization complete: ${stats.optimized} optimized, ${stats.skipped} skipped, ${stats.failed} failed, ${this.formatBytes(stats.savedBytes)} saved`);
+    return stats;
+  }
+
+  /**
+   * Format bytes to human readable string
+   */
+  private formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
 }

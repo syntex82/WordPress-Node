@@ -97,6 +97,7 @@ export const mediaApi = {
   },
   delete: (id: string) => api.delete(`/media/${id}`),
   update: (id: string, data: { alt?: string; caption?: string }) => api.patch(`/media/${id}`, data),
+  optimizeAll: () => api.post('/media/optimize-all'),
 };
 
 // Users API

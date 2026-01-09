@@ -137,4 +137,17 @@ export class MediaController {
   remove(@Param('id') id: string) {
     return this.mediaService.remove(id);
   }
+
+  /**
+   * Optimize all media (convert images to WebP)
+   * POST /api/media/optimize-all
+   * Admins can optimize all media, other users only their own
+   */
+  @Post('optimize-all')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
+  optimizeAll(@CurrentUser() user: any) {
+    // Admins can optimize all, others only their own
+    const userId = user.role === UserRole.ADMIN ? undefined : user.id;
+    return this.mediaService.optimizeAllMedia(userId);
+  }
 }
