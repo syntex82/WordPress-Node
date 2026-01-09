@@ -2666,6 +2666,7 @@ model DemoInstance {
   upgradeRequested Boolean          @default(false)
   upgradeRequestedAt DateTime?
   notes           String?
+  expirationWarned Boolean          @default(false)
 
   // Relations
   accessLogs      DemoAccessLog[]

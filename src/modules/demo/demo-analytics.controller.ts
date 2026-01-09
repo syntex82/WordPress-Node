@@ -9,7 +9,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { DemoAnalyticsService } from './demo-analytics.service';
-import { ThemeRenderer } from '../themes/theme-renderer.service';
+import { ThemeRendererService } from '../themes/theme-renderer.service';
 
 @Controller('admin/demo-analytics')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -17,7 +17,7 @@ import { ThemeRenderer } from '../themes/theme-renderer.service';
 export class DemoAnalyticsController {
   constructor(
     private readonly analyticsService: DemoAnalyticsService,
-    private readonly themeRenderer: ThemeRenderer,
+    private readonly themeRenderer: ThemeRendererService,
   ) {}
 
   /**

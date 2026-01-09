@@ -57,13 +57,13 @@ export class DemoFollowupScheduler {
       const pendingEmails = await this.prisma.setting.findMany({
         where: {
           key: { startsWith: 'scheduled_email_' },
-          category: 'scheduled_emails',
+          group: 'scheduled_emails',
         },
       });
 
       for (const emailSetting of pendingEmails) {
         try {
-          const emailData = JSON.parse(emailSetting.value);
+          const emailData = JSON.parse(emailSetting.value as string);
           
           // Skip if already sent
           if (emailData.sent) continue;
@@ -149,15 +149,23 @@ export class DemoFollowupScheduler {
    */
   private async checkConverted(demoId: string): Promise<boolean> {
     if (!demoId) return false;
-    
-    const conversion = await this.prisma.setting.findFirst({
+
+    // Check if there's an upgrade inquiry that contains this demoId
+    const inquiries = await this.prisma.setting.findMany({
       where: {
         key: { startsWith: `upgrade_inquiry_` },
-        value: { contains: demoId },
       },
     });
-    
-    return !!conversion;
+
+    // Check if any inquiry contains the demoId
+    return inquiries.some(inq => {
+      try {
+        const data = JSON.parse(inq.value as string);
+        return data.demoId === demoId;
+      } catch {
+        return false;
+      }
+    });
   }
 
   /**
@@ -167,14 +175,14 @@ export class DemoFollowupScheduler {
     const existing = await this.prisma.setting.findUnique({ where: { key } });
     if (!existing) return;
 
-    const data = JSON.parse(existing.value);
+    const data = JSON.parse(existing.value as string);
     data.sent = true;
     data.status = status;
     data.processedAt = new Date().toISOString();
 
     await this.prisma.setting.update({
       where: { key },
-      data: { value: JSON.stringify(data) },
+      data: { value: JSON.stringify(data) as any },
     });
   }
 
@@ -183,7 +191,7 @@ export class DemoFollowupScheduler {
    */
   async scheduleFollowUps(demoId: string, email: string, name: string): Promise<void> {
     const baseUrl = process.env.APP_URL || 'https://nodepress.co.uk';
-    
+
     const emailData: ConversionEmailData = {
       name: name || 'there',
       email,
@@ -204,9 +212,9 @@ export class DemoFollowupScheduler {
           data: emailData,
           sendAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           sent: false,
-        }),
+        }) as any,
         type: 'json',
-        category: 'scheduled_emails',
+        group: 'scheduled_emails',
       },
     });
 
@@ -219,9 +227,9 @@ export class DemoFollowupScheduler {
           data: emailData,
           sendAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
           sent: false,
-        }),
+        }) as any,
         type: 'json',
-        category: 'scheduled_emails',
+        group: 'scheduled_emails',
       },
     });
 

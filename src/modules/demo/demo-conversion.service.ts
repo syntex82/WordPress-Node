@@ -51,12 +51,12 @@ export class DemoConversionService {
         where: { key: `conversion_event_${event.demoId}_${Date.now()}` },
         create: {
           key: `conversion_event_${event.demoId}_${Date.now()}`,
-          value: JSON.stringify(event),
+          value: JSON.stringify(event) as any,
           type: 'json',
-          category: 'analytics',
+          group: 'analytics',
         },
         update: {
-          value: JSON.stringify(event),
+          value: JSON.stringify(event) as any,
         },
       });
 
@@ -78,9 +78,9 @@ export class DemoConversionService {
           value: JSON.stringify({
             ...inquiry,
             submittedAt: new Date().toISOString(),
-          }),
+          }) as any,
           type: 'json',
-          category: 'leads',
+          group: 'leads',
         },
       });
 
@@ -129,7 +129,7 @@ export class DemoConversionService {
         return;
       }
 
-      const demo = JSON.parse(demoData.value);
+      const demo = JSON.parse(demoData.value as string);
       const emailData: ConversionEmailData = {
         name: demo.name || 'there',
         email: demo.email,
@@ -172,9 +172,9 @@ export class DemoConversionService {
           data,
           sendAt: sendAt.toISOString(),
           sent: false,
-        }),
+        }) as any,
         type: 'json',
-        category: 'scheduled_emails',
+        group: 'scheduled_emails',
       },
     });
   }
@@ -235,8 +235,8 @@ export class DemoConversionService {
       });
 
       // Parse and aggregate
-      const parsedEvents = events.map(e => JSON.parse(e.value));
-      const parsedInquiries = inquiries.map(i => JSON.parse(i.value));
+      const parsedEvents = events.map(e => JSON.parse(e.value as string));
+      const parsedInquiries = inquiries.map(i => JSON.parse(i.value as string));
 
       return {
         totalPageViews: parsedEvents.filter(e => e.eventType === 'page_view').length,
