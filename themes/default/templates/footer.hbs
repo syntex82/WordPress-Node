@@ -180,13 +180,15 @@
     .demo-widget-popup {
       position: absolute;
       bottom: 70px;
-      right: 0;
+      left: 0;
       width: 300px;
+      max-width: calc(100vw - 48px);
       background: white;
       border-radius: 16px;
       padding: 24px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.2);
       animation: slideUp 0.3s ease;
+      overflow: visible;
     }
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(10px); }
@@ -243,7 +245,7 @@
     @media (max-width: 480px) {
       .demo-widget-text { display: none; }
       .demo-widget-btn { padding: 14px; border-radius: 50%; }
-      .demo-widget-popup { width: calc(100vw - 48px); right: -12px; }
+      .demo-widget-popup { width: calc(100vw - 48px); left: 0; }
     }
   </style>
   <script>

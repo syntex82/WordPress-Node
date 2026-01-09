@@ -59,6 +59,55 @@
   #notLoggedIn .icon { font-size: 4rem; margin-bottom: 1rem; }
   #notLoggedIn p { color: var(--color-text-muted); margin-bottom: 2rem; }
 
+  /* 2FA Styles */
+  .security-section { margin-bottom: 2rem; }
+  .section-title { font-size: 1.25rem; margin: 0 0 0.5rem 0; color: var(--color-heading); }
+  .section-desc { color: var(--color-text-muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
+  .section-divider { border: none; border-top: 1px solid var(--color-border); margin: 2rem 0; }
+
+  .twofa-status { margin-bottom: 1.5rem; }
+  .status-indicator { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-background); border-radius: var(--border-radius-sm); border: 1px solid var(--color-border); }
+  .status-indicator.enabled { border-color: var(--color-success); background: rgba(16, 185, 129, 0.1); }
+  .status-indicator.disabled { border-color: var(--color-warning); background: rgba(245, 158, 11, 0.1); }
+  .status-icon { font-size: 1.5rem; }
+  .status-text { font-weight: 500; }
+
+  .twofa-setup { background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--border-radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+  .setup-step { margin-bottom: 1.5rem; }
+  .setup-step:last-child { margin-bottom: 0; }
+  .setup-step h4 { margin: 0 0 0.5rem 0; color: var(--color-heading); }
+  .setup-step p { color: var(--color-text-muted); margin-bottom: 1rem; font-size: 0.9rem; }
+
+  .qrcode-container { display: flex; justify-content: center; padding: 1.5rem; background: white; border-radius: var(--border-radius-sm); margin-bottom: 1rem; max-width: 250px; }
+  .qrcode-container img { max-width: 200px; height: auto; }
+
+  .secret-key { text-align: center; padding: 1rem; background: var(--color-surface); border-radius: var(--border-radius-sm); border: 1px dashed var(--color-border); }
+  .secret-key span { display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.5rem; }
+  .secret-key code { font-family: monospace; font-size: 0.9rem; letter-spacing: 2px; color: var(--color-primary); word-break: break-all; }
+
+  .twofa-form { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; }
+  .code-input { max-width: 150px; text-align: center; font-size: 1.5rem; font-family: monospace; letter-spacing: 8px; }
+
+  .twofa-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-success { background: var(--color-success); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 500; transition: opacity 0.2s; }
+  .btn-success:hover { opacity: 0.9; }
+  .btn-danger { background: var(--color-error); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 500; transition: opacity 0.2s; }
+  .btn-danger:hover { opacity: 0.9; }
+  .btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); padding: 0.75rem 1.5rem; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 500; transition: background 0.2s; }
+  .btn-secondary:hover { background: var(--color-background); }
+
+  .backup-codes-section { background: var(--color-background); border: 1px solid var(--color-success); border-radius: var(--border-radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+  .backup-codes-section h4 { margin: 0 0 0.5rem 0; color: var(--color-heading); }
+  .warning-text { color: var(--color-warning); font-size: 0.9rem; margin-bottom: 1rem; }
+  .backup-codes-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
+  .backup-code { font-family: monospace; font-size: 0.9rem; padding: 0.5rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius-sm); text-align: center; user-select: all; }
+
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+  .modal-content { background: var(--color-surface); border-radius: var(--border-radius); padding: 2rem; max-width: 400px; width: 100%; }
+  .modal-content h4 { margin: 0 0 0.5rem 0; }
+  .modal-content p { color: var(--color-text-muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
+  .modal-actions { display: flex; gap: 1rem; justify-content: flex-end; }
+
   @media (max-width: 1024px) {
     .account-layout { grid-template-columns: 1fr; }
     .account-sidebar { position: static; }
@@ -121,22 +170,100 @@
         <!-- Security Tab -->
         <div id="securityTab" class="tab-content">
           <div class="tab-header"><h2>Security Settings</h2></div>
-          <form id="passwordForm" class="profile-form">
-            <div class="form-group">
-              <label class="form-label">Current Password</label>
-              <input type="password" id="currentPassword" class="form-input" placeholder="••••••••">
+
+          <!-- Two-Factor Authentication Section -->
+          <div class="security-section">
+            <h3 class="section-title">🔐 Two-Factor Authentication</h3>
+            <p class="section-desc">Add an extra layer of security to your account by requiring a verification code in addition to your password.</p>
+
+            <!-- 2FA Status Display -->
+            <div id="twofa-status" class="twofa-status">
+              <div class="status-indicator" id="twofa-status-indicator">
+                <span class="status-icon">⏳</span>
+                <span class="status-text">Checking status...</span>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">New Password</label>
-              <input type="password" id="newPassword" class="form-input" placeholder="••••••••">
+
+            <!-- 2FA Setup Section (hidden by default) -->
+            <div id="twofa-setup" class="twofa-setup" style="display: none;">
+              <div class="setup-step">
+                <h4>Step 1: Scan QR Code</h4>
+                <p>Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)</p>
+                <div id="twofa-qrcode" class="qrcode-container"></div>
+                <div class="secret-key">
+                  <span>Can't scan? Enter this code manually:</span>
+                  <code id="twofa-secret-key"></code>
+                </div>
+              </div>
+              <div class="setup-step">
+                <h4>Step 2: Verify Code</h4>
+                <p>Enter the 6-digit code from your authenticator app to confirm setup.</p>
+                <form id="twofaVerifyForm" class="twofa-form">
+                  <div class="form-group">
+                    <input type="text" id="twofaCode" class="form-input code-input" placeholder="000000" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Enable 2FA</button>
+                  <button type="button" id="twofaCancelBtn" class="btn btn-secondary">Cancel</button>
+                </form>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Confirm New Password</label>
-              <input type="password" id="confirmPassword" class="form-input" placeholder="••••••••">
+
+            <!-- Backup Codes Display (hidden by default) -->
+            <div id="twofa-backup-codes" class="backup-codes-section" style="display: none;">
+              <h4>🔑 Backup Codes</h4>
+              <p class="warning-text">⚠️ Save these codes in a safe place. Each code can only be used once to sign in if you lose access to your authenticator app.</p>
+              <div id="backup-codes-list" class="backup-codes-list"></div>
+              <button type="button" id="backupCodesDoneBtn" class="btn btn-primary">I've Saved My Codes</button>
             </div>
-            <button type="submit" class="btn btn-primary">Update Password</button>
-          </form>
-          <div id="passwordMessage" class="message" style="display: none;"></div>
+
+            <!-- 2FA Enable/Disable Buttons -->
+            <div id="twofa-actions" class="twofa-actions">
+              <button type="button" id="twofaEnableBtn" class="btn btn-success" style="display: none;">Enable 2FA</button>
+              <button type="button" id="twofaDisableBtn" class="btn btn-danger" style="display: none;">Disable 2FA</button>
+            </div>
+
+            <!-- Disable 2FA Modal -->
+            <div id="twofa-disable-modal" class="modal-overlay" style="display: none;">
+              <div class="modal-content">
+                <h4>Disable Two-Factor Authentication</h4>
+                <p>Enter your password to disable 2FA. This will make your account less secure.</p>
+                <form id="twofaDisableForm">
+                  <div class="form-group">
+                    <input type="password" id="twofaDisablePassword" class="form-input" placeholder="Your password" required>
+                  </div>
+                  <div class="modal-actions">
+                    <button type="submit" class="btn btn-danger">Disable 2FA</button>
+                    <button type="button" id="twofaDisableCancelBtn" class="btn btn-secondary">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div id="twofaMessage" class="message" style="display: none;"></div>
+          </div>
+
+          <hr class="section-divider">
+
+          <!-- Password Change Section -->
+          <div class="security-section">
+            <h3 class="section-title">🔑 Change Password</h3>
+            <form id="passwordForm" class="profile-form">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" id="currentPassword" class="form-input" placeholder="••••••••">
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="newPassword" class="form-input" placeholder="••••••••">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" id="confirmPassword" class="form-input" placeholder="••••••••">
+              </div>
+              <button type="submit" class="btn btn-primary">Update Password</button>
+            </form>
+            <div id="passwordMessage" class="message" style="display: none;"></div>
+          </div>
         </div>
       </div>
     </div>

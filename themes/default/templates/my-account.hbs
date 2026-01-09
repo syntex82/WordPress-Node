@@ -202,6 +202,59 @@
       {{/hasActiveSubscription}}
     </div>
 
+    <div class="account-card" id="security-card">
+      <h2>🔐 Security</h2>
+      <div id="twofa-section">
+        <div class="info-row">
+          <span class="info-label">Two-Factor Authentication</span>
+          <span class="info-value" id="twofa-status-text">Checking...</span>
+        </div>
+        <div id="twofa-actions" style="margin-top: 1rem;"></div>
+
+        <!-- 2FA Setup (hidden by default) -->
+        <div id="twofa-setup" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+          <h3 style="color: white; margin: 0 0 1rem 0; font-size: 1rem;">Set Up Two-Factor Authentication</h3>
+          <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1rem;">Scan this QR code with your authenticator app:</p>
+          <div id="twofa-qrcode" style="text-align: center; padding: 1rem; background: white; border-radius: 8px; display: inline-block; margin-bottom: 1rem;"></div>
+          <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.5rem;">Can't scan? Enter manually:</p>
+          <code id="twofa-secret" style="display: block; background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 6px; color: #10b981; font-family: monospace; margin-bottom: 1rem; word-break: break-all;"></code>
+          <form id="twofa-verify-form" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+            <div>
+              <label style="display: block; color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.25rem;">Verification Code</label>
+              <input type="text" id="twofa-code" maxlength="6" placeholder="000000" style="padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: white; font-family: monospace; font-size: 1.25rem; width: 120px; text-align: center; letter-spacing: 4px;">
+            </div>
+            <button type="submit" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Enable 2FA</button>
+            <button type="button" id="twofa-cancel" style="padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.1); color: #94a3b8; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-weight: 500; cursor: pointer;">Cancel</button>
+          </form>
+        </div>
+
+        <!-- Backup Codes (hidden by default) -->
+        <div id="twofa-backup-codes" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px;">
+          <h3 style="color: #34d399; margin: 0 0 0.5rem 0; font-size: 1rem;">🔑 Backup Codes</h3>
+          <p style="color: #fbbf24; font-size: 0.85rem; margin-bottom: 1rem;">⚠️ Save these codes! Each can only be used once if you lose your authenticator.</p>
+          <div id="backup-codes-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem; margin-bottom: 1rem;"></div>
+          <button type="button" id="backup-done" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">I've Saved My Codes</button>
+        </div>
+
+        <!-- Disable 2FA Modal -->
+        <div id="twofa-disable-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+          <div style="background: #1e293b; border-radius: 16px; padding: 2rem; max-width: 400px; width: 100%;">
+            <h3 style="color: white; margin: 0 0 0.5rem 0;">Disable 2FA</h3>
+            <p style="color: #64748b; margin-bottom: 1.5rem; font-size: 0.9rem;">Enter your password to disable two-factor authentication.</p>
+            <form id="twofa-disable-form">
+              <input type="password" id="twofa-disable-password" placeholder="Your password" required style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: white; margin-bottom: 1rem;">
+              <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button type="button" id="twofa-disable-cancel" style="padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.1); color: #94a3b8; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer;">Cancel</button>
+                <button type="submit" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Disable 2FA</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="twofa-message" style="display: none; margin-top: 1rem; padding: 1rem; border-radius: 8px;"></div>
+      </div>
+    </div>
+
     <div class="account-card">
       <h2>⚡ Quick Links</h2>
       <div class="quick-links">
@@ -229,6 +282,122 @@
     </div>
 
     <a href="/logout" class="btn-logout">🚪 Sign Out</a>
+
+    <script>
+    (function() {
+      var API = '/api';
+      var twofaSecret = null;
+
+      function getAuthHeaders() {
+        var token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        return token ? { 'Authorization': 'Bearer ' + token } : {};
+      }
+
+      async function load2FAStatus() {
+        try {
+          var r = await fetch(API + '/auth/me', { credentials: 'include', headers: getAuthHeaders() });
+          if (!r.ok) return;
+          var user = await r.json();
+          updateStatus(user.twoFactorEnabled);
+        } catch (e) { console.error('2FA error:', e); }
+      }
+
+      function updateStatus(enabled) {
+        var statusText = document.getElementById('twofa-status-text');
+        var actions = document.getElementById('twofa-actions');
+        if (enabled) {
+          statusText.innerHTML = '<span style="color: #34d399;">✅ Enabled</span>';
+          actions.innerHTML = '<button id="disable-2fa-btn" style="padding: 0.5rem 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; border-radius: 8px; cursor: pointer;">Disable 2FA</button>';
+          document.getElementById('disable-2fa-btn').onclick = function() {
+            document.getElementById('twofa-disable-modal').style.display = 'flex';
+          };
+        } else {
+          statusText.innerHTML = '<span style="color: #fbbf24;">⚠️ Not enabled</span>';
+          actions.innerHTML = '<button id="enable-2fa-btn" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">Enable 2FA</button>';
+          document.getElementById('enable-2fa-btn').onclick = generate2FA;
+        }
+      }
+
+      async function generate2FA() {
+        try {
+          var r = await fetch(API + '/security/2fa/generate', { method: 'POST', credentials: 'include', headers: getAuthHeaders() });
+          if (!r.ok) throw new Error('Failed');
+          var data = await r.json();
+          twofaSecret = data.secret;
+          document.getElementById('twofa-qrcode').innerHTML = '<img src="' + data.qrCode + '" alt="QR" style="max-width: 180px;">';
+          document.getElementById('twofa-secret').textContent = data.secret;
+          document.getElementById('twofa-setup').style.display = 'block';
+          document.getElementById('twofa-actions').style.display = 'none';
+        } catch (e) { showMessage('Failed to generate 2FA', 'error'); }
+      }
+
+      async function enable2FA(code) {
+        try {
+          var r = await fetch(API + '/security/2fa/enable', {
+            method: 'POST', credentials: 'include',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secret: twofaSecret, token: code })
+          });
+          if (!r.ok) throw new Error((await r.json()).message || 'Invalid code');
+          var data = await r.json();
+          document.getElementById('twofa-setup').style.display = 'none';
+          var list = document.getElementById('backup-codes-list');
+          list.innerHTML = data.recoveryCodes.map(function(c) {
+            return '<div style="background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 4px; font-family: monospace; color: white; text-align: center;">' + c + '</div>';
+          }).join('');
+          document.getElementById('twofa-backup-codes').style.display = 'block';
+        } catch (e) { showMessage(e.message, 'error'); }
+      }
+
+      async function disable2FA(password) {
+        try {
+          var r = await fetch(API + '/security/2fa/disable', {
+            method: 'POST', credentials: 'include',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password })
+          });
+          if (!r.ok) throw new Error((await r.json()).message || 'Invalid password');
+          document.getElementById('twofa-disable-modal').style.display = 'none';
+          updateStatus(false);
+          showMessage('2FA disabled', 'success');
+        } catch (e) { showMessage(e.message, 'error'); }
+      }
+
+      function showMessage(text, type) {
+        var msg = document.getElementById('twofa-message');
+        msg.textContent = (type === 'success' ? '✓ ' : '✗ ') + text;
+        msg.style.display = 'block';
+        msg.style.background = type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+        msg.style.border = '1px solid ' + (type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)');
+        msg.style.color = type === 'success' ? '#34d399' : '#fca5a5';
+        setTimeout(function() { msg.style.display = 'none'; }, 4000);
+      }
+
+      // Event listeners
+      document.getElementById('twofa-verify-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        enable2FA(document.getElementById('twofa-code').value);
+      });
+      document.getElementById('twofa-cancel')?.addEventListener('click', function() {
+        document.getElementById('twofa-setup').style.display = 'none';
+        document.getElementById('twofa-actions').style.display = 'block';
+      });
+      document.getElementById('backup-done')?.addEventListener('click', function() {
+        document.getElementById('twofa-backup-codes').style.display = 'none';
+        document.getElementById('twofa-actions').style.display = 'block';
+        updateStatus(true);
+      });
+      document.getElementById('twofa-disable-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        disable2FA(document.getElementById('twofa-disable-password').value);
+      });
+      document.getElementById('twofa-disable-cancel')?.addEventListener('click', function() {
+        document.getElementById('twofa-disable-modal').style.display = 'none';
+      });
+
+      load2FAStatus();
+    })();
+    </script>
     {{else}}
     <div class="guest-message">
       <span>🔒</span>

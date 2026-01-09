@@ -194,8 +194,10 @@ export class EmailService implements OnModuleInit {
     year: number;
     loginUrl: string;
     supportEmail: string;
+    supportUrl: string;
     helpUrl: string;
     docsUrl: string;
+    coursesUrl: string;
     frontendUrl: string;
     adminUrl: string;
   }> {
@@ -214,8 +216,10 @@ export class EmailService implements OnModuleInit {
       year: new Date().getFullYear(),
       loginUrl: `${domainConfig.adminUrl}/login`,
       supportEmail: emailSettings.supportEmail || domainConfig.supportEmail || 'support@nodepress.co.uk',
+      supportUrl: emailSettings.supportUrl || `${domainConfig.frontendUrl}/support`,
       helpUrl: emailSettings.helpUrl || `${domainConfig.frontendUrl}/help`,
       docsUrl: emailSettings.docsUrl || `${domainConfig.frontendUrl}/docs`,
+      coursesUrl: emailSettings.coursesUrl || `${domainConfig.frontendUrl}/courses`,
       frontendUrl: domainConfig.frontendUrl,
       adminUrl: domainConfig.adminUrl,
     };
@@ -228,9 +232,11 @@ export class EmailService implements OnModuleInit {
     siteName?: string;
     logoUrl?: string;
     supportEmail?: string;
+    supportUrl?: string;
     companyAddress?: string;
     helpUrl?: string;
     docsUrl?: string;
+    coursesUrl?: string;
   }> {
     try {
       const settings = await this.prisma.setting.findMany({
@@ -240,9 +246,11 @@ export class EmailService implements OnModuleInit {
               'email_site_name',
               'email_logo_url',
               'email_support_email',
+              'email_support_url',
               'email_company_address',
               'email_help_url',
               'email_docs_url',
+              'email_courses_url',
             ],
           },
         },
@@ -258,9 +266,11 @@ export class EmailService implements OnModuleInit {
         siteName: result['siteName'],
         logoUrl: result['logoUrl'],
         supportEmail: result['supportEmail'],
+        supportUrl: result['supportUrl'],
         companyAddress: result['companyAddress'],
         helpUrl: result['helpUrl'],
         docsUrl: result['docsUrl'],
+        coursesUrl: result['coursesUrl'],
       };
     } catch (error) {
       this.logger.warn('Failed to load email settings from database');

@@ -194,7 +194,7 @@ export function getCourseEnrollmentTemplate(): string {
   <tr>
     <td style="padding-top: 24px; border-top: 1px solid #334155;">
       <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-        <strong style="color: #f1f5f9;">Need help?</strong> Check out our <a href="https://nodepress.co.uk/docs" style="color: #10b981; text-decoration: none; font-weight: 600;">learning resources</a> or <a href="mailto:support@nodepress.co.uk" style="color: #10b981; text-decoration: none; font-weight: 600;">contact support</a>.
+        <strong style="color: #f1f5f9;">Need help?</strong> Check out our <a href="{{docsUrl}}" style="color: #10b981; text-decoration: none; font-weight: 600;">learning resources</a> or <a href="mailto:{{supportEmail}}" style="color: #10b981; text-decoration: none; font-weight: 600;">contact support</a>.
       </p>
     </td>
   </tr>

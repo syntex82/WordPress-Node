@@ -199,7 +199,7 @@ export function getOrderConfirmationTemplate(): string {
                 <td style="width: 30px; vertical-align: top; padding-right: 12px; font-size: 18px;">🎁</td>
                 <td>
                   <p style="margin: 0; font-size: 14px; color: #94a3b8;">
-                    <strong style="color: #f1f5f9;">Track Your Order</strong> - Click the button below to view your order status on nodepress.co.uk
+                    <strong style="color: #f1f5f9;">Track Your Order</strong> - Click the button below to view your order status on {{site.name}}
                   </p>
                 </td>
               </tr>
@@ -227,7 +227,7 @@ export function getOrderConfirmationTemplate(): string {
   <tr>
     <td style="padding-top: 24px; border-top: 1px solid #334155;">
       <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-        <strong style="color: #f1f5f9;">Questions?</strong> Our customer support team is ready to help. <a href="mailto:support@nodepress.co.uk" style="color: #10b981; text-decoration: none; font-weight: 600;">Contact us</a> anytime.
+        <strong style="color: #f1f5f9;">Questions?</strong> Our customer support team is ready to help. <a href="mailto:{{supportEmail}}" style="color: #10b981; text-decoration: none; font-weight: 600;">Contact us</a> anytime.
       </p>
     </td>
   </tr>

@@ -104,7 +104,7 @@ export function getWelcomeTemplate(): string {
           </td>
           <td style="vertical-align: top;">
             <h4 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #f1f5f9;">Explore Our Courses</h4>
-            <p style="margin: 0; font-size: 14px; color: #94a3b8;">Browse courses, tutorials, and articles at nodepress.co.uk/courses</p>
+            <p style="margin: 0; font-size: 14px; color: #94a3b8;">Browse courses, tutorials, and articles at <a href="{{coursesUrl}}" style="color: #10b981; text-decoration: none; font-weight: 600;">{{site.name}}/courses</a></p>
           </td>
         </tr>
       </table>

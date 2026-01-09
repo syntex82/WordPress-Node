@@ -201,6 +201,202 @@
     });
   }
 
+  // 2FA State
+  var twofaSecret = null;
+
+  async function load2FAStatus() {
+    try {
+      var r = await fetch(API + '/auth/me', { credentials: 'include', headers: getAuthHeaders() });
+      if (!r.ok) return;
+      var user = await r.json();
+      update2FAStatusUI(user.twoFactorEnabled);
+    } catch (e) {
+      console.error('2FA status load error:', e);
+    }
+  }
+
+  function update2FAStatusUI(enabled) {
+    var indicator = document.getElementById('twofa-status-indicator');
+    var enableBtn = document.getElementById('twofaEnableBtn');
+    var disableBtn = document.getElementById('twofaDisableBtn');
+
+    if (enabled) {
+      indicator.className = 'status-indicator enabled';
+      indicator.innerHTML = '<span class="status-icon">✅</span><span class="status-text">Two-Factor Authentication is enabled</span>';
+      enableBtn.style.display = 'none';
+      disableBtn.style.display = 'inline-block';
+    } else {
+      indicator.className = 'status-indicator disabled';
+      indicator.innerHTML = '<span class="status-icon">⚠️</span><span class="status-text">Two-Factor Authentication is not enabled</span>';
+      enableBtn.style.display = 'inline-block';
+      disableBtn.style.display = 'none';
+    }
+  }
+
+  async function generate2FASecret() {
+    var msg = document.getElementById('twofaMessage');
+    try {
+      var r = await fetch(API + '/security/2fa/generate', {
+        method: 'POST',
+        credentials: 'include',
+        headers: getAuthHeaders()
+      });
+      if (!r.ok) throw new Error('Failed to generate 2FA secret');
+      var data = await r.json();
+      twofaSecret = data.secret;
+
+      // Show QR code
+      document.getElementById('twofa-qrcode').innerHTML = '<img src="' + data.qrCode + '" alt="2FA QR Code">';
+      document.getElementById('twofa-secret-key').textContent = data.secret;
+
+      // Show setup section
+      document.getElementById('twofa-setup').style.display = 'block';
+      document.getElementById('twofaEnableBtn').style.display = 'none';
+    } catch (e) {
+      msg.style.display = 'block';
+      msg.className = 'message error';
+      msg.textContent = '✗ Failed to generate 2FA secret. Please try again.';
+    }
+  }
+
+  async function enable2FA(code) {
+    var msg = document.getElementById('twofaMessage');
+    try {
+      var r = await fetch(API + '/security/2fa/enable', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: twofaSecret, token: code })
+      });
+      if (!r.ok) {
+        var err = await r.json();
+        throw new Error(err.message || 'Invalid verification code');
+      }
+      var data = await r.json();
+
+      // Show backup codes
+      var codesContainer = document.getElementById('backup-codes-list');
+      codesContainer.innerHTML = data.recoveryCodes.map(function(code) {
+        return '<div class="backup-code">' + code + '</div>';
+      }).join('');
+
+      document.getElementById('twofa-setup').style.display = 'none';
+      document.getElementById('twofa-backup-codes').style.display = 'block';
+
+      msg.style.display = 'block';
+      msg.className = 'message success';
+      msg.textContent = '✓ Two-Factor Authentication enabled successfully!';
+    } catch (e) {
+      msg.style.display = 'block';
+      msg.className = 'message error';
+      msg.textContent = '✗ ' + e.message;
+    }
+  }
+
+  async function disable2FA(password) {
+    var msg = document.getElementById('twofaMessage');
+    try {
+      var r = await fetch(API + '/security/2fa/disable', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+      });
+      if (!r.ok) {
+        var err = await r.json();
+        throw new Error(err.message || 'Invalid password');
+      }
+
+      document.getElementById('twofa-disable-modal').style.display = 'none';
+      update2FAStatusUI(false);
+
+      msg.style.display = 'block';
+      msg.className = 'message success';
+      msg.textContent = '✓ Two-Factor Authentication has been disabled.';
+      setTimeout(function() { msg.style.display = 'none'; }, 3000);
+    } catch (e) {
+      msg.style.display = 'block';
+      msg.className = 'message error';
+      msg.textContent = '✗ ' + e.message;
+    }
+  }
+
+  function setup2FA() {
+    // Enable button
+    var enableBtn = document.getElementById('twofaEnableBtn');
+    if (enableBtn) {
+      enableBtn.addEventListener('click', generate2FASecret);
+    }
+
+    // Cancel setup button
+    var cancelBtn = document.getElementById('twofaCancelBtn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function() {
+        document.getElementById('twofa-setup').style.display = 'none';
+        document.getElementById('twofaEnableBtn').style.display = 'inline-block';
+        twofaSecret = null;
+      });
+    }
+
+    // Verify form
+    var verifyForm = document.getElementById('twofaVerifyForm');
+    if (verifyForm) {
+      verifyForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var code = document.getElementById('twofaCode').value;
+        if (code.length !== 6) {
+          var msg = document.getElementById('twofaMessage');
+          msg.style.display = 'block';
+          msg.className = 'message error';
+          msg.textContent = '✗ Please enter a 6-digit code';
+          return;
+        }
+        enable2FA(code);
+      });
+    }
+
+    // Backup codes done button
+    var doneBtn = document.getElementById('backupCodesDoneBtn');
+    if (doneBtn) {
+      doneBtn.addEventListener('click', function() {
+        document.getElementById('twofa-backup-codes').style.display = 'none';
+        update2FAStatusUI(true);
+        var msg = document.getElementById('twofaMessage');
+        setTimeout(function() { msg.style.display = 'none'; }, 3000);
+      });
+    }
+
+    // Disable button
+    var disableBtn = document.getElementById('twofaDisableBtn');
+    if (disableBtn) {
+      disableBtn.addEventListener('click', function() {
+        document.getElementById('twofa-disable-modal').style.display = 'flex';
+      });
+    }
+
+    // Disable cancel button
+    var disableCancelBtn = document.getElementById('twofaDisableCancelBtn');
+    if (disableCancelBtn) {
+      disableCancelBtn.addEventListener('click', function() {
+        document.getElementById('twofa-disable-modal').style.display = 'none';
+        document.getElementById('twofaDisablePassword').value = '';
+      });
+    }
+
+    // Disable form
+    var disableForm = document.getElementById('twofaDisableForm');
+    if (disableForm) {
+      disableForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var password = document.getElementById('twofaDisablePassword').value;
+        disable2FA(password);
+      });
+    }
+
+    // Load initial status
+    load2FAStatus();
+  }
+
   async function init() {
     var user = await checkAuth();
     if (!user) {
@@ -213,6 +409,7 @@
     setupProfileForm();
     setupPasswordForm();
     setupLogout();
+    setup2FA();
     loadProfile();
   }
 

@@ -164,7 +164,8 @@ export class DemoNotificationService {
   }
 
   private getExpirationWarningTemplate(data: DemoEmailData): string {
-    const upgradeUrl = `https://nodepress.io/pricing?ref=demo&subdomain=${data.subdomain}`;
+    const baseUrl = this.getSiteUrl();
+    const upgradeUrl = `${baseUrl}/demo/upgrade?ref=demo&subdomain=${data.subdomain}`;
     return `
 <!DOCTYPE html>
 <html>
@@ -185,7 +186,9 @@ export class DemoNotificationService {
   }
 
   private getDemoExpiredTemplate(data: Omit<DemoEmailData, 'accessToken' | 'adminPassword'>): string {
-    const upgradeUrl = `https://nodepress.io/pricing?ref=demo-expired&subdomain=${data.subdomain}`;
+    const baseUrl = this.getSiteUrl();
+    const upgradeUrl = `${baseUrl}/demo/upgrade?ref=demo-expired&subdomain=${data.subdomain}`;
+    const contactUrl = `${baseUrl}/contact`;
     return `
 <!DOCTYPE html>
 <html>
@@ -198,11 +201,20 @@ export class DemoNotificationService {
       <p style="color: #52525b; font-size: 16px; line-height: 1.6;">Your NodePress demo has expired, but it's not too late to get started!</p>
       <p style="color: #52525b; font-size: 16px; line-height: 1.6;">Start your NodePress journey today with our special offer for demo users.</p>
       <a href="${upgradeUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">Get Started - 20% Off</a>
-      <p style="color: #71717a; font-size: 14px; margin-top: 24px;">Questions? Reply to this email or <a href="https://nodepress.io/contact" style="color: #3b82f6;">contact our team</a>.</p>
+      <p style="color: #71717a; font-size: 14px; margin-top: 24px;">Questions? Reply to this email or <a href="${contactUrl}" style="color: #3b82f6;">contact our team</a>.</p>
     </div>
   </div>
 </body>
 </html>`;
+  }
+
+  /**
+   * Get the site URL from config with proper fallback
+   */
+  private getSiteUrl(): string {
+    return this.config.get<string>('SITE_URL') ||
+           this.config.get<string>('FRONTEND_URL') ||
+           'https://nodepress.co.uk';
   }
 }
 

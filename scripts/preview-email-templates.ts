@@ -21,9 +21,14 @@ const sampleData = {
     name: 'NodePress',
     logo: '', // Set to a URL to test logo display
     address: 'London, UK',
+    url: 'https://nodepress.co.uk',
   },
   year: new Date().getFullYear(),
   unsubscribeUrl: 'https://nodepress.co.uk/unsubscribe?token=abc123',
+  supportEmail: 'support@nodepress.co.uk',
+  supportUrl: 'https://nodepress.co.uk/support',
+  docsUrl: 'https://nodepress.co.uk/docs',
+  coursesUrl: 'https://nodepress.co.uk/courses',
 };
 
 const welcomeData = {
@@ -34,9 +39,11 @@ const welcomeData = {
 
 const passwordResetData = {
   ...sampleData,
-  user: { name: 'Jane Smith' },
+  user: { firstName: 'Jane' },
   resetUrl: 'https://nodepress.co.uk/reset-password?token=xyz789',
-  expirationTime: '1 hour',
+  expiresIn: '1 hour',
+  supportUrl: 'https://nodepress.co.uk/support',
+  supportEmail: 'support@nodepress.co.uk',
 };
 
 const courseEnrollmentData = {

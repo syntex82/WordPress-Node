@@ -77,7 +77,7 @@ export function getBaseEmailTemplate(
               {{else}}
                 <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px;">{{site.name}}</h1>
               {{/if}}
-              <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.8);">https://nodepress.co.uk</p>
+              <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.8);">{{site.url}}</p>
             </td>
           </tr>
 
@@ -96,11 +96,11 @@ export function getBaseEmailTemplate(
                   <td style="text-align: center;">
                     <!-- Social Links -->
                     <p style="margin: 0 0 16px;">
-                      <a href="https://nodepress.co.uk" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Website</a>
+                      <a href="{{site.url}}" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Website</a>
                       <span style="color: #475569;">|</span>
-                      <a href="https://nodepress.co.uk/docs" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Documentation</a>
+                      <a href="{{docsUrl}}" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Documentation</a>
                       <span style="color: #475569;">|</span>
-                      <a href="https://nodepress.co.uk/support" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Support</a>
+                      <a href="{{supportUrl}}" style="display: inline-block; margin: 0 8px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 600;">Support</a>
                     </p>
                     <p style="margin: 0 0 8px; font-size: 14px; color: #94a3b8;">
                       © {{year}} {{site.name}}. All rights reserved.
@@ -129,8 +129,8 @@ export function getBaseEmailTemplate(
           <tr>
             <td style="text-align: center;">
               <p style="margin: 0; font-size: 11px; color: #475569;">
-                This email was sent by NodePress CMS. If you have questions, please contact
-                <a href="mailto:support@nodepress.co.uk" style="color: #10b981;">support@nodepress.co.uk</a>
+                This email was sent by {{site.name}}. If you have questions, please contact
+                <a href="mailto:{{supportEmail}}" style="color: #10b981;">{{supportEmail}}</a>
               </p>
             </td>
           </tr>

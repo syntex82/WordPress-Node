@@ -32,12 +32,14 @@ export class SystemEmailService {
     resetUrl: string;
     expiresIn: string;
     supportUrl: string;
+    supportEmail: string;
   }) {
     const variables = {
       user: { firstName: data.firstName },
       resetUrl: data.resetUrl,
       expiresIn: data.expiresIn,
       supportUrl: data.supportUrl,
+      supportEmail: data.supportEmail,
       site: await this.getSiteInfo(),
     };
 
@@ -50,6 +52,7 @@ export class SystemEmailService {
           resetUrl: data.resetUrl,
           expiresIn: data.expiresIn,
           supportUrl: data.supportUrl,
+          supportEmail: data.supportEmail,
         }),
       'Reset Your Password',
     );

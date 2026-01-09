@@ -348,7 +348,7 @@ export class AuthService {
     // Build reset URL using dynamic site context from database
     const siteContext = await this.emailService.getSiteContext();
     const resetUrl = `${siteContext.adminUrl}/reset-password?token=${resetToken}`;
-    const supportUrl = `mailto:${siteContext.supportEmail}`;
+    const supportUrl = siteContext.supportUrl;
 
     // Send email using system email service (uses database templates with fallback)
     try {
@@ -360,6 +360,7 @@ export class AuthService {
         resetUrl,
         expiresIn: `${this.PASSWORD_RESET_EXPIRY_HOURS} hour`,
         supportUrl,
+        supportEmail: siteContext.supportEmail,
       });
 
       // Log security event

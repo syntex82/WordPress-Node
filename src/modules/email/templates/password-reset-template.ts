@@ -11,10 +11,11 @@ interface PasswordResetTemplateData {
   resetUrl: string;
   expiresIn: string;
   supportUrl: string;
+  supportEmail: string;
 }
 
 export function getPasswordResetTemplate(data: PasswordResetTemplateData): string {
-  const { user, resetUrl, expiresIn, supportUrl } = data;
+  const { user, resetUrl, expiresIn, supportUrl, supportEmail } = data;
 
   const content = `
 <!-- Hero Section -->
@@ -74,7 +75,7 @@ export function getPasswordResetTemplate(data: PasswordResetTemplateData): strin
                     Link Expires in {{expiresIn}}
                   </p>
                   <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.6;">
-                    For security reasons, this password reset link will expire after {{expiresIn}}. If you don't reset your password within this time, you'll need to request a new link from nodepress.co.uk.
+                    For security reasons, this password reset link will expire after {{expiresIn}}. If you don't reset your password within this time, you'll need to request a new link.
                   </p>
                 </td>
               </tr>
@@ -119,18 +120,18 @@ export function getPasswordResetTemplate(data: PasswordResetTemplateData): strin
   <tr>
     <td style="padding-top: 16px;">
       <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-        <strong style="color: #f1f5f9;">Didn't request this?</strong> <a href="${supportUrl}" style="color: #10b981; text-decoration: none; font-weight: 600;">Contact our support team</a> immediately at support@nodepress.co.uk if you believe your account has been compromised.
+        <strong style="color: #f1f5f9;">Didn't request this?</strong> <a href="${supportUrl}" style="color: #10b981; text-decoration: none; font-weight: 600;">Contact our support team</a> immediately at ${supportEmail} if you believe your account has been compromised.
       </p>
     </td>
   </tr>
 </table>`;
 
   // Replace placeholders with actual values
+  // Note: supportUrl uses JS template literal (${...}) directly, not Handlebars
   const processedContent = content
     .replace(/\{\{user\.firstName\}\}/g, user.firstName)
     .replace(/\{\{resetUrl\}\}/g, resetUrl)
-    .replace(/\{\{expiresIn\}\}/g, expiresIn)
-    .replace(/\{\{supportUrl\}\}/g, supportUrl);
+    .replace(/\{\{expiresIn\}\}/g, expiresIn);
 
   return getBaseEmailTemplate(processedContent, {
     preheader: 'Reset your NodePress password securely',

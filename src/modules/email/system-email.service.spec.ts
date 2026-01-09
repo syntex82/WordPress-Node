@@ -56,7 +56,8 @@ describe('SystemEmailService', () => {
       firstName: 'Test',
       resetUrl: 'https://test.com/reset?token=abc',
       expiresIn: '1 hour',
-      supportUrl: 'mailto:support@test.com',
+      supportUrl: 'https://test.com/support',
+      supportEmail: 'support@test.com',
     };
 
     it('should use database template when available', async () => {
