@@ -60,6 +60,7 @@ export class MediaService {
   /**
    * Upload file and create media record
    * Automatically generates WebP and responsive versions for images
+   * Returns WebP URL for images (optimized) or original URL for other files
    */
   async upload(file: Express.Multer.File, userId: string) {
     if (!file || !file.buffer) {
@@ -81,6 +82,8 @@ export class MediaService {
     // Extract image dimensions and generate optimized versions
     let width: number | undefined;
     let height: number | undefined;
+    let webpGenerated = false;
+    let webpFilename = '';
 
     const isImage = file.mimetype.startsWith('image/') && !file.mimetype.includes('svg');
 
@@ -92,9 +95,10 @@ export class MediaService {
         height = metadata.height;
 
         // Generate WebP version
-        const webpFilename = filename.replace(/\.[^.]+$/, '.webp');
+        webpFilename = filename.replace(/\.[^.]+$/, '.webp');
         const webpPath = path.join(this.uploadDir, webpFilename);
         await sharp(file.buffer).webp({ quality: WEBP_QUALITY }).toFile(webpPath);
+        webpGenerated = true;
         this.logger.log(`🖼️ WebP generated: ${webpFilename}`);
 
         // Generate responsive sizes (only for images larger than the target)
@@ -106,14 +110,16 @@ export class MediaService {
       }
     }
 
-    const url = `/uploads/${filename}`;
+    // Use WebP URL for images if generated, otherwise original
+    const originalUrl = `/uploads/${filename}`;
+    const url = webpGenerated ? `/uploads/${webpFilename}` : originalUrl;
 
     const media = await this.prisma.media.create({
       data: {
         filename,
         originalName: file.originalname,
-        path: url,
-        mimeType: file.mimetype,
+        path: originalUrl, // Store original path in DB
+        mimeType: webpGenerated ? 'image/webp' : file.mimetype,
         size: file.size,
         width,
         height,
@@ -121,10 +127,11 @@ export class MediaService {
       },
     });
 
-    // Return with url field for frontend compatibility
+    // Return with optimized url field for frontend
     return {
       ...media,
-      url,
+      url, // Return WebP URL for images
+      originalUrl, // Also provide original URL if needed
     };
   }
 
