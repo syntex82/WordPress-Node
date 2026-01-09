@@ -913,10 +913,10 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"/></svg>
           Try Free Demo
         </a>
-        <a href="https://github.com/syntex82/NodePress" target="_blank" class="wp-btn wp-btn-outline">
+        <button onclick="openLicenseModal()" class="wp-btn wp-btn-outline">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
           GitHub
-        </a>
+        </button>
         <a href="#features" class="wp-btn wp-btn-outline">Learn More</a>
       </div>
     </div>
@@ -1891,7 +1891,264 @@ document.getElementById('featureModal').addEventListener('click', function(e) {
 
 // Close modal on Escape key
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeFeatureModal();
+  if (e.key === 'Escape') {
+    closeFeatureModal();
+    closeLicenseModal();
+  }
+});
+</script>
+
+<!-- License Purchase Modal -->
+<div id="licenseModal" class="license-modal" style="display: none;">
+  <div class="license-modal-backdrop" onclick="closeLicenseModal()"></div>
+  <div class="license-modal-content">
+    <button class="license-modal-close" onclick="closeLicenseModal()">×</button>
+    <div class="license-modal-header">
+      <div class="license-modal-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      </div>
+      <h2>Get Full Source Code Access</h2>
+      <p>One-time payment for lifetime access</p>
+    </div>
+
+    <div class="license-price-box">
+      <div class="license-price">£299</div>
+      <div class="license-price-label">One-time payment</div>
+    </div>
+
+    <ul class="license-features">
+      <li>✓ Complete NodePress source code</li>
+      <li>✓ Full GitHub repository access</li>
+      <li>✓ 1 year of updates & support</li>
+      <li>✓ Commercial usage license</li>
+      <li>✓ Priority email support</li>
+      <li>✓ Access to private Discord community</li>
+    </ul>
+
+    <form id="licenseForm" class="license-form">
+      <input type="email" id="licenseEmail" placeholder="Enter your email" required />
+      <button type="submit" class="license-btn" id="licenseSubmitBtn">
+        <span class="license-btn-text">Purchase License</span>
+        <span class="license-btn-loading" style="display: none;">Processing...</span>
+      </button>
+    </form>
+
+    <div class="license-secure">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+      Secured by Stripe
+    </div>
+  </div>
+</div>
+
+<style>
+.license-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.license-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
+.license-modal-content {
+  position: relative;
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 460px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.license-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #94a3b8;
+  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.license-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+.license-modal-header {
+  margin-bottom: 24px;
+}
+.license-modal-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+.license-modal-icon svg {
+  fill: white;
+}
+.license-modal-header h2 {
+  color: white;
+  font-size: 1.75rem;
+  margin-bottom: 8px;
+}
+.license-modal-header p {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+.license-price-box {
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid #10b981;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.license-price {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.license-price-label {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+.license-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  text-align: left;
+}
+.license-features li {
+  color: #e2e8f0;
+  padding: 8px 0;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.license-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.license-form input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.license-form input:focus {
+  border-color: #10b981;
+}
+.license-form input::placeholder {
+  color: #64748b;
+}
+.license-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.license-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+.license-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+.license-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 16px;
+}
+.license-secure svg {
+  fill: #10b981;
+}
+</style>
+
+<script>
+function openLicenseModal() {
+  document.getElementById('licenseModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLicenseModal() {
+  document.getElementById('licenseModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('licenseForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const email = document.getElementById('licenseEmail').value;
+  const btn = document.getElementById('licenseSubmitBtn');
+  const btnText = btn.querySelector('.license-btn-text');
+  const btnLoading = btn.querySelector('.license-btn-loading');
+
+  btn.disabled = true;
+  btnText.style.display = 'none';
+  btnLoading.style.display = 'inline';
+
+  try {
+    const response = await fetch('/api/subscriptions/license/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await response.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error('Failed to create checkout session');
+    }
+  } catch (error) {
+    alert('An error occurred. Please try again.');
+    btn.disabled = false;
+    btnText.style.display = 'inline';
+    btnLoading.style.display = 'none';
+  }
 });
 </script>
 

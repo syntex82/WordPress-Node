@@ -1,0 +1,140 @@
+{{> header}}
+
+<style>
+  .license-success-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .success-card {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 24px;
+    padding: 60px 50px;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .success-icon {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 30px;
+    font-size: 60px;
+  }
+  .success-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 16px;
+  }
+  .success-subtitle {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+  .github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 18px 36px;
+    border-radius: 14px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-bottom: 30px;
+  }
+  .github-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+  }
+  .github-btn svg {
+    width: 28px;
+    height: 28px;
+    fill: white;
+  }
+  .success-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 20px;
+  }
+  .success-info h4 {
+    color: #e2e8f0;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .success-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+  }
+  .success-info li {
+    color: #94a3b8;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .success-info li::before {
+    content: "✓";
+    color: #10b981;
+    font-weight: bold;
+  }
+  .back-home {
+    display: inline-block;
+    color: #94a3b8;
+    text-decoration: none;
+    margin-top: 30px;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+  .back-home:hover {
+    color: #10b981;
+  }
+</style>
+
+<section class="license-success-page">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <h1 class="success-title">Thank You!</h1>
+    <p class="success-subtitle">Your NodePress license has been activated. You now have full access to the source code repository.</p>
+    
+    <a href="{{githubUrl}}" target="_blank" class="github-btn">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      Access GitHub Repository
+    </a>
+    
+    <div class="success-info">
+      <h4>What's included in your license:</h4>
+      <ul>
+        <li>Complete NodePress source code</li>
+        <li>1 year of updates and new features</li>
+        <li>Priority email support</li>
+        <li>Access to private Discord community</li>
+        <li>Commercial usage rights</li>
+        <li>Deployment on unlimited domains</li>
+      </ul>
+    </div>
+    
+    <a href="/" class="back-home">← Back to Homepage</a>
+  </div>
+</section>
+
+{{> footer}}
+

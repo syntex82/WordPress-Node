@@ -36,6 +36,13 @@ export class SubscriptionsController {
     return this.subscriptionsService.getPlanBySlug(slug);
   }
 
+  // ==================== LICENSE PURCHASE (Public) ====================
+
+  @Post('license/checkout')
+  async createLicenseCheckout(@Body() dto: { email: string; successUrl?: string; cancelUrl?: string }) {
+    return this.subscriptionsService.createLicenseCheckout(dto.email, dto.successUrl, dto.cancelUrl);
+  }
+
   // ==================== WEBHOOK (Raw body required) ====================
 
   @Post('webhook')

@@ -474,6 +474,24 @@ Sitemap: ${baseUrl}/sitemap.xml
   }
 
   /**
+   * License purchase success page
+   * GET /license-success
+   */
+  @Get('license-success')
+  async licenseSuccessPage(@Query('session_id') sessionId: string, @Res() res: Response) {
+    try {
+      const html = await this.themeRenderer.render('license-success', {
+        sessionId,
+        githubUrl: 'https://github.com/syntex82/NodePress',
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering license success page:', error);
+      res.status(500).send(`Error rendering license success page: ${error.message}`);
+    }
+  }
+
+  /**
    * Theme Designer page - visual theme customization
    * GET /theme-designer
    */

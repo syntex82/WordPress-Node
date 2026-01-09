@@ -185,6 +185,47 @@ export class SubscriptionsService {
     return { sessionId: session.id, url: session.url };
   }
 
+  /**
+   * Create a one-time license purchase checkout session for NodePress
+   * Price: £299 for lifetime access to the source code
+   */
+  async createLicenseCheckout(email: string, successUrl?: string, cancelUrl?: string) {
+    const stripe = await this.getStripe();
+
+    // Create checkout session for one-time payment
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      customer_email: email,
+      line_items: [
+        {
+          price_data: {
+            currency: 'gbp',
+            unit_amount: 29900, // £299 in pence
+            product_data: {
+              name: 'NodePress CMS License',
+              description: 'Lifetime access to NodePress CMS source code with 1 year of updates and support',
+              images: ['https://nodepress.co.uk/images/nodepress-icon.svg'],
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      success_url:
+        successUrl ||
+        `${process.env.FRONTEND_URL || 'https://nodepress.co.uk'}/license-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:
+        cancelUrl ||
+        `${process.env.FRONTEND_URL || 'https://nodepress.co.uk'}/#pricing`,
+      metadata: {
+        type: 'license_purchase',
+        email,
+      },
+    });
+
+    return { sessionId: session.id, url: session.url };
+  }
+
   async createBillingPortalSession(userId: string) {
     const stripe = await this.getStripe();
     const subscription = await this.getUserSubscription(userId);
