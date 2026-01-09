@@ -43,7 +43,7 @@
     <div class="dm-hero-btns">
       <a href="/hire-developer" class="dm-hero-btn primary">Browse All Developers</a>
       {{#unless user}}
-      <a href="/admin/login" class="dm-hero-btn secondary">Post a Project</a>
+      <a href="/login?redirect=/hire-developer" class="dm-hero-btn secondary">Post a Project</a>
       {{/unless}}
     </div>
   </section>
@@ -113,7 +113,11 @@
   <section class="dm-cta">
     <h2>Are You a Developer?</h2>
     <p>Join our marketplace and connect with clients looking for your skills. Set your own rates, choose your projects, and grow your freelance career.</p>
-    <a href="/admin/dev-marketplace/apply" class="dm-cta-btn">Apply as Developer</a>
+    {{#if user}}
+    <a href="/my-account?tab=developer" class="dm-cta-btn">Apply as Developer</a>
+    {{else}}
+    <a href="/login?redirect=/my-account?tab=developer" class="dm-cta-btn">Apply as Developer</a>
+    {{/if}}
   </section>
 </div>
 
