@@ -116,6 +116,14 @@ export class ThemeRendererService {
       return JSON.stringify(context || []);
     });
 
+    // Asset URL helper - generates path to theme assets
+    Handlebars.registerHelper('asset', (path: string) => {
+      if (!path) return '';
+      // Remove leading slash if present
+      const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+      return `/themes/default/assets/${cleanPath}`;
+    });
+
     // Responsive image helper - generates srcset for optimized images
     Handlebars.registerHelper('responsiveImg', (src: string, alt: string, options: any) => {
       if (!src) return '';
