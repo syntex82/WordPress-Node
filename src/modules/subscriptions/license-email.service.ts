@@ -296,21 +296,9 @@ docker-compose up -d
       <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 20px;">🎓 Recommended Courses</h2>
 
       <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid #fbbf24;">
-        <h4 style="color: #92400e; margin: 0 0 8px; font-size: 16px;">⭐ Udemy - NestJS Zero to Hero</h4>
-        <p style="color: #a16207; margin: 0 0 12px; font-size: 14px;">Complete NestJS course covering everything from basics to advanced concepts.</p>
-        <a href="https://www.udemy.com/course/nestjs-zero-to-hero/" style="color: #92400e; font-weight: 600;">View Course →</a>
-      </div>
-
-      <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-        <h4 style="color: #1f2937; margin: 0 0 8px; font-size: 16px;">Frontend Masters - Full Stack TypeScript</h4>
-        <p style="color: #6b7280; margin: 0 0 12px; font-size: 14px;">Build production-ready apps with TypeScript, React, and Node.js.</p>
-        <a href="https://frontendmasters.com/" style="color: #667eea; font-weight: 600;">View Courses →</a>
-      </div>
-
-      <div style="background: #f9fafb; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb;">
-        <h4 style="color: #1f2937; margin: 0 0 8px; font-size: 16px;">YouTube - Traversy Media</h4>
-        <p style="color: #6b7280; margin: 0 0 12px; font-size: 14px;">Free tutorials on Node.js, React, PostgreSQL, and modern web dev.</p>
-        <a href="https://www.youtube.com/@TraversyMedia" style="color: #667eea; font-weight: 600;">Watch Free →</a>
+        <h4 style="color: #92400e; margin: 0 0 8px; font-size: 16px;">⭐ NodePress Academy</h4>
+        <p style="color: #a16207; margin: 0 0 12px; font-size: 14px;">Official NodePress courses - from beginner to advanced. Learn to build, customize, and deploy your CMS.</p>
+        <a href="https://nodepress.co.uk/courses" style="color: #92400e; font-weight: 600;">Browse Courses →</a>
       </div>
 
       <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;">
