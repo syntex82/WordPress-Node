@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
 import { SiteThemeProvider, useSiteTheme } from './contexts/SiteThemeContext';
+import { I18nProvider } from './contexts/I18nContext';
 import { TourProvider } from './components/GuidedTour';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -60,6 +61,7 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const Seo = lazy(() => import('./pages/Seo'));
 const Recommendations = lazy(() => import('./pages/Recommendations'));
 const Updates = lazy(() => import('./pages/Updates'));
+const Languages = lazy(() => import('./pages/Languages'));
 
 // Lazy-loaded pages - Shop
 const ShopProducts = lazy(() => import('./pages/shop/Products'));
@@ -280,6 +282,9 @@ function AppContent() {
                 {/* Settings */}
                 <Route path="settings" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Settings /></ProtectedRoute>} />
 
+                {/* Languages (i18n) */}
+                <Route path="languages" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Languages /></ProtectedRoute>} />
+
                 {/* Subscription & Pricing (authenticated users only) */}
                 <Route path="subscription" element={<Subscription />} />
                 <Route path="subscription/success" element={<Subscription />} />
@@ -316,13 +321,15 @@ function AppContent() {
   );
 }
 
-// Main App component wrapped with SiteThemeProvider and TourProvider
+// Main App component wrapped with SiteThemeProvider, I18nProvider, and TourProvider
 function App() {
   return (
     <SiteThemeProvider>
-      <TourProvider>
-        <AppContent />
-      </TourProvider>
+      <I18nProvider>
+        <TourProvider>
+          <AppContent />
+        </TourProvider>
+      </I18nProvider>
     </SiteThemeProvider>
   );
 }

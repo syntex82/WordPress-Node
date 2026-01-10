@@ -23,7 +23,7 @@ import {
 } from './dto/theme-customization-settings.dto';
 import { v4 as uuid } from 'uuid';
 
-interface HistoryEntry {
+export interface HistoryEntry {
   id: string;
   operation: BlockOperation;
   blockId: string;

@@ -302,6 +302,8 @@ model Course {
   OrderItem           OrderItem[]
   quizzes             Quiz[]
   QuizAttempt         QuizAttempt[]
+  // i18n - translations for this course
+  translations        CourseTranslation[]
 
   @@index([category])
   @@index([instructorId])
@@ -1045,6 +1047,8 @@ model Page {
   parent            Page?              @relation("PageToPage", fields: [parentId], references: [id])
   children          Page[]             @relation("PageToPage")
   PageCustomization PageCustomization?
+  // i18n - translations for this page
+  translations      PageTranslation[]
 
   @@index([authorId])
   @@index([slug])
@@ -1186,6 +1190,8 @@ model Post {
   MenuItem          MenuItem[]
   author              User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
   PostCustomization PostCustomization?
+  // i18n - translations for this post
+  translations      PostTranslation[]
 
   @@index([authorId])
   @@index([slug])
@@ -1256,6 +1262,8 @@ model Product {
   reviews           ProductReview[]
   variants          ProductVariant[]
   tags              ProductTag[]
+  // i18n - translations for this product
+  translations      ProductTranslation[]
 
   @@index([categoryId])
   @@index([hasVariants])
@@ -1277,6 +1285,8 @@ model ProductCategory {
   products              Product[]
   parent                ProductCategory?  @relation("ProductCategoryToProductCategory", fields: [parentId], references: [id])
   children              ProductCategory[] @relation("ProductCategoryToProductCategory")
+  // i18n - translations for this category
+  translations          CategoryTranslation[]
 
   @@index([parentId])
   @@index([slug])
@@ -2735,4 +2745,167 @@ enum DemoStatus {
   EXPIRED
   TERMINATED
   ERROR
+}
+
+// ==================== INTERNATIONALIZATION (i18n) ====================
+
+model Language {
+  id                String   @id @default(cuid())
+  code              String   @unique // ISO 639-1 code (e.g., 'en', 'es', 'fr')
+  name              String   // Display name (e.g., 'English', 'Español')
+  nativeName        String   // Native name (e.g., 'English', 'Español')
+  isDefault         Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  isRTL             Boolean  @default(false) // Right-to-left support
+  flagEmoji         String?  // Flag emoji for display
+  locale            String?  // Full locale (e.g., 'en-US', 'es-ES')
+  dateFormat        String?  // Date format preference
+  numberFormat      String?  // Number format preference
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  postTranslations     PostTranslation[]
+  pageTranslations     PageTranslation[]
+  productTranslations  ProductTranslation[]
+  courseTranslations   CourseTranslation[]
+  categoryTranslations CategoryTranslation[]
+  uiTranslations       UITranslation[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([isDefault])
+}
+
+model PostTranslation {
+  id              String   @id @default(cuid())
+  postId          String
+  languageId      String
+  title           String
+  slug            String
+  content         String   @db.Text
+  excerpt         String?
+  metaTitle       String?
+  metaDescription String?
+  isPublished     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, languageId])
+  @@unique([slug, languageId])
+  @@index([postId])
+  @@index([languageId])
+  @@index([slug])
+}
+
+model PageTranslation {
+  id              String   @id @default(cuid())
+  pageId          String
+  languageId      String
+  title           String
+  slug            String
+  content         String   @db.Text
+  metaTitle       String?
+  metaDescription String?
+  isPublished     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  page     Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, languageId])
+  @@unique([slug, languageId])
+  @@index([pageId])
+  @@index([languageId])
+  @@index([slug])
+}
+
+model ProductTranslation {
+  id               String   @id @default(cuid())
+  productId        String
+  languageId       String
+  name             String
+  slug             String
+  description      String?  @db.Text
+  shortDescription String?
+  metaTitle        String?
+  metaDescription  String?
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, languageId])
+  @@unique([slug, languageId])
+  @@index([productId])
+  @@index([languageId])
+  @@index([slug])
+}
+
+model CourseTranslation {
+  id               String   @id @default(cuid())
+  courseId         String
+  languageId       String
+  title            String
+  slug             String
+  description      String?  @db.Text
+  shortDescription String?
+  whatYouLearn     Json?
+  requirements     Json?
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, languageId])
+  @@unique([slug, languageId])
+  @@index([courseId])
+  @@index([languageId])
+  @@index([slug])
+}
+
+model CategoryTranslation {
+  id          String   @id @default(cuid())
+  categoryId  String
+  languageId  String
+  name        String
+  slug        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  language Language        @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, languageId])
+  @@unique([slug, languageId])
+  @@index([categoryId])
+  @@index([languageId])
+}
+
+// UI Translation strings for admin panel and themes
+model UITranslation {
+  id         String   @id @default(cuid())
+  languageId String
+  namespace  String   // e.g., 'admin', 'theme', 'common'
+  key        String   // e.g., 'buttons.save', 'messages.welcome'
+  value      String   @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([languageId, namespace, key])
+  @@index([languageId])
+  @@index([namespace])
+  @@index([key])
 }
