@@ -116,6 +116,39 @@ export class ThemeRendererService {
       return JSON.stringify(context || []);
     });
 
+    // Translation helper (i18n) - returns key as fallback if no translation found
+    Handlebars.registerHelper('t', function (this: any, key: string, options: any) {
+      // Get translations from context if available
+      const translations = this?.translations || {};
+
+      // Handle interpolation variables passed as hash arguments
+      const vars = options?.hash || {};
+
+      // Get the translation value (supports dot notation like "nav.home")
+      let value = key;
+      const keys = key.split('.');
+      let current: any = translations;
+
+      for (const k of keys) {
+        if (current && typeof current === 'object' && k in current) {
+          current = current[k];
+        } else {
+          current = null;
+          break;
+        }
+      }
+
+      if (current && typeof current === 'string') {
+        value = current;
+        // Replace interpolation variables {{varName}}
+        for (const [varKey, varValue] of Object.entries(vars)) {
+          value = value.replace(new RegExp(`\\{\\{${varKey}\\}\\}`, 'g'), String(varValue));
+        }
+      }
+
+      return value;
+    });
+
     // Asset URL helper - generates path to theme assets
     Handlebars.registerHelper('asset', (path: string) => {
       if (!path) return '';
