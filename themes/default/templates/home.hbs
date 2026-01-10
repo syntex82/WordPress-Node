@@ -424,6 +424,22 @@
   .wp-cta .wp-btn-primary:hover {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   }
+  .wp-cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+  }
+  .wp-cta .wp-btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: white;
+  }
+  .wp-cta .wp-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+  }
   /* User Access Section - Dark Theme */
   .wp-user-access {
     background: linear-gradient(135deg, #1e293b 0%, var(--dark) 100%);
@@ -914,9 +930,13 @@
           Try Free Demo
         </a>
         <button onclick="openLicenseModal()" class="wp-btn wp-btn-outline">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Buy Source Code
         </button>
+        <a href="/docs" class="wp-btn wp-btn-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+          Documentation
+        </a>
         <a href="#features" class="wp-btn wp-btn-outline">Learn More</a>
       </div>
     </div>
@@ -1256,11 +1276,21 @@
 <!-- CTA Section -->
 <section class="wp-cta">
   <h2>Ready to Build Something Amazing?</h2>
-  <p>Get started with NodePress in minutes. Clone the repo, run the setup, and start building.</p>
-  <a href="https://github.com/syntex82/NodePress" target="_blank" class="wp-btn wp-btn-primary">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-    Clone Repository
-  </a>
+  <p>Get started with NodePress today. Try the demo, read the docs, or purchase the full source code.</p>
+  <div class="wp-cta-buttons">
+    <a href="/try-demo" class="wp-btn wp-btn-primary">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"/></svg>
+      Try Free Demo
+    </a>
+    <a href="/docs" class="wp-btn wp-btn-outline">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+      Documentation
+    </a>
+    <button onclick="openLicenseModal()" class="wp-btn wp-btn-outline">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      Buy Source Code
+    </button>
+  </div>
 </section>
 
 <!-- Feature Modal Overlay -->
@@ -1905,10 +1935,10 @@ document.addEventListener('keydown', function(e) {
     <button class="license-modal-close" onclick="closeLicenseModal()">×</button>
     <div class="license-modal-header">
       <div class="license-modal-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
       </div>
-      <h2>Get Full Source Code Access</h2>
-      <p>One-time payment for lifetime access</p>
+      <h2>Buy NodePress Source Code</h2>
+      <p>One-time payment • Instant download</p>
     </div>
 
     <div class="license-price-box">
@@ -1918,17 +1948,17 @@ document.addEventListener('keydown', function(e) {
 
     <ul class="license-features">
       <li>✓ Complete NodePress source code</li>
-      <li>✓ Full GitHub repository access</li>
+      <li>✓ Instant download after purchase</li>
       <li>✓ 1 year of updates & support</li>
       <li>✓ Commercial usage license</li>
       <li>✓ Priority email support</li>
-      <li>✓ Access to private NodePress community</li>
+      <li>✓ Deploy on unlimited domains</li>
     </ul>
 
     <form id="licenseForm" class="license-form">
       <input type="email" id="licenseEmail" placeholder="Enter your email" required />
       <button type="submit" class="license-btn" id="licenseSubmitBtn">
-        <span class="license-btn-text">Purchase License</span>
+        <span class="license-btn-text">Buy Source Code</span>
         <span class="license-btn-loading" style="display: none;">Processing...</span>
       </button>
     </form>
