@@ -11,7 +11,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { DemoAnalyticsService, DemoListFilters } from './demo-analytics.service';
 import { ThemeRendererService } from '../themes/theme-renderer.service';
 
-@Controller('admin/demo-analytics')
+@Controller('api/admin/demo-analytics')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
 export class DemoAnalyticsController {
