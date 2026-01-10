@@ -11,7 +11,7 @@ import {
   FiUsers, FiActivity, FiClock, FiTrendingUp, FiMail, FiDownload,
   FiRefreshCw, FiSearch, FiFilter, FiChevronDown, FiChevronUp,
   FiMoreVertical, FiUserPlus, FiUserMinus, FiKey, FiCalendar,
-  FiEye, FiCheck, FiX, FiAlertCircle, FiBarChart2
+  FiEye, FiCheck, FiX, FiAlertCircle, FiBarChart2, FiTrash2
 } from 'react-icons/fi';
 import {
   demoAnalyticsApi,
@@ -214,6 +214,37 @@ export default function DemoAnalytics() {
     }
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm('Are you sure you want to delete this demo user? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await demoAnalyticsApi.deleteUser(userId);
+      toast.success('Demo user deleted');
+      fetchData();
+    } catch {
+      toast.error('Failed to delete user');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedUsers.size === 0) {
+      toast.error('No users selected');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete ${selectedUsers.size} demo user(s)? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await demoAnalyticsApi.bulkDeleteUsers(Array.from(selectedUsers));
+      toast.success(`Deleted ${res.data.deleted} users`);
+      setSelectedUsers(new Set());
+      fetchData();
+    } catch {
+      toast.error('Failed to delete users');
+    }
+  };
+
   const formatDuration = (minutes: number): string => {
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
@@ -313,13 +344,22 @@ export default function DemoAnalytics() {
             {showFilters ? <FiChevronUp /> : <FiChevronDown />}
           </button>
           {selectedUsers.size > 0 && (
-            <button
-              onClick={handleBulkAddToList}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
-            >
-              <FiUserPlus size={18} />
-              Add {selectedUsers.size} to List
-            </button>
+            <>
+              <button
+                onClick={handleBulkAddToList}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+              >
+                <FiUserPlus size={18} />
+                Add {selectedUsers.size} to List
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                <FiTrash2 size={18} />
+                Delete {selectedUsers.size}
+              </button>
+            </>
           )}
         </div>
 
@@ -433,6 +473,7 @@ export default function DemoAnalytics() {
                         onResetAccess={() => handleResetAccess(user.id)}
                         onAddToList={() => handleAddToList(user.id)}
                         onRemoveFromList={() => handleRemoveFromList(user.id)}
+                        onDelete={() => handleDeleteUser(user.id)}
                       />
                     </div>
                   </td>
@@ -563,12 +604,13 @@ function SortableHeader({ field, label, current, order, onSort }: {
   );
 }
 
-function UserActionsMenu({ user, onExtend, onResetAccess, onAddToList, onRemoveFromList }: {
+function UserActionsMenu({ user, onExtend, onResetAccess, onAddToList, onRemoveFromList, onDelete }: {
   user: DemoUserDetail;
   onExtend: () => void;
   onResetAccess: () => void;
   onAddToList: () => void;
   onRemoveFromList: () => void;
+  onDelete: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const theme = useThemeClasses();
@@ -616,6 +658,14 @@ function UserActionsMenu({ user, onExtend, onResetAccess, onAddToList, onRemoveF
                 Add to Mailing List
               </button>
             )}
+            <div className={`border-t ${theme.border} my-1`} />
+            <button
+              onClick={() => { onDelete(); setOpen(false); }}
+              className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+            >
+              <FiTrash2 size={16} />
+              Delete Demo
+            </button>
           </div>
         </>
       )}

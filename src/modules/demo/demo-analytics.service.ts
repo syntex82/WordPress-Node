@@ -103,64 +103,59 @@ export class DemoAnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Get overall conversion metrics
+   * Get overall conversion metrics from DemoInstance table
    */
   async getConversionMetrics(): Promise<ConversionMetrics> {
     const now = new Date();
 
-    // Get demo counts from settings
-    const demoSettings = await this.prisma.setting.findMany({
-      where: { key: { startsWith: 'demo_' } },
+    // Count demos by status from DemoInstance table
+    const totalDemos = await this.prisma.demoInstance.count();
+
+    const activeDemos = await this.prisma.demoInstance.count({
+      where: {
+        status: 'ACTIVE',
+        expiresAt: { gt: now },
+      },
     });
 
-    let totalDemos = 0;
-    let activeDemos = 0;
-    let expiredDemos = 0;
-    let conversions = 0;
-
-    for (const setting of demoSettings) {
-      if (setting.key.startsWith('demo_') && !setting.key.includes('_view') && !setting.key.includes('_click')) {
-        try {
-          const data = JSON.parse(String(setting.value));
-          totalDemos++;
-          if (data.converted) conversions++;
-          else if (new Date(data.expiresAt) > now) activeDemos++;
-          else expiredDemos++;
-        } catch (e) {}
-      }
-    }
-
-    // Get event counts
-    const events = await this.prisma.setting.findMany({
+    const expiredDemos = await this.prisma.demoInstance.count({
       where: {
         OR: [
-          { key: { startsWith: 'conversion_view_' } },
-          { key: { startsWith: 'conversion_click_' } },
-          { key: { startsWith: 'upgrade_inquiry_' } },
+          { status: 'EXPIRED' },
+          { expiresAt: { lte: now } },
         ],
       },
     });
 
-    let pageViews = 0;
-    let ctaClicks = 0;
-    let inquiries = 0;
-    let hostingerClicks = 0;
-    let customDevClicks = 0;
+    const conversions = await this.prisma.demoInstance.count({
+      where: { status: 'CONVERTED' },
+    });
 
-    for (const event of events) {
-      if (event.key.startsWith('conversion_view_')) pageViews++;
-      else if (event.key.startsWith('conversion_click_')) {
-        ctaClicks++;
-        try {
-          const data = JSON.parse(String(event.value));
-          if (data.action === 'hostinger_click' || data.target === 'hostinger') hostingerClicks++;
-          if (data.action === 'custom_dev_click' || data.target === 'calendly') customDevClicks++;
-        } catch (e) {}
-      }
-      else if (event.key.startsWith('upgrade_inquiry_')) inquiries++;
-    }
+    // Count upgrade requests (inquiries)
+    const inquiries = await this.prisma.demoInstance.count({
+      where: { upgradeRequested: true },
+    });
 
-    // Get email stats
+    // Get page view counts from DemoFeatureUsage
+    const pageViews = await this.prisma.demoFeatureUsage.count({
+      where: { feature: 'page_view' },
+    });
+
+    // Get CTA click counts
+    const ctaClicks = await this.prisma.demoFeatureUsage.count({
+      where: { feature: { contains: 'click' } },
+    });
+
+    // Get specific click types
+    const hostingerClicks = await this.prisma.demoFeatureUsage.count({
+      where: { feature: 'hostinger_click' },
+    });
+
+    const customDevClicks = await this.prisma.demoFeatureUsage.count({
+      where: { feature: 'custom_dev_click' },
+    });
+
+    // Email stats from settings (keeping this as settings might still track emails)
     const emailStats = await this.prisma.setting.findMany({
       where: { key: { startsWith: 'demo_email_' } },
     });
@@ -189,6 +184,58 @@ export class DemoAnalyticsService {
       emailsOpened,
       unsubscribes,
     };
+  }
+
+  /**
+   * Delete a demo instance and all related data
+   */
+  async deleteDemo(id: string): Promise<void> {
+    const demo = await this.prisma.demoInstance.findUnique({
+      where: { id },
+    });
+
+    if (!demo) {
+      throw new NotFoundException(`Demo instance ${id} not found`);
+    }
+
+    // Delete in order of dependencies
+    await this.prisma.$transaction(async (tx) => {
+      // Delete related feature usage
+      await tx.demoFeatureUsage.deleteMany({ where: { demoInstanceId: id } });
+
+      // Delete related access logs
+      await tx.demoAccessLog.deleteMany({ where: { demoInstanceId: id } });
+
+      // Delete related sessions
+      await tx.demoSession.deleteMany({ where: { demoInstanceId: id } });
+
+      // Delete related login attempts
+      await tx.demoLoginAttempt.deleteMany({ where: { demoInstanceId: id } });
+
+      // Delete marketing list memberships
+      await tx.marketingListMember.deleteMany({ where: { demoInstanceId: id } });
+
+      // Finally delete the demo instance itself
+      await tx.demoInstance.delete({ where: { id } });
+    });
+
+    this.logger.log(`Deleted demo instance: ${id} (${demo.email})`);
+  }
+
+  /**
+   * Bulk delete demo instances
+   */
+  async bulkDeleteDemos(ids: string[]): Promise<number> {
+    let deleted = 0;
+    for (const id of ids) {
+      try {
+        await this.deleteDemo(id);
+        deleted++;
+      } catch (error) {
+        this.logger.warn(`Failed to delete demo ${id}: ${error.message}`);
+      }
+    }
+    return deleted;
   }
 
   /**

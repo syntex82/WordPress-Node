@@ -2501,4 +2501,12 @@ export const demoAnalyticsApi = {
       params: filters,
       responseType: 'blob',
     }),
+
+  // Delete a demo user
+  deleteUser: (id: string) =>
+    api.delete<{ success: boolean }>('/admin/demo-analytics/api/users/' + id),
+
+  // Bulk delete demo users
+  bulkDeleteUsers: (demoIds: string[]) =>
+    api.post<{ success: boolean; deleted: number }>('/admin/demo-analytics/api/bulk/delete', { demoIds }),
 };

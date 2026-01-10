@@ -3,7 +3,7 @@
  * Admin endpoints for viewing conversion analytics
  */
 
-import { Controller, Get, Post, UseGuards, Res, Query, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Delete, UseGuards, Res, Query, Param, Body } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -201,6 +201,26 @@ export class DemoAnalyticsController {
   @Get('api/demos')
   async getDemos(@Query('limit') limit?: string) {
     return this.analyticsService.getRecentDemos(parseInt(limit || '20'));
+  }
+
+  /**
+   * Delete a single demo instance
+   * DELETE /admin/demo-analytics/api/users/:id
+   */
+  @Delete('api/users/:id')
+  async deleteDemo(@Param('id') id: string) {
+    await this.analyticsService.deleteDemo(id);
+    return { success: true };
+  }
+
+  /**
+   * Bulk delete demo instances
+   * POST /admin/demo-analytics/api/bulk/delete
+   */
+  @Post('api/bulk/delete')
+  async bulkDeleteDemos(@Body('demoIds') demoIds: string[]) {
+    const deleted = await this.analyticsService.bulkDeleteDemos(demoIds);
+    return { success: true, deleted };
   }
 }
 
