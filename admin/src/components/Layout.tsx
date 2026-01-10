@@ -6,7 +6,7 @@
 
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand, FiHardDrive, FiZap, FiArrowUp, FiVideo, FiPhone, FiPhoneOff, FiTruck, FiActivity, FiLayers } from 'react-icons/fi';
+import { FiHome, FiFileText, FiFile, FiImage, FiUsers, FiSettings, FiExternalLink, FiLogOut, FiUser, FiShield, FiMessageSquare, FiMenu, FiShoppingCart, FiPackage, FiTag, FiBook, FiAward, FiBarChart2, FiSearch, FiMail, FiLock, FiInfo, FiEdit3, FiLayout, FiChevronDown, FiChevronRight, FiX, FiCommand, FiHardDrive, FiZap, FiArrowUp, FiVideo, FiPhone, FiPhoneOff, FiTruck, FiActivity, FiLayers, FiGlobe } from 'react-icons/fi';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { messagesApi, systemConfigApi } from '../services/api';
@@ -229,6 +229,7 @@ export default function Layout() {
   const systemNavigation: Array<{ name: string; path: string; icon: any; permission: keyof RolePermissions; badge?: number; tooltipKey: keyof typeof NAV_TOOLTIPS }> = [
     { name: 'Users', path: '/users', icon: FiUsers, permission: 'users', tooltipKey: 'users' },
     { name: 'Security', path: '/security', icon: FiShield, permission: 'security', tooltipKey: 'security' },
+    { name: 'Languages', path: '/languages', icon: FiGlobe, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Demos', path: '/demos', icon: FiZap, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Backups', path: '/backups', icon: FiHardDrive, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Updates', path: '/updates', icon: FiArrowUp, permission: 'settings', tooltipKey: 'settings' },
