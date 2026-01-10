@@ -1,16 +1,19 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { SystemConfigService } from '../settings/system-config.service';
+import { LicenseEmailService } from './license-email.service';
 import { CreatePlanDto, UpdatePlanDto, CreateCheckoutDto } from './dto/subscription.dto';
 import Stripe from 'stripe';
 
 @Injectable()
 export class SubscriptionsService {
+  private readonly logger = new Logger(SubscriptionsService.name);
   private stripe: Stripe | null = null;
 
   constructor(
     private prisma: PrismaService,
     private systemConfig: SystemConfigService,
+    private licenseEmailService: LicenseEmailService,
   ) {
     this.initStripe();
   }
@@ -297,6 +300,12 @@ export class SubscriptionsService {
   }
 
   private async handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+    // Check if this is a license purchase (one-time payment, not subscription)
+    if (session.metadata?.type === 'license_purchase') {
+      await this.handleLicensePurchase(session);
+      return;
+    }
+
     const stripe = await this.getStripe();
 
     // Get subscription from Stripe
@@ -398,6 +407,39 @@ export class SubscriptionsService {
         canceledAt: null,
       },
     });
+  }
+
+  /**
+   * Handle one-time license purchase (not subscription)
+   * Sends email with download link and documentation
+   */
+  private async handleLicensePurchase(session: Stripe.Checkout.Session) {
+    const email = session.customer_email || session.metadata?.email;
+
+    if (!email) {
+      this.logger.error('License purchase webhook: No email found in session', session.id);
+      return;
+    }
+
+    this.logger.log(`Processing license purchase for ${email}`);
+
+    try {
+      // Create license record and get download token
+      const downloadToken = await this.licenseEmailService.createLicensePurchase({
+        email,
+        sessionId: session.id,
+        amount: session.amount_total || 29900, // Amount in cents
+        currency: session.currency || 'gbp',
+      });
+
+      // Send the license email with download link
+      await this.licenseEmailService.sendLicenseEmail(email, downloadToken);
+
+      this.logger.log(`License email sent successfully to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to process license purchase for ${email}:`, error);
+      throw error;
+    }
   }
 
   private async handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
