@@ -1566,6 +1566,14 @@ img { max-width: 100%; height: auto; display: block; }
           {{/if}}
         </div>
         <div class="nav-actions">
+          <!-- Language Switcher -->
+          <div class="language-switcher" id="languageSwitcher" style="position: relative;">
+            <button class="lang-toggle" id="langToggle" title="Change Language" style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--color-text-muted); font-size: 0.85rem; cursor: pointer;">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span id="currentLangCode">EN</span>
+            </button>
+            <div class="lang-dropdown" id="langDropdown" style="position: absolute; top: calc(100% + 8px); right: 0; min-width: 180px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; z-index: 1000;"></div>
+          </div>
           <a href="/cart" class="nav-icon cart-icon" title="Cart">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             <span class="cart-count" id="cartCount" style="display: none;">0</span>
@@ -1602,6 +1610,57 @@ img { max-width: 100%; height: auto; display: block; }
     </div>
   </footer>
   <script src="/themes/${slug}/assets/js/main.js"></script>
+  <script>
+    // Language Switcher
+    (function() {
+      var toggle = document.getElementById('langToggle');
+      var dropdown = document.getElementById('langDropdown');
+      var currentLangEl = document.getElementById('currentLangCode');
+      if (!toggle || !dropdown) return;
+
+      function getCurrentLang() {
+        var match = document.cookie.match(/(?:^|; )language=([^;]*)/);
+        return match ? match[1] : 'en';
+      }
+
+      function setLang(code) {
+        document.cookie = 'language=' + code + ';path=/;max-age=31536000';
+        window.location.reload();
+      }
+
+      fetch('/api/i18n/languages')
+        .then(function(r) { return r.json(); })
+        .then(function(languages) {
+          if (!languages || languages.length === 0) {
+            document.getElementById('languageSwitcher').style.display = 'none';
+            return;
+          }
+          var currentLang = getCurrentLang();
+          var currentLangData = languages.find(function(l) { return l.code === currentLang; }) || languages[0];
+          if (currentLangEl) currentLangEl.textContent = currentLangData.code.toUpperCase();
+          dropdown.innerHTML = languages.map(function(lang) {
+            var isActive = lang.code === currentLang;
+            return '<button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: ' + (isActive ? 'rgba(16,185,129,0.15)' : 'none') + '; border: none; border-radius: 8px; color: ' + (isActive ? '#10b981' : 'var(--color-text)') + '; font-size: 0.9rem; cursor: pointer; text-align: left;" data-code="' + lang.code + '">' +
+              '<span style="font-size: 1.1rem;">' + (lang.flagEmoji || '🌐') + '</span>' +
+              '<span>' + lang.nativeName + '</span>' +
+              (isActive ? '<span style="margin-left: auto;">✓</span>' : '') +
+            '</button>';
+          }).join('');
+          dropdown.querySelectorAll('button').forEach(function(btn) {
+            btn.addEventListener('click', function() { setLang(this.dataset.code); });
+          });
+        })
+        .catch(function() {
+          document.getElementById('languageSwitcher').style.display = 'none';
+        });
+
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      });
+      document.addEventListener('click', function() { dropdown.style.display = 'none'; });
+    })();
+  </script>
 </body>
 </html>
 `;
