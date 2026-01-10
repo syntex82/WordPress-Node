@@ -307,19 +307,14 @@ docker-compose up -d
       <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 20px;">💬 Community & Support</h2>
 
       <div style="display: grid; gap: 12px;">
-        <a href="https://github.com/syntex82/NodePress" style="display: flex; align-items: center; background: #24292e; color: white; padding: 16px 20px; border-radius: 8px; text-decoration: none;">
-          <span style="margin-right: 12px;">⭐</span>
-          <span style="font-weight: 600;">Star us on GitHub</span>
+        <a href="https://nodepress.co.uk/register" style="display: flex; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 8px; text-decoration: none;">
+          <span style="margin-right: 12px;">👤</span>
+          <span style="font-weight: 600;">Create Your NodePress Account</span>
         </a>
 
-        <a href="https://github.com/syntex82/NodePress/issues" style="display: flex; align-items: center; background: #667eea; color: white; padding: 16px 20px; border-radius: 8px; text-decoration: none;">
-          <span style="margin-right: 12px;">🐛</span>
-          <span style="font-weight: 600;">Report Issues & Get Help</span>
-        </a>
-
-        <a href="https://github.com/syntex82/NodePress/discussions" style="display: flex; align-items: center; background: #10b981; color: white; padding: 16px 20px; border-radius: 8px; text-decoration: none;">
+        <a href="https://nodepress.co.uk/support" style="display: flex; align-items: center; background: #10b981; color: white; padding: 16px 20px; border-radius: 8px; text-decoration: none;">
           <span style="margin-right: 12px;">💬</span>
-          <span style="font-weight: 600;">Join Community Discussions</span>
+          <span style="font-weight: 600;">Get Support & Join Community</span>
         </a>
       </div>
 
