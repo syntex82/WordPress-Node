@@ -6,6 +6,21 @@
     <title>Download NodePress CMS - Self-Hosted</title>
     <meta name="description" content="Download NodePress CMS - A modern, self-hosted content management system built with Node.js.">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <script>
+        // Check for valid license token in URL or localStorage
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token') || localStorage.getItem('nodepress_license');
+
+            if (!token) {
+                // No license token - redirect to pricing page
+                window.location.href = '/pricing?redirect=download';
+            } else {
+                // Store token for future visits
+                localStorage.setItem('nodepress_license', token);
+            }
+        })();
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a2332; min-height: 100vh; padding: 40px 20px; color: #fff; }
@@ -95,16 +110,51 @@
         </div>
 
         <div class="download-card">
+            <div class="license-status" id="licenseStatus" style="background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                <span style="color: #2ecc71;">✓ License Verified</span>
+                <span id="licenseEmail" style="color: #8899a6; margin-left: 10px;"></span>
+            </div>
             <div class="version-info">
                 <div class="version-item"><div class="value">1.0.0</div><div class="label">Version</div></div>
                 <div class="version-item"><div class="value">1.5 MB</div><div class="label">Size</div></div>
-                <div class="version-item"><div class="value">MIT</div><div class="label">License</div></div>
+                <div class="version-item"><div class="value">Commercial</div><div class="label">License</div></div>
             </div>
-            <a href="nodepress-v1.0.0.zip" class="download-btn">
+            <a href="#" id="downloadBtn" class="download-btn" onclick="verifyAndDownload(event)">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17 18V19H6V18H17M16.5 11.5L15.8 10.8L12.5 14.1V4H11.5V14.1L8.2 10.8L7.5 11.5L12 16L16.5 11.5Z"/></svg>
                 Download ZIP
             </a>
+            <p style="color: #8899a6; font-size: 12px; margin-top: 15px;">Your download includes the Windows setup script (setup-windows.bat)</p>
         </div>
+
+        <script>
+            function verifyAndDownload(e) {
+                e.preventDefault();
+                const token = localStorage.getItem('nodepress_license');
+                if (!token) {
+                    alert('License verification required. Redirecting to purchase page...');
+                    window.location.href = '/pricing?redirect=download';
+                    return;
+                }
+                // Proceed with download
+                window.location.href = '/api/downloads/nodepress?token=' + encodeURIComponent(token);
+            }
+
+            // Display license info
+            document.addEventListener('DOMContentLoaded', function() {
+                const token = localStorage.getItem('nodepress_license');
+                if (token) {
+                    try {
+                        // Decode JWT to show email (basic decode, not verification)
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        if (payload.email) {
+                            document.getElementById('licenseEmail').textContent = payload.email;
+                        }
+                    } catch(e) {
+                        // Token decode failed, still allow download if token exists
+                    }
+                }
+            });
+        </script>
 
         <div class="section">
             <h2><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>System Requirements</h2>
