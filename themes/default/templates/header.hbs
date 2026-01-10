@@ -531,6 +531,84 @@
     .mobile-nav-user-links a.admin { color: #10b981; }
     .mobile-nav-user-links a.logout { color: #f87171; }
 
+    /* Language Switcher */
+    .language-switcher {
+      position: relative;
+    }
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .lang-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .lang-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 180px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1000;
+    }
+    .lang-dropdown.open {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .lang-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .lang-option:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+    .lang-option.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+    .lang-option .flag {
+      font-size: 1.1rem;
+    }
+    .lang-option .check {
+      margin-left: auto;
+      opacity: 0;
+    }
+    .lang-option.active .check {
+      opacity: 1;
+    }
+
     @media (max-width: 900px) {
       .nav-main { display: none; }
       .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
@@ -542,6 +620,7 @@
       .header-content { padding: 0.75rem 20px; }
       .user-name { display: none; }
       .nav-divider { display: none; }
+      .language-switcher #currentLangCode { display: none; }
     }
   </style>
 
@@ -568,6 +647,15 @@
       </ul>
 
       <div class="nav-right">
+        <!-- Language Switcher -->
+        <div class="language-switcher" id="languageSwitcher">
+          <button class="lang-toggle" id="langToggle" title="Change Language">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span id="currentLangCode">EN</span>
+          </button>
+          <div class="lang-dropdown" id="langDropdown"></div>
+        </div>
+
         <a href="/cart" class="nav-icon-btn" title="Cart">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span class="cart-count" id="cartCount" style="display:none">0</span>

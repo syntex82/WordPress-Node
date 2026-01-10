@@ -7,14 +7,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { postsApi } from '../services/api';
 import RichTextEditor from '../components/RichTextEditor';
+import { TranslationEditor } from '../components/TranslationEditor';
 import toast from 'react-hot-toast';
-import { FiSave, FiEye, FiArrowLeft } from 'react-icons/fi';
+import { FiSave, FiEye, FiArrowLeft, FiGlobe } from 'react-icons/fi';
 
 export default function PostEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showTranslations, setShowTranslations] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -120,16 +122,42 @@ export default function PostEditor() {
           </div>
           <div className="flex gap-2">
             {id && (
-              <button
-                onClick={handlePreview}
-                className="flex items-center px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all"
-              >
-                <FiEye className="mr-2" size={18} />
-                Preview
-              </button>
+              <>
+                <button
+                  onClick={() => setShowTranslations(!showTranslations)}
+                  className={`flex items-center px-4 py-2 border rounded-xl transition-all ${
+                    showTranslations
+                      ? 'border-blue-500 bg-blue-500/20 text-blue-400'
+                      : 'border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                  }`}
+                >
+                  <FiGlobe className="mr-2" size={18} />
+                  Translations
+                </button>
+                <button
+                  onClick={handlePreview}
+                  className="flex items-center px-4 py-2 border border-slate-600/50 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all"
+                >
+                  <FiEye className="mr-2" size={18} />
+                  Preview
+                </button>
+              </>
             )}
           </div>
         </div>
+
+        {/* Translation Panel */}
+        {id && showTranslations && (
+          <div className="mb-6">
+            <TranslationEditor
+              contentType="post"
+              contentId={id}
+              originalTitle={formData.title}
+              originalSlug={formData.slug}
+              originalContent={formData.content}
+            />
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6 space-y-6">

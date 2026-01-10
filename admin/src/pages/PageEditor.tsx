@@ -7,8 +7,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { pagesApi } from '../services/api';
 import RichTextEditor from '../components/RichTextEditor';
+import { TranslationEditor } from '../components/TranslationEditor';
 import toast from 'react-hot-toast';
-import { FiSave, FiEye, FiArrowLeft } from 'react-icons/fi';
+import { FiSave, FiEye, FiArrowLeft, FiGlobe } from 'react-icons/fi';
 import { useThemeClasses } from '../contexts/SiteThemeContext';
 
 export default function PageEditor() {
@@ -16,6 +17,7 @@ export default function PageEditor() {
   const { id } = useParams();
   const theme = useThemeClasses();
   const [saving, setSaving] = useState(false);
+  const [showTranslations, setShowTranslations] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -99,7 +101,22 @@ export default function PageEditor() {
           </h1>
         </div>
         <div className="flex gap-3">
+          {id && (
+            <button
+              type="button"
+              onClick={() => setShowTranslations(!showTranslations)}
+              className={`flex items-center px-4 py-2 border rounded-xl transition-all ${
+                showTranslations
+                  ? 'border-blue-500 bg-blue-500/20 text-blue-400'
+                  : `${theme.border} ${theme.textSecondary} ${theme.hoverBg}`
+              }`}
+            >
+              <FiGlobe className="mr-2" size={18} />
+              Translations
+            </button>
+          )}
           <button
+            type="button"
             onClick={handlePreview}
             className={`flex items-center px-4 py-2 ${theme.border} border rounded-xl ${theme.textSecondary} ${theme.hoverBg} transition-all`}
           >
@@ -116,6 +133,19 @@ export default function PageEditor() {
           </button>
         </div>
       </div>
+
+      {/* Translation Panel */}
+      {id && showTranslations && (
+        <div className="mb-6">
+          <TranslationEditor
+            contentType="page"
+            contentId={id}
+            originalTitle={formData.title}
+            originalSlug={formData.slug}
+            originalContent={formData.content}
+          />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={`${theme.bgCard} backdrop-blur rounded-xl ${theme.border} border p-6`}>

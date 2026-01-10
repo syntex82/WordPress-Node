@@ -58,6 +58,78 @@
     </div>
   </footer>
 
+  <!-- Language Switcher Script -->
+  <script>
+    (function() {
+      var toggle = document.getElementById('langToggle');
+      var dropdown = document.getElementById('langDropdown');
+      var currentLangEl = document.getElementById('currentLangCode');
+      if (!toggle || !dropdown) return;
+
+      // Get current language from cookie or default to 'en'
+      function getCurrentLang() {
+        var match = document.cookie.match(/(?:^|; )language=([^;]*)/);
+        return match ? match[1] : 'en';
+      }
+
+      // Set language cookie
+      function setLang(code) {
+        document.cookie = 'language=' + code + ';path=/;max-age=31536000';
+        window.location.reload();
+      }
+
+      // Load languages and render dropdown
+      fetch('/api/i18n/languages')
+        .then(function(r) { return r.json(); })
+        .then(function(languages) {
+          if (!languages || languages.length === 0) {
+            document.getElementById('languageSwitcher').style.display = 'none';
+            return;
+          }
+
+          var currentLang = getCurrentLang();
+          var currentLangData = languages.find(function(l) { return l.code === currentLang; }) || languages[0];
+
+          // Update toggle button
+          if (currentLangEl) {
+            currentLangEl.textContent = currentLangData.code.toUpperCase();
+          }
+
+          // Render dropdown
+          dropdown.innerHTML = languages.map(function(lang) {
+            var isActive = lang.code === currentLang;
+            return '<button class="lang-option' + (isActive ? ' active' : '') + '" data-code="' + lang.code + '">' +
+              '<span class="flag">' + (lang.flagEmoji || '🌐') + '</span>' +
+              '<span>' + lang.nativeName + '</span>' +
+              '<span class="check">✓</span>' +
+            '</button>';
+          }).join('');
+
+          // Add click handlers
+          dropdown.querySelectorAll('.lang-option').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              setLang(this.dataset.code);
+            });
+          });
+        })
+        .catch(function() {
+          // Hide switcher if API fails
+          document.getElementById('languageSwitcher').style.display = 'none';
+        });
+
+      // Toggle dropdown
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+      });
+
+      // Close on click outside
+      document.addEventListener('click', function() {
+        dropdown.classList.remove('open');
+      });
+    })();
+  </script>
+
   <!-- Analytics Tracking -->
   <script src="/api/plugins/analytics/tracker.js"></script>
   <script>
