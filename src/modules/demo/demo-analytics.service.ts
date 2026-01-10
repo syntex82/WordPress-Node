@@ -113,7 +113,7 @@ export class DemoAnalyticsService {
 
     const activeDemos = await this.prisma.demoInstance.count({
       where: {
-        status: 'ACTIVE',
+        status: 'RUNNING',
         expiresAt: { gt: now },
       },
     });
@@ -122,13 +122,15 @@ export class DemoAnalyticsService {
       where: {
         OR: [
           { status: 'EXPIRED' },
+          { status: 'TERMINATED' },
           { expiresAt: { lte: now } },
         ],
       },
     });
 
+    // Count conversions based on upgradeRequested flag (since there's no CONVERTED status)
     const conversions = await this.prisma.demoInstance.count({
-      where: { status: 'CONVERTED' },
+      where: { upgradeRequested: true },
     });
 
     // Count upgrade requests (inquiries)
@@ -211,9 +213,6 @@ export class DemoAnalyticsService {
 
       // Delete related login attempts
       await tx.demoLoginAttempt.deleteMany({ where: { demoInstanceId: id } });
-
-      // Delete marketing list memberships
-      await tx.marketingListMember.deleteMany({ where: { demoInstanceId: id } });
 
       // Finally delete the demo instance itself
       await tx.demoInstance.delete({ where: { id } });
