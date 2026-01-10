@@ -2681,6 +2681,8 @@ model DemoInstance {
   // Relations
   accessLogs      DemoAccessLog[]
   featureUsage    DemoFeatureUsage[]
+  sessions        DemoSession[]
+  loginAttempts   DemoLoginAttempt[]
 
   // Demo data (isolated per demo instance)
   demoUsers       User[]
@@ -2726,6 +2728,43 @@ model DemoFeatureUsage {
 
   @@index([demoInstanceId])
   @@index([feature])
+  @@index([createdAt])
+}
+
+model DemoSession {
+  id              String        @id @default(cuid())
+  demoInstanceId  String
+  ipAddress       String?
+  userAgent       String?
+  startedAt       DateTime      @default(now())
+  endedAt         DateTime?
+  duration        Int?          // in seconds
+  pagesViewed     Int           @default(0)
+  actionsCount    Int           @default(0)
+  isActive        Boolean       @default(true)
+
+  demoInstance    DemoInstance  @relation(fields: [demoInstanceId], references: [id], onDelete: Cascade)
+
+  @@index([demoInstanceId])
+  @@index([startedAt])
+  @@index([isActive])
+}
+
+model DemoLoginAttempt {
+  id              String        @id @default(cuid())
+  demoInstanceId  String?
+  email           String
+  ipAddress       String?
+  userAgent       String?
+  success         Boolean
+  failureReason   String?
+  createdAt       DateTime      @default(now())
+
+  demoInstance    DemoInstance? @relation(fields: [demoInstanceId], references: [id], onDelete: SetNull)
+
+  @@index([demoInstanceId])
+  @@index([email])
+  @@index([success])
   @@index([createdAt])
 }
 
@@ -2908,4 +2947,100 @@ model UITranslation {
   @@index([languageId])
   @@index([namespace])
   @@index([key])
+}
+
+// ==================== MARKETING LISTS ====================
+
+model MarketingList {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        MarketingListType @default(MANUAL)
+  segment     String?  // Segment criteria (e.g., 'active_demos', 'expired_demos', 'high_engagement')
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subscribers MarketingSubscriber[]
+  campaigns   MarketingCampaign[]
+
+  @@index([type])
+  @@index([isActive])
+}
+
+model MarketingSubscriber {
+  id              String   @id @default(cuid())
+  email           String
+  name            String?
+  company         String?
+  phone           String?
+  source          String?  // 'demo', 'signup', 'import', etc.
+  sourceId        String?  // Reference to source (e.g., demoInstanceId)
+
+  // Engagement data
+  engagementScore Int      @default(0)
+  lastActivityAt  DateTime?
+  sessionCount    Int      @default(0)
+  totalTimeSpent  Int      @default(0) // in minutes
+
+  // Email preferences
+  isSubscribed    Boolean  @default(true)
+  unsubscribedAt  DateTime?
+  unsubscribeReason String?
+
+  // Segmentation tags
+  tags            Json?    // Array of tags for segmentation
+  customFields    Json?    // Additional custom data
+
+  listId          String
+  list            MarketingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([email, listId])
+  @@index([email])
+  @@index([listId])
+  @@index([source])
+  @@index([engagementScore])
+  @@index([isSubscribed])
+}
+
+model MarketingCampaign {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  content     String   @db.Text
+  status      CampaignStatus @default(DRAFT)
+
+  listId      String
+  list        MarketingList @relation(fields: [listId], references: [id])
+
+  sentAt      DateTime?
+  sentCount   Int      @default(0)
+  openCount   Int      @default(0)
+  clickCount  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([listId])
+  @@index([status])
+}
+
+enum MarketingListType {
+  MANUAL
+  AUTO_DEMO_USERS
+  AUTO_ACTIVE_DEMOS
+  AUTO_EXPIRED_DEMOS
+  AUTO_HIGH_ENGAGEMENT
+  IMPORTED
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
 }

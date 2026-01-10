@@ -230,7 +230,7 @@ export default function Layout() {
     { name: 'Users', path: '/users', icon: FiUsers, permission: 'users', tooltipKey: 'users' },
     { name: 'Security', path: '/security', icon: FiShield, permission: 'security', tooltipKey: 'security' },
     { name: 'Languages', path: '/languages', icon: FiGlobe, permission: 'settings', tooltipKey: 'settings' },
-    { name: 'Demos', path: '/demos', icon: FiZap, permission: 'settings', tooltipKey: 'settings' },
+    { name: 'Demo Analytics', path: '/demo-analytics', icon: FiZap, permission: 'settings', tooltipKey: 'analytics' },
     { name: 'Backups', path: '/backups', icon: FiHardDrive, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Updates', path: '/updates', icon: FiArrowUp, permission: 'settings', tooltipKey: 'settings' },
     { name: 'Settings', path: '/settings', icon: FiSettings, permission: 'settings', tooltipKey: 'settings' },

@@ -2364,3 +2364,141 @@ export const updatesApi = {
     logs: string[];
   }>('/updates/pull-latest'),
 };
+
+// Demo Analytics API
+export interface DemoUserDetail {
+  id: string;
+  email: string;
+  name: string;
+  company: string | null;
+  phone: string | null;
+  status: string;
+  createdAt: string;
+  expiresAt: string;
+  lastAccessedAt: string | null;
+  sessionCount: number;
+  totalTimeSpent: number;
+  requestCount: number;
+  featuresUsed: string[];
+  topFeatures: { feature: string; count: number }[];
+  postsCreated: number;
+  pagesCreated: number;
+  upgradeRequested: boolean;
+  engagementScore: number;
+  isOnMailingList: boolean;
+}
+
+export interface DemoSession {
+  id: string;
+  startedAt: string;
+  endedAt: string | null;
+  duration: number | null;
+  pagesViewed: number;
+  actionsCount: number;
+  ipAddress: string | null;
+  userAgent: string | null;
+}
+
+export interface DemoLoginAttempt {
+  id: string;
+  email: string;
+  success: boolean;
+  failureReason: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+}
+
+export interface DemoMetrics {
+  totalDemos: number;
+  activeDemos: number;
+  expiredDemos: number;
+  conversions: number;
+  conversionRate: number;
+  pageViews: number;
+  ctaClicks: number;
+  inquiries: number;
+  hostingerClicks: number;
+  customDevClicks: number;
+  emailsSent: number;
+  emailsOpened: number;
+  unsubscribes: number;
+}
+
+export interface MarketingList {
+  id: string;
+  name: string;
+  description: string | null;
+  type: string;
+  subscriberCount: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface DemoUsersResponse {
+  users: DemoUserDetail[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export interface DemoListFilters {
+  status?: 'active' | 'expired' | 'all';
+  segment?: 'high_engagement' | 'low_engagement' | 'upgrade_requested' | 'all';
+  search?: string;
+  sortBy?: 'createdAt' | 'lastAccessedAt' | 'engagementScore' | 'sessionCount';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+export const demoAnalyticsApi = {
+  // Get conversion metrics
+  getMetrics: () => api.get<DemoMetrics>('/admin/demo-analytics/api/metrics'),
+
+  // Get demo users with filtering
+  getUsers: (filters?: DemoListFilters) =>
+    api.get<DemoUsersResponse>('/admin/demo-analytics/api/users', { params: filters }),
+
+  // Get single user detail
+  getUserDetail: (id: string) =>
+    api.get<DemoUserDetail>('/admin/demo-analytics/api/users/' + id),
+
+  // Get user sessions
+  getUserSessions: (id: string) =>
+    api.get<DemoSession[]>('/admin/demo-analytics/api/users/' + id + '/sessions'),
+
+  // Get user login attempts
+  getUserLogins: (id: string) =>
+    api.get<DemoLoginAttempt[]>('/admin/demo-analytics/api/users/' + id + '/logins'),
+
+  // Extend demo
+  extendDemo: (id: string, hours: number) =>
+    api.post('/admin/demo-analytics/api/users/' + id + '/extend', { hours }),
+
+  // Reset access token
+  resetAccess: (id: string) =>
+    api.post<{ success: boolean; newToken: string }>('/admin/demo-analytics/api/users/' + id + '/reset-access'),
+
+  // Add to mailing list
+  addToMailingList: (id: string, listId?: string) =>
+    api.post('/admin/demo-analytics/api/users/' + id + '/add-to-list', { listId }),
+
+  // Remove from mailing list
+  removeFromMailingList: (id: string) =>
+    api.post('/admin/demo-analytics/api/users/' + id + '/remove-from-list'),
+
+  // Bulk add to mailing list
+  bulkAddToMailingList: (demoIds: string[], listId?: string) =>
+    api.post<{ success: boolean; added: number }>('/admin/demo-analytics/api/bulk/add-to-list', { demoIds, listId }),
+
+  // Get marketing lists
+  getMarketingLists: () =>
+    api.get<MarketingList[]>('/admin/demo-analytics/api/lists'),
+
+  // Export users (returns CSV)
+  exportUsers: (filters?: { status?: string; segment?: string }) =>
+    api.get('/admin/demo-analytics/api/export', {
+      params: filters,
+      responseType: 'blob',
+    }),
+};

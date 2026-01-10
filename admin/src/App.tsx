@@ -62,6 +62,7 @@ const Seo = lazy(() => import('./pages/Seo'));
 const Recommendations = lazy(() => import('./pages/Recommendations'));
 const Updates = lazy(() => import('./pages/Updates'));
 const Languages = lazy(() => import('./pages/Languages'));
+const DemoAnalytics = lazy(() => import('./pages/demo/DemoAnalytics'));
 
 // Lazy-loaded pages - Shop
 const ShopProducts = lazy(() => import('./pages/shop/Products'));
@@ -284,6 +285,9 @@ function AppContent() {
 
                 {/* Languages (i18n) */}
                 <Route path="languages" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Languages /></ProtectedRoute>} />
+
+                {/* Demo Analytics */}
+                <Route path="demo-analytics" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><DemoAnalytics /></ProtectedRoute>} />
 
                 {/* Subscription & Pricing (authenticated users only) */}
                 <Route path="subscription" element={<Subscription />} />
