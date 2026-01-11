@@ -34,6 +34,6 @@ import { EmailModule } from '../email/email.module';
   ],
   providers: [AuthService, JwtStrategy, LocalStrategy],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, PassportModule, JwtModule],
 })
 export class AuthModule {}
