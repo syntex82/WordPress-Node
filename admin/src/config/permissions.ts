@@ -218,15 +218,15 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     seo: NO_ACCESS,
     posts: NO_ACCESS,
     pages: NO_ACCESS,
-    media: NO_ACCESS,
+    media: VIEW_CREATE,    // Can upload profile images
     menus: NO_ACCESS,
     users: NO_ACCESS,
     messages: VIEW_CREATE,
     groups: VIEW_ONLY,
     security: NO_ACCESS,
     settings: NO_ACCESS,
-    shop: VIEW_ONLY,
-    lms: VIEW_ONLY,
+    shop: NO_ACCESS,       // No access to products
+    lms: NO_ACCESS,        // No access to LMS
     themes: NO_ACCESS,
     plugins: NO_ACCESS,
     email: NO_ACCESS,
@@ -240,11 +240,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     seo: NO_ACCESS,
     posts: NO_ACCESS,
     pages: NO_ACCESS,
-    media: NO_ACCESS,
+    media: VIEW_CREATE,    // Can upload profile images
     menus: NO_ACCESS,
     users: NO_ACCESS,
-    messages: VIEW_ONLY,
-    groups: VIEW_ONLY,
+    messages: VIEW_CREATE, // Can send messages
+    groups: VIEW_CREATE,   // Can join groups
     security: NO_ACCESS,
     settings: NO_ACCESS,
     shop: NO_ACCESS,
