@@ -14,7 +14,7 @@ import {
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { PrismaService } from '../../../database/prisma.service';
-import { CreateCourseDto, UpdateCourseDto, CourseQueryDto } from '../dto/course.dto';
+import { CreateCourseDto, UpdateCourseDto, CourseQueryDto, CourseStatus } from '../dto/course.dto';
 
 interface DemoContext {
   isDemo: boolean;
@@ -70,8 +70,8 @@ export class CoursesService {
 
     // DEMO RESTRICTION: Force demo users to only create drafts
     let status = dto.status;
-    if (this.isDemoUser() && status === 'PUBLISHED') {
-      status = 'DRAFT';
+    if (this.isDemoUser() && status === CourseStatus.PUBLISHED) {
+      status = CourseStatus.DRAFT;
     }
 
     return this.prisma.course.create({
@@ -259,8 +259,8 @@ export class CoursesService {
     const { slug: _slugFromDto, ...restDto } = dto;
 
     // DEMO RESTRICTION: Prevent demo users from publishing
-    if (this.isDemoUser() && dto.status === 'PUBLISHED') {
-      restDto.status = 'DRAFT';
+    if (this.isDemoUser() && dto.status === CourseStatus.PUBLISHED) {
+      restDto.status = CourseStatus.DRAFT;
     }
 
     // Prepare update data with explicit handling of price fields

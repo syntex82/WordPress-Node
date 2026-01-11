@@ -22,6 +22,7 @@ import {
   CreateVariantDto,
   GenerateVariantsDto,
   ColorOptionDto,
+  ProductStatus,
 } from '../dto/product.dto';
 
 interface DemoContext {
@@ -48,6 +49,9 @@ export class ProductsService {
       return { demoInstanceId: user?.demoId || demoContext?.demoInstanceId || null };
     }
 
+    return { demoInstanceId: null };
+  }
+
   /**
    * Check if current user is a demo user
    */
@@ -55,9 +59,6 @@ export class ProductsService {
     const user = (this.request as any).user;
     const demoContext = (this.request as any).demoContext as DemoContext | undefined;
     return !!(user?.isDemo || user?.demoId || user?.demoInstanceId || demoContext?.isDemo);
-  }
-
-    return { demoInstanceId: null };
   }
 
   private generateSlug(name: string): string {
@@ -193,8 +194,8 @@ export class ProductsService {
 
     // DEMO RESTRICTION: Force demo users to only create drafts
     let status = dto.status;
-    if (this.isDemoUser() && status === 'ACTIVE') {
-      status = 'DRAFT';
+    if (this.isDemoUser() && status === ProductStatus.ACTIVE) {
+      status = ProductStatus.DRAFT;
     }
 
     const product = await this.prisma.product.create({
@@ -370,8 +371,8 @@ export class ProductsService {
     }));
 
     // DEMO RESTRICTION: Prevent demo users from publishing
-    if (this.isDemoUser() && dto.status === 'ACTIVE') {
-      productData.status = 'DRAFT';
+    if (this.isDemoUser() && dto.status === ProductStatus.ACTIVE) {
+      productData.status = ProductStatus.DRAFT;
     }
 
     // Prepare update data with explicit handling of variant options
