@@ -38,9 +38,10 @@ export class MediaController {
   /**
    * Upload file
    * POST /api/media/upload
+   * All authenticated users can upload (for profile images, etc.)
    */
   @Post('upload')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR, UserRole.INSTRUCTOR, UserRole.STUDENT, UserRole.USER, UserRole.VIEWER)
   @UseInterceptors(FileInterceptor('file'))
   upload(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: any) {
     if (!file) {
@@ -67,7 +68,7 @@ export class MediaController {
    * GET /api/media/storage/me
    */
   @Get('storage/me')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR, UserRole.INSTRUCTOR, UserRole.STUDENT, UserRole.USER, UserRole.VIEWER)
   getMyStorageStats(@CurrentUser() user: any) {
     return this.mediaService.getUserStorageStats(user.id);
   }
@@ -78,10 +79,10 @@ export class MediaController {
    *
    * Role-based access:
    * - SUPER_ADMIN/ADMIN: Can view all media or filter by user
-   * - EDITOR/AUTHOR: Can only view their own media
+   * - All other roles: Can only view their own media
    */
   @Get()
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR, UserRole.INSTRUCTOR, UserRole.STUDENT, UserRole.USER, UserRole.VIEWER)
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,

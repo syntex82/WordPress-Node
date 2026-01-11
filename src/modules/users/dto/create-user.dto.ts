@@ -22,7 +22,7 @@ export class CreateUserDto {
 
   @IsEnum(UserRole)
   @IsOptional()
-  role?: UserRole = UserRole.VIEWER;
+  role?: UserRole = UserRole.STUDENT;
 
   @IsString()
   @IsOptional()

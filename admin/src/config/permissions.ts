@@ -13,11 +13,11 @@
  * - VIEWER: Legacy read-only access (deprecated)
  */
 
-export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'EDITOR' | 'AUTHOR' | 'INSTRUCTOR' | 'STUDENT' | 'USER' | 'VIEWER';
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
 
 // Role hierarchy for permission checks
 export const ROLE_HIERARCHY: UserRole[] = [
-  'SUPER_ADMIN', 'ADMIN', 'EDITOR', 'AUTHOR', 'INSTRUCTOR', 'STUDENT', 'USER', 'VIEWER'
+  'SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR', 'STUDENT'
 ];
 
 // Get role level (lower = more privileged)
@@ -124,71 +124,27 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     marketplace: FULL_ACCESS,
     payments: VIEW_EDIT,  // Can view/process payments but not configure
   },
-  EDITOR: {
-    dashboard: VIEW_ONLY,
-    analytics: VIEW_ONLY,
-    seo: VIEW_ONLY,
-    posts: FULL_ACCESS,  // Can edit ALL posts
-    pages: FULL_ACCESS,  // Can edit ALL pages
-    media: VIEW_EDIT,    // Can manage shared media
-    menus: VIEW_EDIT,
-    users: NO_ACCESS,
-    messages: FULL_ACCESS,
-    groups: VIEW_EDIT,
-    security: NO_ACCESS,
-    settings: NO_ACCESS,
-    shop: VIEW_EDIT,     // Can manage products
-    lms: VIEW_EDIT,      // Can manage courses
-    themes: VIEW_ONLY,
-    plugins: NO_ACCESS,
-    email: VIEW_ONLY,
-    recommendations: VIEW_ONLY,
-    marketplace: VIEW_ONLY,
-    payments: NO_ACCESS,
-  },
-  AUTHOR: {
-    dashboard: VIEW_ONLY,
-    analytics: NO_ACCESS,
-    seo: NO_ACCESS,
-    posts: VIEW_EDIT,    // Can only edit OWN posts (enforced by backend)
-    pages: VIEW_EDIT,    // Can only edit OWN pages
-    media: VIEW_EDIT,    // Can only access OWN media
-    menus: NO_ACCESS,
-    users: NO_ACCESS,
-    messages: FULL_ACCESS,
-    groups: VIEW_CREATE,
-    security: NO_ACCESS,
-    settings: NO_ACCESS,
-    shop: VIEW_CREATE,   // Can create products (own only)
-    lms: NO_ACCESS,
-    themes: NO_ACCESS,
-    plugins: NO_ACCESS,
-    email: NO_ACCESS,
-    recommendations: NO_ACCESS,
-    marketplace: VIEW_ONLY,
-    payments: NO_ACCESS,
-  },
   INSTRUCTOR: {
     dashboard: VIEW_ONLY,
-    analytics: VIEW_ONLY, // Can view course analytics
+    analytics: VIEW_ONLY,
     seo: NO_ACCESS,
     posts: NO_ACCESS,
     pages: NO_ACCESS,
-    media: VIEW_EDIT,    // Can upload course media
+    media: FULL_ACCESS,
     menus: NO_ACCESS,
     users: NO_ACCESS,
     messages: FULL_ACCESS,
-    groups: VIEW_CREATE,
+    groups: FULL_ACCESS,
     security: NO_ACCESS,
     settings: NO_ACCESS,
     shop: NO_ACCESS,
-    lms: VIEW_EDIT,      // Can manage OWN courses
+    lms: FULL_ACCESS,
     themes: NO_ACCESS,
     plugins: NO_ACCESS,
     email: NO_ACCESS,
     recommendations: NO_ACCESS,
-    marketplace: VIEW_ONLY,
-    payments: VIEW_ONLY, // Can view earnings
+    marketplace: NO_ACCESS,
+    payments: NO_ACCESS,
   },
   STUDENT: {
     dashboard: VIEW_ONLY,
@@ -196,59 +152,15 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     seo: NO_ACCESS,
     posts: NO_ACCESS,
     pages: NO_ACCESS,
-    media: NO_ACCESS,
+    media: FULL_ACCESS,   // Can upload profile images
     menus: NO_ACCESS,
     users: NO_ACCESS,
-    messages: VIEW_CREATE,
-    groups: VIEW_ONLY,
-    security: NO_ACCESS,
-    settings: NO_ACCESS,
-    shop: VIEW_ONLY,     // Can browse products
-    lms: VIEW_ONLY,      // Can view enrolled courses
-    themes: NO_ACCESS,
-    plugins: NO_ACCESS,
-    email: NO_ACCESS,
-    recommendations: NO_ACCESS,
-    marketplace: NO_ACCESS,
-    payments: VIEW_ONLY, // Can view own purchases
-  },
-  USER: {
-    dashboard: VIEW_ONLY,
-    analytics: NO_ACCESS,
-    seo: NO_ACCESS,
-    posts: NO_ACCESS,
-    pages: NO_ACCESS,
-    media: VIEW_CREATE,    // Can upload profile images
-    menus: NO_ACCESS,
-    users: NO_ACCESS,
-    messages: VIEW_CREATE,
-    groups: VIEW_ONLY,
-    security: NO_ACCESS,
-    settings: NO_ACCESS,
-    shop: NO_ACCESS,       // No access to products
-    lms: NO_ACCESS,        // No access to LMS
-    themes: NO_ACCESS,
-    plugins: NO_ACCESS,
-    email: NO_ACCESS,
-    recommendations: NO_ACCESS,
-    marketplace: NO_ACCESS,
-    payments: NO_ACCESS,
-  },
-  VIEWER: {
-    dashboard: VIEW_ONLY,
-    analytics: NO_ACCESS,
-    seo: NO_ACCESS,
-    posts: NO_ACCESS,
-    pages: NO_ACCESS,
-    media: VIEW_CREATE,    // Can upload profile images
-    menus: NO_ACCESS,
-    users: NO_ACCESS,
-    messages: VIEW_CREATE, // Can send messages
-    groups: VIEW_CREATE,   // Can join groups
+    messages: FULL_ACCESS,
+    groups: FULL_ACCESS,
     security: NO_ACCESS,
     settings: NO_ACCESS,
     shop: NO_ACCESS,
-    lms: NO_ACCESS,
+    lms: VIEW_ONLY,       // Can enroll in courses, not create
     themes: NO_ACCESS,
     plugins: NO_ACCESS,
     email: NO_ACCESS,
@@ -256,6 +168,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     marketplace: NO_ACCESS,
     payments: NO_ACCESS,
   },
+
 };
 
 // Role descriptions for display
@@ -270,16 +183,6 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, { title: string; description: s
     description: 'Site administrator with full access within scope',
     color: 'text-red-400 bg-red-500/20',
   },
-  EDITOR: {
-    title: 'Editor',
-    description: 'Can edit all content, media, and manage courses',
-    color: 'text-blue-400 bg-blue-500/20',
-  },
-  AUTHOR: {
-    title: 'Author',
-    description: 'Can create and manage own content and products',
-    color: 'text-green-400 bg-green-500/20',
-  },
   INSTRUCTOR: {
     title: 'Instructor',
     description: 'Can create and manage own courses and students',
@@ -289,16 +192,6 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, { title: string; description: s
     title: 'Student',
     description: 'Can access enrolled courses and track progress',
     color: 'text-cyan-400 bg-cyan-500/20',
-  },
-  USER: {
-    title: 'User',
-    description: 'Basic user with profile management',
-    color: 'text-slate-400 bg-slate-500/20',
-  },
-  VIEWER: {
-    title: 'Viewer',
-    description: 'Read-only access (deprecated)',
-    color: 'text-gray-400 bg-gray-500/20',
   },
 };
 

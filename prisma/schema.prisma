@@ -1988,7 +1988,7 @@ model User {
   email                                                   String                    @unique
   name                                                    String
   password                                                String?
-  role                                                    UserRole                  @default(VIEWER)
+  role                                                    UserRole                  @default(STUDENT)
   avatar                                                  String?
   bio                                                     String?
   createdAt                                               DateTime                  @default(now())
