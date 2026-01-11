@@ -15,6 +15,7 @@ import {
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../database/prisma.service';
+import { ThemeRendererService } from '../themes/theme-renderer.service';
 import { DemoStatus } from '@prisma/client';
 
 /**
@@ -36,6 +37,7 @@ export class DemoRouterController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly themeRenderer: ThemeRendererService,
   ) {}
 
   /**
@@ -49,25 +51,30 @@ export class DemoRouterController {
     @Res() res: Response,
   ) {
     const demo = await this.validateAndGetDemo(demoId);
-    
+
     // Log access
     await this.logAccess(demo.id, req, '/');
-    
-    // Render demo homepage with demo context
-    return res.render('demo-home', {
-      demo: {
-        id: demo.id,
-        subdomain: demo.subdomain,
-        name: demo.name,
-        expiresAt: demo.expiresAt,
-        remainingHours: this.getRemainingHours(demo.expiresAt),
-      },
-      demoBaseUrl: `/demo/${demo.subdomain}`,
-      adminUrl: `/demo/${demo.subdomain}/admin`,
-      hideDemoWidget: true, // Don't show floating widget on demo pages
-      isDemoMode: true,
-      layout: 'demo-layout',
-    });
+
+    // Render demo homepage with demo context using themeRenderer
+    try {
+      const html = await this.themeRenderer.render('demo-home', {
+        demo: {
+          id: demo.id,
+          subdomain: demo.subdomain,
+          name: demo.name,
+          expiresAt: demo.expiresAt,
+          remainingHours: this.getRemainingHours(demo.expiresAt),
+        },
+        demoBaseUrl: `/demo/${demo.subdomain}`,
+        adminUrl: `/demo/${demo.subdomain}/admin`,
+        hideDemoWidget: true,
+        isDemoMode: true,
+      });
+      return res.send(html);
+    } catch (error) {
+      console.error('Error rendering demo-home:', error);
+      return res.status(500).send(`Error rendering demo page: ${error.message}`);
+    }
   }
 
   /**
@@ -263,19 +270,25 @@ export class DemoRouterController {
     @Res() res: Response,
   ) {
     const demo = await this.validateAndGetDemo(demoId);
-    
-    return res.render('demo-login', {
-      demo: {
-        id: demo.id,
-        subdomain: demo.subdomain,
-        adminEmail: demo.adminEmail,
-        expiresAt: demo.expiresAt,
-        remainingHours: this.getRemainingHours(demo.expiresAt),
-      },
-      demoBaseUrl: `/demo/${demo.subdomain}`,
-      isDemoMode: true,
-      hideDemoWidget: true,
-    });
+
+    try {
+      const html = await this.themeRenderer.render('demo-login', {
+        demo: {
+          id: demo.id,
+          subdomain: demo.subdomain,
+          adminEmail: demo.adminEmail,
+          expiresAt: demo.expiresAt,
+          remainingHours: this.getRemainingHours(demo.expiresAt),
+        },
+        demoBaseUrl: `/demo/${demo.subdomain}`,
+        isDemoMode: true,
+        hideDemoWidget: true,
+      });
+      return res.send(html);
+    } catch (error) {
+      console.error('Error rendering demo-login:', error);
+      return res.status(500).send(`Error rendering demo login: ${error.message}`);
+    }
   }
 
   // ==================== HELPER METHODS ====================
