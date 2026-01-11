@@ -290,7 +290,9 @@ document.getElementById('demo-request-form').addEventListener('submit', async (e
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to create demo');
+      const error = new Error(data.message || 'Failed to create demo');
+      error.response = data; // Attach the full response data
+      throw error;
     }
 
     form.style.display = 'none';
@@ -349,9 +351,40 @@ document.getElementById('demo-request-form').addEventListener('submit', async (e
       `;
     }
   } catch (err) {
-    resultDiv.innerHTML = `<div class="demo-error">${err.message}</div>`;
-    btn.disabled = false;
-    btn.textContent = 'Create My Demo →';
+    // Check if this is an "active demo exists" error with demo info
+    if (err.response && err.response.code === 'ACTIVE_DEMO_EXISTS') {
+      const demoData = err.response;
+      form.style.display = 'none';
+      resultDiv.innerHTML = `
+        <div class="demo-success">
+          <h3>✅ You Already Have an Active Demo!</h3>
+          <p style="font-size: 1.1em; margin: 20px 0;">
+            Your demo is still active and expires in <strong>${demoData.hoursRemaining} hours</strong>.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0;"><strong>Access your demo:</strong></p>
+            <div class="credential-row">
+              <span class="label">Demo URL:</span>
+              <span><a href="${demoData.demoUrl}" style="color: #10b981;">${demoData.demoUrl}</a></span>
+            </div>
+            <div class="credential-row">
+              <span class="label">Expires:</span>
+              <span>${new Date(demoData.expiresAt).toLocaleString()}</span>
+            </div>
+          </div>
+          <a href="${demoData.demoUrl}" class="demo-access-btn" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">
+            Access Your Demo →
+          </a>
+          <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 20px;">
+            You can request a new demo after this one expires.
+          </p>
+        </div>
+      `;
+    } else {
+      resultDiv.innerHTML = `<div class="demo-error">${err.message}</div>`;
+      btn.disabled = false;
+      btn.textContent = 'Create My Demo →';
+    }
   }
 });
 </script>

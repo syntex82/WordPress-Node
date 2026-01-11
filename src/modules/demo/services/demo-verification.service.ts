@@ -88,9 +88,18 @@ export class DemoVerificationService {
     });
 
     if (existingDemo) {
+      const baseUrl = this.config.get<string>('APP_URL', 'http://localhost:3000');
+      const demoUrl = `${baseUrl}/demo/${existingDemo.subdomain}`;
+      const expiresAt = existingDemo.expiresAt;
+      const hoursRemaining = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60)));
+
       throw new ConflictException({
-        message: 'You already have an active demo. Please wait for it to expire or contact support.',
+        message: `You already have an active demo that expires in ${hoursRemaining} hours.`,
         code: 'ACTIVE_DEMO_EXISTS',
+        demoUrl,
+        subdomain: existingDemo.subdomain,
+        expiresAt,
+        hoursRemaining,
       });
     }
 
