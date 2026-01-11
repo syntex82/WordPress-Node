@@ -7,8 +7,10 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { APP_GUARD } from '@nestjs/core';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { DemoDataIsolationGuard } from './modules/demo/guards/demo-data-isolation.guard';
 
 // Infrastructure modules
 import { PrismaModule } from './database/prisma.module';
@@ -119,6 +121,13 @@ const staticModules = adminDistExists
     TimelineModule,
     DemoModule,
     I18nModule,
+  ],
+  providers: [
+    // CRITICAL SECURITY: Global guard to isolate demo user data access
+    {
+      provide: APP_GUARD,
+      useClass: DemoDataIsolationGuard,
+    },
   ],
 })
 export class AppModule {}
