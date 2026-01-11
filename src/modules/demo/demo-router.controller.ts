@@ -90,8 +90,31 @@ export class DemoRouterController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const demo = await this.validateAndGetDemo(demoId);
+    // Get demo without validation (to check status)
+    const demo = await this.prisma.demoInstance.findFirst({
+      where: {
+        OR: [
+          { subdomain: demoId },
+          { accessToken: demoId },
+        ],
+      },
+    });
 
+    if (!demo) {
+      return res.redirect(`/demo/${demoId}/login?error=not_found`);
+    }
+
+    // If demo is still provisioning, redirect back to login page
+    if (demo.status === DemoStatus.PROVISIONING || demo.status === DemoStatus.PENDING) {
+      return res.redirect(`/demo/${demo.subdomain}/login`);
+    }
+
+    // If demo is expired or failed, show error
+    if (demo.status !== DemoStatus.RUNNING) {
+      return res.redirect(`/demo/${demo.subdomain}/login?error=${demo.status.toLowerCase()}`);
+    }
+
+    // Demo is ready - proceed with auto-login
     // Log access
     await this.logAccess(demo.id, req, '/admin');
 
