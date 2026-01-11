@@ -274,7 +274,7 @@ export default function Layout() {
   const filteredSystemNav = systemNavigation.filter(item => canAccess(userRole, item.permission));
   const canViewShop = canAccess(userRole, 'shop');
   const canViewLms = canAccess(userRole, 'lms');
-  const canViewEmail = userRole === 'ADMIN';
+  const canViewEmail = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
   const canViewMarketplace = canAccess(userRole, 'marketplace');
   const canCustomize = canAccess(userRole, 'themes');
 
