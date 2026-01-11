@@ -76,11 +76,11 @@ export class UsersController {
   }
 
   /**
-   * Delete user (Admin only)
+   * Delete user (Super Admin and Admin only)
    * DELETE /api/users/:id
    */
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }

@@ -59,7 +59,7 @@ interface StorageStats {
 export default function Media() {
   const theme = useThemeClasses();
   const { user } = useAuthStore();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   const [media, setMedia] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
