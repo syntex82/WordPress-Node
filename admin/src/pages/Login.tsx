@@ -135,6 +135,19 @@ export default function Login() {
     );
   }
 
+  // Check if in demo mode
+  const getDemoInfo = () => {
+    const demoCookie = document.cookie.split(';').find(c => c.trim().startsWith('demo_mode='));
+    if (!demoCookie) return null;
+    try {
+      return JSON.parse(decodeURIComponent(demoCookie.split('=')[1]));
+    } catch {
+      return null;
+    }
+  };
+
+  const demoInfo = getDemoInfo();
+
   // Regular login screen
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900">
@@ -143,6 +156,29 @@ export default function Login() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">NodePress</h1>
           <p className="text-slate-400 mt-2">Admin Panel</p>
         </div>
+
+        {/* Demo Credentials Banner */}
+        {demoInfo && (
+          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl">🔑</span>
+              <h3 className="text-blue-400 font-semibold">Demo Credentials</h3>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Email:</span>
+                <code className="text-white bg-slate-700/50 px-2 py-1 rounded">{demoInfo.adminEmail || 'demo@example.com'}</code>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Password:</span>
+                <code className="text-white bg-slate-700/50 px-2 py-1 rounded">demo123</code>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-3">
+              ⏱️ Demo expires in {demoInfo.remainingHours || '24'} hours
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (

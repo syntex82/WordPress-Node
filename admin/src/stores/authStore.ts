@@ -21,6 +21,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   _hasHydrated: boolean;
+  _isCheckingCookie: boolean;
   setHasHydrated: (state: boolean) => void;
   login: (user: User, token: string) => void;
   logout: () => void;
@@ -44,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       _hasHydrated: false,
+      _isCheckingCookie: false,
       setHasHydrated: (state) => set({ _hasHydrated: state }),
       login: (user, token) => set({ user, token, isAuthenticated: true }),
       logout: () => set({ user: null, token: null, isAuthenticated: false }),
@@ -54,10 +56,18 @@ export const useAuthStore = create<AuthState>()(
        */
       checkCookieAuth: async () => {
         // Skip if already authenticated
-        if (get().isAuthenticated) return;
+        if (get().isAuthenticated) {
+          set({ _isCheckingCookie: false });
+          return;
+        }
 
         const cookieToken = getAccessTokenFromCookie();
-        if (!cookieToken) return;
+        if (!cookieToken) {
+          set({ _isCheckingCookie: false });
+          return;
+        }
+
+        set({ _isCheckingCookie: true });
 
         try {
           // Fetch user profile using the cookie token
@@ -71,13 +81,17 @@ export const useAuthStore = create<AuthState>()(
             set({
               user: response.data,
               token: cookieToken,
-              isAuthenticated: true
+              isAuthenticated: true,
+              _isCheckingCookie: false
             });
+          } else {
+            set({ _isCheckingCookie: false });
           }
         } catch (error) {
           console.error('Cookie auth failed:', error);
           // Clear invalid cookie
           document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          set({ _isCheckingCookie: false });
         }
       },
     }),

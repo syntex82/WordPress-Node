@@ -122,6 +122,7 @@ export class DemoRouterController {
       id: demo.id,
       subdomain: demo.subdomain,
       name: demo.name,
+      adminEmail: demo.adminEmail,
       expiresAt: demo.expiresAt.toISOString(),
       remainingHours: this.getRemainingHours(demo.expiresAt),
     };
