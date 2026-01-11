@@ -2255,13 +2255,10 @@ POST /api/auth/login
             <tr><th>Role</th><th>Description</th><th>Key Permissions</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>SUPER_ADMIN</code></td><td>Full system access</td><td>All permissions, system settings</td></tr>
-            <tr><td><code>ADMIN</code></td><td>Site administrator</td><td>Manage users, content, settings</td></tr>
-            <tr><td><code>EDITOR</code></td><td>Content editor</td><td>Create/edit all content, manage media</td></tr>
-            <tr><td><code>AUTHOR</code></td><td>Content author</td><td>Create/edit own content</td></tr>
-            <tr><td><code>INSTRUCTOR</code></td><td>Course instructor</td><td>Manage own courses, view enrollments</td></tr>
-            <tr><td><code>STUDENT</code></td><td>Course student</td><td>Access enrolled courses</td></tr>
-            <tr><td><code>USER</code></td><td>Basic user</td><td>Profile management, comments</td></tr>
+            <tr><td><code>SUPER_ADMIN</code></td><td>Full system access</td><td>All permissions including security</td></tr>
+            <tr><td><code>ADMIN</code></td><td>Site administrator</td><td>Manage users, content, shop, settings (no security)</td></tr>
+            <tr><td><code>INSTRUCTOR</code></td><td>Course instructor</td><td>Manage courses, messages, groups, media</td></tr>
+            <tr><td><code>STUDENT</code></td><td>Default signup role</td><td>Messages, groups, media, view LMS courses</td></tr>
           </tbody>
         </table>
 

@@ -24,7 +24,7 @@ NodePress is a complete, self-hosted CMS platform built with modern JavaScript t
 - **HTTP Client**: Axios
 
 ### Database Schema
-- User (with roles: ADMIN, EDITOR, AUTHOR, VIEWER)
+- User (with roles: SUPER_ADMIN, ADMIN, INSTRUCTOR, STUDENT)
 - Post (with status: DRAFT, PUBLISHED, ARCHIVED)
 - Page (hierarchical with parent-child relations)
 - Media (file uploads with metadata)

@@ -526,11 +526,10 @@ export class AdminController {
 
 | Role | Description |
 |------|-------------|
-| `ADMIN` | Full system access |
-| `EDITOR` | Content management |
-| `AUTHOR` | Create/edit own content |
-| `SUBSCRIBER` | Read-only access |
-| `DEVELOPER` | Marketplace developer |
+| `SUPER_ADMIN` | Full system access including security |
+| `ADMIN` | Site administrator with full access (no security) |
+| `INSTRUCTOR` | Can manage own courses, messages, groups, media |
+| `STUDENT` | Default signup - messages, groups, media, LMS view |
 
 ---
 

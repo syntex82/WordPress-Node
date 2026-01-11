@@ -3,14 +3,10 @@
  * Defines what each role can access in the admin panel
  *
  * Role Hierarchy (highest to lowest):
- * - SUPER_ADMIN: Full system access, can manage all demos and users
- * - ADMIN: Site administrator, manages users within scope
- * - EDITOR: Content editor, can edit all content
- * - AUTHOR: Content author, can only edit own content
- * - INSTRUCTOR: Course instructor, manages own courses
- * - STUDENT: Course student, read-only course access
- * - USER: Basic user, profile management only
- * - VIEWER: Legacy read-only access (deprecated)
+ * - SUPER_ADMIN: Full system access including security
+ * - ADMIN: Site administrator with full access (no security)
+ * - INSTRUCTOR: Course instructor - messages, groups, media, LMS
+ * - STUDENT: Default signup - messages, groups, media, LMS view
  */
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';

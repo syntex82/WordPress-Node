@@ -86,7 +86,7 @@ NodePress CMS provides a comprehensive set of features for building modern web a
 
 | Feature | Description |
 |---------|-------------|
-| **Role-Based Access Control** | Four granular user roles: **Admin**, **Editor**, **Author**, **Viewer** |
+| **Role-Based Access Control** | Four user roles: **Super Admin**, **Admin**, **Instructor**, **Student** |
 | **JWT Authentication** | Secure stateless API authentication with JSON Web Tokens |
 | **Password Reset** | Secure email-based password reset with expiring tokens (1 hour) |
 | **User Profiles** | Rich user profiles with avatars, bios, work info, skills, interests, and social links |
@@ -101,19 +101,19 @@ NodePress CMS provides a comprehensive set of features for building modern web a
 
 <br />
 
-| Permission | 👑 Admin | ✏️ Editor | 📝 Author | 👁️ Viewer |
-|------------|:--------:|:---------:|:---------:|:---------:|
-| Manage Users & Roles | ✅ | ❌ | ❌ | ❌ |
-| Manage System Settings | ✅ | ❌ | ❌ | ❌ |
-| Install Themes & Plugins | ✅ | ❌ | ❌ | ❌ |
+| Permission | 👑 Super Admin | 🔧 Admin | 🎓 Instructor | 📚 Student |
+|------------|:-------------:|:--------:|:-------------:|:----------:|
+| Manage Security | ✅ | ❌ | ❌ | ❌ |
+| Manage Users & Roles | ✅ | ✅ | ❌ | ❌ |
+| Manage System Settings | ✅ | ✅ | ❌ | ❌ |
 | Manage Shop & Orders | ✅ | ✅ | ❌ | ❌ |
-| Manage LMS & Courses | ✅ | ✅ | ❌ | ❌ |
-| Publish Any Content | ✅ | ✅ | ❌ | ❌ |
-| Edit All Content | ✅ | ✅ | ❌ | ❌ |
-| Create & Edit Own Content | ✅ | ✅ | ✅ | ❌ |
-| Upload Media | ✅ | ✅ | ✅ | ❌ |
-| View Dashboard | ✅ | ✅ | ✅ | ✅ |
+| Install Themes & Plugins | ✅ | ✅ | ❌ | ❌ |
+| Manage All Content | ✅ | ✅ | ❌ | ❌ |
+| Manage LMS & Courses | ✅ | ✅ | ✅ | ❌ |
+| Upload Media | ✅ | ✅ | ✅ | ✅ |
 | Send Messages | ✅ | ✅ | ✅ | ✅ |
+| Manage Groups | ✅ | ✅ | ✅ | ✅ |
+| View LMS Courses | ✅ | ✅ | ✅ | ✅ |
 | Create Timeline Posts | ✅ | ✅ | ✅ | ✅ |
 | Follow/Unfollow Users | ✅ | ✅ | ✅ | ✅ |
 | Like & Comment on Posts | ✅ | ✅ | ✅ | ✅ |
