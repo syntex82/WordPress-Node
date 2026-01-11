@@ -43,7 +43,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     try {
-      const user = await this.usersService.findById(payload.sub);
+      // For demo users, we need to find the user without the demo filter
+      // because the request hasn't been set up yet with demo context
+      const user = await this.usersService.findByEmail(payload.email);
 
       if (!user) {
         throw new UnauthorizedException();
@@ -51,7 +53,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       const { password: _password, ...result } = user;
       void _password; // Intentionally unused
-      return result;
+
+      // Include demo context from JWT payload
+      return {
+        ...result,
+        isDemo: payload.isDemo || false,
+        demoId: payload.demoId || payload.demoInstanceId || null,
+        demoInstanceId: payload.demoInstanceId || payload.demoId || null,
+      };
     } catch (_error) {
       // User not found or other error - token is invalid
       throw new UnauthorizedException();

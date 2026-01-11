@@ -1,18 +1,36 @@
 /**
  * Pages Service
  * Handles all page-related business logic
+ *
+ * SECURITY: All queries filter by demoInstanceId to isolate demo data
  */
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, Scope } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreatePageDto } from '../dto/create-page.dto';
 import { UpdatePageDto } from '../dto/update-page.dto';
 import { PostStatus } from '@prisma/client';
 import slugify from 'slugify';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class PagesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(REQUEST) private readonly request: Request,
+  ) {}
+
+  /**
+   * Get demo isolation filter for queries
+   */
+  private getDemoFilter(): { demoInstanceId: string | null } {
+    const user = (this.request as any).user;
+    if (user?.isDemo || user?.demoId) {
+      return { demoInstanceId: user?.demoId || user?.demoInstanceId || null };
+    }
+    return { demoInstanceId: null };
+  }
 
   /**
    * Generate unique slug from title
@@ -43,12 +61,14 @@ export class PagesService {
    */
   async create(createPageDto: CreatePageDto, authorId: string) {
     const slug = await this.generateSlug(createPageDto.title);
+    const demoFilter = this.getDemoFilter();
 
     return this.prisma.page.create({
       data: {
         ...createPageDto,
         slug,
         authorId,
+        demoInstanceId: demoFilter.demoInstanceId,
         publishedAt: createPageDto.status === PostStatus.PUBLISHED ? new Date() : null,
       },
       include: {
@@ -65,10 +85,12 @@ export class PagesService {
 
   /**
    * Find all pages with filters and pagination
+   * SECURITY: Filtered by demoInstanceId to isolate demo data
    */
   async findAll(page = 1, limit = 10, status?: PostStatus) {
     const skip = (page - 1) * limit;
-    const where: any = {};
+    const demoFilter = this.getDemoFilter();
+    const where: any = { ...demoFilter };
 
     if (status) {
       where.status = status;
@@ -113,10 +135,13 @@ export class PagesService {
 
   /**
    * Find page by ID
+   * SECURITY: Validates page belongs to current demo context
    */
   async findById(id: string) {
-    const page = await this.prisma.page.findUnique({
-      where: { id },
+    const demoFilter = this.getDemoFilter();
+
+    const page = await this.prisma.page.findFirst({
+      where: { id, ...demoFilter },
       include: {
         author: {
           select: {
@@ -140,10 +165,13 @@ export class PagesService {
 
   /**
    * Find page by slug
+   * SECURITY: Validates page belongs to current demo context
    */
   async findBySlug(slug: string) {
-    const page = await this.prisma.page.findUnique({
-      where: { slug },
+    const demoFilter = this.getDemoFilter();
+
+    const page = await this.prisma.page.findFirst({
+      where: { slug, ...demoFilter },
       include: {
         author: {
           select: {
