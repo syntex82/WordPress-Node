@@ -1,18 +1,46 @@
 /**
  * Courses Service for LMS Module
+ *
+ * SECURITY: All queries filter by demoInstanceId to isolate demo data
  */
 import {
   Injectable,
   NotFoundException,
   ForbiddenException,
   ConflictException,
+  Inject,
+  Scope,
 } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateCourseDto, UpdateCourseDto, CourseQueryDto } from '../dto/course.dto';
 
-@Injectable()
+interface DemoContext {
+  isDemo: boolean;
+  demoInstanceId: string | null;
+}
+
+@Injectable({ scope: Scope.REQUEST })
 export class CoursesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(REQUEST) private readonly request: Request,
+  ) {}
+
+  /**
+   * Get demo isolation filter for queries
+   */
+  private getDemoFilter(): { demoInstanceId: string | null } {
+    const user = (this.request as any).user;
+    const demoContext = (this.request as any).demoContext as DemoContext | undefined;
+
+    if (user?.isDemo || user?.demoId || demoContext?.isDemo) {
+      return { demoInstanceId: user?.demoId || demoContext?.demoInstanceId || null };
+    }
+
+    return { demoInstanceId: null };
+  }
 
   private generateSlug(title: string): string {
     return title
@@ -47,6 +75,10 @@ export class CoursesService {
     });
   }
 
+  /**
+   * Find all courses with filtering and pagination
+   * SECURITY: Filtered by demoInstanceId to isolate demo data
+   */
   async findAll(query: CourseQueryDto) {
     const {
       search,
@@ -59,8 +91,9 @@ export class CoursesService {
       limit = 12,
     } = query;
     const skip = (page - 1) * limit;
+    const demoFilter = this.getDemoFilter();
 
-    const where: any = {};
+    const where: any = { ...demoFilter };
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
@@ -102,9 +135,14 @@ export class CoursesService {
     return this.findAll({ ...query, status: 'PUBLISHED' as any });
   }
 
+  /**
+   * Find course by ID
+   * SECURITY: Validates course belongs to current demo context
+   */
   async findOne(id: string) {
-    const course = await this.prisma.course.findUnique({
-      where: { id },
+    const demoFilter = this.getDemoFilter();
+    const course = await this.prisma.course.findFirst({
+      where: { id, ...demoFilter },
       include: {
         instructor: { select: { id: true, name: true, avatar: true, bio: true } },
         modules: {
@@ -123,9 +161,14 @@ export class CoursesService {
     return course;
   }
 
+  /**
+   * Find course by slug
+   * SECURITY: Validates course belongs to current demo context
+   */
   async findBySlug(slug: string) {
-    const course = await this.prisma.course.findUnique({
-      where: { slug },
+    const demoFilter = this.getDemoFilter();
+    const course = await this.prisma.course.findFirst({
+      where: { slug, ...demoFilter },
       include: {
         instructor: { select: { id: true, name: true, avatar: true, bio: true } },
         modules: {

@@ -2,13 +2,34 @@
  * Role-based Permissions Configuration
  * Defines what each role can access in the admin panel
  *
- * Access Control Rules:
- * - ADMIN: Full access to all features
- * - EDITOR/AUTHOR: No access to shop or LMS course creation (requires upgrade)
- * - VIEWER: Access to messages and groups only
+ * Role Hierarchy (highest to lowest):
+ * - SUPER_ADMIN: Full system access, can manage all demos and users
+ * - ADMIN: Site administrator, manages users within scope
+ * - EDITOR: Content editor, can edit all content
+ * - AUTHOR: Content author, can only edit own content
+ * - INSTRUCTOR: Course instructor, manages own courses
+ * - STUDENT: Course student, read-only course access
+ * - USER: Basic user, profile management only
+ * - VIEWER: Legacy read-only access (deprecated)
  */
 
-export type UserRole = 'ADMIN' | 'EDITOR' | 'AUTHOR' | 'VIEWER';
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'EDITOR' | 'AUTHOR' | 'INSTRUCTOR' | 'STUDENT' | 'USER' | 'VIEWER';
+
+// Role hierarchy for permission checks
+export const ROLE_HIERARCHY: UserRole[] = [
+  'SUPER_ADMIN', 'ADMIN', 'EDITOR', 'AUTHOR', 'INSTRUCTOR', 'STUDENT', 'USER', 'VIEWER'
+];
+
+// Get role level (lower = more privileged)
+export function getRoleLevel(role: UserRole): number {
+  const index = ROLE_HIERARCHY.indexOf(role);
+  return index === -1 ? 999 : index;
+}
+
+// Check if role1 is higher than or equal to role2
+export function isRoleHigherOrEqual(role1: UserRole, role2: UserRole): boolean {
+  return getRoleLevel(role1) <= getRoleLevel(role2);
+}
 
 export interface Permission {
   canView: boolean;
@@ -46,126 +67,237 @@ export type PremiumFeature = typeof PREMIUM_FEATURES[number];
 
 // Check if a feature requires premium access for a given role
 export function requiresPremiumAccess(role: string, feature: string): boolean {
-  if (role === 'ADMIN') return false;
+  if (role === 'SUPER_ADMIN' || role === 'ADMIN') return false;
   return PREMIUM_FEATURES.includes(feature as PremiumFeature);
 }
 
+// Full permissions helper
+const FULL_ACCESS: Permission = { canView: true, canCreate: true, canEdit: true, canDelete: true };
+const NO_ACCESS: Permission = { canView: false, canCreate: false, canEdit: false, canDelete: false };
+const VIEW_ONLY: Permission = { canView: true, canCreate: false, canEdit: false, canDelete: false };
+const VIEW_CREATE: Permission = { canView: true, canCreate: true, canEdit: false, canDelete: false };
+const VIEW_EDIT: Permission = { canView: true, canCreate: true, canEdit: true, canDelete: false };
+
 // Define permissions for each role
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
+  SUPER_ADMIN: {
+    dashboard: FULL_ACCESS,
+    analytics: FULL_ACCESS,
+    seo: FULL_ACCESS,
+    posts: FULL_ACCESS,
+    pages: FULL_ACCESS,
+    media: FULL_ACCESS,
+    menus: FULL_ACCESS,
+    users: FULL_ACCESS,
+    messages: FULL_ACCESS,
+    groups: FULL_ACCESS,
+    security: FULL_ACCESS,
+    settings: FULL_ACCESS,
+    shop: FULL_ACCESS,
+    lms: FULL_ACCESS,
+    themes: FULL_ACCESS,
+    plugins: FULL_ACCESS,
+    email: FULL_ACCESS,
+    recommendations: FULL_ACCESS,
+    marketplace: FULL_ACCESS,
+    payments: FULL_ACCESS,
+  },
   ADMIN: {
-    dashboard: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    analytics: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    seo: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    posts: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    pages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    media: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    menus: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    users: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    groups: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    security: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    settings: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    shop: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    lms: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    themes: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    plugins: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    email: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    recommendations: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    marketplace: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    payments: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    dashboard: FULL_ACCESS,
+    analytics: FULL_ACCESS,
+    seo: FULL_ACCESS,
+    posts: FULL_ACCESS,
+    pages: FULL_ACCESS,
+    media: FULL_ACCESS,
+    menus: FULL_ACCESS,
+    users: FULL_ACCESS,
+    messages: FULL_ACCESS,
+    groups: FULL_ACCESS,
+    security: VIEW_ONLY,  // Can view but not modify security settings
+    settings: FULL_ACCESS,
+    shop: FULL_ACCESS,
+    lms: FULL_ACCESS,
+    themes: FULL_ACCESS,
+    plugins: VIEW_ONLY,   // Can view but not install plugins
+    email: FULL_ACCESS,
+    recommendations: FULL_ACCESS,
+    marketplace: FULL_ACCESS,
+    payments: FULL_ACCESS,
   },
   EDITOR: {
-    dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    posts: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    pages: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    media: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    groups: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    security: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    // Shop: ADMIN only - EDITOR/AUTHOR cannot access shop functionality
-    shop: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    // LMS: ADMIN only for course creation - EDITOR/AUTHOR can only view catalog/take courses
-    lms: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    marketplace: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    payments: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    dashboard: VIEW_ONLY,
+    analytics: VIEW_ONLY,
+    seo: VIEW_ONLY,
+    posts: FULL_ACCESS,  // Can edit ALL posts
+    pages: FULL_ACCESS,  // Can edit ALL pages
+    media: VIEW_EDIT,    // Can manage shared media
+    menus: VIEW_EDIT,
+    users: NO_ACCESS,
+    messages: FULL_ACCESS,
+    groups: VIEW_EDIT,
+    security: NO_ACCESS,
+    settings: NO_ACCESS,
+    shop: VIEW_EDIT,     // Can manage products
+    lms: VIEW_EDIT,      // Can manage courses
+    themes: VIEW_ONLY,
+    plugins: NO_ACCESS,
+    email: VIEW_ONLY,
+    recommendations: VIEW_ONLY,
+    marketplace: VIEW_ONLY,
+    payments: NO_ACCESS,
   },
   AUTHOR: {
-    dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    posts: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    pages: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    media: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    groups: { canView: true, canCreate: true, canEdit: true, canDelete: false },
-    security: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    // Shop: ADMIN only - EDITOR/AUTHOR cannot access shop functionality
-    shop: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    // LMS: ADMIN only for course creation - EDITOR/AUTHOR can only view catalog/take courses
-    lms: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    marketplace: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    payments: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    dashboard: VIEW_ONLY,
+    analytics: NO_ACCESS,
+    seo: NO_ACCESS,
+    posts: VIEW_EDIT,    // Can only edit OWN posts (enforced by backend)
+    pages: VIEW_EDIT,    // Can only edit OWN pages
+    media: VIEW_EDIT,    // Can only access OWN media
+    menus: NO_ACCESS,
+    users: NO_ACCESS,
+    messages: FULL_ACCESS,
+    groups: VIEW_CREATE,
+    security: NO_ACCESS,
+    settings: NO_ACCESS,
+    shop: VIEW_CREATE,   // Can create products (own only)
+    lms: NO_ACCESS,
+    themes: NO_ACCESS,
+    plugins: NO_ACCESS,
+    email: NO_ACCESS,
+    recommendations: NO_ACCESS,
+    marketplace: VIEW_ONLY,
+    payments: NO_ACCESS,
+  },
+  INSTRUCTOR: {
+    dashboard: VIEW_ONLY,
+    analytics: VIEW_ONLY, // Can view course analytics
+    seo: NO_ACCESS,
+    posts: NO_ACCESS,
+    pages: NO_ACCESS,
+    media: VIEW_EDIT,    // Can upload course media
+    menus: NO_ACCESS,
+    users: NO_ACCESS,
+    messages: FULL_ACCESS,
+    groups: VIEW_CREATE,
+    security: NO_ACCESS,
+    settings: NO_ACCESS,
+    shop: NO_ACCESS,
+    lms: VIEW_EDIT,      // Can manage OWN courses
+    themes: NO_ACCESS,
+    plugins: NO_ACCESS,
+    email: NO_ACCESS,
+    recommendations: NO_ACCESS,
+    marketplace: VIEW_ONLY,
+    payments: VIEW_ONLY, // Can view earnings
+  },
+  STUDENT: {
+    dashboard: VIEW_ONLY,
+    analytics: NO_ACCESS,
+    seo: NO_ACCESS,
+    posts: NO_ACCESS,
+    pages: NO_ACCESS,
+    media: NO_ACCESS,
+    menus: NO_ACCESS,
+    users: NO_ACCESS,
+    messages: VIEW_CREATE,
+    groups: VIEW_ONLY,
+    security: NO_ACCESS,
+    settings: NO_ACCESS,
+    shop: VIEW_ONLY,     // Can browse products
+    lms: VIEW_ONLY,      // Can view enrolled courses
+    themes: NO_ACCESS,
+    plugins: NO_ACCESS,
+    email: NO_ACCESS,
+    recommendations: NO_ACCESS,
+    marketplace: NO_ACCESS,
+    payments: VIEW_ONLY, // Can view own purchases
+  },
+  USER: {
+    dashboard: VIEW_ONLY,
+    analytics: NO_ACCESS,
+    seo: NO_ACCESS,
+    posts: NO_ACCESS,
+    pages: NO_ACCESS,
+    media: NO_ACCESS,
+    menus: NO_ACCESS,
+    users: NO_ACCESS,
+    messages: VIEW_CREATE,
+    groups: VIEW_ONLY,
+    security: NO_ACCESS,
+    settings: NO_ACCESS,
+    shop: VIEW_ONLY,
+    lms: VIEW_ONLY,
+    themes: NO_ACCESS,
+    plugins: NO_ACCESS,
+    email: NO_ACCESS,
+    recommendations: NO_ACCESS,
+    marketplace: NO_ACCESS,
+    payments: NO_ACCESS,
   },
   VIEWER: {
-    dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    analytics: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    seo: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    posts: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    pages: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    media: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    menus: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    messages: { canView: true, canCreate: true, canEdit: true, canDelete: true },
-    groups: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    security: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    settings: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    shop: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    lms: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    themes: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    plugins: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    email: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    recommendations: { canView: false, canCreate: false, canEdit: false, canDelete: false },
-    marketplace: { canView: true, canCreate: false, canEdit: false, canDelete: false },
-    payments: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    dashboard: VIEW_ONLY,
+    analytics: NO_ACCESS,
+    seo: NO_ACCESS,
+    posts: NO_ACCESS,
+    pages: NO_ACCESS,
+    media: NO_ACCESS,
+    menus: NO_ACCESS,
+    users: NO_ACCESS,
+    messages: VIEW_ONLY,
+    groups: VIEW_ONLY,
+    security: NO_ACCESS,
+    settings: NO_ACCESS,
+    shop: NO_ACCESS,
+    lms: NO_ACCESS,
+    themes: NO_ACCESS,
+    plugins: NO_ACCESS,
+    email: NO_ACCESS,
+    recommendations: NO_ACCESS,
+    marketplace: NO_ACCESS,
+    payments: NO_ACCESS,
   },
 };
 
 // Role descriptions for display
 export const ROLE_DESCRIPTIONS: Record<UserRole, { title: string; description: string; color: string }> = {
+  SUPER_ADMIN: {
+    title: 'Super Administrator',
+    description: 'Full system access including security and all demo data',
+    color: 'text-purple-400 bg-purple-500/20',
+  },
   ADMIN: {
     title: 'Administrator',
-    description: 'Full access to all features and settings',
+    description: 'Site administrator with full access within scope',
     color: 'text-red-400 bg-red-500/20',
   },
   EDITOR: {
     title: 'Editor',
-    description: 'Can manage content, media, and view analytics',
+    description: 'Can edit all content, media, and manage courses',
     color: 'text-blue-400 bg-blue-500/20',
   },
   AUTHOR: {
     title: 'Author',
-    description: 'Can create and manage own content',
+    description: 'Can create and manage own content and products',
     color: 'text-green-400 bg-green-500/20',
+  },
+  INSTRUCTOR: {
+    title: 'Instructor',
+    description: 'Can create and manage own courses and students',
+    color: 'text-orange-400 bg-orange-500/20',
+  },
+  STUDENT: {
+    title: 'Student',
+    description: 'Can access enrolled courses and track progress',
+    color: 'text-cyan-400 bg-cyan-500/20',
+  },
+  USER: {
+    title: 'User',
+    description: 'Basic user with profile management',
+    color: 'text-slate-400 bg-slate-500/20',
   },
   VIEWER: {
     title: 'Viewer',
-    description: 'Access to messages and groups only',
+    description: 'Read-only access (deprecated)',
     color: 'text-gray-400 bg-gray-500/20',
   },
 };

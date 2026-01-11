@@ -1,13 +1,19 @@
 /**
  * Products Service
  * Handles product CRUD operations with variant management
+ *
+ * SECURITY: All queries filter by demoInstanceId to isolate demo data
  */
 import {
   Injectable,
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Inject,
+  Scope,
 } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 import { PrismaService } from '../../../database/prisma.service';
 import {
   CreateProductDto,
@@ -18,9 +24,32 @@ import {
   ColorOptionDto,
 } from '../dto/product.dto';
 
-@Injectable()
+interface DemoContext {
+  isDemo: boolean;
+  demoInstanceId: string | null;
+}
+
+@Injectable({ scope: Scope.REQUEST })
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(REQUEST) private readonly request: Request,
+  ) {}
+
+  /**
+   * Get demo isolation filter for queries
+   * Demo users only see demo data, real users only see real data
+   */
+  private getDemoFilter(): { demoInstanceId: string | null } {
+    const user = (this.request as any).user;
+    const demoContext = (this.request as any).demoContext as DemoContext | undefined;
+
+    if (user?.isDemo || user?.demoId || demoContext?.isDemo) {
+      return { demoInstanceId: user?.demoId || demoContext?.demoInstanceId || null };
+    }
+
+    return { demoInstanceId: null };
+  }
 
   private generateSlug(name: string): string {
     return name
@@ -151,6 +180,8 @@ export class ProductsService {
       sortOrder: v.sortOrder ?? index,
     }));
 
+    const demoFilter = this.getDemoFilter();
+
     const product = await this.prisma.product.create({
       data: {
         ...productData,
@@ -162,6 +193,7 @@ export class ProductsService {
         weight: dto.weight,
         hasVariants: dto.hasVariants ?? (variants && variants.length > 0),
         variantOptions: variantOptions as any,
+        demoInstanceId: demoFilter.demoInstanceId,
         variants: variantCreateData ? { create: variantCreateData } : undefined,
         tags: tags
           ? {
@@ -182,11 +214,16 @@ export class ProductsService {
     return product;
   }
 
+  /**
+   * Find all products with filtering and pagination
+   * SECURITY: Filtered by demoInstanceId to isolate demo data
+   */
   async findAll(query: ProductQueryDto) {
     const { search, status, categoryId, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
+    const demoFilter = this.getDemoFilter();
 
-    const where: any = {};
+    const where: any = { ...demoFilter };
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -224,9 +261,14 @@ export class ProductsService {
     };
   }
 
+  /**
+   * Find product by ID
+   * SECURITY: Validates product belongs to current demo context
+   */
   async findOne(id: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
+    const demoFilter = this.getDemoFilter();
+    const product = await this.prisma.product.findFirst({
+      where: { id, ...demoFilter },
       include: {
         category: true,
         variants: true,
@@ -238,9 +280,14 @@ export class ProductsService {
     return product;
   }
 
+  /**
+   * Find product by slug
+   * SECURITY: Validates product belongs to current demo context
+   */
   async findBySlug(slug: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { slug },
+    const demoFilter = this.getDemoFilter();
+    const product = await this.prisma.product.findFirst({
+      where: { slug, ...demoFilter },
       include: {
         category: true,
         variants: true,

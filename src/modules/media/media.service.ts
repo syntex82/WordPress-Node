@@ -2,9 +2,13 @@
  * Media Service
  * Handles file upload, storage, and media metadata management
  * Includes automatic WebP conversion and responsive image generation
+ *
+ * SECURITY: All queries filter by demoInstanceId to isolate demo data
  */
 
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger, Inject, Scope } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 import { PrismaService } from '../../database/prisma.service';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
@@ -24,13 +28,38 @@ try {
 const RESPONSIVE_SIZES = [320, 640, 960, 1280, 1920];
 const WEBP_QUALITY = 80;
 
-@Injectable()
+interface DemoContext {
+  isDemo: boolean;
+  demoInstanceId: string | null;
+}
+
+@Injectable({ scope: Scope.REQUEST })
 export class MediaService {
   private readonly logger = new Logger(MediaService.name);
   private uploadDir = path.join(process.cwd(), 'uploads');
 
-  constructor(private prisma: PrismaService) {
+  constructor(
+    private prisma: PrismaService,
+    @Inject(REQUEST) private readonly request: Request,
+  ) {
     this.ensureUploadDir();
+  }
+
+  /**
+   * Get demo isolation filter for queries
+   * Demo users only see demo data, real users only see real data
+   */
+  private getDemoFilter(): { demoInstanceId: string | null } {
+    const user = (this.request as any).user;
+    const demoContext = (this.request as any).demoContext as DemoContext | undefined;
+
+    // Check if demo user
+    if (user?.isDemo || user?.demoId || demoContext?.isDemo) {
+      return { demoInstanceId: user?.demoId || demoContext?.demoInstanceId || null };
+    }
+
+    // Real user - only see non-demo data
+    return { demoInstanceId: null };
   }
 
   /**
@@ -113,6 +142,7 @@ export class MediaService {
     // Use WebP URL for images if generated, otherwise original
     const originalUrl = `/uploads/${filename}`;
     const url = webpGenerated ? `/uploads/${webpFilename}` : originalUrl;
+    const demoFilter = this.getDemoFilter();
 
     const media = await this.prisma.media.create({
       data: {
@@ -124,6 +154,7 @@ export class MediaService {
         width,
         height,
         uploadedById: userId,
+        demoInstanceId: demoFilter.demoInstanceId,
       },
     });
 
@@ -214,10 +245,12 @@ export class MediaService {
 
   /**
    * Find all media with pagination - filtered by user unless admin viewing all
+   * SECURITY: Filtered by demoInstanceId to isolate demo data
    */
   async findAll(page = 1, limit = 20, mimeType?: string, userId?: string) {
     const skip = (page - 1) * limit;
-    const where: any = {};
+    const demoFilter = this.getDemoFilter();
+    const where: any = { ...demoFilter };
 
     // Filter by user if userId provided
     if (userId) {
@@ -336,10 +369,13 @@ export class MediaService {
 
   /**
    * Find media by ID
+   * SECURITY: Validates media belongs to current demo context
    */
   async findById(id: string) {
-    const media = await this.prisma.media.findUnique({
-      where: { id },
+    const demoFilter = this.getDemoFilter();
+
+    const media = await this.prisma.media.findFirst({
+      where: { id, ...demoFilter },
       include: {
         uploadedBy: {
           select: {

@@ -2072,6 +2072,7 @@ model User {
   postShares                 PostShare[]
   mentionsReceived           PostMention[]             @relation("MentionedUser")
   mentionsMade               PostMention[]             @relation("MentionerUser")
+  pricingSubscription        UserSubscription?         @relation("UserToSubscription")
 }
 
 model UserBadge {
@@ -2601,10 +2602,13 @@ enum SubscriptionStatus {
   ACTIVE
   PAST_DUE
   CANCELED
+  CANCELLED   // Alias for CANCELED
   TRIALING
+  TRIAL       // Alias for TRIALING
   PAUSED
   INCOMPLETE
   INCOMPLETE_EXPIRED
+  EXPIRED
 }
 
 enum UpdateStatus {
@@ -2621,10 +2625,14 @@ enum UpdateStatus {
 }
 
 enum UserRole {
-  ADMIN
-  EDITOR
-  AUTHOR
-  VIEWER
+  SUPER_ADMIN  // Full system access, can manage all demos and data
+  ADMIN        // Site administrator, manages users within scope
+  EDITOR       // Content editor, can edit all content
+  AUTHOR       // Content author, can only edit own content
+  INSTRUCTOR   // Course instructor, manages own courses
+  STUDENT      // Course student, read-only course access
+  USER         // Basic user, profile only
+  VIEWER       // Legacy: read-only access (deprecated, use USER)
 }
 
 enum VideoProvider {
@@ -2785,6 +2793,117 @@ enum DemoStatus {
   TERMINATED
   ERROR
 }
+
+// ==================== AUDIT LOGGING ====================
+
+model AuditLog {
+  id              String        @id @default(cuid())
+  userId          String?
+  userEmail       String?
+  userRole        String?
+  action          String        // e.g., "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT"
+  resource        String        // e.g., "user", "post", "product", "settings"
+  resourceId      String?       // ID of the affected resource
+  details         Json?         // Additional details about the action
+  ipAddress       String?
+  userAgent       String?
+  success         Boolean       @default(true)
+  errorMessage    String?
+  createdAt       DateTime      @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@index([success])
+}
+
+// ==================== SUBSCRIPTION TIERS & PRICING ====================
+
+model PricingPlan {
+  id              String        @id @default(cuid())
+  name            String        @unique  // e.g., "free", "starter", "professional", "enterprise"
+  displayName     String        // e.g., "Free", "Starter", "Professional", "Enterprise"
+  description     String?
+  monthlyPrice    Decimal       @default(0) @db.Decimal(10, 2)
+  yearlyPrice     Decimal       @default(0) @db.Decimal(10, 2)
+  currency        String        @default("USD")
+
+  // Feature limits
+  maxUsers        Int           @default(1)
+  maxPosts        Int           @default(10)
+  maxPages        Int           @default(5)
+  maxProducts     Int           @default(0)
+  maxCourses      Int           @default(0)
+  maxStudents     Int           @default(0)
+  storageGb       Decimal       @default(1) @db.Decimal(10, 2)
+  bandwidthGb     Decimal       @default(10) @db.Decimal(10, 2)
+
+  // Feature flags
+  hasEcommerce    Boolean       @default(false)
+  hasLms          Boolean       @default(false)
+  hasAi           Boolean       @default(false)
+  hasPrioritySupport Boolean    @default(false)
+  hasCustomDomain Boolean       @default(false)
+  hasWhiteLabel   Boolean       @default(false)
+  hasApi          Boolean       @default(false)
+  hasAnalytics    Boolean       @default(false)
+  hasSeo          Boolean       @default(true)
+  hasMultilingual Boolean       @default(false)
+
+  // Role restrictions - which roles this plan allows
+  allowedRoles    String[]      @default(["USER", "AUTHOR"])
+
+  isActive        Boolean       @default(true)
+  isPopular       Boolean       @default(false)  // Highlight as recommended
+  sortOrder       Int           @default(0)
+  stripeMonthlyPriceId String?
+  stripeYearlyPriceId  String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  userSubscriptions UserSubscription[]
+
+  @@index([name])
+  @@index([isActive])
+}
+
+model UserSubscription {
+  id              String        @id @default(cuid())
+  userId          String        @unique
+  planId          String
+  status          SubscriptionStatus @default(ACTIVE)
+  billingCycle    BillingCycle  @default(MONTHLY)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean     @default(false)
+
+  // Stripe integration
+  stripeSubscriptionId String?   @unique
+  stripeCustomerId     String?
+
+  // Usage tracking
+  postsUsed       Int           @default(0)
+  pagesUsed       Int           @default(0)
+  productsUsed    Int           @default(0)
+  coursesUsed     Int           @default(0)
+  studentsUsed    Int           @default(0)
+  storageUsedMb   Decimal       @default(0) @db.Decimal(10, 2)
+  bandwidthUsedMb Decimal       @default(0) @db.Decimal(10, 2)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation("UserToSubscription", fields: [userId], references: [id], onDelete: Cascade)
+  plan            PricingPlan   @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+}
+
+// Note: SubscriptionStatus and BillingCycle enums are defined earlier in the schema
 
 // ==================== INTERNATIONALIZATION (i18n) ====================
 
