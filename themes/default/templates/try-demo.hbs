@@ -272,7 +272,7 @@ document.getElementById('demo-request-form').addEventListener('submit', async (e
   const form = e.target;
   
   btn.disabled = true;
-  btn.textContent = 'Creating your demo...';
+  btn.textContent = 'Sending verification email...';
   resultDiv.innerHTML = '';
   
   try {
@@ -288,41 +288,66 @@ document.getElementById('demo-request-form').addEventListener('submit', async (e
     });
     
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.message || 'Failed to create demo');
     }
-    
+
     form.style.display = 'none';
-    resultDiv.innerHTML = `
-      <div class="demo-success">
-        <h3>🎉 Your Demo is Ready!</h3>
-        <p>We've also sent these details to your email.</p>
-      </div>
-      <div class="demo-credentials">
-        <h3>📋 Your Demo Credentials</h3>
-        <div class="credential-row">
-          <span class="label">Demo URL:</span>
-          <span>${data.accessUrl || '/demo/' + data.subdomain}</span>
+
+    // Check if email verification is required (new flow)
+    if (data.requiresVerification) {
+      resultDiv.innerHTML = `
+        <div class="demo-success">
+          <h3>📧 Check Your Email!</h3>
+          <p style="font-size: 1.1em; margin: 20px 0;">
+            We've sent a verification link to <strong>${form.email.value}</strong>
+          </p>
+          <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0;"><strong>Next steps:</strong></p>
+            <ol style="text-align: left; margin: 0; padding-left: 20px;">
+              <li>Check your inbox (and spam folder)</li>
+              <li>Click the verification link in the email</li>
+              <li>Your demo will be created instantly!</li>
+            </ol>
+          </div>
+          <p style="color: rgba(255,255,255,0.6); font-size: 0.9em;">
+            The verification link expires in 24 hours.
+          </p>
         </div>
-        <div class="credential-row">
-          <span class="label">Admin Email:</span>
-          <span>${data.adminEmail}</span>
+      `;
+    } else {
+      // Legacy flow - immediate demo creation (for backwards compatibility)
+      resultDiv.innerHTML = `
+        <div class="demo-success">
+          <h3>🎉 Your Demo is Ready!</h3>
+          <p>We've also sent these details to your email.</p>
         </div>
-        <div class="credential-row">
-          <span class="label">Password:</span>
-          <span>${data.adminPassword}</span>
+        <div class="demo-credentials">
+          <h3>📋 Your Demo Credentials</h3>
+          <div class="credential-row">
+            <span class="label">Demo URL:</span>
+            <span>${data.accessUrl || '/demo/' + data.subdomain}</span>
+          </div>
+          <div class="credential-row">
+            <span class="label">Admin Email:</span>
+            <span>${data.adminEmail}</span>
+          </div>
+          <div class="credential-row">
+            <span class="label">Password:</span>
+            <span>${data.adminPassword}</span>
+          </div>
+          <div class="credential-row">
+            <span class="label">Expires:</span>
+            <span>${new Date(data.expiresAt).toLocaleString()}</span>
+          </div>
+          <a href="${data.accessUrl || '/demo/' + data.subdomain}/admin"
+             class="demo-access-btn">
+            Access Your Demo →
+          </a>
         </div>
-        <div class="credential-row">
-          <span class="label">Expires:</span>
-          <span>${new Date(data.expiresAt).toLocaleString()}</span>
-        </div>
-        <a href="${data.accessUrl || '/demo/' + data.subdomain}/admin"
-           class="demo-access-btn">
-          Access Your Demo →
-        </a>
-      </div>
-    `;
+      `;
+    }
   } catch (err) {
     resultDiv.innerHTML = `<div class="demo-error">${err.message}</div>`;
     btn.disabled = false;
