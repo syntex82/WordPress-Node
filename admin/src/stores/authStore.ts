@@ -61,7 +61,7 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           // Fetch user profile using the cookie token
-          const response = await axios.get('/api/auth/profile', {
+          const response = await axios.get('/api/auth/me', {
             headers: {
               Authorization: `Bearer ${cookieToken}`
             }
