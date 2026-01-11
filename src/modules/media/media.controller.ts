@@ -73,13 +73,12 @@ export class MediaController {
   }
 
   /**
-   * Get all media - users see their own, admins/editors can see all or filter by user
+   * Get all media - users see their own, only SUPER_ADMIN/ADMIN can see all
    * GET /api/media
    *
    * Role-based access:
    * - SUPER_ADMIN/ADMIN: Can view all media or filter by user
-   * - EDITOR: Can view all media (needed for content editing)
-   * - AUTHOR: Can only view their own media
+   * - EDITOR/AUTHOR: Can only view their own media
    */
   @Get()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.EDITOR, UserRole.AUTHOR)
@@ -95,7 +94,6 @@ export class MediaController {
     let filterUserId: string | undefined;
 
     const isAdminOrSuper = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN;
-    const isEditor = user?.role === UserRole.EDITOR;
 
     if (isAdminOrSuper && showAll === 'true') {
       // Admin/Super viewing all media - no user filter (or specific user if provided)
@@ -103,11 +101,8 @@ export class MediaController {
     } else if (isAdminOrSuper && userId) {
       // Admin/Super viewing specific user's media
       filterUserId = userId;
-    } else if (isEditor && showAll === 'true') {
-      // Editor viewing all media for content editing
-      filterUserId = userId || undefined;
     } else {
-      // Default: show only own media (for AUTHORS or admin's "My Media" view)
+      // Everyone else (including EDITOR and AUTHOR) sees only their own media
       filterUserId = user?.id;
     }
 
