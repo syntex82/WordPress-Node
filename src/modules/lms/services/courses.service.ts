@@ -42,6 +42,15 @@ export class CoursesService {
     return { demoInstanceId: null };
   }
 
+  /**
+   * Check if current user is a demo user
+   */
+  private isDemoUser(): boolean {
+    const user = (this.request as any).user;
+    const demoContext = (this.request as any).demoContext as DemoContext | undefined;
+    return !!(user?.isDemo || user?.demoId || user?.demoInstanceId || demoContext?.isDemo);
+  }
+
   private generateSlug(title: string): string {
     return title
       .toLowerCase()
@@ -59,9 +68,16 @@ export class CoursesService {
       finalSlug = `${slug}-${counter++}`;
     }
 
+    // DEMO RESTRICTION: Force demo users to only create drafts
+    let status = dto.status;
+    if (this.isDemoUser() && status === 'PUBLISHED') {
+      status = 'DRAFT';
+    }
+
     return this.prisma.course.create({
       data: {
         ...dto,
+        status,
         slug: finalSlug,
         instructorId,
         priceAmount: dto.priceAmount ? dto.priceAmount : null,
@@ -241,6 +257,11 @@ export class CoursesService {
     }
 
     const { slug: _slugFromDto, ...restDto } = dto;
+
+    // DEMO RESTRICTION: Prevent demo users from publishing
+    if (this.isDemoUser() && dto.status === 'PUBLISHED') {
+      restDto.status = 'DRAFT';
+    }
 
     // Prepare update data with explicit handling of price fields
     const updateData: any = {

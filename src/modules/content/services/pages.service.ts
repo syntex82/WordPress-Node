@@ -33,6 +33,14 @@ export class PagesService {
   }
 
   /**
+   * Check if current user is a demo user
+   */
+  private isDemoUser(): boolean {
+    const user = (this.request as any).user;
+    return !!(user?.isDemo || user?.demoId || user?.demoInstanceId);
+  }
+
+  /**
    * Generate unique slug from title
    */
   private async generateSlug(title: string, excludeId?: string): Promise<string> {
@@ -63,13 +71,20 @@ export class PagesService {
     const slug = await this.generateSlug(createPageDto.title);
     const demoFilter = this.getDemoFilter();
 
+    // DEMO RESTRICTION: Force demo users to only create drafts
+    let status = createPageDto.status;
+    if (this.isDemoUser() && status === PostStatus.PUBLISHED) {
+      status = PostStatus.DRAFT;
+    }
+
     return this.prisma.page.create({
       data: {
         ...createPageDto,
+        status,
         slug,
         authorId,
         demoInstanceId: demoFilter.demoInstanceId,
-        publishedAt: createPageDto.status === PostStatus.PUBLISHED ? new Date() : null,
+        publishedAt: status === PostStatus.PUBLISHED ? new Date() : null,
       },
       include: {
         author: {
@@ -224,7 +239,12 @@ export class PagesService {
       delete data.slug;
     }
 
-    if (updatePageDto.status === PostStatus.PUBLISHED) {
+    // DEMO RESTRICTION: Prevent demo users from publishing
+    if (this.isDemoUser() && updatePageDto.status === PostStatus.PUBLISHED) {
+      data.status = PostStatus.DRAFT;
+    }
+
+    if (data.status === PostStatus.PUBLISHED) {
       const page = await this.prisma.page.findUnique({ where: { id } });
       if (page && !page.publishedAt) {
         data.publishedAt = new Date();
