@@ -110,11 +110,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     pages: FULL_ACCESS,
     media: FULL_ACCESS,
     menus: FULL_ACCESS,
-    users: FULL_ACCESS,
+    users: VIEW_EDIT,     // Can manage users but not SUPER_ADMINs (enforced by backend)
     messages: FULL_ACCESS,
     groups: FULL_ACCESS,
-    security: VIEW_ONLY,  // Can view but not modify security settings
-    settings: FULL_ACCESS,
+    security: NO_ACCESS,  // SUPER_ADMIN only - contains sensitive security settings
+    settings: VIEW_ONLY,  // Can view but not modify system settings
     shop: FULL_ACCESS,
     lms: FULL_ACCESS,
     themes: FULL_ACCESS,
@@ -122,7 +122,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     email: FULL_ACCESS,
     recommendations: FULL_ACCESS,
     marketplace: FULL_ACCESS,
-    payments: FULL_ACCESS,
+    payments: VIEW_EDIT,  // Can view/process payments but not configure
   },
   EDITOR: {
     dashboard: VIEW_ONLY,

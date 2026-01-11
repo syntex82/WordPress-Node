@@ -7,10 +7,12 @@
 import { useEffect, useState } from 'react';
 import { usersApi } from '../services/api';
 import { useThemeClasses } from '../contexts/SiteThemeContext';
+import { useDemoStore } from '../stores/demoStore';
+import { useAuthStore } from '../stores/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiHelpCircle } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiHelpCircle, FiLock, FiAlertTriangle } from 'react-icons/fi';
 import Tooltip from '../components/Tooltip';
 
 // All available roles
@@ -45,8 +47,27 @@ interface UserFormData {
   role: UserRole;
 }
 
+// Role hierarchy for permission checks (lower index = higher privilege)
+const ROLE_HIERARCHY: UserRole[] = [
+  'SUPER_ADMIN',
+  'ADMIN',
+  'EDITOR',
+  'AUTHOR',
+  'INSTRUCTOR',
+  'STUDENT',
+  'USER',
+  'VIEWER',
+];
+
+function getRoleLevel(role: UserRole): number {
+  const index = ROLE_HIERARCHY.indexOf(role);
+  return index === -1 ? 999 : index;
+}
+
 export default function Users() {
   const theme = useThemeClasses();
+  const { isDemo, setRestrictedAction } = useDemoStore();
+  const { user: currentUser } = useAuthStore();
 
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +87,19 @@ export default function Users() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 20;
+
+  // Get roles that current user can assign (only roles at or below their level)
+  const currentUserRole = (currentUser?.role as UserRole) || 'VIEWER';
+  const currentUserLevel = getRoleLevel(currentUserRole);
+  const assignableRoles = currentUserRole === 'SUPER_ADMIN'
+    ? USER_ROLES
+    : USER_ROLES.filter(r => getRoleLevel(r.value) >= currentUserLevel);
+
+  // Check if current user can edit a target user (can only edit users at or below their level)
+  const canEditUser = (targetRole: UserRole): boolean => {
+    if (currentUserRole === 'SUPER_ADMIN') return true;
+    return getRoleLevel(currentUserRole) <= getRoleLevel(targetRole);
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -89,7 +123,18 @@ export default function Users() {
   };
 
   const handleOpenModal = (user?: any) => {
+    // Demo mode restriction
+    if (isDemo) {
+      setRestrictedAction('User management is not available in demo mode. Upgrade to manage users.');
+      return;
+    }
+
     if (user) {
+      // Check if current user can edit this user
+      if (!canEditUser(user.role)) {
+        toast.error(`You cannot edit users with a higher role (${user.role}) than your own (${currentUserRole})`);
+        return;
+      }
       setEditingUser(user);
       setFormData({
         name: user.name,
@@ -171,6 +216,23 @@ export default function Users() {
 
   return (
     <div>
+      {/* Demo mode warning banner */}
+      {isDemo && (
+        <div className={`mb-6 p-4 rounded-xl border flex items-center gap-3 ${
+          theme.isDark
+            ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+            : 'bg-amber-50 border-amber-200 text-amber-700'
+        }`}>
+          <FiAlertTriangle size={20} />
+          <div>
+            <p className="font-medium">User Management Restricted in Demo Mode</p>
+            <p className="text-sm opacity-80">
+              You can view users but cannot create, edit, or delete them. Upgrade to a full license to manage users.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-3">
           <h1 className={`text-3xl font-bold ${theme.titleGradient}`}>Users</h1>
@@ -183,13 +245,33 @@ export default function Users() {
         <Tooltip title={USERS_TOOLTIPS.addNew.title} content={USERS_TOOLTIPS.addNew.content} position="left">
           <button
             onClick={() => handleOpenModal()}
-            className="flex items-center bg-gradient-to-r from-purple-600 to-purple-500 text-white px-4 py-2 rounded-xl hover:from-purple-500 hover:to-purple-400 shadow-lg shadow-purple-500/20 transition-all"
+            disabled={isDemo}
+            className={`flex items-center px-4 py-2 rounded-xl shadow-lg transition-all ${
+              isDemo
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 shadow-purple-500/20'
+            }`}
           >
             <FiPlus className="mr-2" size={18} />
             Add New User
           </button>
         </Tooltip>
       </div>
+
+      {/* Role hierarchy info for non-SUPER_ADMIN users */}
+      {currentUserRole !== 'SUPER_ADMIN' && !isDemo && (
+        <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
+          theme.isDark
+            ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400'
+            : 'bg-blue-50 border border-blue-100 text-blue-600'
+        }`}>
+          <FiLock size={16} />
+          <span>
+            As an {currentUserRole}, you can only view and manage users with roles at or below your level.
+            Super Admin accounts are hidden.
+          </span>
+        </div>
+      )}
 
       <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
         <table className={`min-w-full divide-y ${theme.border}`}>
@@ -225,22 +307,36 @@ export default function Users() {
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Tooltip title={USERS_TOOLTIPS.edit.title} content={USERS_TOOLTIPS.edit.content} position="top">
-                    <button
-                      onClick={() => handleOpenModal(user)}
-                      className="text-blue-400 hover:text-blue-300 mr-3 transition-colors"
+                  {!isDemo && canEditUser(user.role) ? (
+                    <>
+                      <Tooltip title={USERS_TOOLTIPS.edit.title} content={USERS_TOOLTIPS.edit.content} position="top">
+                        <button
+                          onClick={() => handleOpenModal(user)}
+                          className="text-blue-400 hover:text-blue-300 mr-3 transition-colors"
+                        >
+                          <FiEdit2 size={18} />
+                        </button>
+                      </Tooltip>
+                      <Tooltip title={USERS_TOOLTIPS.delete.title} content={USERS_TOOLTIPS.delete.content} position="top" variant="warning">
+                        <button
+                          onClick={() => setDeleteConfirm({ isOpen: true, userId: user.id })}
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      </Tooltip>
+                    </>
+                  ) : (
+                    <Tooltip
+                      title={isDemo ? "Demo Mode" : "Insufficient Permissions"}
+                      content={isDemo ? "User management is restricted in demo mode" : `You cannot edit users with role ${user.role}`}
+                      position="top"
                     >
-                      <FiEdit2 size={18} />
-                    </button>
-                  </Tooltip>
-                  <Tooltip title={USERS_TOOLTIPS.delete.title} content={USERS_TOOLTIPS.delete.content} position="top" variant="warning">
-                    <button
-                      onClick={() => setDeleteConfirm({ isOpen: true, userId: user.id })}
-                      className="text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
-                  </Tooltip>
+                      <span className="text-gray-400 cursor-not-allowed">
+                        <FiLock size={18} />
+                      </span>
+                    </Tooltip>
+                  )}
                 </td>
               </tr>
             ))}
@@ -343,7 +439,7 @@ export default function Users() {
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
                     className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.select}`}
                   >
-                    {USER_ROLES.map((role) => (
+                    {assignableRoles.map((role) => (
                       <option key={role.value} value={role.value}>
                         {role.label}
                       </option>
@@ -352,6 +448,12 @@ export default function Users() {
                   <p className={`text-xs mt-1 ${theme.textMuted}`}>
                     {USER_ROLES.find(r => r.value === formData.role)?.description}
                   </p>
+                  {assignableRoles.length < USER_ROLES.length && (
+                    <p className={`text-xs mt-1 flex items-center gap-1 ${theme.textMuted}`}>
+                      <FiLock size={12} />
+                      You can only assign roles at or below your level ({currentUserRole})
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex gap-3 pt-4">

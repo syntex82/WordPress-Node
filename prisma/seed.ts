@@ -68,8 +68,9 @@ async function main() {
     // Table may not exist yet, that's fine
   }
 
-  // Check if admin already exists
-  const existingAdmin = await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
+  // Check if super admin or admin already exists
+  const existingSuperAdmin = await prisma.user.findFirst({ where: { role: UserRole.SUPER_ADMIN } });
+  const existingAdmin = existingSuperAdmin || await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
 
   // In production or if setup is complete, skip admin seeding
   if (setupComplete) {
@@ -115,34 +116,39 @@ async function main() {
 
       console.log('✅ Admin password validated - meets security requirements');
 
-      // Create or update admin user
+      // Create or update super admin user
+      // SUPER_ADMIN is the default for users who build from source
+      // This gives full system access including security settings
       const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
       const admin = await prisma.user.upsert({
         where: { email: process.env.ADMIN_EMAIL || 'admin@example.com' },
         update: {
           password: hashedAdminPassword,
-          role: UserRole.ADMIN,
+          role: UserRole.SUPER_ADMIN,
         },
         create: {
           email: process.env.ADMIN_EMAIL || 'admin@example.com',
-          name: 'Admin User',
+          name: 'Super Admin',
           password: hashedAdminPassword,
-          role: UserRole.ADMIN,
-          bio: 'System administrator',
+          role: UserRole.SUPER_ADMIN,
+          bio: 'System super administrator with full access',
         },
       });
-      console.log('✅ Admin user created/updated:', admin.email);
+      console.log('✅ Super Admin user created/updated:', admin.email);
     }
   }
 
-  // Get or create admin reference for sample content
-  const admin = await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
+  // Get or create admin reference for sample content (prefer SUPER_ADMIN, fallback to ADMIN)
+  const admin = await prisma.user.findFirst({
+    where: { role: { in: [UserRole.SUPER_ADMIN, UserRole.ADMIN] } },
+    orderBy: { role: 'asc' } // SUPER_ADMIN comes first alphabetically
+  });
   if (!admin) {
     console.log('⚠️  No admin user found - skipping sample content creation');
     console.log('   Complete setup via the Setup Wizard to create an admin');
     return;
   }
-  console.log('✅ Using admin user:', admin.email);
+  console.log('✅ Using admin user:', admin.email, `(${admin.role})`);
 
   // Create sample author
   const authorPassword = await bcrypt.hash('author123', 10);

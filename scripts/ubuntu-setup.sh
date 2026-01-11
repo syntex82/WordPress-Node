@@ -358,7 +358,8 @@ JWT_EXPIRES_IN=7d
 SESSION_SECRET=${SESSION_SECRET}
 
 # ─────────────────────────────────────────────────────────────
-# ADMIN ACCOUNT (for initial seeding)
+# SUPER ADMIN ACCOUNT (for initial seeding)
+# Created with SUPER_ADMIN role for full system access
 # ─────────────────────────────────────────────────────────────
 ADMIN_EMAIL=${ADMIN_EMAIL}
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
@@ -558,9 +559,10 @@ echo -e "    Health Check: http://localhost:${APP_PORT}/health"
 echo ""
 
 echo -e "  ${CYAN}┌─────────────────────────────────────────────────────────────┐${NC}"
-echo -e "  ${CYAN}│  ADMIN CREDENTIALS                                          │${NC}"
+echo -e "  ${CYAN}│  SUPER ADMIN CREDENTIALS                                    │${NC}"
 echo -e "  ${CYAN}└─────────────────────────────────────────────────────────────┘${NC}"
 echo ""
+echo -e "    Role:     ${YELLOW}SUPER_ADMIN${NC} (full system access)"
 echo -e "    Email:    ${ADMIN_EMAIL}"
 echo -e "    Password: ${ADMIN_PASSWORD}"
 echo ""

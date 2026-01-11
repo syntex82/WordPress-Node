@@ -43,8 +43,8 @@ export class FeatureGuard implements CanActivate {
       throw new ForbiddenException('Authentication required');
     }
 
-    // Admins bypass feature checks
-    if (user.role === UserRole.ADMIN) {
+    // Admins and Super Admins bypass feature checks
+    if (user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN) {
       return true;
     }
 
