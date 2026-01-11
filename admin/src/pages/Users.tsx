@@ -13,6 +13,20 @@ import toast from 'react-hot-toast';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiHelpCircle } from 'react-icons/fi';
 import Tooltip from '../components/Tooltip';
 
+// All available roles
+const USER_ROLES = [
+  { value: 'SUPER_ADMIN', label: 'Super Admin', description: 'Full system access including security and all data' },
+  { value: 'ADMIN', label: 'Admin', description: 'Site administrator with full access within scope' },
+  { value: 'EDITOR', label: 'Editor', description: 'Can edit all content and media' },
+  { value: 'AUTHOR', label: 'Author', description: 'Can create and manage own content' },
+  { value: 'INSTRUCTOR', label: 'Instructor', description: 'Can manage own courses and students' },
+  { value: 'STUDENT', label: 'Student', description: 'Course student with read access' },
+  { value: 'USER', label: 'User', description: 'Basic user with profile access' },
+  { value: 'VIEWER', label: 'Viewer', description: 'Read-only access (legacy)' },
+] as const;
+
+type UserRole = typeof USER_ROLES[number]['value'];
+
 // Tooltip content for users page
 const USERS_TOOLTIPS = {
   addNew: { title: 'Add New User', content: 'Create a new user account. Assign a role to control what they can access.' },
@@ -28,7 +42,7 @@ interface UserFormData {
   name: string;
   email: string;
   password: string;
-  role: 'ADMIN' | 'EDITOR' | 'AUTHOR' | 'VIEWER';
+  role: UserRole;
 }
 
 export default function Users() {
@@ -326,14 +340,18 @@ export default function Users() {
                   </label>
                   <select
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
                     className={`w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 ${theme.select}`}
                   >
-                    <option value="ADMIN">Admin</option>
-                    <option value="EDITOR">Editor</option>
-                    <option value="AUTHOR">Author</option>
-                    <option value="VIEWER">Viewer</option>
+                    {USER_ROLES.map((role) => (
+                      <option key={role.value} value={role.value}>
+                        {role.label}
+                      </option>
+                    ))}
                   </select>
+                  <p className={`text-xs mt-1 ${theme.textMuted}`}>
+                    {USER_ROLES.find(r => r.value === formData.role)?.description}
+                  </p>
                 </div>
 
                 <div className="flex gap-3 pt-4">

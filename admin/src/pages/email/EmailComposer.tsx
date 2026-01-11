@@ -206,9 +206,13 @@ export default function EmailComposer() {
             </div>
             {formData.recipientType === 'role' && (
               <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 mb-4">
+                <option value="SUPER_ADMIN">Super Admin</option>
                 <option value="ADMIN">Admin</option>
                 <option value="EDITOR">Editor</option>
                 <option value="AUTHOR">Author</option>
+                <option value="INSTRUCTOR">Instructor</option>
+                <option value="STUDENT">Student</option>
+                <option value="USER">User</option>
                 <option value="VIEWER">Viewer</option>
               </select>
             )}
