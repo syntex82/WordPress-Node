@@ -63,10 +63,15 @@ export class DemoModeMiddleware implements NestMiddleware {
       return next();
     }
 
-    // SUPER_ADMIN and ADMIN bypass demo restrictions - they own the system
     // Note: user is attached by auth middleware, may not be available yet
     const user = (req as any).user;
-    if (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') {
+
+    // Check if this is a demo user (has isDemo flag or demoId)
+    const isDemoUser = user?.isDemo || user?.demoId || demoCookie;
+
+    // REAL SUPER_ADMIN/ADMIN (not demo users) bypass demo restrictions
+    // Demo users with ADMIN role should NOT bypass - they're still demo users
+    if ((user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') && !isDemoUser) {
       return next();
     }
 

@@ -76,13 +76,17 @@ export class DemoDataIsolationGuard implements CanActivate {
     const path = request.path;
     const method = request.method;
 
-    // SUPER_ADMIN and ADMIN bypass all demo restrictions - they own the system
-    if (user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN) {
+    // Check if this is a demo user (has isDemo flag or demoId)
+    const isDemoUser = user?.isDemo || user?.demoId || request.cookies?.demo_mode;
+
+    // REAL SUPER_ADMIN/ADMIN (not demo users) bypass all demo restrictions
+    // Demo users with ADMIN role should NOT bypass - they're still demo users
+    if ((user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN) && !isDemoUser) {
       return true;
     }
 
     // Not a demo user - allow everything
-    if (!user?.isDemo && !user?.demoId && !request.cookies?.demo_mode) {
+    if (!isDemoUser) {
       return true;
     }
 
