@@ -261,6 +261,43 @@ export class DemoRouterController {
   }
 
   /**
+   * Demo status check (for polling)
+   * GET /demo/:demoId/status
+   */
+  @Get(':demoId/status')
+  async getDemoStatus(@Param('demoId') demoId: string) {
+    const demo = await this.prisma.demoInstance.findFirst({
+      where: {
+        OR: [
+          { subdomain: demoId },
+          { accessToken: demoId },
+        ],
+      },
+      select: {
+        id: true,
+        subdomain: true,
+        status: true,
+        expiresAt: true,
+      },
+    });
+
+    if (!demo) {
+      throw new NotFoundException({
+        message: 'Demo not found',
+        code: 'DEMO_NOT_FOUND',
+      });
+    }
+
+    return {
+      status: demo.status,
+      subdomain: demo.subdomain,
+      expiresAt: demo.expiresAt,
+      remainingHours: this.getRemainingHours(demo.expiresAt),
+      isReady: demo.status === DemoStatus.RUNNING,
+    };
+  }
+
+  /**
    * Demo login page
    * GET /demo/:demoId/login
    */
@@ -270,7 +307,19 @@ export class DemoRouterController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const demo = await this.validateAndGetDemo(demoId);
+    // Don't validate - just get the demo to show status
+    const demo = await this.prisma.demoInstance.findFirst({
+      where: {
+        OR: [
+          { subdomain: demoId },
+          { accessToken: demoId },
+        ],
+      },
+    });
+
+    if (!demo) {
+      return res.status(404).send('Demo not found');
+    }
 
     try {
       const html = await this.themeRenderer.render('demo-login', {
@@ -278,6 +327,7 @@ export class DemoRouterController {
           id: demo.id,
           subdomain: demo.subdomain,
           adminEmail: demo.adminEmail,
+          status: demo.status,
           expiresAt: demo.expiresAt,
           remainingHours: this.getRemainingHours(demo.expiresAt),
         },
