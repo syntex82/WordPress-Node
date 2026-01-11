@@ -136,13 +136,15 @@ import { DemoBanner } from './components/DemoBanner';
 import { DemoUpgradePrompt } from './components/DemoUpgradePrompt';
 
 function AppContent() {
-  const { isAuthenticated, _hasHydrated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated, checkCookieAuth } = useAuthStore();
   const { initFromCookie, isDemo } = useDemoStore();
 
-  // Initialize demo mode from cookie on mount
+  // Initialize demo mode and check for cookie auth on mount
   useEffect(() => {
     initFromCookie();
-  }, [initFromCookie]);
+    // Check for access_token cookie (for demo auto-login)
+    checkCookieAuth();
+  }, [initFromCookie, checkCookieAuth]);
 
   // Wait for Zustand to rehydrate from localStorage before rendering auth-dependent routes
   if (!_hasHydrated) {
