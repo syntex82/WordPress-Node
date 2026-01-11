@@ -72,18 +72,22 @@ export class DemoController {
     try {
       const result = await this.demoVerificationService.verifyEmailAndCreateDemo(token);
 
-      // Redirect to success page with demo info
+      // Redirect directly to demo homepage
       const baseUrl = process.env.APP_URL || 'http://localhost:3000';
       if (result.demoCredentials) {
+        // Redirect to the demo homepage with the subdomain
         return res.redirect(
-          `${baseUrl}/demo/verified?subdomain=${result.demoCredentials.subdomain}&success=true`
+          `${baseUrl}/demo/${result.demoCredentials.subdomain}`
         );
       }
-      return res.redirect(`${baseUrl}/demo/verified?success=true&message=already_verified`);
+      // If already verified, redirect to try-demo page with message
+      return res.redirect(`${baseUrl}/try-demo?message=already_verified`);
     } catch (error: any) {
       const baseUrl = process.env.APP_URL || 'http://localhost:3000';
       const errorCode = error.response?.code || 'VERIFICATION_FAILED';
-      return res.redirect(`${baseUrl}/demo/verified?success=false&error=${errorCode}`);
+      const errorMessage = error.response?.message || error.message || 'Verification failed';
+      // Redirect to try-demo page with error
+      return res.redirect(`${baseUrl}/try-demo?error=${encodeURIComponent(errorMessage)}`);
     }
   }
 
