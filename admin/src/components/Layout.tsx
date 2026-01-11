@@ -656,6 +656,44 @@ export default function Layout() {
               </div>
             )}
 
+            {/* Email Section */}
+            {canViewEmail && (
+              <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
+                <button
+                  onClick={() => toggleSection('email')}
+                  className="flex items-center justify-between w-full px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/50 transition-colors touch-manipulation min-h-[48px]"
+                >
+                  <div className="flex items-center gap-2">
+                    <FiMail size={14} className="text-purple-400" />
+                    <span>Email</span>
+                  </div>
+                  {expandedSections.email ? <FiChevronDown size={16} /> : <FiChevronRight size={16} />}
+                </button>
+                {expandedSections.email && (
+                  <div className="pb-2">
+                    {emailNavigation.map((item) => {
+                      const Icon = item.icon;
+                      const active = isActive(item.path);
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          className={`group flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all touch-manipulation min-h-[44px] ${
+                            active
+                              ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500'
+                              : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                          }`}
+                        >
+                          <Icon size={18} className={active ? 'text-purple-400' : 'text-slate-500'} />
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Marketplace Section */}
             {canViewMarketplace && (
               <div className="rounded-xl bg-slate-800/30 border border-slate-700/30 overflow-hidden">
