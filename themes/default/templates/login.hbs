@@ -192,7 +192,7 @@
       } else {
         if (data.access_token) {
           localStorage.setItem('token', data.access_token);
-          document.cookie = 'access_token=' + data.access_token + '; path=/; max-age=' + (7*24*60*60);
+          document.cookie = 'access_token=' + data.access_token + '; path=/; max-age=' + (7*24*60*60) + '; Secure; SameSite=Lax';
         }
         window.location.href = redirect;
       }
@@ -216,7 +216,7 @@
       if (!r.ok) throw new Error(data.message || 'Invalid code');
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
-        document.cookie = 'access_token=' + data.access_token + '; path=/; max-age=' + (7*24*60*60);
+        document.cookie = 'access_token=' + data.access_token + '; path=/; max-age=' + (7*24*60*60) + '; Secure; SameSite=Lax';
       }
       window.location.href = redirect;
     } catch(err) {
