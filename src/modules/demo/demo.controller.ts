@@ -9,8 +9,12 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
+  Res,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { DemoService } from './demo.service';
+import { DemoVerificationService } from './services/demo-verification.service';
 import { CreateDemoDto, DemoAccessDto, ExtendDemoDto } from './dto/create-demo.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -19,18 +23,78 @@ import { DemoStatus } from '@prisma/client';
 
 @Controller('api/demos')
 export class DemoController {
-  constructor(private readonly demoService: DemoService) {}
+  constructor(
+    private readonly demoService: DemoService,
+    private readonly demoVerificationService: DemoVerificationService,
+  ) {}
 
   // ==================== PUBLIC ROUTES ====================
 
   /**
-   * Request a new demo instance
+   * Request a new demo instance (now requires email verification)
    * POST /api/demos/request
+   *
+   * Flow:
+   * 1. Validates business email (blocks free email providers)
+   * 2. Sends verification email with unique token
+   * 3. User clicks link to verify and create demo
    */
   @Post('request')
   @HttpCode(HttpStatus.CREATED)
-  async requestDemo(@Body() dto: CreateDemoDto) {
-    return this.demoService.createDemo(dto);
+  async requestDemo(@Body() dto: CreateDemoDto, @Req() req: Request) {
+    const ipAddress = req.ip || req.socket?.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+
+    return this.demoVerificationService.requestDemoVerification(
+      {
+        name: dto.name,
+        email: dto.email,
+        company: dto.company,
+        phone: dto.phone,
+        preferredSubdomain: dto.preferredSubdomain,
+      },
+      ipAddress,
+      userAgent,
+    );
+  }
+
+  /**
+   * Verify email and create demo
+   * GET /api/demos/verify/:token
+   *
+   * User clicks this link from their email to verify and get demo access
+   */
+  @Get('verify/:token')
+  async verifyEmailAndCreateDemo(
+    @Param('token') token: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.demoVerificationService.verifyEmailAndCreateDemo(token);
+
+      // Redirect to success page with demo info
+      const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+      if (result.demoCredentials) {
+        return res.redirect(
+          `${baseUrl}/demo/verified?subdomain=${result.demoCredentials.subdomain}&success=true`
+        );
+      }
+      return res.redirect(`${baseUrl}/demo/verified?success=true&message=already_verified`);
+    } catch (error: any) {
+      const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+      const errorCode = error.response?.code || 'VERIFICATION_FAILED';
+      return res.redirect(`${baseUrl}/demo/verified?success=false&error=${errorCode}`);
+    }
+  }
+
+  /**
+   * API endpoint for email verification (JSON response)
+   * POST /api/demos/verify
+   */
+  @Post('verify')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmailApi(@Body() body: { token: string }) {
+    return this.demoVerificationService.verifyEmailAndCreateDemo(body.token);
   }
 
   /**

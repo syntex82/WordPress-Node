@@ -17,6 +17,8 @@ import { DemoFollowupScheduler } from './demo-followup.scheduler';
 import { DemoModeMiddleware } from './middleware/demo-mode.middleware';
 import { SampleDataSeederService } from './sample-data-seeder.service';
 import { DemoContextService } from './demo-context.service';
+import { DemoVerificationService } from './services/demo-verification.service';
+import { EmailValidationService } from './services/email-validation.service';
 
 @Module({
   imports: [
@@ -45,6 +47,9 @@ import { DemoContextService } from './demo-context.service';
     DemoFollowupScheduler,
     SampleDataSeederService,
     DemoContextService,
+    // Email verification for demo access
+    DemoVerificationService,
+    EmailValidationService,
   ],
   exports: [
     DemoService,
@@ -52,6 +57,8 @@ import { DemoContextService } from './demo-context.service';
     DemoConversionService,
     DemoAnalyticsService,
     DemoContextService,
+    DemoVerificationService,
+    EmailValidationService,
   ],
 })
 export class DemoModule {}

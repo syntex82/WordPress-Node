@@ -4,8 +4,13 @@
  * CRITICAL SECURITY: Ensures demo users CANNOT access real admin data.
  *
  * This interceptor runs BEFORE every request and:
- * 1. Modifies the PrismaService to filter queries based on demoInstanceId
+ * 1. Attaches demo context to the request object for services to use
  * 2. Tracks demo user activity for analytics
+ *
+ * SECURITY NOTE: Demo isolation is enforced at the SERVICE LAYER, not here.
+ * Services must read demoContext from the request and apply appropriate filters.
+ * This interceptor only sets up the context - it does NOT modify PrismaService state
+ * to avoid race conditions in concurrent requests.
  */
 
 import {
@@ -15,7 +20,7 @@ import {
   CallHandler,
   Logger,
 } from '@nestjs/common';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, finalize } from 'rxjs';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -29,21 +34,22 @@ export class DemoIsolationInterceptor implements NestInterceptor {
     const user = request.user;
 
     // Check if this is a demo user
-    const isDemo = user?.isDemo === true || user?.demoId || user?.demoInstanceId;
+    // SECURITY: Multiple indicators are checked to ensure we catch all demo users
+    const isDemo = user?.isDemo === true || !!user?.demoId || !!user?.demoInstanceId;
     const demoInstanceId = user?.demoId || user?.demoInstanceId || null;
 
     if (isDemo && demoInstanceId) {
       this.logger.debug(`Demo isolation active for demoId: ${demoInstanceId}`);
 
-      // Attach demo context to request for services to use
+      // SECURITY: Attach demo context to request for services to use
+      // Services MUST read this context and apply appropriate filters
+      // DO NOT store on shared PrismaService - causes race conditions!
       request.demoContext = {
         isDemo: true,
         demoInstanceId,
+        // Add timestamp for debugging
+        contextSetAt: Date.now(),
       };
-
-      // Store the demoInstanceId on the PrismaService instance for this request
-      // This will be read by the demo-aware query methods
-      (this.prisma as any)._currentDemoId = demoInstanceId;
 
       // Track demo activity asynchronously (don't block the request)
       const startTime = Date.now();
@@ -58,11 +64,12 @@ export class DemoIsolationInterceptor implements NestInterceptor {
       );
     } else {
       // Real user - ensure they only see non-demo data
+      // SECURITY: Explicitly set isDemo to false to prevent bypass
       request.demoContext = {
         isDemo: false,
         demoInstanceId: null,
+        contextSetAt: Date.now(),
       };
-      (this.prisma as any)._currentDemoId = null;
     }
 
     return next.handle();

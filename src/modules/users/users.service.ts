@@ -5,7 +5,7 @@
  * SECURITY: All queries filter by demoInstanceId to isolate demo data
  */
 
-import { Injectable, NotFoundException, ConflictException, ForbiddenException, Inject, Scope } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, Inject, Scope, Logger } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
@@ -13,6 +13,8 @@ import { PrismaService } from '../../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 interface DemoContext {
   isDemo: boolean;
@@ -33,6 +35,9 @@ const ROLE_HIERARCHY: UserRole[] = [
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+  private readonly uploadsDir = path.join(process.cwd(), 'uploads');
+
   constructor(
     private prisma: PrismaService,
     @Inject(REQUEST) private readonly request: Request,
@@ -313,23 +318,119 @@ export class UsersService {
   }
 
   /**
-   * Delete user
+   * Delete user with comprehensive cleanup
    * SECURITY: Only deletes users in current demo context
+   * CRITICAL: Ensures all related data is properly cleaned up to prevent orphaned records
    */
   async remove(id: string) {
     const demoFilter = this.getDemoFilter();
+    const currentUser = this.getCurrentUser();
 
     // Verify user exists and belongs to current context
     const user = await this.prisma.user.findFirst({
       where: { id, ...demoFilter },
+      include: {
+        Media: true, // Get all media files for cleanup
+      },
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.prisma.user.delete({
-      where: { id },
+    // SECURITY: Cannot delete SUPER_ADMIN unless you are a SUPER_ADMIN
+    if (user.role === UserRole.SUPER_ADMIN && currentUser?.role !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only Super Admins can delete Super Admin accounts');
+    }
+
+    // SECURITY: Cannot delete yourself
+    if (currentUser && currentUser.id === id) {
+      throw new ForbiddenException('You cannot delete your own account through this endpoint');
+    }
+
+    this.logger.log(`Deleting user ${id} (${user.email}) and all related data...`);
+
+    // Perform cascading delete in a transaction
+    // Note: Most relations have onDelete: Cascade in Prisma schema,
+    // but we explicitly handle some for clarity and file cleanup
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Clean up media files from filesystem
+      if (user.Media && user.Media.length > 0) {
+        this.logger.log(`Cleaning up ${user.Media.length} media files for user ${id}`);
+        for (const media of user.Media) {
+          await this.deleteMediaFile(media.path);
+          // Also try to delete WebP version if it exists
+          if (media.path.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            const webpPath = media.path.replace(/\.[^.]+$/, '.webp');
+            await this.deleteMediaFile(webpPath);
+          }
+        }
+      }
+
+      // 2. Clean up avatar file if it's a local file
+      if (user.avatar && user.avatar.startsWith('/uploads/')) {
+        await this.deleteMediaFile(user.avatar);
+      }
+
+      // 3. Clean up cover image if it's a local file
+      if (user.coverImage && user.coverImage.startsWith('/uploads/')) {
+        await this.deleteMediaFile(user.coverImage);
+      }
+
+      // 4. The following are handled by Prisma cascade deletes (onDelete: Cascade):
+      // - Sessions, Activity, TimelinePost, PostLike, PostComment, PostShare
+      // - PostMention, UserBadge, UserFollow, Enrollment, LessonProgress
+      // - QuizAttempt, Certificate, Notification, PasswordHistory
+      // - Group (owned), GroupMember, GroupMessage, DirectMessage
+      // - Conversation, Media, Post, Page, Course (instructed)
+      // - CustomTheme, Developer, Project, HiringRequest, Subscription
+      // - DeveloperReview, MarketplacePluginRating, MarketplaceThemeRating
+      // - UserInteraction, UserSubscription
+
+      // 5. The following are set to NULL by Prisma (onDelete: SetNull):
+      // - Backup (createdById), PageView (userId), RecommendationClick (userId)
+      // - SecurityEvent (userId), UpdateHistory (initiatedBy)
+      // - EmailLog (recipientId), EmailTemplate (createdById)
+      // - MarketplacePlugin (approvedById, submittedById)
+      // - MarketplaceTheme (approvedById, submittedById)
+
+      // 6. Delete the user (cascades to all related data)
+      const deletedUser = await tx.user.delete({
+        where: { id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      });
+
+      this.logger.log(`Successfully deleted user ${id} (${deletedUser.email}) and all related data`);
+
+      return {
+        success: true,
+        deletedUser,
+        message: 'User and all related data deleted successfully',
+      };
     });
+  }
+
+  /**
+   * Helper method to safely delete a media file
+   */
+  private async deleteMediaFile(filePath: string): Promise<void> {
+    try {
+      // Convert URL path to filesystem path
+      const relativePath = filePath.replace(/^\/uploads\//, '');
+      const fullPath = path.join(this.uploadsDir, relativePath);
+
+      await fs.unlink(fullPath);
+      this.logger.debug(`Deleted file: ${fullPath}`);
+    } catch (error: any) {
+      // File might not exist or be inaccessible - log but don't fail
+      if (error.code !== 'ENOENT') {
+        this.logger.warn(`Failed to delete file ${filePath}: ${error.message}`);
+      }
+    }
   }
 }

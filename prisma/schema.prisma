@@ -69,11 +69,11 @@ model Backup {
   errorMessage     String?
   isScheduled      Boolean         @default(false)
   scheduleId       String?
-  createdById      String?
+  createdById      String?           // SECURITY: Cascade delete when user is deleted
   startedAt        DateTime?
   completedAt      DateTime?
   createdAt        DateTime        @default(now())
-  createdBy        User?           @relation(fields: [createdById], references: [id])
+  createdBy        User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
   UpdateHistory    UpdateHistory[]
 
   @@index([createdAt])
@@ -522,8 +522,8 @@ model EmailLog {
   userAgent         String?
   createdAt         DateTime       @default(now())
   updatedAt DateTime @updatedAt
-  recipient         User?          @relation(fields: [recipientId], references: [id])
-  template          EmailTemplate? @relation(fields: [templateId], references: [id])
+  recipient         User?          @relation(fields: [recipientId], references: [id], onDelete: SetNull)
+  template          EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([recipientId])
@@ -548,7 +548,7 @@ model EmailTemplate {
   updatedAt DateTime @updatedAt
   createdById String?
   emailLogs   EmailLog[]
-  createdBy   User?             @relation(fields: [createdById], references: [id])
+  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([isActive])
   @@index([slug])
@@ -753,8 +753,8 @@ model MarketplacePlugin {
   licenseType                                String?                   @default("MIT")
   createdAt                                  DateTime                  @default(now())
   updatedAt DateTime @updatedAt
-  approvedBy  User?                     @relation("MarketplacePlugin_approvedByIdToUser", fields: [approvedById], references: [id])
-  submittedBy User?                     @relation("MarketplacePlugin_submittedByIdToUser", fields: [submittedById], references: [id])
+  approvedBy  User?                     @relation("MarketplacePlugin_approvedByIdToUser", fields: [approvedById], references: [id], onDelete: SetNull)
+  submittedBy User?                     @relation("MarketplacePlugin_submittedByIdToUser", fields: [submittedById], references: [id], onDelete: SetNull)
   ratings                    MarketplacePluginRating[]
 
   @@index([category])
@@ -829,8 +829,8 @@ model MarketplaceTheme {
   licenseType                               String?                  @default("GPL-2.0")
   createdAt                                 DateTime                 @default(now())
   updatedAt DateTime @updatedAt
-  approvedBy  User?                    @relation("MarketplaceTheme_approvedByIdToUser", fields: [approvedById], references: [id])
-  submittedBy User?                    @relation("MarketplaceTheme_submittedByIdToUser", fields: [submittedById], references: [id])
+  approvedBy  User?                    @relation("MarketplaceTheme_approvedByIdToUser", fields: [approvedById], references: [id], onDelete: SetNull)
+  submittedBy User?                    @relation("MarketplaceTheme_submittedByIdToUser", fields: [submittedById], references: [id], onDelete: SetNull)
   ratings                    MarketplaceThemeRating[]
 
   @@index([category])
@@ -1093,7 +1093,7 @@ model PageView {
   os          String?
   scrollDepth Int?
   sessionId   String?
-  User        User?    @relation(fields: [userId], references: [id])
+  User        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([country])
   @@index([createdAt])
@@ -1570,7 +1570,7 @@ model RecommendationClick {
   clickedId          String
   position           Int?
   createdAt          DateTime @default(now())
-  User               User?    @relation(fields: [userId], references: [id])
+  User               User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([recommendationType])
@@ -1617,7 +1617,7 @@ model SecurityEvent {
   userAgent String?
   metadata  Json?
   createdAt DateTime          @default(now())
-  user      User?             @relation(fields: [userId], references: [id])
+  user      User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([ip])
@@ -1976,7 +1976,7 @@ model UpdateHistory {
   createdAt      DateTime     @default(now())
   updatedAt DateTime @updatedAt
   backup         Backup?      @relation(fields: [backupId], references: [id])
-  initiatedByUser User?       @relation(fields: [initiatedBy], references: [id])
+  initiatedByUser User?       @relation(fields: [initiatedBy], references: [id], onDelete: SetNull)
 
   @@index([fromVersion, toVersion])
   @@index([startedAt])
@@ -2782,6 +2782,55 @@ model DemoConfig {
   value           String
   description     String?
   updatedAt       DateTime      @updatedAt
+}
+
+// Email verification for demo access requests
+// Ensures only legitimate business users can access demos
+model DemoVerification {
+  id              String                    @id @default(cuid())
+  email           String
+  name            String
+  company         String?
+  phone           String?
+  preferredSubdomain String?
+
+  // Verification token (sent via email)
+  token           String                    @unique
+  tokenExpiresAt  DateTime
+
+  // Verification status
+  status          DemoVerificationStatus    @default(PENDING)
+  verifiedAt      DateTime?
+
+  // Resulting demo instance (after verification)
+  demoInstanceId  String?
+
+  // Security & audit
+  ipAddress       String?
+  userAgent       String?
+  verificationAttempts Int                  @default(0)
+  lastAttemptAt   DateTime?
+
+  // Rate limiting
+  emailSentCount  Int                       @default(1)
+  lastEmailSentAt DateTime                  @default(now())
+
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([email])
+  @@index([token])
+  @@index([status])
+  @@index([createdAt])
+  @@index([tokenExpiresAt])
+}
+
+enum DemoVerificationStatus {
+  PENDING       // Waiting for email verification
+  VERIFIED      // Email verified, demo can be created
+  EXPIRED       // Token expired without verification
+  BLOCKED       // Too many attempts, blocked
+  COMPLETED     // Demo created successfully
 }
 
 enum DemoStatus {

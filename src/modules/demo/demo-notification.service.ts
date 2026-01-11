@@ -19,6 +19,13 @@ export interface DemoEmailData {
   loginUrl: string;
 }
 
+export interface VerificationEmailData {
+  to: string;
+  name: string;
+  verificationUrl: string;
+  expiresInHours: number;
+}
+
 @Injectable()
 export class DemoNotificationService {
   private readonly logger = new Logger(DemoNotificationService.name);
@@ -75,7 +82,17 @@ export class DemoNotificationService {
   async sendDemoExpiredEmail(data: Omit<DemoEmailData, 'accessToken' | 'adminPassword'>): Promise<void> {
     const subject = 'Your NodePress Demo Has Expired';
     const html = this.getDemoExpiredTemplate(data);
-    
+
+    await this.sendEmail(data.to, subject, html);
+  }
+
+  /**
+   * Send email verification for demo request
+   */
+  async sendVerificationEmail(data: VerificationEmailData): Promise<void> {
+    const subject = '📧 Verify Your Email to Access NodePress Demo';
+    const html = this.getVerificationEmailTemplate(data);
+
     await this.sendEmail(data.to, subject, html);
   }
 
@@ -216,5 +233,35 @@ export class DemoNotificationService {
            this.config.get<string>('FRONTEND_URL') ||
            'https://nodepress.co.uk';
   }
-}
 
+  private getVerificationEmailTemplate(data: VerificationEmailData): string {
+    return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f4f4f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <h1 style="color: #18181b; margin: 0 0 24px;">Verify Your Email to Get Demo Access 📧</h1>
+      <p style="color: #52525b; font-size: 16px; line-height: 1.6;">Hi ${data.name},</p>
+      <p style="color: #52525b; font-size: 16px; line-height: 1.6;">Thank you for your interest in NodePress! To protect our demo environment, we need to verify your email address before granting access.</p>
+      <p style="color: #52525b; font-size: 16px; line-height: 1.6;">Click the button below to verify your email and receive your demo login credentials:</p>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${data.verificationUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">Verify Email & Get Demo Access</a>
+      </div>
+      <p style="color: #f59e0b; font-size: 14px; text-align: center;">⏰ This link expires in ${data.expiresInHours} hours</p>
+      <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
+      <p style="color: #71717a; font-size: 13px; line-height: 1.5;">
+        <strong>What happens next?</strong><br>
+        After verification, you'll receive another email with your demo login credentials. Your demo will be fully provisioned and ready to explore.
+      </p>
+      <p style="color: #a1a1aa; font-size: 12px; margin-top: 24px;">
+        If you didn't request a demo, you can safely ignore this email.<br>
+        If the button doesn't work, copy and paste this URL: ${data.verificationUrl}
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+}
