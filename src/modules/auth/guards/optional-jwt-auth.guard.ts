@@ -6,24 +6,66 @@
  */
 
 import { Injectable, ExecutionContext } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../../../database/prisma.service';
+import { Request } from 'express';
 
 @Injectable()
-export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
+export class OptionalJwtAuthGuard {
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Try to authenticate, but always allow the request to proceed
-    try {
-      // This will set req.user if a valid token is present
-      await super.canActivate(context);
-    } catch {
-      // Ignore authentication errors - allow request without user
+    const request = context.switchToHttp().getRequest<Request>();
+    const token = this.extractToken(request);
+
+    if (!token) {
+      return true; // Allow unauthenticated requests
     }
+
+    try {
+      const secret = this.configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production';
+      const payload = this.jwtService.verify(token, { secret });
+
+      const user = await this.prisma.user.findUnique({
+        where: { email: payload.email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          avatar: true,
+          demoInstanceId: true,
+        },
+      });
+
+      if (user) {
+        (request as any).user = {
+          ...user,
+          isDemo: payload.isDemo || false,
+          demoId: payload.demoId || payload.demoInstanceId || null,
+          demoInstanceId: payload.demoInstanceId || payload.demoId || null,
+        };
+      }
+    } catch {
+      // Ignore errors - allow request without user
+    }
+
     return true; // Always allow the request
   }
 
-  handleRequest(err: any, user: any) {
-    // Don't throw an error if authentication fails
-    // Just return null/undefined for the user
-    return user || null;
+  private extractToken(request: Request): string | null {
+    const authHeader = request.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      return authHeader.substring(7);
+    }
+    if (request.cookies && request.cookies.access_token) {
+      return request.cookies.access_token;
+    }
+    return null;
   }
 }
