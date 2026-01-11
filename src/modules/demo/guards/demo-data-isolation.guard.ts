@@ -17,6 +17,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { UserRole } from '@prisma/client';
 
 // Decorator to allow specific routes for demo users
 export const ALLOW_DEMO_KEY = 'allowDemo';
@@ -74,6 +75,11 @@ export class DemoDataIsolationGuard implements CanActivate {
     const user = request.user;
     const path = request.path;
     const method = request.method;
+
+    // SUPER_ADMIN and ADMIN bypass all demo restrictions - they own the system
+    if (user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN) {
+      return true;
+    }
 
     // Not a demo user - allow everything
     if (!user?.isDemo && !user?.demoId && !request.cookies?.demo_mode) {

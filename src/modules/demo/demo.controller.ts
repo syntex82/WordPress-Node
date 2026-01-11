@@ -77,7 +77,7 @@ export class DemoController {
    */
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   async listDemos(
     @Query('status') status?: DemoStatus,
     @Query('page') page?: number,
@@ -93,7 +93,7 @@ export class DemoController {
    */
   @Get('analytics')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   async getAnalytics() {
     return this.demoService.getDemoAnalytics();
   }
@@ -104,7 +104,7 @@ export class DemoController {
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   async getDemo(@Param('id') id: string) {
     return this.demoService.getDemoById(id);
   }
@@ -115,7 +115,7 @@ export class DemoController {
    */
   @Post(':id/extend')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   async extendDemo(@Param('id') id: string, @Body() dto: ExtendDemoDto) {
     return this.demoService.extendDemo(id, dto);
   }
@@ -126,7 +126,7 @@ export class DemoController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   async terminateDemo(@Param('id') id: string) {
     return this.demoService.terminateDemo(id);
   }

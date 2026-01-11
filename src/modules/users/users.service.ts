@@ -122,13 +122,20 @@ export class UsersService {
   /**
    * Find all users with pagination
    * SECURITY:
-   * - Filtered by demoInstanceId to isolate demo data
+   * - SUPER_ADMIN sees ALL users (real + demo)
+   * - ADMIN sees all real users + demo users in their context
+   * - Demo users only see demo data
    * - Non-SUPER_ADMIN users cannot see SUPER_ADMIN accounts
    */
   async findAll(page = 1, limit = 10, search?: string) {
     const skip = (page - 1) * limit;
-    const demoFilter = this.getDemoFilter();
     const currentUser = this.getCurrentUser();
+
+    // SUPER_ADMIN sees all users, no demo filter
+    // ADMIN and below get demo isolation
+    const demoFilter = currentUser?.role === UserRole.SUPER_ADMIN
+      ? {}
+      : this.getDemoFilter();
 
     // Role-based visibility filter:
     // - SUPER_ADMIN can see all users

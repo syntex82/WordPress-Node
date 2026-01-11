@@ -13,7 +13,7 @@ import { ThemeRendererService } from '../themes/theme-renderer.service';
 
 @Controller('api/admin/demo-analytics')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
+@Roles('SUPER_ADMIN', 'ADMIN')
 export class DemoAnalyticsController {
   constructor(
     private readonly analyticsService: DemoAnalyticsService,
