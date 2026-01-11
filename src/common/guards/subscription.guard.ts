@@ -43,8 +43,8 @@ export class SubscriptionGuard implements CanActivate {
       throw new ForbiddenException('Authentication required');
     }
 
-    // Admins bypass subscription checks
-    if (user.role === UserRole.ADMIN) {
+    // SUPER_ADMIN and ADMIN bypass subscription checks
+    if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
       return true;
     }
 
