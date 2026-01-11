@@ -72,12 +72,12 @@ export class DemoController {
     try {
       const result = await this.demoVerificationService.verifyEmailAndCreateDemo(token);
 
-      // Redirect directly to demo homepage
+      // Redirect directly to demo admin with auto-login
       const baseUrl = process.env.APP_URL || 'http://localhost:3000';
       if (result.demoCredentials) {
-        // Redirect to the demo homepage with the subdomain
+        // Redirect to the demo admin panel for automatic login
         return res.redirect(
-          `${baseUrl}/demo/${result.demoCredentials.subdomain}`
+          `${baseUrl}/demo/${result.demoCredentials.subdomain}/admin`
         );
       }
       // If already verified, redirect to try-demo page with message

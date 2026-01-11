@@ -354,6 +354,7 @@ document.getElementById('demo-request-form').addEventListener('submit', async (e
     // Check if this is an "active demo exists" error with demo info
     if (err.response && err.response.code === 'ACTIVE_DEMO_EXISTS') {
       const demoData = err.response;
+      const adminUrl = `${demoData.demoUrl}/admin`;
       form.style.display = 'none';
       resultDiv.innerHTML = `
         <div class="demo-success">
@@ -362,21 +363,24 @@ document.getElementById('demo-request-form').addEventListener('submit', async (e
             Your demo is still active and expires in <strong>${demoData.hoursRemaining} hours</strong>.
           </p>
           <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0;"><strong>Access your demo:</strong></p>
-            <div class="credential-row">
-              <span class="label">Demo URL:</span>
-              <span><a href="${demoData.demoUrl}" style="color: #10b981;">${demoData.demoUrl}</a></span>
+            <p style="margin: 0 0 15px 0;"><strong>🎉 Quick Access (No Login Required):</strong></p>
+            <p style="margin: 0 0 10px 0; color: rgba(255,255,255,0.8); font-size: 0.95em;">
+              Click the button below to access your demo admin panel instantly - no password needed!
+            </p>
+            <div class="credential-row" style="margin-top: 15px;">
+              <span class="label">Demo Homepage:</span>
+              <span><a href="${demoData.demoUrl}" style="color: #10b981;">${demoData.subdomain}</a></span>
             </div>
             <div class="credential-row">
               <span class="label">Expires:</span>
               <span>${new Date(demoData.expiresAt).toLocaleString()}</span>
             </div>
           </div>
-          <a href="${demoData.demoUrl}" class="demo-access-btn" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">
-            Access Your Demo →
+          <a href="${adminUrl}" class="demo-access-btn" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px; font-size: 1.1em;">
+            ⚙️ Access Admin Panel (Auto-Login) →
           </a>
           <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 20px;">
-            You can request a new demo after this one expires.
+            💡 <strong>Tip:</strong> Bookmark the admin URL for easy access. You can request a new demo after this one expires.
           </p>
         </div>
       `;
