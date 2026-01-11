@@ -19,12 +19,8 @@ import Tooltip from '../components/Tooltip';
 const USER_ROLES = [
   { value: 'SUPER_ADMIN', label: 'Super Admin', description: 'Full system access including security and all data' },
   { value: 'ADMIN', label: 'Admin', description: 'Site administrator with full access within scope' },
-  { value: 'EDITOR', label: 'Editor', description: 'Can edit all content and media' },
-  { value: 'AUTHOR', label: 'Author', description: 'Can create and manage own content' },
   { value: 'INSTRUCTOR', label: 'Instructor', description: 'Can manage own courses and students' },
-  { value: 'STUDENT', label: 'Student', description: 'Course student with read access' },
-  { value: 'USER', label: 'User', description: 'Basic user with profile access' },
-  { value: 'VIEWER', label: 'Viewer', description: 'Read-only access (legacy)' },
+  { value: 'STUDENT', label: 'Student', description: 'Default signup - messages, groups, media, LMS view' },
 ] as const;
 
 type UserRole = typeof USER_ROLES[number]['value'];
@@ -51,12 +47,8 @@ interface UserFormData {
 const ROLE_HIERARCHY: UserRole[] = [
   'SUPER_ADMIN',
   'ADMIN',
-  'EDITOR',
-  'AUTHOR',
   'INSTRUCTOR',
   'STUDENT',
-  'USER',
-  'VIEWER',
 ];
 
 function getRoleLevel(role: UserRole): number {
@@ -77,7 +69,7 @@ export default function Users() {
     name: '',
     email: '',
     password: '',
-    role: 'AUTHOR',
+    role: 'STUDENT',
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; userId: string | null }>({
     isOpen: false,
@@ -89,7 +81,7 @@ export default function Users() {
   const limit = 20;
 
   // Get roles that current user can assign (only roles at or below their level)
-  const currentUserRole = (currentUser?.role as UserRole) || 'VIEWER';
+  const currentUserRole = (currentUser?.role as UserRole) || 'STUDENT';
   const currentUserLevel = getRoleLevel(currentUserRole);
   const assignableRoles = currentUserRole === 'SUPER_ADMIN'
     ? USER_ROLES
@@ -148,7 +140,7 @@ export default function Users() {
         name: '',
         email: '',
         password: '',
-        role: 'AUTHOR',
+        role: 'STUDENT',
       });
     }
     setShowModal(true);
@@ -161,7 +153,7 @@ export default function Users() {
       name: '',
       email: '',
       password: '',
-      role: 'AUTHOR',
+      role: 'STUDENT',
     });
   };
 
