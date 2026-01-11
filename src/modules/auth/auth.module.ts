@@ -18,7 +18,7 @@ import { EmailModule } from '../email/email.module';
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     PrismaModule,
     EmailModule,
     JwtModule.registerAsync({
