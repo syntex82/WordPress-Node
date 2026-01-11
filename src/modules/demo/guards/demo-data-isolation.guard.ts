@@ -64,7 +64,6 @@ export class DemoDataIsolationGuard implements CanActivate {
     '/api/developers',      // Developer portal - sensitive marketplace data
     '/api/projects',        // Client projects - business data
     '/api/hiring',          // Hiring requests - business data
-    '/api/email',           // Email sending - could be abused
     '/api/update',          // System updates - dangerous in demo
     '/api/plugins/install', // Plugin installation - security risk
     '/api/plugins/upload',  // Plugin upload - security risk

@@ -40,19 +40,33 @@ export class DemoNotificationService {
 
   private initializeTransporter() {
     const host = this.config.get<string>('SMTP_HOST');
-    const port = this.config.get<number>('SMTP_PORT', 587);
+    const port = parseInt(this.config.get<string>('SMTP_PORT', '587'), 10);
     const user = this.config.get<string>('SMTP_USER');
     const pass = this.config.get<string>('SMTP_PASS');
 
     if (host && user && pass) {
+      this.logger.log(`Initializing SMTP transporter: ${host}:${port}`);
       this.transporter = nodemailer.createTransport({
         host,
         port,
-        secure: port === 465,
+        secure: port === 465, // true for 465, false for other ports
         auth: { user, pass },
+        connectionTimeout: 30000, // 30 seconds
+        greetingTimeout: 30000,
+        socketTimeout: 60000,
+      });
+
+      // Verify connection on startup
+      this.transporter.verify((error) => {
+        if (error) {
+          this.logger.error('SMTP connection verification failed:', error.message);
+        } else {
+          this.logger.log('SMTP server is ready to send emails');
+        }
       });
     } else {
       this.logger.warn('SMTP not configured - demo emails will be logged only');
+      this.logger.warn(`Missing: ${!host ? 'SMTP_HOST ' : ''}${!user ? 'SMTP_USER ' : ''}${!pass ? 'SMTP_PASS' : ''}`);
     }
   }
 
