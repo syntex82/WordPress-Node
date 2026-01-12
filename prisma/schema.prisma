@@ -423,6 +423,10 @@ model Developer {
   HiringRequest       HiringRequest[]
   Project             Project[]
 
+  // Marketplace products by this developer
+  plugins             MarketplacePlugin[]
+  themes              MarketplaceTheme[]
+
   @@index([availability])
   @@index([category])
   @@index([isFeatured])
@@ -713,6 +717,195 @@ model ManualRecommendation {
   @@index([ruleId])
 }
 
+// ==================== LICENSING SYSTEM ====================
+
+model License {
+  id              String              @id @default(cuid())
+  licenseKey      String              @unique
+  email           String
+  tier            LicenseTier
+  status          LicenseStatus       @default(ACTIVE)
+
+  // Restrictions
+  maxSites        Int                 @default(1)
+  allowedDomains  Json?               // Array of allowed domain patterns
+
+  // Features
+  features        Json                @default("[]")
+
+  // Dates
+  purchaseOrderId String?             @unique
+  expiresAt       DateTime?           // null = lifetime
+  lastValidated   DateTime?
+
+  // Customer info
+  customerName    String?
+  companyName     String?
+  metadata        Json?
+
+  // Relations
+  activations     LicenseActivation[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([tier])
+  @@index([expiresAt])
+}
+
+model LicenseActivation {
+  id          String   @id @default(cuid())
+  licenseId   String
+  domain      String
+  ipAddress   String?
+  serverInfo  Json?    // Server fingerprint for validation
+  activatedAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  isActive    Boolean  @default(true)
+
+  license     License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  @@unique([licenseId, domain])
+  @@index([licenseId])
+  @@index([domain])
+  @@index([isActive])
+}
+
+enum LicenseTier {
+  PERSONAL
+  PROFESSIONAL
+  AGENCY
+  ENTERPRISE
+}
+
+enum LicenseStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  REVOKED
+}
+
+// ==================== PLUGIN PURCHASES ====================
+
+model PluginPurchase {
+  id           String            @id @default(cuid())
+  userId       String
+  pluginId     String
+  orderId      String?
+  licenseKey   String?           @unique
+  purchaseDate DateTime          @default(now())
+  expiresAt    DateTime?         // For subscription-based plugins
+  status       String            @default("active")
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plugin       MarketplacePlugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pluginId])
+  @@index([userId])
+  @@index([pluginId])
+  @@index([status])
+}
+
+model ThemePurchase {
+  id           String           @id @default(cuid())
+  userId       String
+  themeId      String
+  orderId      String?
+  licenseKey   String?          @unique
+  purchaseDate DateTime         @default(now())
+  expiresAt    DateTime?
+  status       String           @default("active")
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme        MarketplaceTheme @relation(fields: [themeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, themeId])
+  @@index([userId])
+  @@index([themeId])
+  @@index([status])
+}
+
+// ==================== PROFESSIONAL SERVICES ====================
+
+model ProfessionalService {
+  id           String          @id @default(cuid())
+  name         String
+  slug         String          @unique
+  description  String          @db.Text
+  category     ServiceCategory
+  priceType    PriceType
+  hourlyRate   Decimal?        @db.Decimal(10, 2)
+  fixedPrice   Decimal?        @db.Decimal(10, 2)
+  minHours     Int?
+  maxHours     Int?
+  isActive     Boolean         @default(true)
+  isFeatured   Boolean         @default(false)
+  features     Json            @default("[]")
+  deliverables Json            @default("[]")
+  image        String?
+  sortOrder    Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  bookings     ServiceBooking[]
+}
+
+model ServiceBooking {
+  id            String        @id @default(cuid())
+  serviceId     String
+  userId        String
+  status        BookingStatus @default(PENDING)
+  scheduledDate DateTime?
+  completedDate DateTime?
+  hours         Decimal?      @db.Decimal(5, 2)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  notes         String?       @db.Text
+  requirements  Json?
+  paymentId     String?
+  orderId       String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  service       ProfessionalService @relation(fields: [serviceId], references: [id])
+  user          User                @relation(fields: [userId], references: [id])
+
+  @@index([serviceId])
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledDate])
+}
+
+enum ServiceCategory {
+  CONSULTING
+  DEVELOPMENT
+  TRAINING
+  SUPPORT
+  MIGRATION
+  HOSTING
+  DESIGN
+  SECURITY
+}
+
+enum PriceType {
+  HOURLY
+  FIXED
+  SUBSCRIPTION
+  QUOTE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+// ==================== MARKETPLACE PLUGINS ====================
+
 model MarketplacePlugin {
   id String @id @default(cuid())
   name                                       String
@@ -756,6 +949,9 @@ model MarketplacePlugin {
   approvedBy  User?                     @relation("MarketplacePlugin_approvedByIdToUser", fields: [approvedById], references: [id], onDelete: SetNull)
   submittedBy User?                     @relation("MarketplacePlugin_submittedByIdToUser", fields: [submittedById], references: [id], onDelete: SetNull)
   ratings                    MarketplacePluginRating[]
+  purchases                  PluginPurchase[]
+  developerId                String?
+  developer                  Developer?                @relation(fields: [developerId], references: [id], onDelete: SetNull)
 
   @@index([category])
   @@index([downloads])
@@ -832,6 +1028,9 @@ model MarketplaceTheme {
   approvedBy  User?                    @relation("MarketplaceTheme_approvedByIdToUser", fields: [approvedById], references: [id], onDelete: SetNull)
   submittedBy User?                    @relation("MarketplaceTheme_submittedByIdToUser", fields: [submittedById], references: [id], onDelete: SetNull)
   ratings                    MarketplaceThemeRating[]
+  purchases                  ThemePurchase[]
+  developerId                String?
+  developer                  Developer?               @relation(fields: [developerId], references: [id], onDelete: SetNull)
 
   @@index([category])
   @@index([downloads])
@@ -2073,6 +2272,11 @@ model User {
   mentionsReceived           PostMention[]             @relation("MentionedUser")
   mentionsMade               PostMention[]             @relation("MentionerUser")
   pricingSubscription        UserSubscription?         @relation("UserToSubscription")
+
+  // Monetization relations
+  pluginPurchases            PluginPurchase[]
+  themePurchases             ThemePurchase[]
+  serviceBookings            ServiceBooking[]
 }
 
 model UserBadge {

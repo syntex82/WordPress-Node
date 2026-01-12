@@ -49,6 +49,8 @@ import { TimelineModule } from './modules/timeline/timeline.module';
 import { DemoModule } from './modules/demo/demo.module';
 import { I18nModule } from './modules/i18n/i18n.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { LicensingModule } from './modules/licensing/licensing.module';
+import { ServicesModule } from './modules/services/services.module';
 
 // Check if admin dist exists
 const adminDistPath = join(process.cwd(), 'admin', 'dist');
@@ -123,6 +125,8 @@ const staticModules = adminDistExists
     DemoModule,
     I18nModule,
     BillingModule,
+    LicensingModule,
+    ServicesModule,
   ],
   providers: [
     // CRITICAL SECURITY: Global guard to isolate demo user data access

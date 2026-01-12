@@ -105,13 +105,19 @@ export class AuthService {
       };
     }
 
-    // Successful login - reset failed attempts and update last login
-    await this.handleSuccessfulLogin(validatedUser.id, ip);
+    // Successful login - reset failed attempts, update last login, create session
+    const sessionId = await this.handleSuccessfulLogin(validatedUser.id, ip, userAgent);
 
-    const payload = { email: validatedUser.email, sub: validatedUser.id, role: validatedUser.role };
+    const payload = {
+      email: validatedUser.email,
+      sub: validatedUser.id,
+      role: validatedUser.role,
+      sessionId, // Include session ID in JWT for tracking
+    };
 
     return {
       access_token: this.jwtService.sign(payload),
+      sessionId,
       user: {
         id: validatedUser.id,
         email: validatedUser.email,
@@ -223,13 +229,14 @@ export class AuthService {
       }
     }
 
-    // Successful 2FA - complete login
-    await this.handleSuccessfulLogin(user.id, ip);
+    // Successful 2FA - complete login and create session
+    const sessionId = await this.handleSuccessfulLogin(user.id, ip, userAgent);
 
-    const finalPayload = { email: user.email, sub: user.id, role: user.role };
+    const finalPayload = { email: user.email, sub: user.id, role: user.role, sessionId };
 
     return {
       access_token: this.jwtService.sign(finalPayload),
+      sessionId,
       user: {
         id: user.id,
         email: user.email,
@@ -273,9 +280,9 @@ export class AuthService {
   }
 
   /**
-   * Handle successful login
+   * Handle successful login - creates session record for tracking
    */
-  private async handleSuccessfulLogin(userId: string, ip?: string) {
+  private async handleSuccessfulLogin(userId: string, ip?: string, userAgent?: string): Promise<string> {
     await this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -286,7 +293,24 @@ export class AuthService {
       },
     });
 
+    // Create session record for session management
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const token = crypto.randomBytes(32).toString('hex');
+
+    const session = await this.prisma.session.create({
+      data: {
+        userId,
+        token,
+        expiresAt,
+        ip: ip || null,
+        userAgent: userAgent || null,
+        lastActivity: new Date(),
+      },
+    });
+
     await this.logSecurityEvent(userId, SecurityEventType.SUCCESS_LOGIN, ip);
+
+    return session.id;
   }
 
   /**
