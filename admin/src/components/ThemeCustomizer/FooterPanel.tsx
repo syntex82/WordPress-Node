@@ -1,9 +1,12 @@
 /**
  * Footer Panel Component
  * Allows customization of footer styles and content
+ * Now with WYSIWYG text editing support
  */
 
+import { useState } from 'react';
 import { CustomThemeSettings } from '../../services/api';
+import InlineWysiwygEditor from './InlineWysiwygEditor';
 
 interface FooterPanelProps {
   settings: CustomThemeSettings;
@@ -12,6 +15,7 @@ interface FooterPanelProps {
 
 export default function FooterPanel({ settings, onChange }: FooterPanelProps) {
   const { layout } = settings;
+  const [copyrightText, setCopyrightText] = useState('© {year} NodePress. All rights reserved.');
 
   return (
     <div className="space-y-6">
@@ -38,13 +42,17 @@ export default function FooterPanel({ settings, onChange }: FooterPanelProps) {
 
       <div>
         <h3 className="text-sm font-medium text-white mb-3">Copyright Text</h3>
-        <textarea
-          rows={2}
-          defaultValue="© {year} NodePress. All rights reserved."
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500"
+        <InlineWysiwygEditor
+          value={copyrightText}
+          onChange={(value) => {
+            setCopyrightText(value);
+            onChange('footer.copyrightText', value);
+          }}
           placeholder="Enter copyright text..."
+          minHeight="60px"
+          variant="compact"
         />
-        <p className="text-xs text-gray-500 mt-1">Use {'{year}'} for dynamic year</p>
+        <p className="text-xs text-gray-500 mt-1">Use {'{year}'} for dynamic year. Select text to format.</p>
       </div>
 
       <div>

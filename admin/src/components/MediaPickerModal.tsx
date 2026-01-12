@@ -379,6 +379,7 @@ export default function MediaPickerModal({ type, onSelect, onClose }: MediaPicke
                             onTimeUpdate={handleTimeUpdate}
                             onLoadedMetadata={handleLoadedMetadata}
                             onEnded={() => setIsPlaying(false)}
+                            onError={(e) => console.error('Audio load error:', selectedItem.path)}
                             className="hidden"
                           />
 
@@ -438,11 +439,12 @@ export default function MediaPickerModal({ type, onSelect, onClose }: MediaPicke
 
                     {/* Video Preview Player */}
                     {type === 'video' && (
-                      <div className="rounded-2xl overflow-hidden bg-black shadow-2xl ring-1 ring-white/10">
+                      <div className="rounded-2xl overflow-hidden bg-black shadow-2xl ring-1 ring-white/10 relative">
                         <video
                           ref={videoRef}
                           src={selectedItem.path}
                           onEnded={() => setIsPlaying(false)}
+                          onError={(e) => console.error('Video load error:', selectedItem.path)}
                           className="w-full aspect-video"
                           controls
                         />

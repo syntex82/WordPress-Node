@@ -1354,6 +1354,8 @@ export function AudioPlayerBlock({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(80);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -1414,10 +1416,28 @@ export function AudioPlayerBlock({
           ref={audioRef}
           src={props.audioUrl}
           onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
+          onLoadedMetadata={(e) => { handleLoadedMetadata(); setIsLoading(false); setHasError(false); }}
           onEnded={() => setIsPlaying(false)}
+          onError={() => { setHasError(true); setIsLoading(false); }}
+          onCanPlay={() => setIsLoading(false)}
           loop={props.loop}
         />
+      )}
+
+      {/* Error Overlay */}
+      {hasAudio && hasError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20 rounded-2xl">
+          <div className="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-3">
+            <FiAlertCircle className="text-red-400" size={28} />
+          </div>
+          <p className="text-white/80 text-sm font-medium">Failed to load audio</p>
+          <button
+            onClick={() => { setHasError(false); setIsLoading(true); }}
+            className="mt-3 px-4 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       )}
 
       <div className="relative p-6">
@@ -1587,6 +1607,8 @@ export function VideoPlayerBlock({
   const [isMuted, setIsMuted] = useState(props.muted || false);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   const hasVideo = props.videoUrl && props.videoUrl.length > 0;
   const videoType = getVideoType(props.videoUrl || '');
@@ -1751,6 +1773,32 @@ export function VideoPlayerBlock({
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
+      {/* Loading Indicator */}
+      {hasVideo && isLoading && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+          <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Error State */}
+      {hasVideo && hasError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-red-900/50 to-gray-900 z-10">
+          <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+            <FiAlertCircle className="text-red-400" size={32} />
+          </div>
+          <p className="text-white/80 text-sm font-medium">Failed to load video</p>
+          <p className="text-white/50 text-xs mt-1 max-w-xs text-center px-4">
+            {props.videoUrl?.slice(0, 50)}...
+          </p>
+          <button
+            onClick={() => { setHasError(false); setIsLoading(true); }}
+            className="mt-3 px-4 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Actual Video Element */}
       {hasVideo ? (
         <video
@@ -1759,10 +1807,12 @@ export function VideoPlayerBlock({
           poster={props.posterUrl}
           className="w-full aspect-video object-contain bg-black"
           onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
+          onLoadedMetadata={() => { handleLoadedMetadata(); setIsLoading(false); setHasError(false); }}
           onEnded={() => setIsPlaying(false)}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
+          onError={() => { setHasError(true); setIsLoading(false); }}
+          onCanPlay={() => setIsLoading(false)}
           loop={props.loop}
           muted={isMuted}
           playsInline={props.playsInline}
@@ -1876,6 +1926,64 @@ export function VideoPlayerBlock({
   );
 }
 
+// Gallery Image with Error Handling
+function GalleryImage({
+  src,
+  caption,
+  index,
+  settings,
+  onClick
+}: {
+  src: string;
+  caption?: string;
+  index: number;
+  settings: CustomThemeSettings;
+  onClick: () => void;
+}) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div
+      className="relative group cursor-pointer overflow-hidden bg-gray-800"
+      style={{ borderRadius: settings.borders.radius }}
+      onClick={onClick}
+    >
+      {isLoading && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
+      {hasError ? (
+        <div className="w-full h-48 flex flex-col items-center justify-center bg-gray-800">
+          <FiAlertCircle className="text-red-400 mb-2" size={24} />
+          <p className="text-xs text-gray-400">Failed to load</p>
+        </div>
+      ) : (
+        <img
+          src={src}
+          alt={caption || `Image ${index + 1}`}
+          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+          loading="lazy"
+          onLoad={() => setIsLoading(false)}
+          onError={() => { setHasError(true); setIsLoading(false); }}
+        />
+      )}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
+        <FiMaximize className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={24} />
+      </div>
+      {caption && (
+        <div
+          className="absolute bottom-0 left-0 right-0 p-2 text-sm text-white bg-black/50"
+          style={{ fontFamily: settings.typography.bodyFont }}
+        >
+          {caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Image Gallery Block
 export function GalleryBlock({
   props,
@@ -1898,32 +2006,14 @@ export function GalleryBlock({
     <>
       <div className={`grid ${gridCols} gap-4`}>
         {images.map((img: { src: string; caption?: string }, i: number) => (
-          <div
+          <GalleryImage
             key={i}
-            className="relative group cursor-pointer overflow-hidden"
-            style={{ borderRadius: settings.borders.radius }}
+            src={img.src}
+            caption={img.caption}
+            index={i}
+            settings={settings}
             onClick={() => setLightboxIndex(i)}
-          >
-            <img
-              src={img.src}
-              alt={img.caption || `Image ${i + 1}`}
-              className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
-              loading="lazy"
-            />
-            <div
-              className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center"
-            >
-              <FiMaximize className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={24} />
-            </div>
-            {img.caption && (
-              <div
-                className="absolute bottom-0 left-0 right-0 p-2 text-sm text-white bg-black/50"
-                style={{ fontFamily: settings.typography.bodyFont }}
-              >
-                {img.caption}
-              </div>
-            )}
-          </div>
+          />
         ))}
       </div>
 
