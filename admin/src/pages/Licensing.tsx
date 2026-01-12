@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { FiKey, FiDollarSign, FiUsers, FiRefreshCw, FiCopy, FiCheck, FiX } from 'react-icons/fi';
-import api from '../api/axios';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 interface License {

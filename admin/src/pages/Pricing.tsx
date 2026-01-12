@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { FaBolt, FaBuilding } from 'react-icons/fa';
 import { FiCheck } from 'react-icons/fi';
-import api from '../api/axios';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 // Stripe Pricing Table Configuration

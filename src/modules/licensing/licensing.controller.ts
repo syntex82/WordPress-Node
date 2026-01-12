@@ -180,7 +180,7 @@ export class LicensingController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'SUPER_ADMIN')
   async getLicenseStats() {
-    return this.validationService.getLicenseStats();
+    return this.licensingService.getLicenseStats();
   }
 
   /**
@@ -246,17 +246,6 @@ export class LicensingController {
   @Roles('ADMIN', 'SUPER_ADMIN')
   async getAllLicenses() {
     return this.licensingService.getAllLicenses();
-  }
-
-  /**
-   * Get license stats (admin)
-   * GET /api/licensing/admin/stats
-   */
-  @Get('admin/stats')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SUPER_ADMIN')
-  async getLicenseStats() {
-    return this.licensingService.getLicenseStats();
   }
 
   /**
