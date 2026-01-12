@@ -126,9 +126,10 @@ const MyDeveloperProfile = lazy(() => import('./pages/marketplace').then(m => ({
 const EditDeveloper = lazy(() => import('./pages/marketplace').then(m => ({ default: m.EditDeveloper })));
 const HiringRequestDetail = lazy(() => import('./pages/marketplace').then(m => ({ default: m.HiringRequestDetail })));
 
-// Lazy-loaded pages - Subscriptions
+// Lazy-loaded pages - Subscriptions & Licensing
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
+const Licensing = lazy(() => import('./pages/Licensing'));
 
 // Demo mode components
 import { useDemoStore } from './stores/demoStore';
@@ -295,6 +296,9 @@ function AppContent() {
                 <Route path="subscription" element={<Subscription />} />
                 <Route path="subscription/success" element={<Subscription />} />
                 <Route path="pricing" element={<Pricing />} />
+
+                {/* Licensing Admin */}
+                <Route path="licensing" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Licensing /></ProtectedRoute>} />
 
                 {/* Catch-all for authenticated users - redirect to dashboard */}
                 <Route path="*" element={<Navigate to="/" replace />} />

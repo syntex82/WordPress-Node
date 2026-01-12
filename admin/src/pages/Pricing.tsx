@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { FaBolt, FaBuilding } from 'react-icons/fa';
+import { FiCheck } from 'react-icons/fi';
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 // Stripe Pricing Table Configuration
 const STRIPE_PUBLISHABLE_KEY = 'pk_live_51RjyaDFzzHwoqssW7e8C8sFpNTIOMuZ8gDf783cQdgOAfTeHna4Bqt4qHL6vsH3SjTZ9xtAMR6o5KlFmihtOkOiJ00VkqHy520';
@@ -155,7 +158,146 @@ export default function Pricing() {
           )}
         </div>
 
+        {/* Self-Hosted Licenses Section */}
+        <div className="mt-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Self-Hosted Licenses
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              One-time purchase. Host NodePress on your own server.
+            </p>
+          </div>
+          <LicensePricing />
+        </div>
+      </div>
+    </div>
+  );
+}
 
+// License tiers for self-hosted version
+const LICENSE_TIERS = [
+  {
+    tier: 'PERSONAL',
+    name: 'Personal',
+    price: 49,
+    maxSites: 1,
+    features: ['1 Site License', '1 Year Updates', 'Community Support', 'Core Features'],
+    popular: false,
+  },
+  {
+    tier: 'PROFESSIONAL',
+    name: 'Professional',
+    price: 149,
+    maxSites: 5,
+    features: ['5 Site Licenses', '1 Year Updates', 'Priority Support', 'All Features', 'White Label'],
+    popular: true,
+  },
+  {
+    tier: 'BUSINESS',
+    name: 'Business',
+    price: 299,
+    maxSites: 25,
+    features: ['25 Site Licenses', '1 Year Updates', 'Premium Support', 'All Features', 'White Label', 'Multisite'],
+    popular: false,
+  },
+  {
+    tier: 'ENTERPRISE',
+    name: 'Enterprise',
+    price: 999,
+    maxSites: -1,
+    features: ['Unlimited Sites', 'Lifetime Updates', 'Dedicated Support', 'All Features', 'White Label', 'Multisite', 'Custom Development'],
+    lifetime: true,
+    popular: false,
+  },
+];
+
+function LicensePricing() {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const { user } = useAuthStore();
+
+  const handlePurchase = async (tier: string) => {
+    const purchaseEmail = user?.email || email;
+    if (!purchaseEmail) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    setLoading(tier);
+    try {
+      const res = await api.post('/api/licensing/checkout', {
+        tier,
+        email: purchaseEmail,
+      });
+      if (res.data.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to create checkout');
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {!user && (
+        <div className="max-w-md mx-auto">
+          <input
+            type="email"
+            placeholder="Enter your email for license delivery"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          />
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {LICENSE_TIERS.map((tier) => (
+          <div
+            key={tier.tier}
+            className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 ${
+              tier.popular ? 'ring-2 ring-blue-500' : ''
+            }`}
+          >
+            {tier.popular && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+                Most Popular
+              </div>
+            )}
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{tier.name}</h3>
+            <div className="mt-4">
+              <span className="text-4xl font-bold text-gray-900 dark:text-white">${tier.price}</span>
+              <span className="text-gray-500 dark:text-gray-400">
+                {tier.lifetime ? ' lifetime' : ' /year'}
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              {tier.maxSites === -1 ? 'Unlimited sites' : `${tier.maxSites} site${tier.maxSites > 1 ? 's' : ''}`}
+            </p>
+            <ul className="mt-6 space-y-3">
+              {tier.features.map((feature) => (
+                <li key={feature} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <FiCheck className="text-green-500 flex-shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => handlePurchase(tier.tier)}
+              disabled={loading === tier.tier}
+              className={`mt-6 w-full py-3 rounded-lg font-medium transition ${
+                tier.popular
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
+              } disabled:opacity-50`}
+            >
+              {loading === tier.tier ? 'Processing...' : 'Buy License'}
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

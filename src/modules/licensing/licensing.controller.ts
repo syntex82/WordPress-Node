@@ -236,5 +236,38 @@ export class LicensingController {
   ) {
     return this.licensingService.revokeLicense(licenseKey, reason);
   }
+
+  /**
+   * Get all licenses (admin)
+   * GET /api/licensing/admin/licenses
+   */
+  @Get('admin/licenses')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN')
+  async getAllLicenses() {
+    return this.licensingService.getAllLicenses();
+  }
+
+  /**
+   * Get license stats (admin)
+   * GET /api/licensing/admin/stats
+   */
+  @Get('admin/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN')
+  async getLicenseStats() {
+    return this.licensingService.getLicenseStats();
+  }
+
+  /**
+   * Revoke license by ID (admin)
+   * POST /api/licensing/admin/licenses/:id/revoke
+   */
+  @Post('admin/licenses/:id/revoke')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN')
+  async revokeLicenseById(@Param('id') id: string) {
+    return this.licensingService.revokeLicenseById(id);
+  }
 }
 

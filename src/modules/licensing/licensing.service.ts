@@ -344,5 +344,55 @@ export class LicensingService {
       html,
     });
   }
+
+  /**
+   * Get all licenses (admin)
+   */
+  async getAllLicenses() {
+    return this.prisma.license.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Get license stats (admin)
+   */
+  async getLicenseStats() {
+    const licenses = await this.prisma.license.findMany();
+
+    const now = new Date();
+    const activeLicenses = licenses.filter(l =>
+      l.status === 'ACTIVE' && (!l.expiresAt || l.expiresAt > now)
+    );
+
+    const byTier: Record<string, number> = {};
+    let revenue = 0;
+
+    for (const license of licenses) {
+      byTier[license.tier] = (byTier[license.tier] || 0) + 1;
+      const tierConfig = LICENSE_TIER_CONFIG[license.tier as LicenseTier];
+      if (tierConfig) {
+        revenue += tierConfig.price;
+      }
+    }
+
+    return {
+      totalLicenses: licenses.length,
+      activeLicenses: activeLicenses.length,
+      revenue,
+      byTier,
+    };
+  }
+
+  /**
+   * Revoke license by ID (admin)
+   */
+  async revokeLicenseById(id: string) {
+    const license = await this.prisma.license.findUnique({ where: { id } });
+    if (!license) {
+      throw new NotFoundException('License not found');
+    }
+    return this.revokeLicense(license.licenseKey, 'Revoked by admin');
+  }
 }
 
