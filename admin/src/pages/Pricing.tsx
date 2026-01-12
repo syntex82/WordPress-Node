@@ -175,7 +175,7 @@ export default function Pricing() {
   );
 }
 
-// License tiers for self-hosted version
+// License tiers for self-hosted version (must match backend LicenseTier enum)
 const LICENSE_TIERS = [
   {
     tier: 'PERSONAL',
@@ -190,15 +190,16 @@ const LICENSE_TIERS = [
     name: 'Professional',
     price: 149,
     maxSites: 5,
-    features: ['5 Site Licenses', '1 Year Updates', 'Priority Support', 'All Features', 'White Label'],
+    features: ['5 Site Licenses', '1 Year Updates', 'Priority Support', 'All Features'],
     popular: true,
   },
   {
-    tier: 'BUSINESS',
-    name: 'Business',
+    tier: 'AGENCY',
+    name: 'Agency',
     price: 299,
-    maxSites: 25,
-    features: ['25 Site Licenses', '1 Year Updates', 'Premium Support', 'All Features', 'White Label', 'Multisite'],
+    maxSites: -1,
+    features: ['Unlimited Sites', 'Lifetime Updates', 'Premium Support', 'All Features', 'White Label'],
+    lifetime: true,
     popular: false,
   },
   {
@@ -206,7 +207,7 @@ const LICENSE_TIERS = [
     name: 'Enterprise',
     price: 999,
     maxSites: -1,
-    features: ['Unlimited Sites', 'Lifetime Updates', 'Dedicated Support', 'All Features', 'White Label', 'Multisite', 'Custom Development'],
+    features: ['Unlimited Sites', 'Lifetime Updates', 'Dedicated Support', 'All Features', 'White Label', 'Priority Support', 'Custom Development'],
     lifetime: true,
     popular: false,
   },
