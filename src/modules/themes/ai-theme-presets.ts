@@ -8038,6 +8038,570 @@ const RECORD_LABEL: AiThemePreset = {
 };
 
 // ============================================
+// MEDICAL CANNABIS DISPENSARY PRESET
+// ============================================
+
+const PRESET_IMAGES_CANNABIS = {
+  hero: 'https://images.unsplash.com/photo-1536964310528-e47dd655ecf3?w=1920&h=1080&fit=crop',
+  products: [
+    'https://images.unsplash.com/photo-1605792657660-596af9009e82?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1612828786441-b6f5e4e5b1f5?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&h=600&fit=crop',
+  ],
+  education: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=1200&h=800&fit=crop',
+  staff: [
+    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop',
+  ],
+};
+
+const MEDICAL_CANNABIS_DISPENSARY: AiThemePreset = {
+  id: 'medical-cannabis-dispensary',
+  name: 'Green Wellness Dispensary',
+  description:
+    'Professional medical cannabis dispensary theme with product catalog, education resources, compliance information, and online ordering',
+  category: 'business',
+  thumbnail: PRESET_IMAGES_CANNABIS.hero,
+  tags: ['cannabis', 'dispensary', 'medical', 'wellness', 'cbd', 'thc', 'marijuana'],
+  industry: 'healthcare',
+  style: 'professional',
+  colorScheme: 'light',
+  colors: {
+    primary: '#2D8C3C',
+    secondary: '#1E5F2E',
+    accent: '#7CB342',
+    background: '#FFFFFF',
+    surface: '#F1F8F4',
+    text: '#2C3E50',
+    textMuted: '#6C757D',
+    heading: '#1A3A1F',
+    link: '#2D8C3C',
+    linkHover: '#1E5F2E',
+    border: '#D4E8D9',
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+  },
+  typography: {
+    headingFont: 'Poppins',
+    bodyFont: 'Inter',
+    baseFontSize: 16,
+    lineHeight: 1.7,
+    headingWeight: 600,
+  },
+  layout: {
+    sidebarPosition: 'none',
+    contentWidth: 1200,
+    headerStyle: 'sticky',
+    footerStyle: 'multicolumn',
+    containerMaxWidth: 1400,
+  },
+  spacing: {
+    sectionPadding: 80,
+    elementSpacing: 24,
+    containerPadding: 20,
+    blockGap: 40,
+  },
+  borders: {
+    radius: 12,
+    width: 1,
+    style: 'solid',
+  },
+  features: {
+    darkMode: false,
+    animations: true,
+    responsiveImages: true,
+    lazyLoading: true,
+    stickyHeader: true,
+    backToTop: true,
+    socialSharing: true,
+    searchBar: true,
+    newsletter: true,
+    chatWidget: true,
+    customFonts: true,
+    parallax: false,
+    breadcrumbs: true,
+    rtlSupport: false,
+    multiLanguage: false,
+    pwa: true,
+  },
+  headerStyle: 'sticky',
+  footerStyle: 'multicolumn',
+  pages: [
+    {
+      name: 'Home',
+      slug: 'home',
+      isHomePage: true,
+      seo: {
+        title: 'Green Wellness Dispensary | Premium Medical Cannabis',
+        description:
+          'Your trusted source for premium medical cannabis products. Licensed dispensary offering quality CBD, THC products, and expert consultation.',
+        keywords: 'medical cannabis, dispensary, CBD, THC, marijuana, wellness',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Your Wellness Journey Starts Here',
+            subtitle:
+              'Premium medical cannabis products with expert guidance. Licensed, compliant, and committed to your health.',
+            backgroundImage: PRESET_IMAGES_CANNABIS.hero,
+            ctaText: 'Shop Products',
+            ctaUrl: '/shop',
+            alignment: 'center',
+            overlay: 0.5,
+          },
+        },
+        {
+          type: 'stats',
+          props: {
+            stats: [
+              { value: '5000+', label: 'Happy Patients' },
+              { value: '200+', label: 'Premium Products' },
+              { value: '15+', label: 'Years Experience' },
+              { value: '100%', label: 'Lab Tested' },
+            ],
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Why Choose Green Wellness',
+            columns: 3,
+            features: [
+              {
+                icon: '🔬',
+                title: 'Lab Tested Quality',
+                description: 'All products third-party tested for purity and potency',
+              },
+              {
+                icon: '👨‍⚕️',
+                title: 'Expert Consultation',
+                description: 'Certified cannabis consultants to guide your selection',
+              },
+              {
+                icon: '✅',
+                title: 'Fully Licensed',
+                description: 'State-licensed and compliant with all regulations',
+              },
+              {
+                icon: '🚚',
+                title: 'Discreet Delivery',
+                description: 'Fast, secure, and confidential delivery service',
+              },
+              {
+                icon: '📚',
+                title: 'Education First',
+                description: 'Comprehensive resources to help you make informed decisions',
+              },
+              {
+                icon: '💚',
+                title: 'Wellness Focused',
+                description: 'Dedicated to improving your quality of life',
+              },
+            ],
+          },
+        },
+        {
+          type: 'productGrid',
+          props: {
+            title: 'Featured Products',
+            columns: 4,
+          },
+        },
+        {
+          type: 'imageText',
+          props: {
+            title: 'Medical Cannabis Education',
+            text: 'Understanding cannabis is key to finding the right products for your needs. Our team provides comprehensive education on cannabinoids, terpenes, consumption methods, and dosing to ensure you make informed decisions about your wellness journey.',
+            imageUrl: PRESET_IMAGES_CANNABIS.education,
+            imagePosition: 'left',
+          },
+        },
+        {
+          type: 'cta',
+          props: {
+            title: 'New Patient? Get Started Today',
+            description:
+              'Schedule a consultation with our cannabis specialists and receive 20% off your first purchase.',
+            buttonText: 'Book Consultation',
+            buttonLink: '/consultation',
+            style: 'gradient',
+          },
+        },
+        {
+          type: 'testimonials',
+          props: {
+            title: 'Patient Success Stories',
+            layout: 'grid',
+            testimonials: [
+              {
+                quote:
+                  'The staff at Green Wellness helped me find the perfect CBD product for my chronic pain. Life-changing!',
+                author: 'Sarah M.',
+                role: 'Medical Patient',
+                avatar: PRESET_IMAGES_CANNABIS.staff[0],
+              },
+              {
+                quote:
+                  'Professional, knowledgeable, and caring. They take time to explain everything and ensure you get the right product.',
+                author: 'James T.',
+                role: 'Medical Patient',
+                avatar: PRESET_IMAGES_CANNABIS.staff[1],
+              },
+              {
+                quote:
+                  'Best dispensary experience. Clean facility, quality products, and excellent customer service.',
+                author: 'Maria L.',
+                role: 'Medical Patient',
+                avatar: PRESET_IMAGES_CANNABIS.staff[2],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      name: 'Shop',
+      slug: 'shop',
+      isHomePage: false,
+      seo: {
+        title: 'Shop Medical Cannabis Products | Green Wellness',
+        description:
+          'Browse our selection of premium cannabis products including flower, edibles, concentrates, topicals, and CBD products.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Premium Cannabis Products',
+            subtitle: 'All products lab-tested and state-compliant',
+            alignment: 'center',
+          },
+        },
+        {
+          type: 'shopFilters',
+          props: {},
+        },
+        {
+          type: 'productGrid',
+          props: {
+            columns: 4,
+          },
+        },
+      ],
+    },
+    {
+      name: 'Education',
+      slug: 'education',
+      isHomePage: false,
+      seo: {
+        title: 'Cannabis Education & Resources | Green Wellness',
+        description:
+          'Learn about medical cannabis, cannabinoids, consumption methods, dosing, and more from our expert team.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Cannabis Education Center',
+            subtitle: 'Knowledge is power. Learn about medical cannabis and make informed decisions.',
+            alignment: 'center',
+          },
+        },
+        {
+          type: 'accordion',
+          props: {
+            title: 'Frequently Asked Questions',
+            items: [
+              {
+                title: 'What is the difference between CBD and THC?',
+                content:
+                  'CBD (cannabidiol) is non-psychoactive and known for therapeutic benefits like pain relief and anxiety reduction. THC (tetrahydrocannabinol) is psychoactive and provides euphoric effects along with medical benefits.',
+              },
+              {
+                title: 'Do I need a medical card to purchase?',
+                content:
+                  'Yes, a valid medical marijuana card issued by your state is required to purchase medical cannabis products from our dispensary.',
+              },
+              {
+                title: 'How do I determine the right dosage?',
+                content:
+                  'Start low and go slow. Our consultants will help you find the right dosage based on your condition, experience level, and desired effects. We recommend starting with low doses and gradually increasing.',
+              },
+              {
+                title: 'What consumption methods are available?',
+                content:
+                  'We offer various consumption methods including smoking (flower), vaping, edibles, tinctures, topicals, and concentrates. Each method has different onset times and duration of effects.',
+              },
+              {
+                title: 'Are your products tested?',
+                content:
+                  'Yes, all our products undergo rigorous third-party lab testing for potency, purity, and contaminants. Lab results are available for every product.',
+              },
+            ],
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Product Categories Explained',
+            columns: 3,
+            features: [
+              {
+                icon: '🌿',
+                title: 'Flower',
+                description: 'Traditional cannabis buds for smoking or vaporizing. Fast-acting with full spectrum effects.',
+              },
+              {
+                icon: '🍬',
+                title: 'Edibles',
+                description: 'Cannabis-infused foods and beverages. Longer-lasting effects with delayed onset.',
+              },
+              {
+                icon: '💧',
+                title: 'Tinctures',
+                description: 'Liquid extracts taken sublingually. Precise dosing with moderate onset time.',
+              },
+              {
+                icon: '💨',
+                title: 'Concentrates',
+                description: 'Highly potent extracts like wax, shatter, and oil. For experienced users.',
+              },
+              {
+                icon: '🧴',
+                title: 'Topicals',
+                description: 'Creams, balms, and lotions for localized relief without psychoactive effects.',
+              },
+              {
+                icon: '💊',
+                title: 'Capsules',
+                description: 'Pre-measured doses in pill form. Convenient and discreet consumption.',
+              },
+            ],
+          },
+        },
+        {
+          type: 'blogPosts',
+          props: {
+            title: 'Latest Articles & Guides',
+            columns: 3,
+            showExcerpt: true,
+          },
+        },
+      ],
+    },
+    {
+      name: 'Consultation',
+      slug: 'consultation',
+      isHomePage: false,
+      seo: {
+        title: 'Book a Consultation | Green Wellness Dispensary',
+        description: 'Schedule a consultation with our certified cannabis specialists to find the right products for your needs.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Expert Cannabis Consultation',
+            subtitle: 'Get personalized recommendations from our certified specialists',
+            alignment: 'center',
+          },
+        },
+        {
+          type: 'appointmentForm',
+          props: {
+            title: 'Schedule Your Consultation',
+            submitText: 'Book Appointment',
+          },
+        },
+        {
+          type: 'teamGrid',
+          props: {
+            title: 'Meet Our Cannabis Consultants',
+            members: [
+              {
+                name: 'Dr. Emily Chen',
+                role: 'Chief Cannabis Consultant',
+                bio: 'PhD in Pharmacology, 10+ years cannabis research',
+                image: PRESET_IMAGES_CANNABIS.staff[0],
+              },
+              {
+                name: 'Michael Rodriguez',
+                role: 'Senior Consultant',
+                bio: 'Certified Cannabis Specialist, 8 years experience',
+                image: PRESET_IMAGES_CANNABIS.staff[1],
+              },
+              {
+                name: 'Lisa Thompson',
+                role: 'Patient Care Specialist',
+                bio: 'RN, Cannabis Therapy Certification',
+                image: PRESET_IMAGES_CANNABIS.staff[2],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      name: 'About',
+      slug: 'about',
+      isHomePage: false,
+      seo: {
+        title: 'About Green Wellness Dispensary | Our Story',
+        description:
+          'Learn about our mission to provide safe, quality medical cannabis products and education to improve patient wellness.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Our Mission: Your Wellness',
+            subtitle: 'Providing safe, quality medical cannabis with compassion and expertise',
+            alignment: 'center',
+          },
+        },
+        {
+          type: 'about',
+          props: {
+            title: 'Committed to Quality & Compliance',
+            content:
+              'Green Wellness Dispensary was founded with a simple mission: to provide patients with safe, effective, and high-quality medical cannabis products. We believe in the therapeutic potential of cannabis and are committed to helping patients improve their quality of life through education, expert guidance, and premium products. Our state-licensed facility maintains the highest standards of quality, safety, and compliance.',
+            image: PRESET_IMAGES_CANNABIS.hero,
+            stats: [
+              { value: '15+', label: 'Years in Business' },
+              { value: '100%', label: 'Lab Tested' },
+              { value: '5000+', label: 'Patients Served' },
+            ],
+          },
+        },
+        {
+          type: 'features',
+          props: {
+            title: 'Our Core Values',
+            columns: 3,
+            features: [
+              {
+                icon: '🔒',
+                title: 'Safety First',
+                description: 'Rigorous testing and quality control for every product',
+              },
+              {
+                icon: '📚',
+                title: 'Education',
+                description: 'Empowering patients with knowledge and resources',
+              },
+              {
+                icon: '💚',
+                title: 'Compassion',
+                description: 'Treating every patient with care and respect',
+              },
+              {
+                icon: '⚖️',
+                title: 'Compliance',
+                description: 'Full adherence to state and federal regulations',
+              },
+              {
+                icon: '🌱',
+                title: 'Sustainability',
+                description: 'Environmentally responsible sourcing and practices',
+              },
+              {
+                icon: '🤝',
+                title: 'Community',
+                description: 'Supporting local patients and community wellness',
+              },
+            ],
+          },
+        },
+        {
+          type: 'timeline',
+          props: {
+            title: 'Our Journey',
+            items: [
+              {
+                date: '2010',
+                title: 'Founded',
+                description: 'Green Wellness Dispensary opens its doors',
+              },
+              {
+                date: '2015',
+                title: 'Expansion',
+                description: 'Opened second location and expanded product line',
+              },
+              {
+                date: '2020',
+                title: 'Online Ordering',
+                description: 'Launched online platform for convenient ordering',
+              },
+              {
+                date: '2024',
+                title: 'Award Winning',
+                description: 'Recognized as Best Dispensary in the region',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      name: 'Contact',
+      slug: 'contact',
+      isHomePage: false,
+      seo: {
+        title: 'Contact Us | Green Wellness Dispensary',
+        description: 'Get in touch with our team. Visit our dispensary or contact us for questions about products and services.',
+      },
+      blocks: [
+        {
+          type: 'hero',
+          props: {
+            title: 'Get In Touch',
+            subtitle: 'We\'re here to help with all your cannabis wellness needs',
+            alignment: 'center',
+          },
+        },
+        {
+          type: 'contactInfo',
+          props: {
+            title: 'Visit Our Dispensary',
+            email: 'info@greenwellness.com',
+            phone: '(555) 420-WELL',
+            address: '123 Wellness Way, Green City, ST 12345',
+            hours: 'Mon-Sat: 9AM-8PM, Sun: 10AM-6PM',
+          },
+        },
+        {
+          type: 'contactForm',
+          props: {
+            title: 'Send Us a Message',
+            fields: [
+              { label: 'Name', type: 'text', placeholder: 'Your name', required: true },
+              { label: 'Email', type: 'email', placeholder: 'your@email.com', required: true },
+              { label: 'Phone', type: 'tel', placeholder: '(555) 123-4567', required: false },
+              {
+                label: 'Message',
+                type: 'textarea',
+                placeholder: 'How can we help you?',
+                required: true,
+              },
+            ],
+            submitText: 'Send Message',
+          },
+        },
+        {
+          type: 'map',
+          props: {
+            title: 'Our Location',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// ============================================
 // EXPORT ALL PRESETS
 // ============================================
 
@@ -8064,6 +8628,8 @@ export const AI_THEME_PRESETS: AiThemePreset[] = [
   ARTIST_BAND_WEBSITE,
   PODCAST_PLATFORM,
   RECORD_LABEL,
+  // Medical Cannabis
+  MEDICAL_CANNABIS_DISPENSARY,
 ];
 
 export const getPresetById = (id: string): AiThemePreset | undefined => {
