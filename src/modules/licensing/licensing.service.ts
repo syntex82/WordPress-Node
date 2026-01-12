@@ -8,6 +8,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { LicenseKeyGenerator } from './license-key-generator.service';
 import { CreateLicenseDto, LicenseTier, LICENSE_TIER_CONFIG, ActivateLicenseDto } from './dto';
 import { EmailService } from '../email/email.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class LicensingService {
@@ -18,6 +19,13 @@ export class LicensingService {
     private keyGenerator: LicenseKeyGenerator,
     private emailService: EmailService,
   ) {}
+
+  /**
+   * Generate a secure download token
+   */
+  private generateDownloadToken(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
 
   /**
    * Create a new license after purchase
@@ -316,31 +324,112 @@ export class LicensingService {
   }
 
   /**
-   * Send license email to customer
+   * Send license email to customer with download link
    */
   private async sendLicenseEmail(license: any) {
     const tierConfig = LICENSE_TIER_CONFIG[license.tier as LicenseTier];
     const customerName = license.customerName || 'Customer';
     const maxSites = license.maxSites === -1 ? 'Unlimited' : license.maxSites;
     const expiresAt = license.expiresAt ? license.expiresAt.toDateString() : 'Never (Lifetime)';
-    const downloadUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/downloads/nodepress`;
-    const documentationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/docs`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    // Generate download token and store it
+    const downloadToken = this.generateDownloadToken();
+    const tokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    await this.prisma.systemConfig.upsert({
+      where: { key: `license_download_${license.id}` },
+      create: {
+        key: `license_download_${license.id}`,
+        value: JSON.stringify({
+          token: downloadToken,
+          licenseId: license.id,
+          email: license.email,
+          tier: license.tier,
+          expiresAt: tokenExpiry.toISOString(),
+          downloadCount: 0,
+        }),
+        group: 'license_downloads',
+        description: `Download token for license ${license.id}`,
+      },
+      update: {
+        value: JSON.stringify({
+          token: downloadToken,
+          licenseId: license.id,
+          email: license.email,
+          tier: license.tier,
+          expiresAt: tokenExpiry.toISOString(),
+          downloadCount: 0,
+        }),
+      },
+    });
+
+    const downloadUrl = `${baseUrl}/api/licensing/download/${downloadToken}`;
+    const documentationUrl = `${baseUrl}/docs`;
 
     const html = `
-      <h1>Your NodePress ${tierConfig.name} License</h1>
-      <p>Hello ${customerName},</p>
-      <p>Thank you for purchasing NodePress ${tierConfig.name}!</p>
-      <p><strong>License Key:</strong> ${license.licenseKey}</p>
-      <p><strong>Max Sites:</strong> ${maxSites}</p>
-      <p><strong>Expires:</strong> ${expiresAt}</p>
-      <p><a href="${downloadUrl}">Download NodePress</a></p>
-      <p><a href="${documentationUrl}">Documentation</a></p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .license-key { background: #1f2937; color: #10b981; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 14px; word-break: break-all; margin: 20px 0; }
+          .button { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .info-box { background: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #667eea; }
+          .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Thank You for Your Purchase!</h1>
+            <p>NodePress ${tierConfig.name} License</p>
+          </div>
+          <div class="content">
+            <p>Hello ${customerName},</p>
+            <p>Thank you for purchasing NodePress ${tierConfig.name}! Your license is ready to use.</p>
+
+            <h3>📥 Download NodePress</h3>
+            <p>Click the button below to download the NodePress source code:</p>
+            <p><a href="${downloadUrl}" class="button">Download NodePress</a></p>
+            <p style="font-size: 12px; color: #6b7280;">This download link is valid for 30 days.</p>
+
+            <h3>🔑 Your License Key</h3>
+            <div class="license-key">${license.licenseKey}</div>
+
+            <div class="info-box">
+              <p><strong>License Details:</strong></p>
+              <p>• Tier: ${tierConfig.name}</p>
+              <p>• Max Sites: ${maxSites}</p>
+              <p>• Updates Until: ${expiresAt}</p>
+            </div>
+
+            <h3>🚀 Getting Started</h3>
+            <ol>
+              <li>Download and extract NodePress</li>
+              <li>Run <code>npm install</code></li>
+              <li>Configure your <code>.env</code> file with your license key</li>
+              <li>Run <code>npm run dev</code> to start</li>
+            </ol>
+
+            <p><a href="${documentationUrl}">📚 Read the Documentation</a></p>
+          </div>
+          <div class="footer">
+            <p>Need help? Contact support@nodepress.co.uk</p>
+            <p>© ${new Date().getFullYear()} NodePress. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
     `;
 
     await this.emailService.send({
       to: license.email,
       toName: customerName,
-      subject: `Your NodePress ${tierConfig.name} License`,
+      subject: `🎉 Your NodePress ${tierConfig.name} License & Download`,
       html,
     });
   }
@@ -393,6 +482,45 @@ export class LicensingService {
       throw new NotFoundException('License not found');
     }
     return this.revokeLicense(license.licenseKey, 'Revoked by admin');
+  }
+
+  /**
+   * Find download token by token string
+   */
+  async findDownloadToken(token: string) {
+    // Search all license download records for matching token
+    const records = await this.prisma.systemConfig.findMany({
+      where: {
+        group: 'license_downloads',
+      },
+    });
+
+    for (const record of records) {
+      try {
+        const data = JSON.parse(record.value);
+        if (data.token === token) {
+          return record;
+        }
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Increment download count for a token
+   */
+  async incrementDownloadCount(key: string) {
+    const record = await this.prisma.systemConfig.findUnique({ where: { key } });
+    if (record) {
+      const data = JSON.parse(record.value);
+      data.downloadCount = (data.downloadCount || 0) + 1;
+      await this.prisma.systemConfig.update({
+        where: { key },
+        data: { value: JSON.stringify(data) },
+      });
+    }
   }
 }
 

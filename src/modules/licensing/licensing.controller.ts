@@ -12,12 +12,18 @@ import {
   Query,
   UseGuards,
   Req,
+  Res,
   Headers,
   HttpCode,
   HttpStatus,
+  HttpException,
+  StreamableFile,
 } from '@nestjs/common';
 import { RawBodyRequest } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import * as archiver from 'archiver';
+import * as path from 'path';
+import * as fs from 'fs';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -112,6 +118,65 @@ export class LicensingController {
       throw new Error('Raw body required for webhook');
     }
     return this.paymentService.handleWebhook(req.rawBody, signature);
+  }
+
+  /**
+   * Download NodePress source code with valid license token
+   * GET /api/licensing/download/:token
+   */
+  @Get('download/:token')
+  async downloadSource(@Param('token') token: string, @Res() res: Response) {
+    // Find the download token
+    const records = await this.licensingService.findDownloadToken(token);
+
+    if (!records) {
+      throw new HttpException('Invalid or expired download link', HttpStatus.NOT_FOUND);
+    }
+
+    const tokenData = JSON.parse(records.value);
+
+    // Check expiration
+    if (new Date(tokenData.expiresAt) < new Date()) {
+      throw new HttpException('Download link has expired. Please contact support.', HttpStatus.GONE);
+    }
+
+    // Update download count
+    await this.licensingService.incrementDownloadCount(records.key);
+
+    // Create zip of the source code
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename=nodepress.zip');
+
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.pipe(res);
+
+    // Add source directories (excluding node_modules, dist, .git)
+    const rootDir = process.cwd();
+    const excludeDirs = ['node_modules', 'dist', '.git', 'uploads', '.env'];
+
+    const entries = fs.readdirSync(rootDir);
+    for (const entry of entries) {
+      const fullPath = path.join(rootDir, entry);
+      const stat = fs.statSync(fullPath);
+
+      if (excludeDirs.includes(entry)) continue;
+
+      if (stat.isDirectory()) {
+        archive.directory(fullPath, entry);
+      } else {
+        // Skip .env but include .env.example
+        if (entry === '.env') continue;
+        archive.file(fullPath, { name: entry });
+      }
+    }
+
+    // Add .env.example if it exists
+    const envExample = path.join(rootDir, '.env.example');
+    if (fs.existsSync(envExample)) {
+      archive.file(envExample, { name: '.env.example' });
+    }
+
+    await archive.finalize();
   }
 
   // ==================== USER ENDPOINTS ====================
