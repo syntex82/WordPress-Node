@@ -226,7 +226,7 @@ function LicensePricing() {
 
     setLoading(tier);
     try {
-      const res = await api.post('/api/licensing/checkout', {
+      const res = await api.post('/licensing/checkout', {
         tier,
         email: purchaseEmail,
       });

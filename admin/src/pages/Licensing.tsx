@@ -44,8 +44,8 @@ export default function Licensing() {
     try {
       setLoading(true);
       const [licensesRes, statsRes] = await Promise.all([
-        api.get('/api/licensing/admin/licenses'),
-        api.get('/api/licensing/admin/stats'),
+        api.get('/licensing/admin/licenses'),
+        api.get('/licensing/admin/stats'),
       ]);
       setLicenses(licensesRes.data);
       setStats(statsRes.data);
@@ -65,7 +65,7 @@ export default function Licensing() {
   const revokeLicense = async (id: string) => {
     if (!confirm('Are you sure you want to revoke this license?')) return;
     try {
-      await api.post(`/api/licensing/admin/licenses/${id}/revoke`);
+      await api.post(`/licensing/admin/licenses/${id}/revoke`);
       toast.success('License revoked');
       fetchData();
     } catch {
