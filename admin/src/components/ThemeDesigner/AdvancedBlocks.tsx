@@ -11,7 +11,26 @@ import {
 } from 'react-icons/fi';
 import { CustomThemeSettings } from '../../services/api';
 
+// Import enhanced animation and link systems
+import {
+  EnhancedAnimationSettings,
+  DEFAULT_ANIMATION,
+  AnimationType,
+  EasingType,
+  TriggerType
+} from './AnimationSystem';
+import {
+  EnhancedLinkSettings,
+  EnhancedLinkType,
+  DEFAULT_LINK
+} from './UniversalLinkEditor';
+
+// Re-export enhanced types for backward compatibility
+export type { EnhancedAnimationSettings, EnhancedLinkSettings };
+export { DEFAULT_ANIMATION, DEFAULT_LINK };
+
 // ============ Link/Action System Types ============
+// Legacy types kept for backward compatibility
 export type LinkType = 'none' | 'internal' | 'external' | 'anchor' | 'email' | 'phone' | 'modal' | 'scroll';
 export type ButtonAction = 'link' | 'scroll' | 'modal' | 'submit';
 
@@ -32,10 +51,32 @@ export interface BlockVisibility {
   mobile: boolean;
 }
 
+// Legacy animation settings for backward compatibility
 export interface AnimationSettings {
   type: 'none' | 'fadeIn' | 'slideUp' | 'slideDown' | 'slideLeft' | 'slideRight' | 'zoomIn' | 'bounce';
   duration: number;
   delay: number;
+}
+
+// Convert legacy to enhanced animation settings
+export function toEnhancedAnimation(legacy?: AnimationSettings): EnhancedAnimationSettings {
+  if (!legacy) return DEFAULT_ANIMATION;
+  return {
+    ...DEFAULT_ANIMATION,
+    type: legacy.type as AnimationType,
+    duration: legacy.duration,
+    delay: legacy.delay,
+  };
+}
+
+// Convert enhanced to legacy animation settings (for backward compatibility)
+export function toLegacyAnimation(enhanced?: EnhancedAnimationSettings): AnimationSettings {
+  if (!enhanced) return { type: 'none', duration: 300, delay: 0 };
+  return {
+    type: enhanced.type as AnimationSettings['type'],
+    duration: enhanced.duration,
+    delay: enhanced.delay,
+  };
 }
 
 // ============ Grid System Types ============
@@ -220,15 +261,66 @@ export const PRESET_LAYOUTS = [
 ];
 
 // ============ Animation Presets ============
+// Legacy presets for backward compatibility
 export const ANIMATION_PRESETS = [
-  { id: 'none', name: 'None', css: '' },
-  { id: 'fadeIn', name: 'Fade In', css: 'animate-fadeIn' },
-  { id: 'slideUp', name: 'Slide Up', css: 'animate-slideUp' },
-  { id: 'slideDown', name: 'Slide Down', css: 'animate-slideDown' },
-  { id: 'slideLeft', name: 'Slide Left', css: 'animate-slideLeft' },
-  { id: 'slideRight', name: 'Slide Right', css: 'animate-slideRight' },
-  { id: 'zoomIn', name: 'Zoom In', css: 'animate-zoomIn' },
-  { id: 'bounce', name: 'Bounce', css: 'animate-bounce' },
+  { id: 'none', name: 'None', css: '', category: 'none' },
+  // Fade animations
+  { id: 'fadeIn', name: 'Fade In', css: 'animate-fadeIn', category: 'fade' },
+  { id: 'fadeInUp', name: 'Fade In Up', css: 'animate-fadeInUp', category: 'fade' },
+  { id: 'fadeInDown', name: 'Fade In Down', css: 'animate-fadeInDown', category: 'fade' },
+  { id: 'fadeInLeft', name: 'Fade In Left', css: 'animate-fadeInLeft', category: 'fade' },
+  { id: 'fadeInRight', name: 'Fade In Right', css: 'animate-fadeInRight', category: 'fade' },
+  // Slide animations
+  { id: 'slideUp', name: 'Slide Up', css: 'animate-slideUp', category: 'slide' },
+  { id: 'slideDown', name: 'Slide Down', css: 'animate-slideDown', category: 'slide' },
+  { id: 'slideLeft', name: 'Slide Left', css: 'animate-slideLeft', category: 'slide' },
+  { id: 'slideRight', name: 'Slide Right', css: 'animate-slideRight', category: 'slide' },
+  // Zoom animations
+  { id: 'zoomIn', name: 'Zoom In', css: 'animate-zoomIn', category: 'zoom' },
+  { id: 'zoomOut', name: 'Zoom Out', css: 'animate-zoomOut', category: 'zoom' },
+  { id: 'zoomInUp', name: 'Zoom In Up', css: 'animate-zoomInUp', category: 'zoom' },
+  { id: 'zoomInDown', name: 'Zoom In Down', css: 'animate-zoomInDown', category: 'zoom' },
+  // Rotation animations
+  { id: 'rotateIn', name: 'Rotate In', css: 'animate-rotateIn', category: 'rotate' },
+  { id: 'flipX', name: 'Flip X', css: 'animate-flipX', category: 'rotate' },
+  { id: 'flipY', name: 'Flip Y', css: 'animate-flipY', category: 'rotate' },
+  { id: 'spin', name: 'Spin', css: 'animate-spin', category: 'rotate' },
+  // Bounce and elastic
+  { id: 'bounce', name: 'Bounce', css: 'animate-bounce', category: 'bounce' },
+  { id: 'bounceIn', name: 'Bounce In', css: 'animate-bounceIn', category: 'bounce' },
+  { id: 'elastic', name: 'Elastic', css: 'animate-elastic', category: 'bounce' },
+  { id: 'rubberBand', name: 'Rubber Band', css: 'animate-rubberBand', category: 'bounce' },
+  { id: 'pulse', name: 'Pulse', css: 'animate-pulse', category: 'bounce' },
+  // Attention seekers
+  { id: 'shake', name: 'Shake', css: 'animate-shake', category: 'attention' },
+  { id: 'wobble', name: 'Wobble', css: 'animate-wobble', category: 'attention' },
+  { id: 'swing', name: 'Swing', css: 'animate-swing', category: 'attention' },
+  { id: 'tada', name: 'Tada', css: 'animate-tada', category: 'attention' },
+  { id: 'jello', name: 'Jello', css: 'animate-jello', category: 'attention' },
+  { id: 'heartBeat', name: 'Heart Beat', css: 'animate-heartBeat', category: 'attention' },
+  // Special effects
+  { id: 'blur', name: 'Blur Reveal', css: 'animate-blur', category: 'special' },
+  { id: 'glow', name: 'Glow', css: 'animate-glow', category: 'special' },
+];
+
+// Easing options for animation
+export const EASING_OPTIONS = [
+  { id: 'ease', name: 'Ease', value: 'ease' },
+  { id: 'ease-in', name: 'Ease In', value: 'ease-in' },
+  { id: 'ease-out', name: 'Ease Out', value: 'ease-out' },
+  { id: 'ease-in-out', name: 'Ease In Out', value: 'ease-in-out' },
+  { id: 'linear', name: 'Linear', value: 'linear' },
+  { id: 'bounce', name: 'Bounce', value: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)' },
+  { id: 'elastic', name: 'Elastic', value: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)' },
+  { id: 'spring', name: 'Spring', value: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' },
+];
+
+// Trigger options
+export const TRIGGER_OPTIONS = [
+  { id: 'onLoad', name: 'On Page Load' },
+  { id: 'onScroll', name: 'On Scroll Into View' },
+  { id: 'onHover', name: 'On Hover' },
+  { id: 'onClick', name: 'On Click' },
 ];
 
 // ============ Link Settings Form Component ============
@@ -371,52 +463,193 @@ export function VisibilitySettings({
 }
 
 // ============ Animation Settings Component ============
+interface ExtendedAnimation extends AnimationSettings {
+  easing?: string;
+  trigger?: string;
+  repeat?: 'once' | 'loop' | 'infinite';
+}
+
 export function AnimationSettingsForm({
   animation,
   onChange,
+  showPreview = true,
+  compact = false,
 }: {
-  animation: AnimationSettings;
-  onChange: (animation: AnimationSettings) => void;
+  animation: AnimationSettings | ExtendedAnimation;
+  onChange: (animation: AnimationSettings | ExtendedAnimation) => void;
+  showPreview?: boolean;
+  compact?: boolean;
 }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+
+  const extAnim = animation as ExtendedAnimation;
+  const categories = ['all', 'fade', 'slide', 'zoom', 'rotate', 'bounce', 'attention', 'special'];
+
+  const filteredPresets = activeCategory === 'all'
+    ? ANIMATION_PRESETS
+    : ANIMATION_PRESETS.filter(p => p.category === activeCategory);
+
+  const playPreview = () => {
+    setPreviewKey(prev => prev + 1);
+    setIsPlaying(true);
+    setTimeout(() => setIsPlaying(false), animation.duration + animation.delay + 100);
+  };
+
+  const preset = ANIMATION_PRESETS.find(p => p.id === animation.type);
+
   return (
-    <div className="space-y-3 p-3 bg-gray-800/50 rounded-lg">
+    <div className={`space-y-3 ${compact ? 'p-2' : 'p-3'} bg-gray-800/50 rounded-lg`}>
+      {/* Preview Box */}
+      {showPreview && (
+        <div className="relative bg-gray-900/50 rounded-lg p-4 flex items-center justify-center min-h-[80px] border border-gray-700">
+          <div
+            key={previewKey}
+            className={isPlaying ? preset?.css || '' : ''}
+            style={isPlaying ? {
+              animationDuration: `${animation.duration}ms`,
+              animationDelay: `${animation.delay}ms`,
+              animationFillMode: 'both',
+              animationTimingFunction: (extAnim.easing && EASING_OPTIONS.find(e => e.id === extAnim.easing)?.value) || 'ease-out',
+            } : {}}
+          >
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl shadow-lg flex items-center justify-center">
+              <span className="text-xl">✨</span>
+            </div>
+          </div>
+
+          {/* Play button */}
+          <button
+            onClick={playPreview}
+            className="absolute bottom-2 right-2 px-2 py-1 bg-blue-500 hover:bg-blue-600 rounded text-white text-xs flex items-center gap-1"
+          >
+            ▶ Play
+          </button>
+        </div>
+      )}
+
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-1">
+        {categories.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-2 py-0.5 text-[10px] rounded-full capitalize transition-all ${
+              activeCategory === cat
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Animation Type Selector */}
       <div>
-        <label className="text-xs text-gray-400 mb-1 block">Animation</label>
+        <label className="text-xs text-gray-400 mb-1 block">Animation Type</label>
         <select
           value={animation.type}
-          onChange={e => onChange({ ...animation, type: e.target.value as AnimationSettings['type'] })}
+          onChange={e => {
+            const newPreset = ANIMATION_PRESETS.find(p => p.id === e.target.value);
+            onChange({
+              ...animation,
+              type: e.target.value as AnimationSettings['type'],
+            });
+            // Auto-play preview when changing
+            setTimeout(playPreview, 100);
+          }}
           className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
         >
-          {ANIMATION_PRESETS.map(preset => (
+          {filteredPresets.map(preset => (
             <option key={preset.id} value={preset.id}>{preset.name}</option>
           ))}
         </select>
       </div>
+
       {animation.type !== 'none' && (
         <>
+          {/* Duration Slider */}
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">Duration (ms)</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs text-gray-400">Duration</label>
+              <span className="text-xs text-blue-400">{animation.duration}ms</span>
+            </div>
             <input
-              type="number"
+              type="range"
               value={animation.duration}
-              onChange={e => onChange({ ...animation, duration: parseInt(e.target.value) || 300 })}
+              onChange={e => onChange({ ...animation, duration: parseInt(e.target.value) })}
               min={100}
               max={3000}
-              step={100}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
+              step={50}
+              className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
             />
           </div>
+
+          {/* Delay Slider */}
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">Delay (ms)</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs text-gray-400">Delay</label>
+              <span className="text-xs text-purple-400">{animation.delay}ms</span>
+            </div>
             <input
-              type="number"
+              type="range"
               value={animation.delay}
-              onChange={e => onChange({ ...animation, delay: parseInt(e.target.value) || 0 })}
+              onChange={e => onChange({ ...animation, delay: parseInt(e.target.value) })}
               min={0}
               max={2000}
-              step={100}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
+              step={50}
+              className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
             />
+          </div>
+
+          {/* Easing Selector */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Easing</label>
+            <select
+              value={extAnim.easing || 'ease-out'}
+              onChange={e => onChange({ ...animation, easing: e.target.value } as ExtendedAnimation)}
+              className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
+            >
+              {EASING_OPTIONS.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Trigger Selector */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Trigger</label>
+            <select
+              value={extAnim.trigger || 'onLoad'}
+              onChange={e => onChange({ ...animation, trigger: e.target.value } as ExtendedAnimation)}
+              className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-white"
+            >
+              {TRIGGER_OPTIONS.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Repeat Options */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Repeat</label>
+            <div className="flex gap-1">
+              {(['once', 'loop', 'infinite'] as const).map(repeat => (
+                <button
+                  key={repeat}
+                  onClick={() => onChange({ ...animation, repeat } as ExtendedAnimation)}
+                  className={`flex-1 px-2 py-1.5 text-xs rounded transition-colors ${
+                    (extAnim.repeat || 'once') === repeat
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                  }`}
+                >
+                  {repeat.charAt(0).toUpperCase() + repeat.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </>
       )}

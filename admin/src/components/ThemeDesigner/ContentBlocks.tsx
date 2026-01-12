@@ -36,6 +36,25 @@ import {
   NavGlassSettings, NavMinimalSettings, NavMegaSettings, NavCenteredSettings, NavSidebarSettings
 } from './NavigationBlocks';
 
+// Import modern block styles for enhanced rendering
+import {
+  ModernImage, ModernButton, ModernCard, ModernHero, ModernTestimonial,
+  ModernVideoPlayer, ModernAudioPlayer
+} from './ModernBlockStyles';
+
+// Import MediaSelector for block settings
+import MediaSelector, { ImageSelector, VideoSelector, AudioSelector, GallerySelector } from './MediaSelector';
+
+// Import enhanced animation and link systems
+import {
+  AnimationControls, AnimationTimeline, AnimatedBlock, getAnimationCSS, getAnimationClassName,
+  EnhancedAnimationSettings, DEFAULT_ANIMATION, ENHANCED_ANIMATION_PRESETS
+} from './AnimationSystem';
+import {
+  UniversalLinkEditorModal, LinkIndicator, ClickableElement, DesignerLinkManager,
+  EnhancedLinkSettings, DEFAULT_LINK, LINK_TYPE_CONFIGS, generateLinkHref
+} from './UniversalLinkEditor';
+
 // ============ Block Type Definitions ============
 export type BlockType =
   | 'audio' | 'video' | 'gallery' | 'button' | 'hero' | 'map'
@@ -1860,7 +1879,7 @@ export function ButtonBlock({
   );
 }
 
-// Hero Section Block
+// Hero Section Block - Enhanced with ModernHero
 export function HeroBlock({
   props,
   settings
@@ -1868,66 +1887,37 @@ export function HeroBlock({
   props: Record<string, any>;
   settings: CustomThemeSettings;
 }) {
-  const { title, subtitle, ctaText, ctaUrl, backgroundImage, overlay, alignment } = props;
-
-  const alignmentClassesMap: Record<string, string> = {
-    left: 'text-left items-start',
-    center: 'text-center items-center',
-    right: 'text-right items-end',
-  };
-  const alignmentClasses = alignmentClassesMap[alignment as string] || 'text-center items-center';
+  const {
+    title, subtitle, ctaText, ctaUrl,
+    secondaryCtaText, secondaryCtaUrl,
+    backgroundImage, backgroundVideo, overlay = 0.4, alignment = 'center',
+    style = 'default'
+  } = props;
 
   return (
-    <div
-      className="relative min-h-[400px] flex items-center justify-center overflow-hidden"
-      style={{ borderRadius: settings.borders.radius }}
-    >
-      {/* Background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
-      />
-
-      {/* Overlay */}
-      <div
-        className="absolute inset-0"
-        style={{ background: `rgba(0,0,0,${overlay})` }}
-      />
-
-      {/* Content */}
-      <div className={`relative z-10 max-w-3xl mx-auto px-8 py-16 flex flex-col ${alignmentClasses}`}>
-        <h1
-          className="text-4xl md:text-5xl font-bold mb-4"
-          style={{
-            color: 'white',
-            fontFamily: settings.typography.headingFont,
-            fontWeight: settings.typography.headingWeight,
-          }}
-        >
-          {title}
-        </h1>
-        <p
-          className="text-xl mb-8 opacity-90"
-          style={{
-            color: 'white',
-            fontFamily: settings.typography.bodyFont,
-          }}
-        >
-          {subtitle}
-        </p>
-        <a
-          href={ctaUrl}
-          className="inline-block px-8 py-4 font-semibold transition-transform hover:scale-105"
-          style={{
-            background: settings.colors.primary,
-            color: 'white',
-            borderRadius: settings.borders.radius,
-          }}
-        >
-          {ctaText}
-        </a>
-      </div>
-    </div>
+    <ModernHero
+      title={title || 'Your Amazing Headline'}
+      subtitle={subtitle}
+      ctaText={ctaText}
+      ctaUrl={ctaUrl}
+      secondaryCtaText={secondaryCtaText}
+      secondaryCtaUrl={secondaryCtaUrl}
+      backgroundImage={backgroundImage}
+      backgroundVideo={backgroundVideo}
+      overlay={overlay}
+      alignment={alignment}
+      style={style}
+      colors={{
+        primary: settings.colors.primary,
+        secondary: settings.colors.secondary,
+      }}
+      typography={{
+        headingFont: settings.typography.headingFont,
+        bodyFont: settings.typography.bodyFont,
+        headingWeight: settings.typography.headingWeight,
+      }}
+      borderRadius={`${settings.borders.radius}px`}
+    />
   );
 }
 
@@ -1992,7 +1982,7 @@ export function MapBlock({
   );
 }
 
-// Card Block
+// Card Block - Enhanced with ModernCard
 export function CardBlock({
   props,
   settings
@@ -2000,64 +1990,36 @@ export function CardBlock({
   props: Record<string, any>;
   settings: CustomThemeSettings;
 }) {
-  const { image, title, description, buttonText, buttonUrl } = props;
+  const { image, title, description, buttonText, buttonUrl, variant = 'default' } = props;
 
   return (
-    <div
-      className="overflow-hidden transition-all hover:shadow-xl"
-      style={{
-        background: settings.colors.surface,
-        border: `${settings.borders.width}px solid ${settings.colors.border}`,
-        borderRadius: settings.borders.radius,
+    <ModernCard
+      image={image}
+      title={title || 'Card Title'}
+      description={description}
+      buttonText={buttonText}
+      buttonUrl={buttonUrl}
+      variant={variant}
+      colors={{
+        surface: settings.colors.surface,
+        heading: settings.colors.heading,
+        text: settings.colors.text,
+        textMuted: settings.colors.textMuted,
+        primary: settings.colors.primary,
+        border: settings.colors.border,
       }}
-    >
-      {image && (
-        <div
-          className="h-48 bg-cover bg-center"
-          style={{ backgroundImage: `url(${image})` }}
-        />
-      )}
-      <div style={{ padding: settings.spacing.sectionPadding }}>
-        <h3
-          className="text-xl font-semibold mb-2"
-          style={{
-            color: settings.colors.heading,
-            fontFamily: settings.typography.headingFont,
-          }}
-        >
-          {title}
-        </h3>
-        <p
-          className="mb-4"
-          style={{
-            color: settings.colors.textMuted,
-            fontFamily: settings.typography.bodyFont,
-            lineHeight: settings.typography.lineHeight,
-          }}
-        >
-          {description}
-        </p>
-        {buttonText && (
-          <a
-            href={buttonUrl}
-            className="inline-block px-4 py-2 font-medium transition-colors hover:opacity-90"
-            style={{
-              background: settings.colors.primary,
-              color: 'white',
-              borderRadius: settings.borders.radius,
-            }}
-          >
-            {buttonText}
-          </a>
-        )}
-      </div>
-    </div>
+      typography={{
+        headingFont: settings.typography.headingFont,
+        bodyFont: settings.typography.bodyFont,
+      }}
+      borderRadius={`${settings.borders.radius}px`}
+    />
   );
 }
 
 
 
-// Testimonial Block
+// Testimonial Block - Enhanced with ModernTestimonial
 export function TestimonialBlock({
   props,
   settings
@@ -2065,69 +2027,31 @@ export function TestimonialBlock({
   props: Record<string, any>;
   settings: CustomThemeSettings;
 }) {
-  const { quote, author, role, avatar, rating } = props;
+  const { quote, author, role, company, avatar, rating = 5, variant = 'default' } = props;
 
   return (
-    <div
-      className="p-8"
-      style={{
-        background: settings.colors.surface,
-        border: `${settings.borders.width}px solid ${settings.colors.border}`,
-        borderRadius: settings.borders.radius,
+    <ModernTestimonial
+      quote={quote || 'This is an amazing testimonial quote.'}
+      author={author || 'John Doe'}
+      role={role}
+      company={company}
+      avatar={avatar}
+      rating={rating}
+      variant={variant}
+      colors={{
+        surface: settings.colors.surface,
+        heading: settings.colors.heading,
+        text: settings.colors.text,
+        textMuted: settings.colors.textMuted,
+        primary: settings.colors.primary,
+        border: settings.colors.border,
       }}
-    >
-      {/* Stars */}
-      {rating > 0 && (
-        <div className="flex gap-1 mb-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <FiStar
-              key={i}
-              className={i < rating ? 'fill-current' : ''}
-              style={{ color: i < rating ? '#fbbf24' : settings.colors.border }}
-              size={20}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Quote */}
-      <blockquote
-        className="text-lg italic mb-6"
-        style={{
-          color: settings.colors.text,
-          fontFamily: settings.typography.bodyFont,
-          lineHeight: settings.typography.lineHeight,
-        }}
-      >
-        "{quote}"
-      </blockquote>
-
-      {/* Author */}
-      <div className="flex items-center gap-4">
-        <img
-          src={avatar}
-          alt={author}
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div>
-          <div
-            className="font-semibold"
-            style={{
-              color: settings.colors.heading,
-              fontFamily: settings.typography.headingFont,
-            }}
-          >
-            {author}
-          </div>
-          <div
-            className="text-sm"
-            style={{ color: settings.colors.textMuted }}
-          >
-            {role}
-          </div>
-        </div>
-      </div>
-    </div>
+      typography={{
+        headingFont: settings.typography.headingFont,
+        bodyFont: settings.typography.bodyFont,
+      }}
+      borderRadius={`${settings.borders.radius}px`}
+    />
   );
 }
 
@@ -3969,7 +3893,28 @@ function BlockSettingsForm({
           <TextInput label="Title" propKey="title" />
           <TextInput label="Subtitle" propKey="subtitle" />
           <TextInput label="CTA Text" propKey="ctaText" />
-          <TextInput label="Background Image" propKey="backgroundImage" />
+          <TextInput label="Secondary CTA Text" propKey="secondaryCtaText" />
+
+          {/* Background Image with MediaSelector */}
+          <div className="mb-4">
+            <label className="block text-xs text-gray-400 mb-2">Background Image</label>
+            <ImageSelector
+              value={props.backgroundImage}
+              onChange={(value) => onUpdate({ ...props, backgroundImage: value || '' })}
+              placeholder="Select a background image"
+            />
+          </div>
+
+          {/* Background Video with MediaSelector */}
+          <div className="mb-4">
+            <label className="block text-xs text-gray-400 mb-2">Background Video (optional)</label>
+            <VideoSelector
+              value={props.backgroundVideo}
+              onChange={(value) => onUpdate({ ...props, backgroundVideo: value || '' })}
+              placeholder="Select a background video"
+            />
+          </div>
+
           <RangeInput label="Overlay Opacity" propKey="overlay" min={0} max={1} step={0.1} />
           <SelectInput
             label="Alignment"
@@ -3980,6 +3925,17 @@ function BlockSettingsForm({
               { value: 'right', label: 'Right' },
             ]}
           />
+          <SelectInput
+            label="Style"
+            propKey="style"
+            options={[
+              { value: 'default', label: 'Default' },
+              { value: 'split', label: 'Split' },
+              { value: 'minimal', label: 'Minimal' },
+              { value: 'gradient', label: 'Gradient' },
+              { value: 'glass', label: 'Glass' },
+            ]}
+          />
         </>
       );
     case 'card':
@@ -3987,8 +3943,30 @@ function BlockSettingsForm({
         <>
           <TextInput label="Title" propKey="title" />
           <TextInput label="Description" propKey="description" />
-          <TextInput label="Image URL" propKey="image" />
+
+          {/* Card Image with MediaSelector */}
+          <div className="mb-4">
+            <label className="block text-xs text-gray-400 mb-2">Card Image</label>
+            <ImageSelector
+              value={props.image}
+              onChange={(value) => onUpdate({ ...props, image: value || '' })}
+              placeholder="Select a card image"
+            />
+          </div>
+
           <TextInput label="Button Text" propKey="buttonText" />
+          <TextInput label="Button URL" propKey="buttonUrl" />
+          <SelectInput
+            label="Card Style"
+            propKey="variant"
+            options={[
+              { value: 'default', label: 'Default' },
+              { value: 'elevated', label: 'Elevated' },
+              { value: 'glass', label: 'Glass' },
+              { value: 'gradient', label: 'Gradient' },
+              { value: 'minimal', label: 'Minimal' },
+            ]}
+          />
         </>
       );
     case 'testimonial':
@@ -3997,8 +3975,29 @@ function BlockSettingsForm({
           <TextInput label="Quote" propKey="quote" />
           <TextInput label="Author" propKey="author" />
           <TextInput label="Role" propKey="role" />
-          <TextInput label="Avatar URL" propKey="avatar" />
+          <TextInput label="Company" propKey="company" />
+
+          {/* Avatar with MediaSelector */}
+          <div className="mb-4">
+            <label className="block text-xs text-gray-400 mb-2">Avatar Image</label>
+            <ImageSelector
+              value={props.avatar}
+              onChange={(value) => onUpdate({ ...props, avatar: value || '' })}
+              placeholder="Select an avatar image"
+            />
+          </div>
+
           <RangeInput label="Rating" propKey="rating" min={0} max={5} />
+          <SelectInput
+            label="Style"
+            propKey="variant"
+            options={[
+              { value: 'default', label: 'Default' },
+              { value: 'card', label: 'Card' },
+              { value: 'minimal', label: 'Minimal' },
+              { value: 'featured', label: 'Featured' },
+            ]}
+          />
         </>
       );
     case 'cta':

@@ -698,6 +698,228 @@ code {
   60% { transform: translateY(-5px); }
 }
 
+/* ==================== ENHANCED ANIMATION KEYFRAMES ==================== */
+
+/* Fade Animations */
+@keyframes anim-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes anim-fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes anim-fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes anim-fadeInDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes anim-fadeInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes anim-fadeInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide Animations */
+@keyframes anim-slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes anim-slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes anim-slideLeft {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes anim-slideRight {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Zoom/Scale Animations */
+@keyframes anim-zoomIn {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes anim-zoomOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.3); }
+}
+
+@keyframes anim-zoomInUp {
+  from { opacity: 0; transform: scale(0.3) translateY(50px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes anim-zoomInDown {
+  from { opacity: 0; transform: scale(0.3) translateY(-50px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Rotation Animations */
+@keyframes anim-rotateIn {
+  from { opacity: 0; transform: rotate(-180deg) scale(0.3); }
+  to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+
+@keyframes anim-rotateOut {
+  from { opacity: 1; transform: rotate(0deg) scale(1); }
+  to { opacity: 0; transform: rotate(180deg) scale(0.3); }
+}
+
+@keyframes anim-flipX {
+  from { transform: perspective(400px) rotateY(90deg); opacity: 0; }
+  40% { transform: perspective(400px) rotateY(-15deg); }
+  70% { transform: perspective(400px) rotateY(15deg); }
+  to { transform: perspective(400px) rotateY(0deg); opacity: 1; }
+}
+
+@keyframes anim-flipY {
+  from { transform: perspective(400px) rotateX(90deg); opacity: 0; }
+  40% { transform: perspective(400px) rotateX(-15deg); }
+  70% { transform: perspective(400px) rotateX(15deg); }
+  to { transform: perspective(400px) rotateX(0deg); opacity: 1; }
+}
+
+@keyframes anim-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Bounce and Elastic Animations */
+@keyframes anim-bounce {
+  0%, 20%, 53%, 100% { animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); transform: translateY(0); }
+  40%, 43% { animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06); transform: translateY(-30px); }
+  70% { animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06); transform: translateY(-15px); }
+  80% { transform: translateY(0); }
+  90% { transform: translateY(-4px); }
+}
+
+@keyframes anim-bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes anim-bounceOut {
+  20% { transform: scale(0.9); }
+  50%, 55% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(0.3); }
+}
+
+@keyframes anim-elastic {
+  0% { transform: scale(0); }
+  55% { transform: scale(1.1); }
+  70% { transform: scale(0.95); }
+  85% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes anim-rubberBand {
+  0% { transform: scaleX(1); }
+  30% { transform: scaleX(1.25) scaleY(0.75); }
+  40% { transform: scaleX(0.75) scaleY(1.25); }
+  50% { transform: scaleX(1.15) scaleY(0.85); }
+  65% { transform: scaleX(0.95) scaleY(1.05); }
+  75% { transform: scaleX(1.05) scaleY(0.95); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes anim-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Attention Seeker Animations */
+@keyframes anim-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+@keyframes anim-wobble {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  15% { transform: translateX(-25%) rotate(-5deg); }
+  30% { transform: translateX(20%) rotate(3deg); }
+  45% { transform: translateX(-15%) rotate(-3deg); }
+  60% { transform: translateX(10%) rotate(2deg); }
+  75% { transform: translateX(-5%) rotate(-1deg); }
+}
+
+@keyframes anim-swing {
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes anim-tada {
+  0% { transform: scale(1) rotate(0); }
+  10%, 20% { transform: scale(0.9) rotate(-3deg); }
+  30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+  40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes anim-jello {
+  0%, 11.1%, 100% { transform: none; }
+  22.2% { transform: skewX(-12.5deg) skewY(-12.5deg); }
+  33.3% { transform: skewX(6.25deg) skewY(6.25deg); }
+  44.4% { transform: skewX(-3.125deg) skewY(-3.125deg); }
+  55.5% { transform: skewX(1.5625deg) skewY(1.5625deg); }
+  66.6% { transform: skewX(-0.78125deg) skewY(-0.78125deg); }
+  77.7% { transform: skewX(0.390625deg) skewY(0.390625deg); }
+  88.8% { transform: skewX(-0.1953125deg) skewY(-0.1953125deg); }
+}
+
+@keyframes anim-heartBeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.3); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.3); }
+  70% { transform: scale(1); }
+}
+
+/* Special Effects */
+@keyframes anim-blur {
+  from { filter: blur(10px); opacity: 0; }
+  to { filter: blur(0); opacity: 1; }
+}
+
+@keyframes anim-glow {
+  0%, 100% { box-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
+  50% { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+}
+
+@keyframes anim-typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes anim-morphing {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+}
+
 /* Block Animation Classes */
 .animate-fadeIn { animation-name: fadeIn; }
 .animate-slideUp { animation-name: slideUp; }
@@ -706,6 +928,45 @@ code {
 .animate-slideRight { animation-name: slideRight; }
 .animate-zoomIn { animation-name: zoomIn; }
 .animate-bounce { animation-name: bounce; }
+
+/* Enhanced Animation Classes */
+.animate-fadeInUp { animation-name: anim-fadeInUp; }
+.animate-fadeInDown { animation-name: anim-fadeInDown; }
+.animate-fadeInLeft { animation-name: anim-fadeInLeft; }
+.animate-fadeInRight { animation-name: anim-fadeInRight; }
+.animate-fadeOut { animation-name: anim-fadeOut; }
+.animate-zoomOut { animation-name: anim-zoomOut; }
+.animate-zoomInUp { animation-name: anim-zoomInUp; }
+.animate-zoomInDown { animation-name: anim-zoomInDown; }
+.animate-rotateIn { animation-name: anim-rotateIn; }
+.animate-rotateOut { animation-name: anim-rotateOut; }
+.animate-flipX { animation-name: anim-flipX; }
+.animate-flipY { animation-name: anim-flipY; }
+.animate-spin { animation-name: anim-spin; }
+.animate-bounceIn { animation-name: anim-bounceIn; }
+.animate-bounceOut { animation-name: anim-bounceOut; }
+.animate-elastic { animation-name: anim-elastic; }
+.animate-rubberBand { animation-name: anim-rubberBand; }
+.animate-pulse { animation-name: anim-pulse; }
+.animate-shake { animation-name: anim-shake; }
+.animate-wobble { animation-name: anim-wobble; }
+.animate-swing { animation-name: anim-swing; transform-origin: top center; }
+.animate-tada { animation-name: anim-tada; }
+.animate-jello { animation-name: anim-jello; }
+.animate-heartBeat { animation-name: anim-heartBeat; }
+.animate-blur { animation-name: anim-blur; }
+.animate-glow { animation-name: anim-glow; }
+.animate-typewriter { animation-name: anim-typewriter; overflow: hidden; white-space: nowrap; }
+.animate-morphing { animation-name: anim-morphing; }
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* Emoji Support for Messages */
 * {
@@ -794,4 +1055,69 @@ p, span, div, input, textarea {
   transform: translateY(-50%) rotate(45deg);
   border-bottom: none;
   border-left: none;
+}
+
+/* ==================== MEDIA LOADING ANIMATIONS ==================== */
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 1) 0%,
+    rgba(243, 244, 246, 1) 50%,
+    rgba(229, 231, 235, 1) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* Dark mode shimmer */
+[data-theme="dark"] .animate-shimmer,
+.dark .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(55, 65, 81, 1) 0%,
+    rgba(75, 85, 99, 1) 50%,
+    rgba(55, 65, 81, 1) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* Pulse animation for media placeholders */
+@keyframes media-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-media-pulse {
+  animation: media-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Fade in animation for loaded media */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
 }
