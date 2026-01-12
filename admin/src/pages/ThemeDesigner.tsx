@@ -1459,6 +1459,7 @@ function ThemePreview({
   onCopyBlock,
   onUpdateBlock,
   previewDevice = 'desktop',
+  enableInlineEdit = true,
 }: {
   settings: CustomThemeSettings;
   previewMode: 'light' | 'dark';
@@ -1472,6 +1473,7 @@ function ThemePreview({
   onCopyBlock?: (id: string) => void;
   onUpdateBlock?: (block: ContentBlock) => void;
   previewDevice?: 'desktop' | 'tablet' | 'mobile';
+  enableInlineEdit?: boolean;
 }) {
   const { colors, typography, borders } = settings;
 
@@ -1587,6 +1589,7 @@ function ThemePreview({
                 onCopy={() => onCopyBlock?.(block.id)}
                 onUpdateBlock={onUpdateBlock}
                 previewDevice={previewDevice}
+                enableInlineEdit={enableInlineEdit}
               />
             ))}
           </div>

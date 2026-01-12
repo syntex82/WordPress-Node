@@ -55,6 +55,13 @@ import {
   EnhancedLinkSettings, DEFAULT_LINK, LINK_TYPE_CONFIGS, generateLinkHref
 } from './UniversalLinkEditor';
 
+// Import editable block components for inline editing
+import {
+  EditableHeroBlock, EditableTestimonialBlock, EditableFeaturesBlock,
+  EditableCTABlock, EditableGalleryBlock, EditableVideoBlock,
+  EditableAudioBlock, EditableCardBlock, isBlockEditable
+} from './EditableBlocks';
+
 // ============ Block Type Definitions ============
 export type BlockType =
   | 'audio' | 'video' | 'gallery' | 'button' | 'hero' | 'map'
@@ -1520,6 +1527,49 @@ export function AudioPlayerBlock({
   );
 }
 
+// ============ Video URL Helpers ============
+function getVideoType(url: string): 'youtube' | 'vimeo' | 'native' | null {
+  if (!url) return null;
+  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+  if (url.includes('vimeo.com')) return 'vimeo';
+  return 'native';
+}
+
+function getYouTubeId(url: string): string | null {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+}
+
+function getVimeoId(url: string): string | null {
+  const regExp = /vimeo\.com\/(?:video\/)?(\d+)/;
+  const match = url.match(regExp);
+  return match ? match[1] : null;
+}
+
+function getYouTubeEmbedUrl(videoId: string, options: { autoplay?: boolean; muted?: boolean; loop?: boolean; controls?: boolean } = {}): string {
+  const params = new URLSearchParams();
+  if (options.autoplay) params.set('autoplay', '1');
+  if (options.muted) params.set('mute', '1');
+  if (options.loop) {
+    params.set('loop', '1');
+    params.set('playlist', videoId);
+  }
+  if (options.controls === false) params.set('controls', '0');
+  params.set('rel', '0');
+  params.set('modestbranding', '1');
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
+function getVimeoEmbedUrl(videoId: string, options: { autoplay?: boolean; muted?: boolean; loop?: boolean } = {}): string {
+  const params = new URLSearchParams();
+  if (options.autoplay) params.set('autoplay', '1');
+  if (options.muted) params.set('muted', '1');
+  if (options.loop) params.set('loop', '1');
+  params.set('dnt', '1');
+  return `https://player.vimeo.com/video/${videoId}?${params.toString()}`;
+}
+
 // Video Player Block
 export function VideoPlayerBlock({
   props,
@@ -1539,6 +1589,9 @@ export function VideoPlayerBlock({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const hasVideo = props.videoUrl && props.videoUrl.length > 0;
+  const videoType = getVideoType(props.videoUrl || '');
+  const youtubeId = videoType === 'youtube' ? getYouTubeId(props.videoUrl) : null;
+  const vimeoId = videoType === 'vimeo' ? getVimeoId(props.videoUrl) : null;
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -1609,6 +1662,88 @@ export function VideoPlayerBlock({
     setIsFullscreen(!isFullscreen);
   };
 
+  // Render YouTube embed
+  if (youtubeId) {
+    return (
+      <div
+        className="relative rounded-xl overflow-hidden bg-black"
+        style={{ borderRadius: settings.borders.radius }}
+      >
+        <div className="aspect-video">
+          <iframe
+            src={getYouTubeEmbedUrl(youtubeId, {
+              autoplay: props.autoplay,
+              muted: props.muted,
+              loop: props.loop,
+              controls: props.controls !== false,
+            })}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={props.title || 'YouTube Video'}
+          />
+        </div>
+        {/* Title Overlay */}
+        {props.title && props.showTitle !== false && (
+          <div
+            className="absolute top-0 left-0 right-0 p-4 pointer-events-none"
+            style={{ background: 'linear-gradient(rgba(0,0,0,0.6), transparent)' }}
+          >
+            <h4 className="text-white font-semibold">{props.title}</h4>
+            {props.description && (
+              <p className="text-white/70 text-sm mt-1">{props.description}</p>
+            )}
+          </div>
+        )}
+        {/* YouTube Badge */}
+        <div className="absolute bottom-2 right-2 px-2 py-1 bg-red-600 rounded text-white text-xs font-medium">
+          YouTube
+        </div>
+      </div>
+    );
+  }
+
+  // Render Vimeo embed
+  if (vimeoId) {
+    return (
+      <div
+        className="relative rounded-xl overflow-hidden bg-black"
+        style={{ borderRadius: settings.borders.radius }}
+      >
+        <div className="aspect-video">
+          <iframe
+            src={getVimeoEmbedUrl(vimeoId, {
+              autoplay: props.autoplay,
+              muted: props.muted,
+              loop: props.loop,
+            })}
+            className="w-full h-full"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            title={props.title || 'Vimeo Video'}
+          />
+        </div>
+        {/* Title Overlay */}
+        {props.title && props.showTitle !== false && (
+          <div
+            className="absolute top-0 left-0 right-0 p-4 pointer-events-none"
+            style={{ background: 'linear-gradient(rgba(0,0,0,0.6), transparent)' }}
+          >
+            <h4 className="text-white font-semibold">{props.title}</h4>
+            {props.description && (
+              <p className="text-white/70 text-sm mt-1">{props.description}</p>
+            )}
+          </div>
+        )}
+        {/* Vimeo Badge */}
+        <div className="absolute bottom-2 right-2 px-2 py-1 bg-blue-500 rounded text-white text-xs font-medium">
+          Vimeo
+        </div>
+      </div>
+    );
+  }
+
+  // Native video player
   return (
     <div
       className="relative rounded-xl overflow-hidden group bg-black"
@@ -1643,6 +1778,7 @@ export function VideoPlayerBlock({
             <FiPlay className="text-white ml-1" size={32} />
           </div>
           <p className="text-white/60 text-sm">No video selected</p>
+          <p className="text-white/40 text-xs mt-2">Supports: MP4, WebM, YouTube, Vimeo</p>
         </div>
       )}
 
@@ -3202,7 +3338,9 @@ export function BlockRenderer({
   onDuplicate,
   onCopy,
   onUpdateBlock,
+  onUpdateProps,
   previewDevice = 'desktop',
+  enableInlineEdit = false,
 }: {
   block: ContentBlock;
   settings: CustomThemeSettings;
@@ -3216,7 +3354,16 @@ export function BlockRenderer({
   onUpdateBlock?: (block: ContentBlock) => void;
   onUpdateProps?: (props: Record<string, any>) => void;
   previewDevice?: 'desktop' | 'tablet' | 'mobile';
+  enableInlineEdit?: boolean;
 }) {
+  // Handler for inline prop updates
+  const handleInlineUpdate = (props: Record<string, any>) => {
+    if (onUpdateProps) {
+      onUpdateProps(props);
+    } else if (onUpdateBlock) {
+      onUpdateBlock({ ...block, props });
+    }
+  };
   // Check visibility based on device
   const isVisible = block.visibility ? block.visibility[previewDevice] : true;
 
@@ -3267,7 +3414,42 @@ export function BlockRenderer({
       </div>
     );
   }
+
+  // Editable block props for inline editing
+  const editableBlockProps = {
+    block,
+    settings,
+    onUpdate: handleInlineUpdate,
+    isSelected,
+    onSelect,
+    onDelete,
+    onDuplicate,
+  };
+
   const renderBlock = () => {
+    // Use editable blocks when inline editing is enabled
+    if (enableInlineEdit && isBlockEditable(block.type)) {
+      switch (block.type) {
+        case 'hero':
+          return <EditableHeroBlock {...editableBlockProps} />;
+        case 'testimonial':
+          return <EditableTestimonialBlock {...editableBlockProps} />;
+        case 'features':
+          return <EditableFeaturesBlock {...editableBlockProps} />;
+        case 'cta':
+          return <EditableCTABlock {...editableBlockProps} />;
+        case 'gallery':
+          return <EditableGalleryBlock {...editableBlockProps} />;
+        case 'video':
+          return <EditableVideoBlock {...editableBlockProps} />;
+        case 'audio':
+          return <EditableAudioBlock {...editableBlockProps} />;
+        case 'card':
+          return <EditableCardBlock {...editableBlockProps} />;
+      }
+    }
+
+    // Default non-editable blocks
     switch (block.type) {
       case 'audio':
         return <AudioPlayerBlock props={block.props} settings={settings} />;
