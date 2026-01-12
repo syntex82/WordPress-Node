@@ -2510,3 +2510,101 @@ export const demoAnalyticsApi = {
   bulkDeleteUsers: (demoIds: string[]) =>
     api.post<{ success: boolean; deleted: number }>('/admin/demo-analytics/api/bulk/delete', { demoIds }),
 };
+
+// Reel Types
+export interface Reel {
+  id: string;
+  userId: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  caption?: string;
+  duration: number;
+  isPublic: boolean;
+  likesCount: number;
+  commentsCount: number;
+  viewsCount: number;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    avatar?: string;
+    headline?: string;
+  };
+  _count?: {
+    likes: number;
+    comments: number;
+    views: number;
+  };
+  isLiked?: boolean;
+}
+
+export interface ReelComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  replies?: ReelComment[];
+  _count?: { replies: number };
+}
+
+// Reels API
+export const reelsApi = {
+  // Get reels feed
+  getReels: (page = 1, limit = 20, userId?: string) =>
+    api.get<{ reels: Reel[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      '/reels',
+      { params: { page, limit, userId } }
+    ),
+
+  // Get single reel
+  getReel: (id: string) => api.get<Reel>(`/reels/${id}`),
+
+  // Create reel
+  createReel: (data: { videoUrl: string; thumbnailUrl?: string; caption?: string; duration: number; isPublic?: boolean; hashtags?: string[] }) =>
+    api.post<Reel>('/reels', data),
+
+  // Upload video
+  uploadVideo: (formData: FormData) =>
+    api.post<{ videoUrl: string; thumbnailUrl?: string; fileSize: number; mimeType: string }>('/reels/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  // Update reel
+  updateReel: (id: string, data: { caption?: string; isPublic?: boolean }) =>
+    api.patch<Reel>(`/reels/${id}`, data),
+
+  // Delete reel
+  deleteReel: (id: string) => api.delete(`/reels/${id}`),
+
+  // Like reel
+  likeReel: (id: string) => api.post(`/reels/${id}/like`),
+
+  // Unlike reel
+  unlikeReel: (id: string) => api.delete(`/reels/${id}/like`),
+
+  // Get comments
+  getComments: (reelId: string, page = 1, limit = 20) =>
+    api.get<{ comments: ReelComment[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      `/reels/${reelId}/comments`,
+      { params: { page, limit } }
+    ),
+
+  // Create comment
+  createComment: (reelId: string, content: string, parentId?: string) =>
+    api.post<ReelComment>(`/reels/${reelId}/comments`, { content, parentId }),
+
+  // Track view
+  trackView: (reelId: string, watchTime: number, completed?: boolean) =>
+    api.post(`/reels/${reelId}/view`, { watchTime, completed }),
+
+  // Get user's reels
+  getUserReels: (userId: string, page = 1, limit = 20) =>
+    api.get<{ reels: Reel[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      '/reels',
+      { params: { page, limit, userId } }
+    ),
+};

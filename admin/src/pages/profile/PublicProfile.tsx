@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { profileApi, timelineApi, UserProfile, ProfileStats, ActivityItem, TimelinePost } from '../../services/api';
+import { profileApi, timelineApi, reelsApi, UserProfile, ProfileStats, ActivityItem, TimelinePost, Reel } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
@@ -16,7 +16,7 @@ import { useSiteTheme } from '../../contexts/SiteThemeContext';
 import {
   FiMapPin, FiCalendar, FiUsers, FiBook, FiAward, FiExternalLink,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiActivity, FiUserPlus, FiUserCheck,
-  FiEdit3, FiMessageCircle, FiStar, FiUser
+  FiEdit3, FiMessageCircle, FiStar, FiUser, FiPlay, FiHeart, FiEye, FiFilm
 } from 'react-icons/fi';
 
 export default function PublicProfile() {
@@ -29,10 +29,14 @@ export default function PublicProfile() {
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [timelinePosts, setTimelinePosts] = useState<TimelinePost[]>([]);
+  const [reels, setReels] = useState<Reel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'about'>('posts');
+  const [reelsPage, setReelsPage] = useState(1);
+  const [hasMoreReels, setHasMoreReels] = useState(true);
+  const [loadingReels, setLoadingReels] = useState(false);
   const [postsPage, setPostsPage] = useState(1);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [commentModalPostId, setCommentModalPostId] = useState<string | null>(null);
@@ -56,9 +60,10 @@ export default function PublicProfile() {
       setStats(statsRes.data);
       setActivities(activityRes.data?.activities || []);
 
-      // Load timeline posts for this user
+      // Load timeline posts and reels for this user
       if (profileRes.data?.id) {
         loadUserPosts(profileRes.data.id, true);
+        loadUserReels(profileRes.data.id, true);
       }
 
       // Check if following
@@ -110,6 +115,33 @@ export default function PublicProfile() {
     if (profile?.id && hasMorePosts && !loadingPosts) {
       setPostsPage(prev => prev + 1);
       loadUserPosts(profile.id, false);
+    }
+  };
+
+  const loadUserReels = useCallback(async (userId: string, reset = false) => {
+    try {
+      setLoadingReels(true);
+      const currentPage = reset ? 1 : reelsPage;
+      const res = await reelsApi.getUserReels(userId, currentPage, 12);
+
+      if (reset) {
+        setReels(res.data.reels || []);
+        setReelsPage(1);
+      } else {
+        setReels(prev => [...prev, ...(res.data.reels || [])]);
+      }
+      setHasMoreReels((res.data.pagination?.page || 1) < (res.data.pagination?.totalPages || 1));
+    } catch (err) {
+      console.error('Error loading user reels:', err);
+    } finally {
+      setLoadingReels(false);
+    }
+  }, [reelsPage]);
+
+  const loadMoreReels = () => {
+    if (profile?.id && hasMoreReels && !loadingReels) {
+      setReelsPage(prev => prev + 1);
+      loadUserReels(profile.id, false);
     }
   };
 
@@ -276,6 +308,16 @@ export default function PublicProfile() {
             <FiEdit3 className="w-4 h-4" /> Posts
           </button>
           <button
+            onClick={() => setActiveTab('reels')}
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'reels'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <FiFilm className="w-4 h-4" /> Reels
+          </button>
+          <button
             onClick={() => setActiveTab('about')}
             className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
               activeTab === 'about'
@@ -327,6 +369,73 @@ export default function PublicProfile() {
                   <FiMessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                   <p className="text-slate-400">No posts yet</p>
                   {isOwnProfile && <p className="text-slate-500 text-sm mt-1">Share what's on your mind!</p>}
+                </div>
+              )}
+            </>
+          ) : activeTab === 'reels' ? (
+            <>
+              {/* Reels Grid */}
+              {reels.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {reels.map(reel => (
+                      <Link
+                        key={reel.id}
+                        to={`/reels/${reel.id}`}
+                        className="group relative aspect-[9/16] bg-slate-800 rounded-xl overflow-hidden border border-slate-700/30 hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.02]"
+                      >
+                        {/* Thumbnail */}
+                        {reel.thumbnailUrl ? (
+                          <img
+                            src={reel.thumbnailUrl}
+                            alt={reel.caption || 'Reel'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center">
+                            <FiFilm className="w-12 h-12 text-white/50" />
+                          </div>
+                        )}
+
+                        {/* Play overlay */}
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <FiPlay className="w-5 h-5 text-white ml-1" />
+                          </div>
+                        </div>
+
+                        {/* Stats overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
+                          <div className="flex items-center gap-3 text-white text-xs">
+                            <span className="flex items-center gap-1">
+                              <FiHeart className="w-3.5 h-3.5" /> {reel.likesCount || reel._count?.likes || 0}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <FiEye className="w-3.5 h-3.5" /> {reel.viewsCount || reel._count?.views || 0}
+                            </span>
+                          </div>
+                          {reel.caption && (
+                            <p className="text-white text-xs mt-1.5 line-clamp-2">{reel.caption}</p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  {hasMoreReels && (
+                    <button
+                      onClick={loadMoreReels}
+                      disabled={loadingReels}
+                      className="w-full py-4 bg-slate-800/50 backdrop-blur-xl text-slate-400 rounded-2xl hover:bg-slate-700/50 transition-all duration-200 disabled:opacity-50 border border-slate-700/30 hover:border-slate-600/50 font-medium hover:text-white"
+                    >
+                      {loadingReels ? 'Loading...' : 'Load More Reels'}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-10 border border-slate-700/30 text-center">
+                  <FiFilm className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <p className="text-slate-400">No reels yet</p>
+                  {isOwnProfile && <p className="text-slate-500 text-sm mt-1">Create your first reel!</p>}
                 </div>
               )}
             </>
