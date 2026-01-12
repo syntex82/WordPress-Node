@@ -1509,6 +1509,293 @@ img { max-width: 100%; height: auto; display: block; }
   </div>
 </footer>`;
 
+      // Restaurant blocks
+      case 'menuPreview':
+      case 'menuSection':
+        const menuItems = (props.items || [])
+          .map(
+            (item: any) => `
+      <div style="display: flex; justify-content: space-between; align-items: start; padding: 1rem 0; border-bottom: 1px solid var(--color-border);">
+        <div style="flex: 1;">
+          <h4 style="margin: 0 0 0.25rem;">${item.name || ''}</h4>
+          <p style="margin: 0; color: var(--color-text-muted); font-size: 0.9rem;">${item.description || ''}</p>
+        </div>
+        <div style="font-weight: 600; color: var(--color-primary); margin-left: 2rem;">${item.price || ''}</div>
+      </div>`,
+          )
+          .join('');
+        return `<section class="menu-section-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 800px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    ${props.subtitle ? `<p style="text-align: center; color: var(--color-text-muted); margin-bottom: 2rem;">${props.subtitle}</p>` : ''}
+    <div>${menuItems}</div>
+  </div>
+</section>`;
+
+      case 'reservationForm':
+      case 'appointmentForm':
+        return `<section class="reservation-form-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 600px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <form style="background: var(--color-surface); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Name *</label>
+          <input type="text" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email *</label>
+          <input type="email" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date *</label>
+          <input type="date" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Time *</label>
+          <input type="time" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        </div>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Special Requests</label>
+        <textarea style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); min-height: 100px;"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">${props.submitText || 'Book Now'}</button>
+    </form>
+  </div>
+</section>`;
+
+      // Real Estate blocks
+      case 'propertySearch':
+      case 'vehicleSearch':
+        return `<section class="property-search-block" style="padding: var(--section-padding) 0; background: var(--color-surface);">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <form style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: #fff; padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+      <input type="text" placeholder="Location" style="padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+      <select style="padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        <option>Property Type</option>
+        <option>House</option>
+        <option>Apartment</option>
+        <option>Condo</option>
+      </select>
+      <input type="number" placeholder="Min Price" style="padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+      <input type="number" placeholder="Max Price" style="padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  </div>
+</section>`;
+
+      case 'propertyGrid':
+      case 'vehicleGrid':
+      case 'projectGrid':
+        return `<section class="property-grid-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+      <!-- Property/Vehicle/Project items would be dynamically rendered here -->
+      <div style="background: var(--color-surface); border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--color-border);">
+        <div style="aspect-ratio: 16/9; background: var(--color-border);"></div>
+        <div style="padding: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem;">Item Title</h3>
+          <p style="color: var(--color-text-muted); margin-bottom: 1rem;">Description</p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary);">$0</span>
+            <a href="#" class="btn btn-sm btn-primary">View Details</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+      // Fitness blocks
+      case 'schedule':
+        return `<section class="schedule-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: var(--color-surface);">
+            <th style="padding: 1rem; text-align: left; border: 1px solid var(--color-border);">Time</th>
+            <th style="padding: 1rem; text-align: left; border: 1px solid var(--color-border);">Monday</th>
+            <th style="padding: 1rem; text-align: left; border: 1px solid var(--color-border);">Tuesday</th>
+            <th style="padding: 1rem; text-align: left; border: 1px solid var(--color-border);">Wednesday</th>
+            <th style="padding: 1rem; text-align: left; border: 1px solid var(--color-border);">Thursday</th>
+            <th style="padding: 1rem; text-align: left; border: 1px solid var(--color-border);">Friday</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 1rem; border: 1px solid var(--color-border);">6:00 AM</td>
+            <td style="padding: 1rem; border: 1px solid var(--color-border);">Morning Yoga</td>
+            <td style="padding: 1rem; border: 1px solid var(--color-border);">HIIT</td>
+            <td style="padding: 1rem; border: 1px solid var(--color-border);">Morning Yoga</td>
+            <td style="padding: 1rem; border: 1px solid var(--color-border);">HIIT</td>
+            <td style="padding: 1rem; border: 1px solid var(--color-border);">Morning Yoga</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>`;
+
+      // Nonprofit blocks
+      case 'donationForm':
+        return `<section class="donation-form-block" style="padding: var(--section-padding) 0; background: var(--color-surface);">
+  <div class="container" style="max-width: 600px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <form style="background: #fff; padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <button type="button" style="padding: 1rem; border: 2px solid var(--color-border); border-radius: var(--border-radius); background: #fff; cursor: pointer;">$25</button>
+        <button type="button" style="padding: 1rem; border: 2px solid var(--color-primary); border-radius: var(--border-radius); background: var(--color-primary); color: #fff; cursor: pointer;">$50</button>
+        <button type="button" style="padding: 1rem; border: 2px solid var(--color-border); border-radius: var(--border-radius); background: #fff; cursor: pointer;">$100</button>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Custom Amount</label>
+        <input type="number" placeholder="Enter amount" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Donate Now</button>
+    </form>
+  </div>
+</section>`;
+
+      // Travel blocks
+      case 'tourPackages':
+      case 'destinationGrid':
+        return `<section class="tour-packages-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+      <!-- Tour packages would be dynamically rendered here -->
+      <div style="background: var(--color-surface); border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--color-border);">
+        <div style="aspect-ratio: 4/3; background: var(--color-border);"></div>
+        <div style="padding: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem;">Destination</h3>
+          <p style="color: var(--color-text-muted); margin-bottom: 1rem;">Explore amazing places</p>
+          <a href="#" class="btn btn-primary btn-sm">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+      case 'searchBar':
+        return `<section class="search-bar-block" style="padding: 2rem 0; background: var(--color-surface);">
+  <div class="container" style="max-width: 800px;">
+    <form style="display: flex; gap: 1rem;">
+      <input type="text" placeholder="${props.placeholder || 'Search...'}" style="flex: 1; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  </div>
+</section>`;
+
+      // Fashion blocks
+      case 'splitContent':
+        return `<section class="split-content-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+      <div style="background: var(--color-surface); padding: 4rem; display: flex; flex-direction: column; justify-content: center;">
+        ${props.title ? `<h2 style="margin-bottom: 1rem;">${props.title}</h2>` : ''}
+        <p style="color: var(--color-text-muted); margin-bottom: 2rem;">${props.content || ''}</p>
+        ${props.buttonText ? `<a href="${props.buttonUrl || '#'}" class="btn btn-primary">${props.buttonText}</a>` : ''}
+      </div>
+      <div style="aspect-ratio: 1; background: var(--color-border);"></div>
+    </div>
+  </div>
+</section>`;
+
+      // Education blocks
+      case 'programList':
+        return `<section class="program-list-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; gap: 1.5rem;">
+      <!-- Programs would be dynamically rendered here -->
+      <div style="background: var(--color-surface); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--color-border);">
+        <h3 style="margin: 0 0 0.5rem;">Program Name</h3>
+        <p style="color: var(--color-text-muted);">Program description</p>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+      // E-commerce blocks
+      case 'shopFilters':
+        return `<section class="shop-filters-block" style="padding: 1rem 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border);">
+  <div class="container">
+    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+      <select style="padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        <option>All Categories</option>
+      </select>
+      <select style="padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
+        <option>Sort By</option>
+      </select>
+    </div>
+  </div>
+</section>`;
+
+      // Blog blocks
+      case 'blogGrid':
+        return `<section class="blog-grid-block" style="padding: var(--section-padding) 0;">
+  <div class="container">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+      <!-- Blog posts would be dynamically rendered here -->
+      <article style="background: var(--color-surface); border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--color-border);">
+        <div style="aspect-ratio: 16/9; background: var(--color-border);"></div>
+        <div style="padding: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem;">Blog Post Title</h3>
+          <p style="color: var(--color-text-muted);">Post excerpt...</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>`;
+
+      case 'blogCategories':
+        return `<section class="blog-categories-block" style="padding: 2rem 0; background: var(--color-surface);">
+  <div class="container">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+      <a href="#" style="padding: 0.5rem 1rem; background: var(--color-primary); color: #fff; border-radius: 999px; text-decoration: none;">All</a>
+      <a href="#" style="padding: 0.5rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 999px; text-decoration: none;">Technology</a>
+      <a href="#" style="padding: 0.5rem 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 999px; text-decoration: none;">Design</a>
+    </div>
+  </div>
+</section>`;
+
+      // Content blocks
+      case 'content':
+        return `<section class="content-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 800px;">
+    ${props.title ? `<h2 style="margin-bottom: 1.5rem;">${props.title}</h2>` : ''}
+    <div style="color: var(--color-text); line-height: 1.8;">${props.content || props.html || ''}</div>
+  </div>
+</section>`;
+
+      case 'footer':
+        return `<!-- Footer block - uses theme footer partial -->`;
+
+      case 'faq':
+        const faqItems = (props.items || [])
+          .map(
+            (item: any, i: number) => `
+      <details style="border: 1px solid var(--color-border); border-radius: var(--border-radius); margin-bottom: 0.5rem; background: var(--color-surface);" ${i === 0 ? 'open' : ''}>
+        <summary style="padding: 1.25rem; cursor: pointer; font-weight: 600;">${item.question || item.title || 'Question'}</summary>
+        <div style="padding: 0 1.25rem 1.25rem; color: var(--color-text-muted);">${item.answer || item.content || ''}</div>
+      </details>`,
+          )
+          .join('');
+        return `<section class="faq-block" style="padding: var(--section-padding) 0;">
+  <div class="container" style="max-width: 800px;">
+    ${props.title ? `<h2 style="text-align: center; margin-bottom: 2rem;">${props.title}</h2>` : ''}
+    ${faqItems}
+  </div>
+</section>`;
+
       default:
         // For unknown blocks, render as placeholder comment
         return `<!-- Block: ${type} -->`;

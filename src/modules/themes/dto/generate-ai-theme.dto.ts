@@ -50,9 +50,11 @@ export type PageType =
  * Block types available for content generation
  */
 export type ContentBlockType =
+  // Core content blocks
   | 'hero'
   | 'features'
   | 'testimonials'
+  | 'testimonial' // Singular version for single testimonial blocks
   | 'cta'
   | 'gallery'
   | 'video'
@@ -65,11 +67,64 @@ export type ContentBlockType =
   | 'logoCloud'
   | 'socialProof'
   | 'countdown'
+  | 'imageText'
+  | 'about'
+  | 'map'
+  | 'faq'
+  | 'content'
+  | 'footer'
+  // E-commerce blocks
   | 'productGrid'
+  | 'productCard'
+  | 'productCarousel'
+  | 'shoppingCart'
+  | 'checkoutForm'
+  | 'orderSummary'
+  | 'shopFilters'
+  // Course/LMS blocks
   | 'courseGrid'
+  | 'courseCard'
+  | 'courseCurriculum'
+  | 'courseProgress'
+  | 'courseInstructor'
+  | 'courseCategories'
+  // Blog blocks
   | 'blogPosts'
+  | 'blogGrid'
+  | 'blogCategories'
+  // Team/People blocks
   | 'teamGrid'
-  | 'contactForm';
+  // Contact blocks
+  | 'contactForm'
+  | 'contactInfo'
+  // Restaurant blocks
+  | 'menuPreview'
+  | 'menuSection'
+  | 'reservationForm'
+  // Healthcare blocks
+  | 'appointmentForm'
+  // Real Estate blocks
+  | 'propertySearch'
+  | 'propertyGrid'
+  // Portfolio blocks
+  | 'projectGrid'
+  // Automotive blocks
+  | 'vehicleSearch'
+  | 'vehicleGrid'
+  // Fitness blocks
+  | 'schedule'
+  // Nonprofit blocks
+  | 'donationForm'
+  // Travel blocks
+  | 'tourPackages'
+  | 'destinationGrid'
+  | 'searchBar'
+  // Fashion blocks
+  | 'splitContent'
+  // Education blocks
+  | 'programList'
+  // Auth blocks
+  | 'loginForm';
 
 /**
  * Theme feature flags
