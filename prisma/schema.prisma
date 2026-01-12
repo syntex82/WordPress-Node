@@ -2277,6 +2277,12 @@ model User {
   pluginPurchases            PluginPurchase[]
   themePurchases             ThemePurchase[]
   serviceBookings            ServiceBooking[]
+
+  // Reels
+  reels                      Reel[]
+  reelLikes                  ReelLike[]
+  reelComments               ReelComment[]
+  reelViews                  ReelView[]
 }
 
 model UserBadge {
@@ -2481,6 +2487,7 @@ model Hashtag {
   updatedAt DateTime @updatedAt
 
   posts PostHashtag[]
+  reels ReelHashtag[]
 
   @@index([postCount])
   @@index([tag])
@@ -2518,6 +2525,114 @@ model PostMention {
   @@index([commentId])
   @@index([mentionedUserId])
   @@index([mentionerUserId])
+}
+
+// ============================================
+// REELS - Short-form video content
+// ============================================
+
+model Reel {
+  id              String   @id @default(cuid())
+  userId          String
+  videoUrl        String   // URL to the video file
+  thumbnailUrl    String?  // Thumbnail/poster image
+  caption         String?  @db.Text
+  duration        Int      // Duration in seconds (15-60)
+  width           Int?     // Video width
+  height          Int?     // Video height
+  fileSize        Int?     // File size in bytes
+  isPublic        Boolean  @default(true)
+
+  // Engagement metrics
+  viewsCount      Int      @default(0)
+  likesCount      Int      @default(0)
+  commentsCount   Int      @default(0)
+  sharesCount     Int      @default(0)
+
+  // Audio/Music
+  audioName       String?  // Name of audio track used
+  audioUrl        String?  // URL to audio file if custom
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes           ReelLike[]
+  comments        ReelComment[]
+  views           ReelView[]
+  hashtags        ReelHashtag[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isPublic])
+  @@index([viewsCount])
+  @@index([likesCount])
+}
+
+model ReelLike {
+  id        String   @id @default(cuid())
+  reelId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, userId])
+  @@index([reelId])
+  @@index([userId])
+}
+
+model ReelComment {
+  id        String   @id @default(cuid())
+  reelId    String
+  userId    String
+  content   String   @db.Text
+  parentId  String?  // For nested replies
+  likesCount Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reel      Reel           @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    ReelComment?   @relation("ReelCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ReelComment[]  @relation("ReelCommentReplies")
+
+  @@index([reelId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+}
+
+model ReelView {
+  id         String   @id @default(cuid())
+  reelId     String
+  userId     String?  // Null for anonymous views
+  ipAddress  String?  // For anonymous tracking
+  watchTime  Int      @default(0) // Seconds watched
+  completed  Boolean  @default(false) // Watched to end
+  createdAt  DateTime @default(now())
+
+  reel       Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reelId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ReelHashtag {
+  id        String   @id @default(cuid())
+  reelId    String
+  hashtagId String
+  createdAt DateTime @default(now())
+
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, hashtagId])
+  @@index([reelId])
+  @@index([hashtagId])
 }
 
 model VideoAsset {
