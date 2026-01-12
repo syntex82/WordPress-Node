@@ -52,6 +52,9 @@ export type BlockType =
   // Navigation blocks
   | 'navGlass' | 'navMinimal' | 'navMega' | 'navCentered' | 'navSidebar';
 
+// Import BlockStyle from the new style system
+import { BlockStyle, AdvancedBlockPropertiesPanel, blockStyleToCSS, DEFAULT_BLOCK_STYLE } from './BlockStyleSystem';
+
 export interface ContentBlock {
   id: string;
   type: BlockType;
@@ -59,7 +62,13 @@ export interface ContentBlock {
   link?: LinkSettings;
   visibility?: BlockVisibility;
   animation?: AnimationSettings;
+  // NEW: Advanced styling properties for full block customization
+  style?: BlockStyle;
 }
+
+// Re-export BlockStyle type for external use
+export type { BlockStyle };
+export { AdvancedBlockPropertiesPanel, blockStyleToCSS, DEFAULT_BLOCK_STYLE };
 
 // Re-export advanced block types for use elsewhere
 export type { LinkSettings, BlockVisibility, AnimationSettings, RowSettingsType as RowSettings, HeaderSettingsType as HeaderSettings, ProductData };
@@ -3301,6 +3310,32 @@ export function BlockRenderer({
     ? `animate-${block.animation.type}`
     : '';
 
+  // Get block custom styles - NEW: Apply advanced styling
+  const getBlockStyles = (): React.CSSProperties => {
+    const baseStyles = getAnimationStyle();
+    if (!block.style) return baseStyles;
+
+    // Convert BlockStyle to CSS properties
+    const customStyles = blockStyleToCSS(block.style);
+    return { ...baseStyles, ...customStyles };
+  };
+
+  // Get heading styles for blocks with headings
+  const getHeadingStyles = (): React.CSSProperties => {
+    if (!block.style?.headingTypography) return {};
+    const t = block.style.headingTypography;
+    const styles: React.CSSProperties = {};
+    if (t.fontFamily && t.fontFamily !== 'inherit') styles.fontFamily = t.fontFamily;
+    if (t.fontSize && t.fontSize !== 'inherit') styles.fontSize = t.fontSize;
+    if (t.fontWeight && t.fontWeight !== 'inherit') styles.fontWeight = t.fontWeight as any;
+    return styles;
+  };
+
+  // Get text color for the block
+  const getTextColor = (): string | undefined => {
+    return block.style?.colors?.textColor !== 'inherit' ? block.style?.colors?.textColor : undefined;
+  };
+
   if (!isVisible) {
     return (
       <div className="relative group opacity-30 border border-dashed border-gray-500 rounded p-2">
@@ -3407,11 +3442,17 @@ export function BlockRenderer({
     }
   };
 
+  // Combine all styles
+  const combinedStyles = getBlockStyles();
+  const customClass = block.style?.customClass || '';
+
   return (
     <div
-      className={`relative group cursor-pointer transition-all ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-900' : 'hover:ring-1 hover:ring-blue-400/50'} ${animationClass}`}
-      style={getAnimationStyle()}
+      className={`relative group cursor-pointer transition-all ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-900' : 'hover:ring-1 hover:ring-blue-400/50'} ${animationClass} ${customClass}`}
+      style={combinedStyles}
       onClick={onSelect}
+      data-block-id={block.id}
+      data-block-type={block.type}
     >
       {/* Block Controls */}
       <div className={`absolute -top-3 right-2 flex items-center gap-1 bg-gray-800 rounded-lg p-1 z-10 transition-opacity shadow-lg ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
@@ -3746,6 +3787,27 @@ export function ContentBlocksPanel({
                   animation={selectedBlock.animation || { type: 'none', duration: 300, delay: 0 }}
                   onChange={(animation) => {
                     handleUpdateFullBlock({ ...selectedBlock, animation });
+                  }}
+                />
+              </div>
+            </details>
+
+            {/* Advanced Styling Panel - NEW! Full typography, colors, spacing, borders, shadows, layout */}
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-gray-300 hover:text-white py-2 border-b border-gray-700">
+                <span>🎨 Advanced Styling</span>
+                <span className="text-xs text-pink-400">
+                  {selectedBlock.style && Object.keys(selectedBlock.style).length > 0 ? '(Custom)' : ''}
+                </span>
+              </summary>
+              <div className="mt-2">
+                <AdvancedBlockPropertiesPanel
+                  style={selectedBlock.style || DEFAULT_BLOCK_STYLE}
+                  onChange={(style) => {
+                    handleUpdateFullBlock({ ...selectedBlock, style });
+                  }}
+                  onReset={() => {
+                    handleUpdateFullBlock({ ...selectedBlock, style: undefined });
                   }}
                 />
               </div>

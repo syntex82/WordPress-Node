@@ -17,6 +17,11 @@ import {
   ContentBlocksPanel, BlockRenderer, PageTemplate, ThemePage
 } from '../components/ThemeDesigner/ContentBlocks';
 import { AiThemeGeneratorModal } from '../components/ThemeDesigner/AiThemeGeneratorModal';
+import {
+  EnhancedPropertiesPanel,
+  BlockConfigUtils,
+  useHistory
+} from '../components/ThemeDesigner/PropertiesPanel';
 
 // Theme presets
 const THEME_PRESETS: { id: string; name: string; description: string; settings: CustomThemeSettings }[] = [
@@ -205,6 +210,60 @@ export default function ThemeDesigner() {
 
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [copiedBlock, setCopiedBlock] = useState<ContentBlock | null>(null);
+
+  // Enhanced Properties Panel state
+  const [showPropertiesPanel, setShowPropertiesPanel] = useState(false);
+
+  // Block-level undo/redo history
+  const [blockHistory, setBlockHistory] = useState<ContentBlock[][]>([]);
+  const [blockHistoryIndex, setBlockHistoryIndex] = useState(-1);
+
+  // Save block history for undo/redo
+  const saveBlockHistory = useCallback((newBlocks: ContentBlock[]) => {
+    setBlockHistory(prev => {
+      const newHistory = prev.slice(0, blockHistoryIndex + 1);
+      return [...newHistory, JSON.parse(JSON.stringify(newBlocks))];
+    });
+    setBlockHistoryIndex(prev => prev + 1);
+  }, [blockHistoryIndex]);
+
+  const undoBlockChange = useCallback(() => {
+    if (blockHistoryIndex > 0) {
+      setBlockHistoryIndex(prev => prev - 1);
+      const previousBlocks = blockHistory[blockHistoryIndex - 1];
+      if (previousBlocks) {
+        setContentBlocks(previousBlocks);
+      }
+    }
+  }, [blockHistoryIndex, blockHistory, setContentBlocks]);
+
+  const redoBlockChange = useCallback(() => {
+    if (blockHistoryIndex < blockHistory.length - 1) {
+      setBlockHistoryIndex(prev => prev + 1);
+      const nextBlocks = blockHistory[blockHistoryIndex + 1];
+      if (nextBlocks) {
+        setContentBlocks(nextBlocks);
+      }
+    }
+  }, [blockHistoryIndex, blockHistory, setContentBlocks]);
+
+  // Get selected block
+  const selectedBlock = contentBlocks.find(b => b.id === selectedBlockId) || null;
+
+  // Handle block selection - show enhanced panel
+  const handleBlockSelect = useCallback((blockId: string | null) => {
+    setSelectedBlockId(blockId);
+    if (blockId) {
+      setShowPropertiesPanel(true);
+    }
+  }, []);
+
+  // Handle enhanced block update from properties panel
+  const handleEnhancedBlockUpdate = useCallback((updatedBlock: ContentBlock) => {
+    setContentBlocks(blocks =>
+      blocks.map(b => b.id === updatedBlock.id ? updatedBlock : b)
+    );
+  }, [setContentBlocks]);
 
   // Page management functions
   const generatePageId = () => `page-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -1100,7 +1159,7 @@ export default function ThemeDesigner() {
                   onUpdateFullBlock={updateBlock}
                   onLoadTemplate={loadTemplate}
                   selectedBlockId={selectedBlockId}
-                  onSelectBlock={setSelectedBlockId}
+                  onSelectBlock={handleBlockSelect}
                 />
                 {copiedBlock && (
                   <div className="p-4 border-t border-gray-700">
@@ -1132,7 +1191,7 @@ export default function ThemeDesigner() {
               previewMode={previewMode}
               blocks={contentBlocks}
               selectedBlockId={selectedBlockId}
-              onSelectBlock={setSelectedBlockId}
+              onSelectBlock={handleBlockSelect}
               onDeleteBlock={removeBlock}
               onMoveBlock={moveBlock}
               onUpdateBlockProps={updateBlockProps}
@@ -1150,6 +1209,22 @@ export default function ThemeDesigner() {
         isOpen={showAiModal}
         onClose={() => setShowAiModal(false)}
         onThemeGenerated={handleAiThemeGenerated}
+      />
+
+      {/* Enhanced Properties Panel */}
+      <EnhancedPropertiesPanel
+        block={selectedBlock}
+        onBlockUpdate={handleEnhancedBlockUpdate}
+        onClose={() => {
+          setShowPropertiesPanel(false);
+          setSelectedBlockId(null);
+        }}
+        isOpen={showPropertiesPanel && selectedBlock !== null}
+        position="right"
+        onUndo={undoBlockChange}
+        onRedo={redoBlockChange}
+        canUndo={blockHistoryIndex > 0}
+        canRedo={blockHistoryIndex < blockHistory.length - 1}
       />
     </div>
   );
