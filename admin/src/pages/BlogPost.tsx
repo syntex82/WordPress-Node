@@ -171,7 +171,7 @@ export default function BlogPost() {
 
         {/* Content */}
         <div
-          className={`prose prose-lg max-w-none ${isDark ? 'prose-invert' : ''}`}
+          className={`prose prose-lg max-w-none ${isDark ? 'prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-blue-400 prose-li:text-slate-300 prose-blockquote:text-slate-400 prose-code:text-pink-400' : ''}`}
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 

@@ -109,6 +109,7 @@ const Timeline = lazy(() => import('./pages/feed/Timeline'));
 
 // Lazy-loaded pages - Reels & Blog
 const Reels = lazy(() => import('./pages/Reels'));
+const CreateReel = lazy(() => import('./pages/CreateReel'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
 
 // Lazy-loaded pages - Email
@@ -273,6 +274,7 @@ function AppContent() {
 
                 {/* Reels & Blog */}
                 <Route path="reels" element={<Reels />} />
+                <Route path="reels/create" element={<CreateReel />} />
                 <Route path="blog/:slug" element={<BlogPost />} />
 
                 {/* Security */}

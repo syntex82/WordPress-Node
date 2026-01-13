@@ -139,7 +139,7 @@ export default function Reels() {
         <FiPlay className="w-16 h-16 text-slate-500 mb-4" />
         <h2 className="text-xl font-semibold mb-2">No Reels Yet</h2>
         <p className="text-slate-500 mb-6">Be the first to create a reel!</p>
-        <Link to="/profile" className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-medium">
+        <Link to="/reels/create" className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-medium">
           Create Reel
         </Link>
       </div>
@@ -148,10 +148,15 @@ export default function Reels() {
 
   return (
     <div className={`fixed inset-0 z-50 ${isDark ? 'bg-black' : 'bg-gray-900'}`}>
-      {/* Close button */}
-      <Link to="/profile" className="absolute top-4 left-4 z-50 p-2 bg-black/50 rounded-full text-white hover:bg-black/70">
-        <FiX className="w-6 h-6" />
-      </Link>
+      {/* Top bar */}
+      <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between">
+        <Link to="/timeline" className="p-2 bg-black/50 rounded-full text-white hover:bg-black/70">
+          <FiX className="w-6 h-6" />
+        </Link>
+        <Link to="/reels/create" className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-medium text-sm hover:opacity-90">
+          <FiPlus className="w-4 h-4" /> Create
+        </Link>
+      </div>
 
       {/* Reels container */}
       <div
