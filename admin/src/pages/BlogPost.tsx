@@ -171,9 +171,20 @@ export default function BlogPost() {
 
         {/* Content */}
         <div
-          className={`prose prose-lg max-w-none ${isDark ? 'prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-blue-400 prose-li:text-slate-300 prose-blockquote:text-slate-400 prose-code:text-pink-400' : ''}`}
+          className={`prose prose-lg max-w-none ${isDark ? 'prose-invert' : ''}`}
+          style={isDark ? { color: '#e2e8f0' } : undefined}
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
+        {isDark && (
+          <style>{`
+            .prose-invert p, .prose-invert li, .prose-invert span { color: #cbd5e1 !important; }
+            .prose-invert h1, .prose-invert h2, .prose-invert h3, .prose-invert h4, .prose-invert h5, .prose-invert h6 { color: #fff !important; }
+            .prose-invert strong, .prose-invert b { color: #fff !important; }
+            .prose-invert a { color: #60a5fa !important; }
+            .prose-invert code { color: #f472b6 !important; }
+            .prose-invert blockquote { color: #94a3b8 !important; border-left-color: #475569 !important; }
+          `}</style>
+        )}
 
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
