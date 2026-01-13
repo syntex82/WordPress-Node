@@ -12,6 +12,7 @@ import PostCard from '../../components/PostCard';
 import CreatePostForm from '../../components/CreatePostForm';
 import CommentModal from '../../components/CommentModal';
 import FollowersModal from '../../components/FollowersModal';
+import RecommendedArticles from '../../components/RecommendedArticles';
 import { useSiteTheme } from '../../contexts/SiteThemeContext';
 import {
   FiMapPin, FiCalendar, FiUsers, FiBook, FiAward, FiExternalLink,
@@ -583,6 +584,9 @@ export default function PublicProfile() {
               {activities.length === 0 && <p className="text-slate-500 text-xs sm:text-sm">No recent activity</p>}
             </div>
           </div>
+
+          {/* Recommended Articles */}
+          <RecommendedArticles limit={5} />
         </div>
       </div>
 

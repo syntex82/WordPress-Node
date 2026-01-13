@@ -4,13 +4,14 @@
  * Features: Modern card design, animated stats, responsive layout
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { profileApi, mediaApi, timelineApi, UserProfile, ProfileStats, ActivityItem, TimelinePost } from '../../services/api';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { profileApi, mediaApi, timelineApi, reelsApi, UserProfile, ProfileStats, ActivityItem, TimelinePost, Reel } from '../../services/api';
 import {
   FiUser, FiEdit2, FiMapPin, FiBriefcase, FiCalendar, FiUsers, FiBook, FiAward,
   FiTwitter, FiLinkedin, FiGithub, FiYoutube, FiGlobe, FiCamera,
   FiCheck, FiX, FiPlus, FiActivity, FiHeart, FiMessageCircle, FiShare2,
-  FiMoreHorizontal, FiTrash2, FiImage, FiSend, FiStar
+  FiMoreHorizontal, FiTrash2, FiImage, FiSend, FiStar, FiFilm, FiPlay, FiEye
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CreatePostForm from '../../components/CreatePostForm';
@@ -18,6 +19,7 @@ import PostCard from '../../components/PostCard';
 import CommentModal from '../../components/CommentModal';
 import EditPostModal from '../../components/EditPostModal';
 import FollowersModal from '../../components/FollowersModal';
+import RecommendedArticles from '../../components/RecommendedArticles';
 import { useSiteTheme } from '../../contexts/SiteThemeContext';
 
 export default function MyProfile() {
@@ -39,7 +41,9 @@ export default function MyProfile() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'about'>('posts');
+  const [reels, setReels] = useState<Reel[]>([]);
+  const [reelsLoading, setReelsLoading] = useState(false);
   const [openPostMenu, setOpenPostMenu] = useState<string | null>(null);
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
@@ -86,6 +90,26 @@ export default function MyProfile() {
       setLoading(false);
     }
   };
+
+  // Load reels when tab changes to reels
+  const loadReels = useCallback(async () => {
+    if (!profile?.id) return;
+    setReelsLoading(true);
+    try {
+      const res = await reelsApi.getUserReels(profile.id);
+      setReels(res.data?.reels || []);
+    } catch (err) {
+      console.error('Error loading reels:', err);
+    } finally {
+      setReelsLoading(false);
+    }
+  }, [profile?.id]);
+
+  useEffect(() => {
+    if (activeTab === 'reels' && profile?.id) {
+      loadReels();
+    }
+  }, [activeTab, profile?.id, loadReels]);
 
   const handlePostCreated = async () => {
     // Reload timeline posts after creating a new post
@@ -457,6 +481,16 @@ export default function MyProfile() {
             <FiEdit2 className="w-4 h-4" /> Posts
           </button>
           <button
+            onClick={() => setActiveTab('reels')}
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'reels'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <FiFilm className="w-4 h-4" /> Reels
+          </button>
+          <button
             onClick={() => setActiveTab('about')}
             className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200 ${
               activeTab === 'about'
@@ -470,43 +504,133 @@ export default function MyProfile() {
       </div>
 
       {activeTab === 'posts' ? (
-        <div className="px-3 sm:px-6 pb-8">
-          {/* Create Post Form - Using enhanced CreatePostForm component */}
-          <div className="relative z-20">
-            <CreatePostForm onPostCreated={handlePostCreated} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-3 sm:px-6 pb-8">
+          {/* Main Content - Posts */}
+          <div className="lg:col-span-2">
+            {/* Create Post Form - Using enhanced CreatePostForm component */}
+            <div className="relative z-20">
+              <CreatePostForm onPostCreated={handlePostCreated} />
+            </div>
+
+            {/* Click outside to close post menu */}
+            {openPostMenu && (
+              <div className="fixed inset-0 z-10" onClick={() => setOpenPostMenu(null)} />
+            )}
+
+            {/* Timeline Posts */}
+            <div className="space-y-4 relative z-10">
+              {timelinePosts.length === 0 ? (
+                <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-10 border border-slate-700/30 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <FiEdit2 className="w-8 h-8 text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">No posts yet</h3>
+                  <p className="text-slate-400">Share what's on your mind above!</p>
+                </div>
+              ) : (
+                <div className="space-y-0 divide-y divide-slate-700/50">
+                  {timelinePosts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onDelete={handleDeletePost}
+                      onEdit={setEditModalPost}
+                      onCommentClick={(postId, postData) => {
+                        setCommentModalPostId(postId);
+                        setCommentModalPost(postData);
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Click outside to close post menu */}
-          {openPostMenu && (
-            <div className="fixed inset-0 z-10" onClick={() => setOpenPostMenu(null)} />
-          )}
-
-          {/* Timeline Posts */}
-          <div className="space-y-4 relative z-10">
-            {timelinePosts.length === 0 ? (
+          {/* Right Sidebar - Recommended Articles */}
+          <div className="hidden lg:block space-y-5">
+            <RecommendedArticles limit={5} />
+          </div>
+        </div>
+      ) : activeTab === 'reels' ? (
+        /* Reels Tab Content */
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-3 sm:px-6 pb-8">
+          {/* Main Content - Reels Grid */}
+          <div className="lg:col-span-2">
+            {reelsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : reels.length === 0 ? (
               <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-10 border border-slate-700/30 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <FiEdit2 className="w-8 h-8 text-indigo-400" />
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <FiFilm className="w-8 h-8 text-pink-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">No posts yet</h3>
-                <p className="text-slate-400">Share what's on your mind above!</p>
+                <h3 className="text-xl font-bold text-white mb-2">No Reels Yet</h3>
+                <p className="text-slate-400 mb-4">Create your first reel to share short videos!</p>
+                <Link
+                  to="/reels"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                >
+                  <FiPlus className="w-4 h-4" />
+                  Create Reel
+                </Link>
               </div>
             ) : (
-              <div className="space-y-0 divide-y divide-slate-700/50">
-                {timelinePosts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onDelete={handleDeletePost}
-                    onEdit={setEditModalPost}
-                    onCommentClick={(postId, postData) => {
-                      setCommentModalPostId(postId);
-                      setCommentModalPost(postData);
-                    }}
-                  />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {reels.map((reel) => (
+                  <Link
+                    key={reel.id}
+                    to={`/reels?reel=${reel.id}`}
+                    className="group relative aspect-[9/16] bg-slate-800/50 rounded-xl overflow-hidden border border-slate-700/30 hover:border-pink-500/50 transition-all"
+                  >
+                    {/* Thumbnail */}
+                    {reel.thumbnailUrl ? (
+                      <img
+                        src={reel.thumbnailUrl}
+                        alt={reel.caption || 'Reel'}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <video
+                        src={reel.videoUrl}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        muted
+                        playsInline
+                      />
+                    )}
+
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Play button */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform scale-75 group-hover:scale-100">
+                        <FiPlay className="w-5 h-5 text-white ml-0.5" />
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-3 text-white text-sm">
+                        <span className="flex items-center gap-1">
+                          <FiEye className="w-3.5 h-3.5" />
+                          {reel.viewsCount || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FiHeart className="w-3.5 h-3.5" />
+                          {reel.likesCount || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Right Sidebar - Recommended Articles */}
+          <div className="hidden lg:block space-y-5">
+            <RecommendedArticles limit={5} />
           </div>
         </div>
       ) : (
@@ -698,6 +822,9 @@ export default function MyProfile() {
               <p className="text-xs sm:text-sm text-slate-500 mt-1">Allow others to view your profile</p>
             </div>
           )}
+
+          {/* Recommended Articles */}
+          <RecommendedArticles limit={5} />
         </div>
       </div>
       )}

@@ -2286,7 +2286,38 @@ export const recommendationsApi = {
   // Preview recommendations
   previewRecommendations: (contentType: string, contentId: string, limit?: number) =>
     api.get(`/recommendations/${contentType}s/${contentId}`, { params: { limit } }),
+
+  // Public recommendations
+  getPersonalizedPosts: (limit?: number) =>
+    api.get<RecommendationResult>('/recommendations/personalized/post', { params: { limit } }),
+  getTrendingPosts: (limit?: number, days?: number) =>
+    api.get<RecommendationResult>('/recommendations/trending/post', { params: { limit, days } }),
+  getPopularPosts: (limit?: number) =>
+    api.get<RecommendationResult>('/recommendations/popular/post', { params: { limit } }),
 };
+
+// Recommendation result from public API
+export interface RecommendationItem {
+  id: string;
+  type: 'post' | 'product' | 'course' | 'page';
+  title: string;
+  slug: string;
+  excerpt?: string;
+  image?: string;
+  score: number;
+  metadata?: {
+    author?: string;
+    price?: number;
+  };
+}
+
+export interface RecommendationResult {
+  items: RecommendationItem[];
+  algorithm: string;
+  sourceType: string;
+  sourceId: string;
+  cached: boolean;
+}
 
 // Updates API
 export interface UpdateStatus {
