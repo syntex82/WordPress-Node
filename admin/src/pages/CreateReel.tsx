@@ -1,6 +1,6 @@
 /**
  * Create Reel Page
- * Upload and publish short-form vertical videos
+ * Record or upload short-form vertical videos (15-60 seconds)
  */
 
 import { useState, useRef, useCallback } from 'react';
@@ -9,9 +9,10 @@ import { reelsApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { useSiteTheme } from '../contexts/SiteThemeContext';
 import {
-  FiUpload, FiX, FiPlay, FiPause, FiCheck, FiHash, FiGlobe, FiLock, FiArrowLeft
+  FiUpload, FiX, FiPlay, FiPause, FiCheck, FiHash, FiGlobe, FiLock, FiArrowLeft, FiVideo
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import MobileMediaRecorder from '../components/MobileMediaRecorder';
 
 export default function CreateReel() {
   const navigate = useNavigate();
@@ -19,7 +20,10 @@ export default function CreateReel() {
   const isDark = resolvedTheme === 'dark';
   const { user } = useAuthStore();
 
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  // Video source: 'none' | 'recorded' | 'uploaded'
+  const [videoSource, setVideoSource] = useState<'none' | 'recorded' | 'uploaded'>('none');
+  const [videoUrl, setVideoUrl] = useState<string | null>(null); // For recorded videos (already uploaded URL)
+  const [videoFile, setVideoFile] = useState<File | null>(null); // For uploaded videos (needs upload)
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -30,11 +34,57 @@ export default function CreateReel() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [showRecorder, setShowRecorder] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle video file selection
+  // Handle recorded video from MobileMediaRecorder
+  const handleMediaCaptured = useCallback((media: { type: 'VIDEO' | 'AUDIO'; url: string; thumbnail?: string }) => {
+    if (media.type !== 'VIDEO') {
+      toast.error('Please record a video');
+      return;
+    }
+
+    // Video is already uploaded by MobileMediaRecorder, we have the URL
+    setVideoUrl(media.url);
+    setVideoPreview(media.url);
+    setVideoSource('recorded');
+    setVideoFile(null);
+    if (media.thumbnail) {
+      setThumbnailPreview(media.thumbnail);
+    }
+    setShowRecorder(false);
+
+    // Get duration from the video
+    const video = document.createElement('video');
+    video.src = media.url;
+    video.onloadedmetadata = () => {
+      const dur = Math.round(video.duration);
+      setDuration(dur);
+      if (dur < 15) {
+        toast.error('Reel must be at least 15 seconds');
+        clearVideo();
+      } else if (dur > 60) {
+        toast.error('Reel must be 60 seconds or less');
+        clearVideo();
+      } else {
+        toast.success('Video recorded successfully!');
+      }
+    };
+  }, []);
+
+  // Clear video selection
+  const clearVideo = () => {
+    setVideoUrl(null);
+    setVideoFile(null);
+    setVideoPreview(null);
+    setVideoSource('none');
+    setDuration(0);
+    setPlaying(false);
+  };
+
+  // Handle video file selection (upload)
   const handleVideoSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -52,18 +102,23 @@ export default function CreateReel() {
     }
 
     setVideoFile(file);
+    setVideoUrl(null);
     const url = URL.createObjectURL(file);
     setVideoPreview(url);
+    setVideoSource('uploaded');
 
-    // Get video duration
+    // Get video duration and validate
     const video = document.createElement('video');
     video.src = url;
     video.onloadedmetadata = () => {
-      setDuration(Math.round(video.duration));
-      if (video.duration > 60) {
-        toast.error('Video must be 60 seconds or less');
-        setVideoFile(null);
-        setVideoPreview(null);
+      const dur = Math.round(video.duration);
+      setDuration(dur);
+      if (dur < 15) {
+        toast.error('Reel must be at least 15 seconds');
+        clearVideo();
+      } else if (dur > 60) {
+        toast.error('Reel must be 60 seconds or less');
+        clearVideo();
       }
     };
   }, []);
@@ -95,8 +150,18 @@ export default function CreateReel() {
 
   // Upload and create reel
   const handleSubmit = async () => {
-    if (!videoFile) {
-      toast.error('Please select a video');
+    if (videoSource === 'none' || (!videoUrl && !videoFile)) {
+      toast.error('Please record or upload a video');
+      return;
+    }
+
+    if (duration < 15) {
+      toast.error('Reel must be at least 15 seconds');
+      return;
+    }
+
+    if (duration > 60) {
+      toast.error('Reel must be 60 seconds or less');
       return;
     }
 
@@ -104,15 +169,25 @@ export default function CreateReel() {
     setUploadProgress(0);
 
     try {
-      // Upload video
-      const formData = new FormData();
-      formData.append('video', videoFile);
-      if (thumbnailFile) {
-        formData.append('thumbnail', thumbnailFile);
-      }
+      let finalVideoUrl = videoUrl;
+      let finalThumbnailUrl = thumbnailPreview;
 
-      const uploadRes = await reelsApi.uploadVideo(formData);
-      setUploadProgress(50);
+      // If video was uploaded (not recorded), we need to upload the file first
+      if (videoSource === 'uploaded' && videoFile) {
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        if (thumbnailFile) {
+          formData.append('thumbnail', thumbnailFile);
+        }
+
+        const uploadRes = await reelsApi.uploadVideo(formData);
+        setUploadProgress(50);
+        finalVideoUrl = uploadRes.data.videoUrl;
+        finalThumbnailUrl = uploadRes.data.thumbnailUrl || thumbnailPreview || undefined;
+      } else {
+        // Recorded video is already uploaded
+        setUploadProgress(50);
+      }
 
       // Create reel
       const hashtagList = hashtags
@@ -121,8 +196,8 @@ export default function CreateReel() {
         .map(tag => tag.trim());
 
       await reelsApi.createReel({
-        videoUrl: uploadRes.data.videoUrl,
-        thumbnailUrl: uploadRes.data.thumbnailUrl || thumbnailPreview || undefined,
+        videoUrl: finalVideoUrl!,
+        thumbnailUrl: finalThumbnailUrl || undefined,
         caption: caption.trim() || undefined,
         duration,
         isPublic,
@@ -168,7 +243,7 @@ export default function CreateReel() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Video Preview */}
+          {/* Video Preview / Record / Upload */}
           <div className="flex flex-col items-center">
             {videoPreview ? (
               <div className="relative w-full max-w-[280px] aspect-[9/16] bg-black rounded-2xl overflow-hidden">
@@ -187,7 +262,7 @@ export default function CreateReel() {
                   {playing ? <FiPause className="w-12 h-12 text-white" /> : <FiPlay className="w-12 h-12 text-white" />}
                 </button>
                 <button
-                  onClick={() => { setVideoFile(null); setVideoPreview(null); }}
+                  onClick={clearVideo}
                   className="absolute top-2 right-2 p-2 bg-black/50 rounded-full text-white hover:bg-black/70"
                 >
                   <FiX className="w-5 h-5" />
@@ -195,20 +270,49 @@ export default function CreateReel() {
                 <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 rounded text-white text-sm">
                   {duration}s
                 </div>
+                {videoSource === 'recorded' && (
+                  <div className="absolute top-2 left-2 px-2 py-1 bg-pink-500/80 rounded text-white text-xs font-medium">
+                    Recorded
+                  </div>
+                )}
               </div>
             ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className={`w-full max-w-[280px] aspect-[9/16] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-4 transition-colors ${
-                  isDark ? 'border-slate-700 hover:border-pink-500 bg-slate-800/50' : 'border-gray-300 hover:border-pink-500 bg-gray-100'
-                }`}
-              >
-                <FiUpload className={`w-12 h-12 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
-                <div className="text-center">
-                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Upload Video</p>
-                  <p className={`text-sm ${isDark ? 'text-slate-500' : 'text-gray-500'}`}>MP4, MOV, WebM • Max 60s</p>
+              <div className="w-full max-w-[280px] space-y-4">
+                {/* Record Button */}
+                <button
+                  onClick={() => setShowRecorder(true)}
+                  className="w-full aspect-[9/16] rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex flex-col items-center justify-center gap-4 hover:opacity-90 transition-opacity"
+                >
+                  <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
+                    <FiVideo className="w-10 h-10 text-white" />
+                  </div>
+                  <div className="text-center text-white">
+                    <p className="font-semibold text-lg">Record Reel</p>
+                    <p className="text-sm text-white/80">15-60 seconds</p>
+                  </div>
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-4">
+                  <div className={`flex-1 h-px ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`} />
+                  <span className={`text-sm ${isDark ? 'text-slate-500' : 'text-gray-500'}`}>or</span>
+                  <div className={`flex-1 h-px ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`} />
                 </div>
-              </button>
+
+                {/* Upload Button */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`w-full py-4 rounded-xl border-2 border-dashed flex items-center justify-center gap-3 transition-colors ${
+                    isDark ? 'border-slate-700 hover:border-pink-500 bg-slate-800/50 text-white' : 'border-gray-300 hover:border-pink-500 bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <FiUpload className="w-5 h-5" />
+                  <span className="font-medium">Upload Video</span>
+                </button>
+                <p className={`text-center text-xs ${isDark ? 'text-slate-500' : 'text-gray-500'}`}>
+                  MP4, MOV, WebM • 15-60 seconds • Max 100MB
+                </p>
+              </div>
             )}
             <input ref={fileInputRef} type="file" accept="video/*" onChange={handleVideoSelect} className="hidden" />
           </div>
@@ -278,7 +382,9 @@ export default function CreateReel() {
             {uploading && (
               <div className={`p-4 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-gray-100'}`}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Uploading...</span>
+                  <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {videoSource === 'recorded' ? 'Creating reel...' : 'Uploading...'}
+                  </span>
                   <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{uploadProgress}%</span>
                 </div>
                 <div className={`h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}>
@@ -290,14 +396,22 @@ export default function CreateReel() {
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={!videoFile || uploading}
+              disabled={videoSource === 'none' || uploading}
               className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {uploading ? 'Uploading...' : <><FiCheck className="w-5 h-5" /> Post Reel</>}
+              {uploading ? 'Processing...' : <><FiCheck className="w-5 h-5" /> Post Reel</>}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Media Recorder */}
+      <MobileMediaRecorder
+        isOpen={showRecorder}
+        onClose={() => setShowRecorder(false)}
+        onMediaCaptured={handleMediaCaptured}
+        mode="video"
+      />
     </div>
   );
 }
