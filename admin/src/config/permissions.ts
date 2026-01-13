@@ -139,7 +139,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     plugins: NO_ACCESS,
     email: NO_ACCESS,
     recommendations: NO_ACCESS,
-    marketplace: NO_ACCESS,
+    marketplace: FULL_ACCESS,  // Can apply as developer, browse, hire
     payments: NO_ACCESS,
   },
   STUDENT: {
@@ -161,7 +161,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     plugins: NO_ACCESS,
     email: NO_ACCESS,
     recommendations: NO_ACCESS,
-    marketplace: NO_ACCESS,
+    marketplace: FULL_ACCESS,  // Can apply as developer, browse, hire
     payments: NO_ACCESS,
   },
 
