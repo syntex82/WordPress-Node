@@ -107,6 +107,10 @@ const PublicProfile = lazy(() => import('./pages/profile/PublicProfile'));
 const ActivityFeed = lazy(() => import('./pages/feed/ActivityFeed'));
 const Timeline = lazy(() => import('./pages/feed/Timeline'));
 
+// Lazy-loaded pages - Reels & Blog
+const Reels = lazy(() => import('./pages/Reels'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+
 // Lazy-loaded pages - Email
 const EmailTemplates = lazy(() => import('./pages/email/EmailTemplates'));
 const EmailComposer = lazy(() => import('./pages/email/EmailComposer'));
@@ -266,6 +270,10 @@ function AppContent() {
                 {/* Activity Feed */}
                 <Route path="feed" element={<ActivityFeed />} />
                 <Route path="timeline" element={<Timeline />} />
+
+                {/* Reels & Blog */}
+                <Route path="reels" element={<Reels />} />
+                <Route path="blog/:slug" element={<BlogPost />} />
 
                 {/* Security */}
                 <Route path="security/*" element={<ProtectedRoute feature="security" requiredRole="ADMIN"><Security /></ProtectedRoute>} />

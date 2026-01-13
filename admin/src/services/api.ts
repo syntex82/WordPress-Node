@@ -60,6 +60,7 @@ export const authApi = {
 export const postsApi = {
   getAll: (params?: any) => api.get('/posts', { params }),
   getById: (id: string) => api.get(`/posts/${id}`),
+  getBySlug: (slug: string) => api.get(`/posts/slug/${slug}`),
   create: (data: any) => api.post('/posts', data),
   update: (id: string, data: any) => api.patch(`/posts/${id}`, data),
   delete: (id: string) => api.delete(`/posts/${id}`),
@@ -2294,6 +2295,8 @@ export const recommendationsApi = {
     api.get<RecommendationResult>('/recommendations/trending/post', { params: { limit, days } }),
   getPopularPosts: (limit?: number) =>
     api.get<RecommendationResult>('/recommendations/popular/post', { params: { limit } }),
+  getRelatedPosts: (postId: string, limit?: number) =>
+    api.get<RecommendationResult>(`/recommendations/posts/${postId}`, { params: { limit } }),
 };
 
 // Recommendation result from public API
@@ -2305,6 +2308,11 @@ export interface RecommendationItem {
   excerpt?: string;
   image?: string;
   score: number;
+  author?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
   metadata?: {
     author?: string;
     price?: number;
