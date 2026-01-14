@@ -28,26 +28,470 @@ model AnalyticsEvent {
 
 model AnalyticsSession {
   id String @id @default(cuid())
+  visitorId   String?  // Persistent visitor ID (cookie-less fingerprint)
   userId      String?
   ipAddress   String?
   userAgent   String?
   device      String?
   browser     String?
+  browserVersion String?
   os          String?
+  osVersion   String?
+  screenWidth Int?
+  screenHeight Int?
+  language    String?
+  timezone    String?
   country     String?
   city        String?
+  region      String?  // State/Province
+  latitude    Float?
+  longitude   Float?
   referer     String?
+  refererDomain String?
+  trafficSource String? // direct, organic, referral, social, paid, email
   landingPage String?
   exitPage    String?
   pageCount   Int       @default(0)
+  eventCount  Int       @default(0)
   duration    Int       @default(0)
+  totalScrollDepth Int  @default(0)
+  isBounce    Boolean   @default(true)
+  isReturning Boolean   @default(false)
   startedAt   DateTime  @default(now())
   endedAt     DateTime?
   isActive    Boolean   @default(true)
+  // UTM parameters
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
 
   @@index([isActive])
   @@index([startedAt])
   @@index([userId])
+  @@index([visitorId])
+  @@index([country])
+  @@index([trafficSource])
+  @@index([isBounce])
+}
+
+// Analytics Goals - Track conversion goals
+model AnalyticsGoal {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String   // pageview, event, duration, scroll, custom
+  target      String   // path pattern, event name, or custom expression
+  targetValue Float?   // target duration, scroll depth, or event value
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  conversions AnalyticsConversion[]
+
+  @@index([isActive])
+  @@index([type])
+}
+
+// Analytics Conversions - Track goal completions
+model AnalyticsConversion {
+  id         String   @id @default(cuid())
+  goalId     String
+  sessionId  String?
+  userId     String?
+  path       String?
+  value      Float?   // Revenue or custom value
+  metadata   Json?    // Additional conversion data
+  createdAt  DateTime @default(now())
+  goal       AnalyticsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// Analytics Funnels - Define conversion funnels
+model AnalyticsFunnel {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  steps       Json     // Array of funnel steps [{name, type, target}]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+// Web Vitals - Core Web Vitals metrics
+model WebVital {
+  id        String   @id @default(cuid())
+  sessionId String?
+  path      String
+  metric    String   // LCP, FID, CLS, FCP, TTFB, INP
+  value     Float
+  rating    String?  // good, needs-improvement, poor
+  device    String?
+  browser   String?
+  country   String?
+  createdAt DateTime @default(now())
+
+  @@index([metric])
+  @@index([path])
+  @@index([createdAt])
+  @@index([rating])
+}
+
+// UTM Campaigns - Track marketing campaigns
+model UtmCampaign {
+  id          String   @id @default(cuid())
+  sessionId   String?
+  source      String?  // google, facebook, newsletter
+  medium      String?  // cpc, email, social
+  campaign    String?  // campaign name
+  term        String?  // paid keywords
+  content     String?  // ad variation
+  gclid       String?  // Google Click ID
+  fbclid      String?  // Facebook Click ID
+  landingPage String?
+  createdAt   DateTime @default(now())
+
+  @@index([source])
+  @@index([campaign])
+  @@index([createdAt])
+}
+
+// A/B Tests - Experiment tracking
+model AbTest {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  variants    Json     // Array of variants [{id, name, weight}]
+  goalId      String?  // Goal to track for conversions
+  status      String   @default("draft") // draft, running, paused, completed
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assignments AbTestAssignment[]
+
+  @@index([status])
+}
+
+// A/B Test Assignments - Track user variant assignments
+model AbTestAssignment {
+  id        String   @id @default(cuid())
+  testId    String
+  sessionId String
+  variant   String
+  converted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  test      AbTest   @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, sessionId])
+  @@index([testId])
+  @@index([variant])
+}
+
+// Site Search - Internal search tracking
+model SiteSearch {
+  id           String   @id @default(cuid())
+  sessionId    String?
+  query        String
+  resultsCount Int      @default(0)
+  clickedResult String? // URL of clicked result
+  createdAt    DateTime @default(now())
+
+  @@index([query])
+  @@index([createdAt])
+}
+
+// E-commerce Transactions
+model AnalyticsTransaction {
+  id          String   @id @default(cuid())
+  sessionId   String?
+  userId      String?
+  orderId     String   @unique
+  revenue     Float
+  tax         Float?
+  shipping    Float?
+  currency    String   @default("USD")
+  items       Json     // Array of items [{productId, name, price, quantity}]
+  source      String?  // UTM source
+  campaign    String?  // UTM campaign
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// REAL-TIME ANALYTICS TRACKING
+// ============================================
+
+model RealtimeVisitor {
+  id            String   @id @default(cuid())
+  sessionId     String   @unique
+  visitorId     String?
+  path          String
+  title         String?
+  referrer      String?
+  device        String?  // desktop, mobile, tablet
+  browser       String?
+  os            String?
+  country       String?
+  city          String?
+  region        String?
+  latitude      Float?
+  longitude     Float?
+  isActive      Boolean  @default(true)
+  startedAt     DateTime @default(now())
+  lastSeen      DateTime @default(now())
+  scrollDepth   Int      @default(0)
+
+  @@index([isActive, lastSeen])
+  @@index([country])
+  @@index([path])
+}
+
+// ============================================
+// PPC AD REVENUE SYSTEM
+// ============================================
+
+model Advertiser {
+  id              String    @id @default(cuid())
+  userId          String?   @unique // Optional link to user account
+  user            User?     @relation(fields: [userId], references: [id])
+  companyName     String
+  contactEmail    String    @unique
+  contactName     String?
+  phone           String?
+  website         String?
+  balance         Float     @default(0)  // Prepaid balance
+  totalSpent      Float     @default(0)
+  status          String    @default("pending") // pending, active, suspended
+  billingAddress  Json?
+  taxId           String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  campaigns       AdCampaign[]
+  transactions    AdTransaction[]
+
+  @@index([status])
+  @@index([contactEmail])
+}
+
+model AdCampaign {
+  id              String    @id @default(cuid())
+  advertiserId    String
+  advertiser      Advertiser @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  type            String    @default("cpc") // cpc, cpm, cpa, flat
+  status          String    @default("draft") // draft, pending, active, paused, completed, rejected
+  budget          Float     // Total budget
+  dailyBudget     Float?    // Optional daily limit
+  bidAmount       Float     // CPC/CPM bid amount
+  startDate       DateTime
+  endDate         DateTime?
+  targetUrl       String    // Click destination
+  impressions     Int       @default(0)
+  clicks          Int       @default(0)
+  conversions     Int       @default(0)
+  spent           Float     @default(0)
+
+  // Targeting
+  targetDevices   Json?     // ["desktop", "mobile", "tablet"]
+  targetCountries Json?     // ["US", "UK", "CA"]
+  targetPages     Json?     // ["/blog/*", "/shop/*"]
+  targetHours     Json?     // [{start: 9, end: 17}]
+  targetDays      Json?     // [1,2,3,4,5] (Mon-Fri)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  ads             Ad[]
+  placements      AdPlacement[]
+
+  @@index([advertiserId])
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model Ad {
+  id              String    @id @default(cuid())
+  campaignId      String
+  campaign        AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name            String
+  type            String    @default("banner") // banner, text, native, video
+  format          String    // 728x90, 300x250, 160x600, etc.
+  status          String    @default("active") // active, paused
+
+  // Creative content
+  headline        String?
+  description     String?
+  imageUrl        String?
+  videoUrl        String?
+  html            String?   // Custom HTML for rich ads
+  ctaText         String?   @default("Learn More")
+
+  // A/B testing
+  variant         String?   // A, B, C for testing
+  weight          Int       @default(100) // Percentage weight
+
+  impressions     Int       @default(0)
+  clicks          Int       @default(0)
+  conversions     Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  impressionLog   AdImpression[]
+  clickLog        AdClick[]
+
+  @@index([campaignId])
+  @@index([status])
+  @@index([type, format])
+}
+
+model AdZone {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  description     String?
+  position        String    // header, sidebar, content, footer, popup, interstitial
+  format          String    // Allowed ad formats (comma-separated)
+  minBid          Float     @default(0.01) // Minimum CPC/CPM
+  isActive        Boolean   @default(true)
+  isPremium       Boolean   @default(false) // Premium placement
+
+  // Fallback content when no ads
+  fallbackHtml    String?
+  fallbackUrl     String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  placements      AdPlacement[]
+
+  @@index([position])
+  @@index([isActive])
+}
+
+model AdPlacement {
+  id              String    @id @default(cuid())
+  campaignId      String
+  campaign        AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  zoneId          String
+  zone            AdZone    @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  priority        Int       @default(0) // Higher = shown first
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+
+  @@unique([campaignId, zoneId])
+  @@index([zoneId, isActive])
+}
+
+model AdImpression {
+  id              String    @id @default(cuid())
+  adId            String
+  ad              Ad        @relation(fields: [adId], references: [id], onDelete: Cascade)
+  sessionId       String?
+  visitorId       String?
+  path            String
+  zoneId          String?
+  device          String?
+  browser         String?
+  country         String?
+  referer         String?
+  cost            Float     @default(0) // Cost for CPM
+  createdAt       DateTime  @default(now())
+
+  @@index([adId])
+  @@index([createdAt])
+  @@index([sessionId])
+}
+
+model AdClick {
+  id              String    @id @default(cuid())
+  adId            String
+  ad              Ad        @relation(fields: [adId], references: [id], onDelete: Cascade)
+  impressionId    String?
+  sessionId       String?
+  visitorId       String?
+  path            String
+  zoneId          String?
+  device          String?
+  browser         String?
+  country         String?
+  ip              String?   // Anonymized for fraud detection
+  cost            Float     @default(0) // CPC cost
+  isFraudulent    Boolean   @default(false)
+  fraudReason     String?
+  createdAt       DateTime  @default(now())
+
+  @@index([adId])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([isFraudulent])
+}
+
+model AdConversion {
+  id              String    @id @default(cuid())
+  adId            String
+  clickId         String
+  sessionId       String?
+  type            String    // signup, purchase, lead, custom
+  value           Float?    // Monetary value
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+
+  @@index([adId])
+  @@index([clickId])
+  @@index([createdAt])
+}
+
+model AdTransaction {
+  id              String    @id @default(cuid())
+  advertiserId    String
+  advertiser      Advertiser @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  type            String    // deposit, spend, refund, bonus
+  amount          Float
+  balance         Float     // Balance after transaction
+  description     String?
+  reference       String?   // Campaign ID, order ID, etc.
+  createdAt       DateTime  @default(now())
+
+  @@index([advertiserId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+model AdBlockerStats {
+  id              String    @id @default(cuid())
+  date            DateTime  @db.Date
+  totalVisitors   Int       @default(0)
+  blockedVisitors Int       @default(0)
+  conversionRate  Float?    // Alternative monetization conversion
+
+  @@unique([date])
+}
+
+model PublisherEarnings {
+  id              String    @id @default(cuid())
+  date            DateTime  @db.Date
+  impressions     Int       @default(0)
+  clicks          Int       @default(0)
+  conversions     Int       @default(0)
+  earnings        Float     @default(0)
+  rpm             Float?    // Revenue per 1000 impressions
+  ctr             Float?    // Click-through rate
+
+  @@unique([date])
+  @@index([date])
 }
 
 model Backup {
@@ -1287,11 +1731,21 @@ model PageView {
   browser     String?
   city        String?
   country     String?
+  region      String?  // State/Province
   device      String?
   duration    Int?
   os          String?
   scrollDepth Int?
   sessionId   String?
+  // UTM parameters
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  // Entry/Exit tracking
+  isEntry     Boolean  @default(false)
+  isExit      Boolean  @default(false)
+  // Engagement metrics
+  interactions Int     @default(0)  // clicks, scrolls, etc.
   User        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([country])
@@ -1299,6 +1753,8 @@ model PageView {
   @@index([device])
   @@index([path])
   @@index([sessionId])
+  @@index([utmSource])
+  @@index([utmCampaign])
 }
 
 model PasswordHistory {
@@ -2283,6 +2739,9 @@ model User {
   reelLikes                  ReelLike[]
   reelComments               ReelComment[]
   reelViews                  ReelView[]
+
+  // Advertising
+  advertiserAccount          Advertiser?
 }
 
 model UserBadge {

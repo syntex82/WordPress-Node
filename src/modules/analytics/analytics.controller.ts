@@ -1,8 +1,20 @@
 /**
- * Analytics Controller - API endpoints for analytics dashboard
- * Admin dashboard routes require Analytics feature in subscription
+ * Analytics Controller - Comprehensive self-hosted analytics API
+ * A complete Google Analytics replacement with GDPR compliance
  */
-import { Controller, Get, Post, Body, Query, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Param,
+  Res,
+  UseGuards,
+  Req,
+  HttpStatus,
+} from '@nestjs/common';
+import { Response, Request } from 'express';
 import { AnalyticsService } from './analytics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -13,7 +25,6 @@ import {
   SUBSCRIPTION_FEATURES,
 } from '../../common/decorators/subscription.decorator';
 import { UserRole } from '@prisma/client';
-import { Request } from 'express';
 import { PrismaService } from '../../database/prisma.service';
 
 @Controller('api/analytics')
@@ -23,21 +34,32 @@ export class AnalyticsController {
     private readonly prisma: PrismaService,
   ) {}
 
-  // Admin endpoints (protected + requires analytics feature)
+  // ============================================
+  // ADMIN DASHBOARD ENDPOINTS
+  // ============================================
+
   @Get('dashboard')
   @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
   @Roles(UserRole.ADMIN)
   @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
-  getDashboardStats(@Query('period') period?: string) {
-    return this.analyticsService.getDashboardStats(period || 'week');
+  getDashboardStats(
+    @Query('period') period?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.analyticsService.getDashboardStats(period || 'week', startDate, endDate);
   }
 
   @Get('pageviews')
   @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
   @Roles(UserRole.ADMIN)
   @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
-  getPageViewsOverTime(@Query('period') period?: string) {
-    return this.analyticsService.getPageViewsOverTime(period || 'week');
+  getPageViewsOverTime(
+    @Query('period') period?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.analyticsService.getPageViewsOverTime(period || 'week', startDate, endDate);
   }
 
   @Get('top-pages')
@@ -48,12 +70,44 @@ export class AnalyticsController {
     return this.analyticsService.getTopPages(period || 'week', parseInt(limit || '10'));
   }
 
+  @Get('entry-pages')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getEntryPages(@Query('period') period?: string, @Query('limit') limit?: string) {
+    return this.analyticsService.getEntryPages(period || 'week', parseInt(limit || '10'));
+  }
+
+  @Get('exit-pages')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getExitPages(@Query('period') period?: string, @Query('limit') limit?: string) {
+    return this.analyticsService.getExitPages(period || 'week', parseInt(limit || '10'));
+  }
+
   @Get('traffic-sources')
   @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
   @Roles(UserRole.ADMIN)
   @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
   getTrafficSources(@Query('period') period?: string, @Query('limit') limit?: string) {
     return this.analyticsService.getTrafficSources(period || 'week', parseInt(limit || '10'));
+  }
+
+  @Get('campaigns')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getCampaignAnalytics(@Query('period') period?: string) {
+    return this.analyticsService.getCampaignAnalytics(period || 'week');
+  }
+
+  @Get('geographic')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getGeographicData(@Query('period') period?: string) {
+    return this.analyticsService.getGeographicData(period || 'week');
   }
 
   @Get('devices')
@@ -80,18 +134,168 @@ export class AnalyticsController {
     return this.analyticsService.getRealTimeStats();
   }
 
-  // Public tracking endpoints (no auth required)
+  @Get('events')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getEventAnalytics(@Query('period') period?: string, @Query('limit') limit?: string) {
+    return this.analyticsService.getEventAnalytics(period || 'week', parseInt(limit || '20'));
+  }
+
+  @Get('vitals')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getWebVitals(@Query('period') period?: string) {
+    return this.analyticsService.getWebVitals(period || 'week');
+  }
+
+  // ============================================
+  // GOALS & CONVERSIONS
+  // ============================================
+
+  @Get('goals')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getGoals() {
+    return this.analyticsService.getGoals();
+  }
+
+  @Post('goals')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  createGoal(
+    @Body() body: { name: string; description?: string; type: string; target: string; targetValue?: number },
+  ) {
+    return this.analyticsService.createGoal(body);
+  }
+
+  @Get('conversions')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getConversions(@Query('period') period?: string, @Query('goalId') goalId?: string) {
+    return this.analyticsService.getConversions(period || 'week', goalId);
+  }
+
+  // ============================================
+  // FUNNELS
+  // ============================================
+
+  @Get('funnels')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getFunnels() {
+    return this.analyticsService.getFunnels();
+  }
+
+  @Post('funnels')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  createFunnel(@Body() body: { name: string; description?: string; steps: any[] }) {
+    return this.analyticsService.createFunnel(body);
+  }
+
+  @Get('funnels/:id/analyze')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  analyzeFunnel(@Param('id') id: string, @Query('period') period?: string) {
+    return this.analyticsService.analyzeFunnel(id, period || 'week');
+  }
+
+  // ============================================
+  // COHORTS & RETENTION
+  // ============================================
+
+  @Get('cohorts')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getCohortAnalysis(@Query('period') period?: string) {
+    return this.analyticsService.getCohortAnalysis(period || 'month');
+  }
+
+  // ============================================
+  // SITE SEARCH
+  // ============================================
+
+  @Get('site-search')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getSiteSearchAnalytics(@Query('period') period?: string, @Query('limit') limit?: string) {
+    return this.analyticsService.getSiteSearchAnalytics(period || 'week', parseInt(limit || '20'));
+  }
+
+  // ============================================
+  // E-COMMERCE
+  // ============================================
+
+  @Get('ecommerce')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  getEcommerceAnalytics(@Query('period') period?: string) {
+    return this.analyticsService.getEcommerceAnalytics(period || 'week');
+  }
+
+  // ============================================
+  // DATA EXPORT
+  // ============================================
+
+  @Get('export/:type')
+  @UseGuards(JwtAuthGuard, RolesGuard, FeatureGuard)
+  @Roles(UserRole.ADMIN)
+  @RequiresFeature(SUBSCRIPTION_FEATURES.ANALYTICS)
+  async exportData(
+    @Param('type') type: string,
+    @Query('period') period?: string,
+    @Query('format') format?: 'json' | 'csv',
+    @Res() res?: Response,
+  ) {
+    const data = await this.analyticsService.exportData(type, period || 'week', format || 'json');
+
+    if (format === 'csv' && res) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=analytics-${type}-${Date.now()}.csv`);
+      return res.send(data);
+    }
+
+    if (res) {
+      return res.json(data);
+    }
+    return data;
+  }
+
+  // ============================================
+  // PUBLIC TRACKING ENDPOINTS (No auth required)
+  // ============================================
+
   @Post('track/pageview')
-  async trackPageView(@Req() req: Request, @Body() body: { path: string; sessionId?: string }) {
+  async trackPageView(
+    @Req() req: Request,
+    @Body()
+    body: {
+      path: string;
+      sessionId?: string;
+      visitorId?: string;
+      utmSource?: string;
+      utmMedium?: string;
+      utmCampaign?: string;
+    },
+  ) {
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || null;
     const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
     const { device, browser, os } = this.parseUserAgent(userAgent);
-
-    // Ensure sessionId is a string or null, not an object
     const sessionId = typeof body.sessionId === 'string' ? body.sessionId : null;
 
-    return this.prisma.pageView.create({
+    const pageView = await this.prisma.pageView.create({
       data: {
         path: body.path,
         sessionId,
@@ -101,8 +305,25 @@ export class AnalyticsController {
         device,
         browser,
         os,
+        utmSource: body.utmSource,
+        utmMedium: body.utmMedium,
+        utmCampaign: body.utmCampaign,
       },
     });
+
+    // Update session pageCount and exitPage
+    if (sessionId) {
+      await this.prisma.analyticsSession.update({
+        where: { id: sessionId },
+        data: {
+          pageCount: { increment: 1 },
+          exitPage: body.path,
+          isBounce: false,
+        },
+      }).catch(() => {});
+    }
+
+    return { id: pageView.id };
   }
 
   @Post('track/event')
@@ -116,14 +337,13 @@ export class AnalyticsController {
       value?: number;
       path?: string;
       sessionId?: string;
+      metadata?: Record<string, any>;
     },
   ) {
     const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
-
-    // Ensure sessionId is a string or null, not an object
     const sessionId = typeof body.sessionId === 'string' ? body.sessionId : null;
 
-    return this.prisma.analyticsEvent.create({
+    const event = await this.prisma.analyticsEvent.create({
       data: {
         category: body.category,
         action: body.action,
@@ -132,38 +352,249 @@ export class AnalyticsController {
         path: body.path,
         sessionId,
         ipAddress: ip,
+        metadata: body.metadata,
       },
     });
+
+    // Update session event count
+    if (sessionId) {
+      await this.prisma.analyticsSession.update({
+        where: { id: sessionId },
+        data: { eventCount: { increment: 1 } },
+      }).catch(() => {});
+    }
+
+    return { id: event.id };
   }
 
   @Post('track/session')
-  async trackSession(@Req() req: Request, @Body() body: { path?: string }) {
+  async trackSession(
+    @Req() req: Request,
+    @Body()
+    body: {
+      path?: string;
+      visitorId?: string;
+      screenWidth?: number;
+      screenHeight?: number;
+      language?: string;
+      timezone?: string;
+      utmSource?: string;
+      utmMedium?: string;
+      utmCampaign?: string;
+      utmTerm?: string;
+      utmContent?: string;
+    },
+  ) {
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || null;
     const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
     const { device, browser, os } = this.parseUserAgent(userAgent);
+    const trafficSource = this.detectTrafficSource(referer, body.utmSource);
+    const refererDomain = referer ? this.extractDomain(referer) : null;
+
+    // Check if returning visitor
+    const isReturning = body.visitorId
+      ? (await this.prisma.analyticsSession.count({ where: { visitorId: body.visitorId } })) > 0
+      : false;
 
     const session = await this.prisma.analyticsSession.create({
       data: {
+        visitorId: body.visitorId,
         ipAddress: ip,
         userAgent,
         device,
         browser,
         os,
         referer,
+        refererDomain,
+        trafficSource,
         landingPage: body.path,
+        screenWidth: body.screenWidth,
+        screenHeight: body.screenHeight,
+        language: body.language,
+        timezone: body.timezone,
+        utmSource: body.utmSource,
+        utmMedium: body.utmMedium,
+        utmCampaign: body.utmCampaign,
+        utmTerm: body.utmTerm,
+        utmContent: body.utmContent,
+        isReturning,
       },
     });
+
+    // Store UTM campaign data if present
+    if (body.utmSource || body.utmCampaign) {
+      await this.prisma.utmCampaign.create({
+        data: {
+          sessionId: session.id,
+          source: body.utmSource,
+          medium: body.utmMedium,
+          campaign: body.utmCampaign,
+          term: body.utmTerm,
+          content: body.utmContent,
+          landingPage: body.path,
+        },
+      }).catch(() => {});
+    }
+
     return { sessionId: session.id };
   }
 
-  /**
-   * Anonymize IP address for GDPR compliance
-   * Removes the last octet for IPv4 or last 80 bits for IPv6
-   */
+  @Post('track/update')
+  async updatePageView(
+    @Body()
+    body: {
+      pageViewId?: string;
+      sessionId?: string;
+      duration?: number;
+      scrollDepth?: number;
+      interactions?: number;
+    },
+  ) {
+    if (body.pageViewId) {
+      await this.prisma.pageView.update({
+        where: { id: body.pageViewId },
+        data: {
+          duration: body.duration,
+          scrollDepth: body.scrollDepth,
+          interactions: body.interactions,
+        },
+      }).catch(() => {});
+    }
+
+    if (body.sessionId && body.duration) {
+      await this.prisma.analyticsSession.update({
+        where: { id: body.sessionId },
+        data: {
+          duration: { increment: body.duration },
+          totalScrollDepth: body.scrollDepth ? { increment: body.scrollDepth } : undefined,
+        },
+      }).catch(() => {});
+    }
+
+    return { success: true };
+  }
+
+  @Post('track/vitals')
+  async trackWebVitals(
+    @Req() req: Request,
+    @Body()
+    body: {
+      sessionId?: string;
+      path: string;
+      metrics: Array<{ metric: string; value: number; rating?: string }>;
+    },
+  ) {
+    const userAgent = req.headers['user-agent'] || '';
+    const { device, browser } = this.parseUserAgent(userAgent);
+
+    const vitals = await Promise.all(
+      body.metrics.map((m) =>
+        this.prisma.webVital.create({
+          data: {
+            sessionId: body.sessionId,
+            path: body.path,
+            metric: m.metric,
+            value: m.value,
+            rating: m.rating,
+            device,
+            browser,
+          },
+        })
+      )
+    );
+
+    return { count: vitals.length };
+  }
+
+  @Post('track/search')
+  async trackSiteSearch(
+    @Body()
+    body: {
+      sessionId?: string;
+      query: string;
+      resultsCount?: number;
+      clickedResult?: string;
+    },
+  ) {
+    const search = await this.prisma.siteSearch.create({
+      data: {
+        sessionId: body.sessionId,
+        query: body.query,
+        resultsCount: body.resultsCount || 0,
+        clickedResult: body.clickedResult,
+      },
+    });
+
+    return { id: search.id };
+  }
+
+  @Post('track/conversion')
+  async trackConversion(
+    @Body()
+    body: {
+      goalId: string;
+      sessionId?: string;
+      userId?: string;
+      path?: string;
+      value?: number;
+      metadata?: Record<string, any>;
+    },
+  ) {
+    const conversion = await this.prisma.analyticsConversion.create({
+      data: {
+        goalId: body.goalId,
+        sessionId: body.sessionId,
+        userId: body.userId,
+        path: body.path,
+        value: body.value,
+        metadata: body.metadata,
+      },
+    });
+
+    return { id: conversion.id };
+  }
+
+  @Post('track/transaction')
+  async trackTransaction(
+    @Body()
+    body: {
+      sessionId?: string;
+      userId?: string;
+      orderId: string;
+      revenue: number;
+      tax?: number;
+      shipping?: number;
+      currency?: string;
+      items: Array<{ productId: string; name: string; price: number; quantity: number }>;
+      source?: string;
+      campaign?: string;
+    },
+  ) {
+    const transaction = await this.prisma.analyticsTransaction.create({
+      data: {
+        sessionId: body.sessionId,
+        userId: body.userId,
+        orderId: body.orderId,
+        revenue: body.revenue,
+        tax: body.tax,
+        shipping: body.shipping,
+        currency: body.currency || 'USD',
+        items: body.items,
+        source: body.source,
+        campaign: body.campaign,
+      },
+    });
+
+    return { id: transaction.id };
+  }
+
+  // ============================================
+  // UTILITY METHODS
+  // ============================================
+
   private anonymizeIp(ip: string): string {
     if (!ip) return '';
-    // IPv4: Replace last octet with 0
     if (ip.includes('.')) {
       const parts = ip.split('.');
       if (parts.length === 4) {
@@ -171,7 +602,6 @@ export class AnalyticsController {
         return parts.join('.');
       }
     }
-    // IPv6: Replace last 80 bits (last 5 groups) with zeros
     if (ip.includes(':')) {
       const parts = ip.split(':');
       if (parts.length >= 5) {
@@ -200,5 +630,32 @@ export class AnalyticsController {
     else if (uaLower.includes('android')) os = 'Android';
     else if (uaLower.includes('iphone') || uaLower.includes('ipad')) os = 'iOS';
     return { device, browser, os };
+  }
+
+  private detectTrafficSource(referer: string | null, utmSource?: string): string {
+    if (utmSource) {
+      if (['google', 'bing', 'yahoo', 'duckduckgo'].includes(utmSource.toLowerCase())) {
+        return 'paid';
+      }
+      return 'campaign';
+    }
+    if (!referer) return 'direct';
+    const ref = referer.toLowerCase();
+    if (ref.includes('google.') || ref.includes('bing.') || ref.includes('yahoo.') || ref.includes('duckduckgo.')) {
+      return 'organic';
+    }
+    if (ref.includes('facebook.') || ref.includes('twitter.') || ref.includes('linkedin.') || ref.includes('instagram.')) {
+      return 'social';
+    }
+    return 'referral';
+  }
+
+  private extractDomain(url: string): string | null {
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname;
+    } catch {
+      return null;
+    }
   }
 }

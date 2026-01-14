@@ -777,15 +777,72 @@ export const pluginsApi = {
   },
 };
 
-// Analytics API
+// Analytics API - Comprehensive self-hosted analytics
 export const analyticsApi = {
-  getDashboard: (period?: string) => api.get('/analytics/dashboard', { params: { period } }),
-  getPageViews: (period?: string) => api.get('/analytics/pageviews', { params: { period } }),
-  getTopPages: (period?: string, limit?: number) => api.get('/analytics/top-pages', { params: { period, limit } }),
-  getTrafficSources: (period?: string) => api.get('/analytics/traffic-sources', { params: { period } }),
+  // Dashboard & Overview
+  getDashboard: (period?: string, startDate?: string, endDate?: string) =>
+    api.get('/analytics/dashboard', { params: { period, startDate, endDate } }),
+  getPageViews: (period?: string, startDate?: string, endDate?: string) =>
+    api.get('/analytics/pageviews', { params: { period, startDate, endDate } }),
+  getTopPages: (period?: string, limit?: number) =>
+    api.get('/analytics/top-pages', { params: { period, limit } }),
+  getEntryPages: (period?: string, limit?: number) =>
+    api.get('/analytics/entry-pages', { params: { period, limit } }),
+  getExitPages: (period?: string, limit?: number) =>
+    api.get('/analytics/exit-pages', { params: { period, limit } }),
+
+  // Traffic Sources
+  getTrafficSources: (period?: string, limit?: number) =>
+    api.get('/analytics/traffic-sources', { params: { period, limit } }),
+  getCampaigns: (period?: string) =>
+    api.get('/analytics/campaigns', { params: { period } }),
+
+  // Geographic
+  getGeographic: (period?: string) =>
+    api.get('/analytics/geographic', { params: { period } }),
+
+  // Devices & Browsers
   getDevices: (period?: string) => api.get('/analytics/devices', { params: { period } }),
   getBrowsers: (period?: string) => api.get('/analytics/browsers', { params: { period } }),
+
+  // Real-time
   getRealtime: () => api.get('/analytics/realtime'),
+
+  // Events
+  getEvents: (period?: string, limit?: number) =>
+    api.get('/analytics/events', { params: { period, limit } }),
+
+  // Web Vitals
+  getWebVitals: (period?: string) => api.get('/analytics/vitals', { params: { period } }),
+
+  // Goals & Conversions
+  getGoals: () => api.get('/analytics/goals'),
+  createGoal: (data: { name: string; description?: string; type: string; target: string; targetValue?: number }) =>
+    api.post('/analytics/goals', data),
+  getConversions: (period?: string, goalId?: string) =>
+    api.get('/analytics/conversions', { params: { period, goalId } }),
+
+  // Funnels
+  getFunnels: () => api.get('/analytics/funnels'),
+  createFunnel: (data: { name: string; description?: string; steps: any[] }) =>
+    api.post('/analytics/funnels', data),
+  analyzeFunnel: (id: string, period?: string) =>
+    api.get(`/analytics/funnels/${id}/analyze`, { params: { period } }),
+
+  // Cohorts
+  getCohorts: (period?: string) => api.get('/analytics/cohorts', { params: { period } }),
+
+  // Site Search
+  getSiteSearch: (period?: string, limit?: number) =>
+    api.get('/analytics/site-search', { params: { period, limit } }),
+
+  // E-commerce
+  getEcommerce: (period?: string) => api.get('/analytics/ecommerce', { params: { period } }),
+
+  // Data Export
+  exportData: (type: string, period?: string, format?: 'json' | 'csv') =>
+    api.get(`/analytics/export/${type}`, { params: { period, format }, responseType: format === 'csv' ? 'blob' : 'json' }),
+
   // Tracking endpoints (no auth)
   trackPageView: (path: string, sessionId?: string) => api.post('/analytics/track/pageview', { path, sessionId }),
   trackEvent: (data: { category: string; action: string; label?: string; value?: number; path?: string; sessionId?: string }) =>

@@ -52,6 +52,7 @@ import { BillingModule } from './modules/billing/billing.module';
 import { LicensingModule } from './modules/licensing/licensing.module';
 import { ServicesModule } from './modules/services/services.module';
 import { ReelsModule } from './modules/reels/reels.module';
+import { AdsModule } from './modules/ads/ads.module';
 
 // Check if admin dist exists
 const adminDistPath = join(process.cwd(), 'admin', 'dist');
@@ -129,6 +130,7 @@ const staticModules = adminDistExists
     LicensingModule,
     ServicesModule,
     ReelsModule,
+    AdsModule,
   ],
   providers: [
     // CRITICAL SECURITY: Global guard to isolate demo user data access

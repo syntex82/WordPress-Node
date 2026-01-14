@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revenue Comparison Graphic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 p-8">
+  
+  <!-- Shareable Graphic 1: Revenue Comparison -->
+  <div class="max-w-2xl mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 mb-12">
+    <h2 class="text-3xl font-bold text-white text-center mb-8">Where Does Your Ad Revenue Go?</h2>
+    
+    <div class="grid grid-cols-2 gap-6 mb-8">
+      <!-- AdSense Side -->
+      <div class="bg-red-900/30 rounded-xl p-6 border border-red-500/30">
+        <div class="text-center mb-4">
+          <span class="text-red-400 font-semibold">With AdSense</span>
+        </div>
+        <div class="text-center mb-4">
+          <div class="text-5xl font-bold text-white">$10,000</div>
+          <div class="text-gray-400 text-sm">Monthly Revenue</div>
+        </div>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Google takes:</span>
+            <span class="text-red-400 font-bold">-$3,200</span>
+          </div>
+          <div class="h-px bg-gray-600"></div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-300">You keep:</span>
+            <span class="text-white font-bold text-xl">$6,800</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Self-Hosted Side -->
+      <div class="bg-green-900/30 rounded-xl p-6 border border-green-500/30">
+        <div class="text-center mb-4">
+          <span class="text-green-400 font-semibold">Self-Hosted Ads</span>
+        </div>
+        <div class="text-center mb-4">
+          <div class="text-5xl font-bold text-white">$10,000</div>
+          <div class="text-gray-400 text-sm">Monthly Revenue</div>
+        </div>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Platform fee:</span>
+            <span class="text-green-400 font-bold">$0</span>
+          </div>
+          <div class="h-px bg-gray-600"></div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-300">You keep:</span>
+            <span class="text-green-400 font-bold text-xl">$10,000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-purple-900/40 rounded-lg p-4 text-center border border-purple-500/30">
+      <div class="text-purple-300 text-sm mb-1">Annual Difference</div>
+      <div class="text-4xl font-bold text-white">+$38,400</div>
+      <div class="text-purple-300 text-sm">More in your pocket</div>
+    </div>
+  </div>
+
+  <!-- Shareable Graphic 2: Feature Comparison -->
+  <div class="max-w-2xl mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 mb-12">
+    <h2 class="text-2xl font-bold text-white text-center mb-6">AdSense vs Self-Hosted</h2>
+    
+    <div class="space-y-4">
+      <div class="grid grid-cols-3 gap-4 text-center text-sm font-semibold text-gray-400 pb-2 border-b border-gray-700">
+        <div></div>
+        <div>AdSense</div>
+        <div class="text-green-400">Self-Hosted</div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4 items-center py-2">
+        <div class="text-gray-300">Revenue share</div>
+        <div class="text-center text-red-400">68%</div>
+        <div class="text-center text-green-400 font-bold">100%</div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4 items-center py-2 bg-gray-800/50 rounded">
+        <div class="text-gray-300 pl-2">Account bans</div>
+        <div class="text-center text-red-400">Anytime</div>
+        <div class="text-center text-green-400">Never</div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4 items-center py-2">
+        <div class="text-gray-300">Data ownership</div>
+        <div class="text-center text-red-400">Google</div>
+        <div class="text-center text-green-400">You</div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4 items-center py-2 bg-gray-800/50 rounded">
+        <div class="text-gray-300 pl-2">Page speed</div>
+        <div class="text-center text-red-400">Slower</div>
+        <div class="text-center text-green-400">Faster</div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4 items-center py-2">
+        <div class="text-gray-300">Advertiser relationships</div>
+        <div class="text-center text-red-400">None</div>
+        <div class="text-center text-green-400">Direct</div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4 items-center py-2 bg-gray-800/50 rounded">
+        <div class="text-gray-300 pl-2">Payment timing</div>
+        <div class="text-center text-red-400">NET-30</div>
+        <div class="text-center text-green-400">Instant</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shareable Graphic 3: Simple Message -->
+  <div class="max-w-lg mx-auto bg-gradient-to-br from-purple-900 to-pink-900 rounded-2xl p-10 text-center">
+    <div class="text-6xl mb-4">💸</div>
+    <h2 class="text-3xl font-bold text-white mb-4">
+      Stop Giving Google<br>
+      <span class="text-yellow-300">$38,400/year</span>
+    </h2>
+    <p class="text-purple-200 text-lg mb-6">Run your own ad network.<br>Keep 100% of your revenue.</p>
+    <div class="inline-block bg-white text-purple-900 font-bold px-6 py-3 rounded-full">
+      Learn More →
+    </div>
+  </div>
+
+</body>
+</html>
+
