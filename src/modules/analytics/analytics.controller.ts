@@ -58,6 +58,7 @@ export class AnalyticsController {
     // Skip private/local IPs
     if (!ip || ip === '127.0.0.1' || ip.startsWith('192.168.') ||
         ip.startsWith('10.') || ip.startsWith('172.') || ip === '::1') {
+      this.logger.debug(`Skipping geolocation for local IP: ${ip}`);
       return null;
     }
 
@@ -68,10 +69,12 @@ export class AnalyticsController {
     }
 
     try {
+      this.logger.debug(`Looking up geolocation for IP: ${ip}`);
       const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,lat,lon`);
       const data = await response.json();
 
       if (data.status === 'success') {
+        this.logger.log(`Geolocation found: ${ip} -> ${data.countryCode}, ${data.city}`);
         const geoData: GeoData = {
           country: data.country,
           countryCode: data.countryCode,
@@ -82,6 +85,8 @@ export class AnalyticsController {
         };
         geoCache.set(ip, { data: geoData, timestamp: Date.now() });
         return geoData;
+      } else {
+        this.logger.warn(`Geolocation failed for IP ${ip}: ${data.message || 'Unknown error'}`);
       }
     } catch (error) {
       this.logger.warn(`Geolocation lookup failed for IP ${ip}: ${error}`);
