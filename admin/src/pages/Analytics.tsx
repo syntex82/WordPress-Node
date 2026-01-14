@@ -71,12 +71,18 @@ export default function Analytics() {
         analyticsApi.getDevices(period),
         analyticsApi.getRealtime(),
       ]);
-      setStats(dashRes.data || {});
+      setStats(dashRes.data || { pageViews: 0, uniqueVisitors: 0, sessions: 0, avgDuration: 0, bounceRate: 0 });
       setPageViews(viewsRes.data || []);
       setTopPages(pagesRes.data || []);
       setDevices(devicesRes.data || []);
       setRealtime(realtimeRes.data || { activeVisitors: 0, recentPages: [] });
     } catch (error: any) {
+      // Set default values so the page doesn't crash
+      setStats({ pageViews: 0, uniqueVisitors: 0, sessions: 0, avgDuration: 0, bounceRate: 0 });
+      setPageViews([]);
+      setTopPages([]);
+      setDevices([]);
+      setRealtime({ activeVisitors: 0, recentPages: [] });
       toast.error(error.response?.data?.message || 'Failed to load analytics data');
       console.error('Analytics error:', error);
     } finally {
