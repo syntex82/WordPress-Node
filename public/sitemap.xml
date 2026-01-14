@@ -1,56 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Homepage -->
+  <!-- Homepage / Landing -->
   <url>
-    <loc>https://nodepress.co.uk/</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://wordpressnode.co.uk/</loc>
+    <lastmod>2024-12-30</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Main Sections -->
+  
+  <!-- Login Page -->
   <url>
-    <loc>https://nodepress.co.uk/blog</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://wordpressnode.co.uk/admin/login</loc>
+    <lastmod>2024-12-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
-
+  
+  <!-- Register Page -->
   <url>
-    <loc>https://nodepress.co.uk/shop</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://wordpressnode.co.uk/admin/register</loc>
+    <lastmod>2024-12-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
-
+  
+  <!-- Pricing Page -->
   <url>
-    <loc>https://nodepress.co.uk/courses</loc>
+    <loc>https://wordpressnode.co.uk/admin/pricing</loc>
+    <lastmod>2024-12-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- Static Pages -->
+  
+  <!-- Public Storefront -->
   <url>
-    <loc>https://nodepress.co.uk/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://wordpressnode.co.uk/admin/storefront</loc>
+    <lastmod>2024-12-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
-
+  
+  <!-- LMS Course Catalog -->
   <url>
-    <loc>https://nodepress.co.uk/contact</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://wordpressnode.co.uk/admin/lms/catalog</loc>
+    <lastmod>2024-12-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
-
-  <url>
-    <loc>https://nodepress.co.uk/privacy-policy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://nodepress.co.uk/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!-- Note: Dynamic content (posts, products, courses) will be added when using dynamic sitemap route -->
 </urlset>
 

@@ -1,15 +1,12 @@
 {
-  "id": "/",
-  "name": "NodePress",
+  "name": "NodePress Admin",
   "short_name": "NodePress",
-  "description": "Modern CMS platform built with Node.js - Enterprise-grade features out of the box",
-  "start_url": "/",
-  "scope": "/",
+  "description": "NodePress CMS Admin Panel - Modern content management built with Node.js",
+  "start_url": "/admin",
   "display": "standalone",
-  "orientation": "any",
-  "theme_color": "#4f46e5",
   "background_color": "#0f172a",
-  "categories": ["education", "productivity"],
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/pwa/icons/icon-192.svg",
@@ -36,18 +33,22 @@
       "purpose": "maskable"
     }
   ],
-  "shortcuts": [
+  "categories": ["productivity", "business"],
+  "screenshots": [
     {
-      "name": "Courses",
-      "short_name": "Courses",
-      "url": "/courses"
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard"
     },
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "url": "/admin"
+      "src": "/screenshots/courses.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Course Catalog"
     }
-  ],
-  "prefer_related_applications": false
+  ]
 }
 

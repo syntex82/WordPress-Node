@@ -166,11 +166,11 @@ export default function Analytics() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <StatCard icon={<FiEye />} label="Page Views" value={stats.pageViews.toLocaleString()} color="blue" />
-          <StatCard icon={<FiUsers />} label="Unique Visitors" value={stats.uniqueVisitors.toLocaleString()} color="green" />
-          <StatCard icon={<FiTrendingUp />} label="Sessions" value={stats.sessions.toLocaleString()} color="purple" />
-          <StatCard icon={<FiClock />} label="Avg. Duration" value={formatDuration(stats.avgDuration)} color="orange" />
-          <StatCard icon={<FiTrendingUp />} label="Bounce Rate" value={`${stats.bounceRate}%`} color="red" />
+          <StatCard icon={<FiEye />} label="Page Views" value={(stats.pageViews || 0).toLocaleString()} color="blue" />
+          <StatCard icon={<FiUsers />} label="Unique Visitors" value={(stats.uniqueVisitors || 0).toLocaleString()} color="green" />
+          <StatCard icon={<FiTrendingUp />} label="Sessions" value={(stats.sessions || 0).toLocaleString()} color="purple" />
+          <StatCard icon={<FiClock />} label="Avg. Duration" value={formatDuration(stats.avgDuration || 0)} color="orange" />
+          <StatCard icon={<FiTrendingUp />} label="Bounce Rate" value={`${stats.bounceRate || 0}%`} color="red" />
         </div>
       )}
 
@@ -180,28 +180,28 @@ export default function Analytics() {
         <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
           <h3 className={`text-lg font-semibold mb-4 ${theme.textPrimary}`}>Page Views Over Time</h3>
           <div className="h-48 flex items-end gap-1">
-            {pageViews.length === 0 ? (
+            {!Array.isArray(pageViews) || pageViews.length === 0 ? (
               <p className={`text-center w-full ${theme.textMuted}`}>No data available</p>
             ) : (
               pageViews.map((pv, i) => {
-                const maxViews = Math.max(...pageViews.map(p => p.views), 1);
-                const height = (pv.views / maxViews) * 100;
+                const maxViews = Math.max(...pageViews.map(p => p.views || 0), 1);
+                const height = ((pv.views || 0) / maxViews) * 100;
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center group relative">
                     <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 rounded-t transition-colors cursor-pointer"
                          style={{ height: `${height}%`, minHeight: '4px' }} />
                     <div className="hidden group-hover:block absolute bottom-full mb-2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap border border-slate-700/50">
-                      {pv.date}: {pv.views} views
+                      {pv.date}: {pv.views || 0} views
                     </div>
                   </div>
                 );
               })
             )}
           </div>
-          {pageViews.length > 0 && (
+          {Array.isArray(pageViews) && pageViews.length > 0 && (
             <div className={`flex justify-between text-xs mt-2 ${theme.textMuted}`}>
-              <span>{pageViews[0]?.date}</span>
-              <span>{pageViews[pageViews.length - 1]?.date}</span>
+              <span>{pageViews[0]?.date || ''}</span>
+              <span>{pageViews[pageViews.length - 1]?.date || ''}</span>
             </div>
           )}
         </div>
@@ -209,20 +209,20 @@ export default function Analytics() {
         {/* Device Breakdown */}
         <div className={`backdrop-blur rounded-xl border p-6 ${theme.card}`}>
           <h3 className={`text-lg font-semibold mb-4 ${theme.textPrimary}`}>Devices</h3>
-          {devices.length === 0 ? (
+          {!Array.isArray(devices) || devices.length === 0 ? (
             <p className={`text-center py-8 ${theme.textMuted}`}>No data available</p>
           ) : (
             <div className="space-y-4">
-              {devices.map((d) => (
-                <div key={d.device} className="flex items-center gap-3">
+              {devices.map((d, idx) => (
+                <div key={d.device || idx} className="flex items-center gap-3">
                   <div className="text-2xl">{getDeviceIcon(d.device)}</div>
                   <div className="flex-1">
                     <div className="flex justify-between mb-1">
-                      <span className={`font-medium capitalize ${theme.textPrimary}`}>{d.device}</span>
-                      <span className={theme.textMuted}>{d.count} ({d.percentage}%)</span>
+                      <span className={`font-medium capitalize ${theme.textPrimary}`}>{d.device || 'Unknown'}</span>
+                      <span className={theme.textMuted}>{d.count || 0} ({d.percentage || 0}%)</span>
                     </div>
                     <div className={`h-2 rounded-full overflow-hidden ${theme.isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
-                      <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full" style={{ width: `${d.percentage}%` }} />
+                      <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full" style={{ width: `${d.percentage || 0}%` }} />
                     </div>
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export default function Analytics() {
         <div className={`px-6 py-4 border-b ${theme.border}`}>
           <h3 className={`text-lg font-semibold ${theme.textPrimary}`}>Top Pages</h3>
         </div>
-        {topPages.length === 0 ? (
+        {!Array.isArray(topPages) || topPages.length === 0 ? (
           <p className={`text-center py-8 ${theme.textMuted}`}>No data available</p>
         ) : (
           <table className={`min-w-full divide-y ${theme.border}`}>
@@ -252,10 +252,10 @@ export default function Analytics() {
               {topPages.map((page, i) => (
                 <tr key={i} className={theme.tableRow}>
                   <td className="px-6 py-4">
-                    <span className={`font-medium ${theme.textPrimary}`}>{page.path}</span>
+                    <span className={`font-medium ${theme.textPrimary}`}>{page.path || '/'}</span>
                   </td>
-                  <td className={`px-6 py-4 text-right ${theme.textMuted}`}>{page.views.toLocaleString()}</td>
-                  <td className={`px-6 py-4 text-right ${theme.textMuted}`}>{formatDuration(page.avgDuration)}</td>
+                  <td className={`px-6 py-4 text-right ${theme.textMuted}`}>{(page.views || 0).toLocaleString()}</td>
+                  <td className={`px-6 py-4 text-right ${theme.textMuted}`}>{formatDuration(page.avgDuration || 0)}</td>
                 </tr>
               ))}
             </tbody>
@@ -264,7 +264,7 @@ export default function Analytics() {
       </div>
 
       {/* Recent Activity */}
-      {realtime && realtime.recentPages.length > 0 && (
+      {realtime && Array.isArray(realtime.recentPages) && realtime.recentPages.length > 0 && (
         <div className={`backdrop-blur rounded-xl border overflow-hidden ${theme.card}`}>
           <div className={`px-6 py-4 border-b flex items-center gap-2 ${theme.border}`}>
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -273,9 +273,9 @@ export default function Analytics() {
           <div className={`divide-y ${theme.border}`}>
             {realtime.recentPages.map((page, i) => (
               <div key={i} className={`px-6 py-3 flex justify-between items-center ${theme.tableRow}`}>
-                <span className={theme.textPrimary}>{page.path}</span>
+                <span className={theme.textPrimary}>{page.path || '/'}</span>
                 <span className={`text-sm ${theme.textMuted}`}>
-                  {new Date(page.createdAt).toLocaleTimeString()}
+                  {page.createdAt ? new Date(page.createdAt).toLocaleTimeString() : ''}
                 </span>
               </div>
             ))}
