@@ -75,15 +75,16 @@ export class RateLimitService {
         // Log violation
         await this.logViolation(ip, endpoint, count, config.maxRequests);
 
-        // Block IP if configured
-        if (config.blockDuration) {
-          const blockData: BlockIpDto = {
-            ip,
-            reason: `Rate limit exceeded on ${endpoint}`,
-            expiresAt: new Date(Date.now() + config.blockDuration * 60000).toISOString(),
-          };
-          await this.ipBlock.blockIp(blockData);
-        }
+        // NOTE: Auto-blocking disabled - too aggressive for normal use
+        // Admins can still manually block IPs via the security panel
+        // if (config.blockDuration) {
+        //   const blockData: BlockIpDto = {
+        //     ip,
+        //     reason: `Rate limit exceeded on ${endpoint}`,
+        //     expiresAt: new Date(Date.now() + config.blockDuration * 60000).toISOString(),
+        //   };
+        //   await this.ipBlock.blockIp(blockData);
+        // }
 
         const ttl = await this.redis!.ttl(key);
         return { allowed: false, retryAfter: ttl > 0 ? ttl : windowSeconds };
@@ -129,15 +130,16 @@ export class RateLimitService {
       // Log violation
       await this.logViolation(ip, endpoint, recentRequests.length, config.maxRequests);
 
-      // Block IP if configured
-      if (config.blockDuration) {
-        const blockData: BlockIpDto = {
-          ip,
-          reason: `Rate limit exceeded on ${endpoint}`,
-          expiresAt: new Date(Date.now() + config.blockDuration * 60000).toISOString(),
-        };
-        await this.ipBlock.blockIp(blockData);
-      }
+      // NOTE: Auto-blocking disabled - too aggressive for normal use
+      // Admins can still manually block IPs via the security panel
+      // if (config.blockDuration) {
+      //   const blockData: BlockIpDto = {
+      //     ip,
+      //     reason: `Rate limit exceeded on ${endpoint}`,
+      //     expiresAt: new Date(Date.now() + config.blockDuration * 60000).toISOString(),
+      //   };
+      //   await this.ipBlock.blockIp(blockData);
+      // }
 
       const retryAfter = Math.ceil(config.windowMs / 1000);
       return { allowed: false, retryAfter };
