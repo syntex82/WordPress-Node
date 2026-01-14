@@ -108,7 +108,7 @@ export default function Analytics() {
   const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
-      const [dashRes, viewsRes, pagesRes, devicesRes, realtimeRes, geoRes, trafficRes, browserRes] = await Promise.all([
+      const [dashRes, viewsRes, pagesRes, devicesRes, realtimeRes, geoRes, trafficRes] = await Promise.all([
         analyticsApi.getDashboard(period),
         analyticsApi.getPageViews(period),
         analyticsApi.getTopPages(period, 10),
@@ -116,25 +116,36 @@ export default function Analytics() {
         analyticsApi.getRealtime(),
         analyticsApi.getGeographic ? analyticsApi.getGeographic(period) : Promise.resolve({ data: null }),
         analyticsApi.getTrafficSources ? analyticsApi.getTrafficSources(period) : Promise.resolve({ data: null }),
-        analyticsApi.getBrowsers ? analyticsApi.getBrowsers(period) : Promise.resolve({ data: [] }),
       ]);
       setStats(dashRes.data || { pageViews: 0, uniqueVisitors: 0, sessions: 0, avgDuration: 0, bounceRate: 0 });
       setPageViews(viewsRes.data || []);
       setTopPages(pagesRes.data || []);
-      setDevices(devicesRes.data || []);
+
+      // Devices endpoint returns { devices: [...], browsers: [...], operatingSystems: [...], screenSizes: [...] }
+      const deviceData = devicesRes.data || {};
+      setDevices(deviceData.devices || []);
+      setBrowsers(deviceData.browsers || []);
+
       setRealtime(realtimeRes.data || { activeVisitors: 0, recentPages: [] });
-      setGeoData(geoRes.data || { countries: [], cities: [] });
+
+      // Geographic endpoint returns { countries: [...], cities: [...] }
+      const geoDataResponse = geoRes.data || {};
+      setGeoData({
+        countries: geoDataResponse.countries || [],
+        cities: geoDataResponse.cities || [],
+      });
+
       setTrafficSources(trafficRes.data || { byType: [] });
-      setBrowsers(browserRes.data || []);
     } catch (error: any) {
+      console.error('Analytics fetch error:', error);
       setStats({ pageViews: 0, uniqueVisitors: 0, sessions: 0, avgDuration: 0, bounceRate: 0 });
       setPageViews([]);
       setTopPages([]);
       setDevices([]);
+      setBrowsers([]);
       setRealtime({ activeVisitors: 0, recentPages: [] });
       setGeoData({ countries: [], cities: [] });
       setTrafficSources({ byType: [] });
-      setBrowsers([]);
       toast.error(error.response?.data?.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
