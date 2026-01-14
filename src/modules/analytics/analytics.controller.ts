@@ -384,12 +384,10 @@ export class AnalyticsController {
         utmSource: body.utmSource,
         utmMedium: body.utmMedium,
         utmCampaign: body.utmCampaign,
-        // Geolocation data
+        // Geolocation data (PageView doesn't have lat/lon fields)
         country: geoData?.countryCode || null,
         city: geoData?.city || null,
         region: geoData?.region || null,
-        latitude: geoData?.lat || null,
-        longitude: geoData?.lon || null,
       },
     });
 
