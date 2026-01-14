@@ -136,6 +136,9 @@ const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const Licensing = lazy(() => import('./pages/Licensing'));
 
+// Lazy-loaded pages - Ads Management
+const AdsManagement = lazy(() => import('./pages/AdsManagement'));
+
 // Demo mode components
 import { useDemoStore } from './stores/demoStore';
 import { DemoBanner } from './components/DemoBanner';
@@ -286,6 +289,9 @@ function AppContent() {
                 <Route path="email/composer" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailComposer /></ProtectedRoute>} />
                 <Route path="email/logs" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailLogs /></ProtectedRoute>} />
                 <Route path="email/settings" element={<ProtectedRoute feature="email" requiredRole="ADMIN"><EmailSettings /></ProtectedRoute>} />
+
+                {/* Ads Management */}
+                <Route path="ads/*" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><AdsManagement /></ProtectedRoute>} />
 
                 {/* Backups */}
                 <Route path="backups" element={<ProtectedRoute feature="settings" requiredRole="ADMIN"><Backups /></ProtectedRoute>} />
