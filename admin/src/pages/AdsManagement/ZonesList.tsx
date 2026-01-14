@@ -71,8 +71,8 @@ export const ZonesList: React.FC = () => {
   return (
     <div className="p-6 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Ad Zones</h1>
-        <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ad Zones</h1>
+        <button onClick={() => setShowCreateModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Create Zone
         </button>
       </div>
@@ -81,18 +81,18 @@ export const ZonesList: React.FC = () => {
         {zones.map((zone) => (
           <div
             key={zone.id}
-            className={`bg-white rounded-lg shadow p-4 border-l-4 ${
-              zone.isActive ? 'border-green-500' : 'border-gray-300'
+            className={`bg-white dark:bg-slate-800 rounded-lg shadow p-4 border-l-4 border border-gray-200 dark:border-slate-700 ${
+              zone.isActive ? 'border-l-green-500' : 'border-l-gray-300 dark:border-l-slate-600'
             }`}
           >
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-semibold">{zone.name}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{zone.name}</h3>
               <button
                 onClick={() => toggleZone(zone.id, zone.isActive)}
                 className={`px-2 py-1 rounded text-xs ${
                   zone.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                    : 'bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-300'
                 }`}
               >
                 {zone.isActive ? 'Active' : 'Inactive'}
@@ -100,10 +100,10 @@ export const ZonesList: React.FC = () => {
             </div>
 
             {zone.description && (
-              <p className="text-sm text-gray-600 mb-2">{zone.description}</p>
+              <p className="text-sm text-gray-600 dark:text-slate-400 mb-2">{zone.description}</p>
             )}
 
-            <div className="space-y-1 text-sm text-gray-500 mb-3">
+            <div className="space-y-1 text-sm text-gray-500 dark:text-slate-400 mb-3">
               <div>📍 Position: {zone.position}</div>
               <div>📐 Format: {zone.format}</div>
               {zone.width && zone.height && (
@@ -112,14 +112,14 @@ export const ZonesList: React.FC = () => {
               <div>🔗 Placements: {zone._count?.placements ?? 0}</div>
             </div>
 
-            <div className="flex gap-2 pt-2 border-t">
+            <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-slate-700">
               <button
                 onClick={() => copyEmbedCode(zone)}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
               >
                 Copy Embed Code
               </button>
-              <button className="text-sm text-gray-600 hover:underline">
+              <button className="text-sm text-gray-600 dark:text-slate-400 hover:underline">
                 Edit
               </button>
             </div>
@@ -127,7 +127,7 @@ export const ZonesList: React.FC = () => {
         ))}
 
         {zones.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-500">
+          <div className="col-span-full text-center py-12 text-gray-500 dark:text-slate-400">
             No zones created yet
           </div>
         )}

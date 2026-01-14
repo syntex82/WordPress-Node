@@ -46,12 +46,12 @@ export const AdsOverview: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Ads Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ads Management</h1>
         <div className="space-x-2">
-          <Link to="/ads/campaigns/new" className="btn btn-primary">
+          <Link to="/ads/campaigns/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             New Campaign
           </Link>
-          <Link to="/ads/zones/new" className="btn btn-secondary">
+          <Link to="/ads/zones/new" className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors">
             New Zone
           </Link>
         </div>
@@ -66,32 +66,32 @@ export const AdsOverview: React.FC = () => {
       </div>
 
       {/* Today's Performance */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Today's Performance</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6 border border-gray-200 dark:border-slate-700">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Today's Performance</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
               {stats?.todayImpressions?.toLocaleString() ?? 0}
             </div>
-            <div className="text-sm text-gray-500">Impressions</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">Impressions</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
               {stats?.todayClicks?.toLocaleString() ?? 0}
             </div>
-            <div className="text-sm text-gray-500">Clicks</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">Clicks</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
               {((stats?.ctr ?? 0) * 100).toFixed(2)}%
             </div>
-            <div className="text-sm text-gray-500">CTR</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">CTR</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-600">
+            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               ${stats?.todayRevenue?.toFixed(2) ?? '0.00'}
             </div>
-            <div className="text-sm text-gray-500">Revenue</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">Revenue</div>
           </div>
         </div>
       </div>
@@ -100,17 +100,17 @@ export const AdsOverview: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link
           to="/ads/analytics"
-          className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+          className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 hover:shadow-md transition-shadow border border-gray-200 dark:border-slate-700"
         >
-          <h3 className="font-semibold">📊 View Analytics</h3>
-          <p className="text-sm text-gray-500">Detailed performance reports</p>
+          <h3 className="font-semibold text-gray-900 dark:text-white">📊 View Analytics</h3>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Detailed performance reports</p>
         </Link>
         <Link
           to="/ads/advertisers/new"
-          className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+          className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 hover:shadow-md transition-shadow border border-gray-200 dark:border-slate-700"
         >
-          <h3 className="font-semibold">➕ Add Advertiser</h3>
-          <p className="text-sm text-gray-500">Register a new advertiser</p>
+          <h3 className="font-semibold text-gray-900 dark:text-white">➕ Add Advertiser</h3>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Register a new advertiser</p>
         </Link>
       </div>
     </div>
@@ -122,9 +122,9 @@ const StatCard: React.FC<{ title: string; value: number; link: string }> = ({
   value,
   link,
 }) => (
-  <Link to={link} className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-    <div className="text-2xl font-bold">{value.toLocaleString()}</div>
-    <div className="text-sm text-gray-500">{title}</div>
+  <Link to={link} className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 hover:shadow-md transition-shadow border border-gray-200 dark:border-slate-700">
+    <div className="text-2xl font-bold text-gray-900 dark:text-white">{value.toLocaleString()}</div>
+    <div className="text-sm text-gray-500 dark:text-slate-400">{title}</div>
   </Link>
 );
 

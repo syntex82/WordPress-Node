@@ -77,11 +77,11 @@ export const AdsAnalytics: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Ads Analytics</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ads Analytics</h1>
         <select
           value={dateRange}
           onChange={(e) => setDateRange(Number(e.target.value))}
-          className="px-3 py-2 border rounded-lg"
+          className="px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
         >
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>
@@ -91,71 +91,71 @@ export const AdsAnalytics: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Total Impressions</div>
-          <div className="text-2xl font-bold">{totals.impressions.toLocaleString()}</div>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
+          <div className="text-sm text-gray-500 dark:text-slate-400">Total Impressions</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{totals.impressions.toLocaleString()}</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Total Clicks</div>
-          <div className="text-2xl font-bold">{totals.clicks.toLocaleString()}</div>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
+          <div className="text-sm text-gray-500 dark:text-slate-400">Total Clicks</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{totals.clicks.toLocaleString()}</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Average CTR</div>
-          <div className="text-2xl font-bold">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
+          <div className="text-sm text-gray-500 dark:text-slate-400">Average CTR</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {totals.impressions > 0
               ? ((totals.clicks / totals.impressions) * 100).toFixed(2)
               : '0.00'}
             %
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Total Revenue</div>
-          <div className="text-2xl font-bold text-green-600">${totals.revenue.toFixed(2)}</div>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
+          <div className="text-sm text-gray-500 dark:text-slate-400">Total Revenue</div>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">${totals.revenue.toFixed(2)}</div>
         </div>
       </div>
 
       {/* Top Performers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">Top Performing Ads</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Top Performing Ads</h2>
           <div className="space-y-3">
             {topAds.slice(0, 5).map((ad, i) => (
               <div key={ad.id} className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-400">{i + 1}.</span>
-                  <span className="font-medium">{ad.name}</span>
+                  <span className="text-gray-400 dark:text-slate-500">{i + 1}.</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{ad.name}</span>
                 </div>
                 <div className="text-sm">
-                  <span className="text-green-600">{ad.ctr.toFixed(2)}% CTR</span>
-                  <span className="text-gray-400 ml-2">${ad.revenue.toFixed(2)}</span>
+                  <span className="text-green-600 dark:text-green-400">{ad.ctr.toFixed(2)}% CTR</span>
+                  <span className="text-gray-400 dark:text-slate-500 ml-2">${ad.revenue.toFixed(2)}</span>
                 </div>
               </div>
             ))}
             {topAds.length === 0 && (
-              <div className="text-gray-500 text-center py-4">No data available</div>
+              <div className="text-gray-500 dark:text-slate-400 text-center py-4">No data available</div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">Top Campaigns</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Top Campaigns</h2>
           <div className="space-y-3">
             {topCampaigns.slice(0, 5).map((campaign, i) => (
               <div key={campaign.id} className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-400">{i + 1}.</span>
-                  <span className="font-medium">{campaign.name}</span>
+                  <span className="text-gray-400 dark:text-slate-500">{i + 1}.</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{campaign.name}</span>
                 </div>
                 <div className="text-sm">
-                  <span className="text-blue-600">
+                  <span className="text-blue-600 dark:text-blue-400">
                     {campaign.clicks.toLocaleString()} clicks
                   </span>
-                  <span className="text-gray-400 ml-2">${campaign.revenue.toFixed(2)}</span>
+                  <span className="text-gray-400 dark:text-slate-500 ml-2">${campaign.revenue.toFixed(2)}</span>
                 </div>
               </div>
             ))}
             {topCampaigns.length === 0 && (
-              <div className="text-gray-500 text-center py-4">No data available</div>
+              <div className="text-gray-500 dark:text-slate-400 text-center py-4">No data available</div>
             )}
           </div>
         </div>

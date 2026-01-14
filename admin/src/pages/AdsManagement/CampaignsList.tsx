@@ -79,8 +79,8 @@ export const CampaignsList: React.FC = () => {
   return (
     <div className="p-6 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Campaigns</h1>
-        <Link to="/ads/campaigns/new" className="btn btn-primary">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Campaigns</h1>
+        <Link to="/ads/campaigns/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Create Campaign
         </Link>
       </div>
@@ -91,7 +91,7 @@ export const CampaignsList: React.FC = () => {
             key={status}
             onClick={() => setStatusFilter(status)}
             className={`px-3 py-1 rounded-full text-sm ${
-              statusFilter === status ? 'bg-blue-600 text-white' : 'bg-gray-100'
+              statusFilter === status ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-300'
             }`}
           >
             {status || 'All'}
@@ -99,42 +99,42 @@ export const CampaignsList: React.FC = () => {
         ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow overflow-x-auto border border-gray-200 dark:border-slate-700">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-slate-700">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Campaign</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Type</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Budget</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Spent</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Impr.</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Clicks</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">CTR</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Status</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Actions</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Campaign</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Type</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Budget</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Spent</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Impr.</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Clicks</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">CTR</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Status</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-300">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
             {campaigns.map((campaign) => (
-              <tr key={campaign.id} className="hover:bg-gray-50">
+              <tr key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td className="px-4 py-3">
-                  <div className="font-medium">{campaign.name}</div>
-                  <div className="text-sm text-gray-500">{campaign.advertiser.companyName}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">{campaign.name}</div>
+                  <div className="text-sm text-gray-500 dark:text-slate-400">{campaign.advertiser.companyName}</div>
                 </td>
-                <td className="px-4 py-3 uppercase text-sm">{campaign.type}</td>
-                <td className="px-4 py-3 font-mono">${campaign.budget.toFixed(2)}</td>
-                <td className="px-4 py-3 font-mono">${campaign.totalSpent.toFixed(2)}</td>
-                <td className="px-4 py-3">{campaign.impressions.toLocaleString()}</td>
-                <td className="px-4 py-3">{campaign.clicks.toLocaleString()}</td>
-                <td className="px-4 py-3">{getCTR(campaign.clicks, campaign.impressions)}%</td>
+                <td className="px-4 py-3 uppercase text-sm text-gray-900 dark:text-white">{campaign.type}</td>
+                <td className="px-4 py-3 font-mono text-gray-900 dark:text-white">${campaign.budget.toFixed(2)}</td>
+                <td className="px-4 py-3 font-mono text-gray-900 dark:text-white">${campaign.totalSpent.toFixed(2)}</td>
+                <td className="px-4 py-3 text-gray-900 dark:text-white">{campaign.impressions.toLocaleString()}</td>
+                <td className="px-4 py-3 text-gray-900 dark:text-white">{campaign.clicks.toLocaleString()}</td>
+                <td className="px-4 py-3 text-gray-900 dark:text-white">{getCTR(campaign.clicks, campaign.impressions)}%</td>
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
                       campaign.status === 'active'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
                         : campaign.status === 'paused'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
+                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
+                        : 'bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-300'
                     }`}
                   >
                     {campaign.status}
@@ -143,7 +143,7 @@ export const CampaignsList: React.FC = () => {
                 <td className="px-4 py-3">
                   <button
                     onClick={() => toggleStatus(campaign.id, campaign.status)}
-                    className="text-blue-600 hover:underline text-sm"
+                    className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
                   >
                     {campaign.status === 'active' ? 'Pause' : 'Activate'}
                   </button>
