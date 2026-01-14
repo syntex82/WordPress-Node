@@ -13,6 +13,7 @@ import {
   UseGuards,
   Req,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AnalyticsService } from './analytics.service';
@@ -27,12 +28,83 @@ import {
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 
+// In-memory cache for geolocation to avoid rate limits
+const geoCache = new Map<string, { data: GeoData | null; timestamp: number }>();
+const GEO_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+interface GeoData {
+  country: string;
+  countryCode: string;
+  region: string;
+  city: string;
+  lat: number;
+  lon: number;
+}
+
 @Controller('api/analytics')
 export class AnalyticsController {
+  private readonly logger = new Logger(AnalyticsController.name);
+
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly prisma: PrismaService,
   ) {}
+
+  /**
+   * Get geolocation data from IP address using ip-api.com (free service)
+   * Rate limit: 45 requests/minute for free tier
+   */
+  private async getGeoFromIp(ip: string): Promise<GeoData | null> {
+    // Skip private/local IPs
+    if (!ip || ip === '127.0.0.1' || ip.startsWith('192.168.') ||
+        ip.startsWith('10.') || ip.startsWith('172.') || ip === '::1') {
+      return null;
+    }
+
+    // Check cache first
+    const cached = geoCache.get(ip);
+    if (cached && Date.now() - cached.timestamp < GEO_CACHE_TTL) {
+      return cached.data;
+    }
+
+    try {
+      const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,lat,lon`);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        const geoData: GeoData = {
+          country: data.country,
+          countryCode: data.countryCode,
+          region: data.regionName,
+          city: data.city,
+          lat: data.lat,
+          lon: data.lon,
+        };
+        geoCache.set(ip, { data: geoData, timestamp: Date.now() });
+        return geoData;
+      }
+    } catch (error) {
+      this.logger.warn(`Geolocation lookup failed for IP ${ip}: ${error}`);
+    }
+
+    geoCache.set(ip, { data: null, timestamp: Date.now() });
+    return null;
+  }
+
+  /**
+   * Get client IP from request, handling proxies
+   */
+  private getClientIp(req: Request): string {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string') {
+      return forwarded.split(',')[0].trim();
+    }
+    const realIp = req.headers['x-real-ip'];
+    if (typeof realIp === 'string') {
+      return realIp;
+    }
+    return req.ip || req.socket?.remoteAddress || '';
+  }
 
   // ============================================
   // ADMIN DASHBOARD ENDPOINTS
@@ -291,9 +363,13 @@ export class AnalyticsController {
   ) {
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || null;
-    const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
+    const rawIp = this.getClientIp(req);
+    const ip = this.anonymizeIp(rawIp);
     const { device, browser, os } = this.parseUserAgent(userAgent);
     const sessionId = typeof body.sessionId === 'string' ? body.sessionId : null;
+
+    // Get geolocation data from IP
+    const geoData = await this.getGeoFromIp(rawIp);
 
     const pageView = await this.prisma.pageView.create({
       data: {
@@ -308,6 +384,12 @@ export class AnalyticsController {
         utmSource: body.utmSource,
         utmMedium: body.utmMedium,
         utmCampaign: body.utmCampaign,
+        // Geolocation data
+        country: geoData?.countryCode || null,
+        city: geoData?.city || null,
+        region: geoData?.region || null,
+        latitude: geoData?.lat || null,
+        longitude: geoData?.lon || null,
       },
     });
 
@@ -387,10 +469,14 @@ export class AnalyticsController {
   ) {
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || null;
-    const ip = this.anonymizeIp(req.ip || req.socket.remoteAddress || '');
+    const rawIp = this.getClientIp(req);
+    const ip = this.anonymizeIp(rawIp);
     const { device, browser, os } = this.parseUserAgent(userAgent);
     const trafficSource = this.detectTrafficSource(referer, body.utmSource);
     const refererDomain = referer ? this.extractDomain(referer) : null;
+
+    // Get geolocation data from IP (async, non-blocking)
+    const geoData = await this.getGeoFromIp(rawIp);
 
     // Check if returning visitor
     const isReturning = body.visitorId
@@ -419,6 +505,12 @@ export class AnalyticsController {
         utmTerm: body.utmTerm,
         utmContent: body.utmContent,
         isReturning,
+        // Geolocation data
+        country: geoData?.countryCode || null,
+        city: geoData?.city || null,
+        region: geoData?.region || null,
+        latitude: geoData?.lat || null,
+        longitude: geoData?.lon || null,
       },
     });
 
