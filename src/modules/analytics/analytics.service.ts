@@ -306,15 +306,23 @@ export class AnalyticsService {
   }
 
   /**
-   * Geographic analytics
+   * Geographic analytics - combines data from sessions and pageviews
    */
   async getGeographicData(period = 'week') {
     const dateFilter = this.getDateFilter(period);
 
-    const [byCountry, byCity] = await Promise.all([
+    // Query both sessions and pageviews for country data
+    const [sessionsByCountry, pageViewsByCountry, sessionsByCity, pageViewsByCity] = await Promise.all([
       this.prisma.analyticsSession.groupBy({
         by: ['country'],
         where: { startedAt: dateFilter, country: { not: null } },
+        _count: { country: true },
+        orderBy: { _count: { country: 'desc' } },
+        take: 20,
+      }),
+      this.prisma.pageView.groupBy({
+        by: ['country'],
+        where: { createdAt: dateFilter, country: { not: null } },
         _count: { country: true },
         orderBy: { _count: { country: 'desc' } },
         take: 20,
@@ -326,22 +334,53 @@ export class AnalyticsService {
         orderBy: { _count: { city: 'desc' } },
         take: 20,
       }),
+      this.prisma.pageView.groupBy({
+        by: ['city', 'country'],
+        where: { createdAt: dateFilter, city: { not: null } },
+        _count: { city: true },
+        orderBy: { _count: { city: 'desc' } },
+        take: 20,
+      }),
     ]);
 
-    const totalSessions = byCountry.reduce((sum, c) => sum + c._count.country, 0);
+    // Merge country data from both sources
+    const countryMap = new Map<string, number>();
+    sessionsByCountry.forEach(c => {
+      if (c.country) countryMap.set(c.country, (countryMap.get(c.country) || 0) + c._count.country);
+    });
+    pageViewsByCountry.forEach(c => {
+      if (c.country) countryMap.set(c.country, (countryMap.get(c.country) || 0) + c._count.country);
+    });
 
-    return {
-      countries: byCountry.map((c) => ({
-        country: c.country,
-        sessions: c._count.country,
-        percentage: totalSessions > 0 ? Math.round((c._count.country / totalSessions) * 100) : 0,
-      })),
-      cities: byCity.map((c) => ({
-        city: c.city,
-        country: c.country,
-        sessions: c._count.city,
-      })),
-    };
+    const totalSessions = Array.from(countryMap.values()).reduce((sum, count) => sum + count, 0);
+    const countries = Array.from(countryMap.entries())
+      .map(([country, sessions]) => ({
+        country,
+        sessions,
+        percentage: totalSessions > 0 ? Math.round((sessions / totalSessions) * 100) : 0,
+      }))
+      .sort((a, b) => b.sessions - a.sessions)
+      .slice(0, 20);
+
+    // Merge city data from both sources
+    const cityMap = new Map<string, { city: string; country: string; sessions: number }>();
+    [...sessionsByCity, ...pageViewsByCity].forEach(c => {
+      if (c.city && c.country) {
+        const key = `${c.city}-${c.country}`;
+        const existing = cityMap.get(key);
+        if (existing) {
+          existing.sessions += c._count.city;
+        } else {
+          cityMap.set(key, { city: c.city, country: c.country, sessions: c._count.city });
+        }
+      }
+    });
+
+    const cities = Array.from(cityMap.values())
+      .sort((a, b) => b.sessions - a.sessions)
+      .slice(0, 20);
+
+    return { countries, cities };
   }
 
   /**
