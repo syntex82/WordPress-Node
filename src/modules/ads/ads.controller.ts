@@ -16,9 +16,136 @@ import {
 import { Response, Request } from 'express';
 import { AdsService } from './ads.service';
 
-@Controller('ads')
+@Controller('api/ads')
 export class AdsController {
   constructor(private readonly adsService: AdsService) {}
+
+  /**
+   * Serve the ad loader script
+   * This script auto-loads ads into elements with data-ad-zone attribute
+   */
+  @Get('loader.js')
+  async getLoaderScript(@Res() res: Response) {
+    const script = `
+(function() {
+  'use strict';
+
+  var sessionId = sessionStorage.getItem('sessionId');
+  if (!sessionId) {
+    sessionId = 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    sessionStorage.setItem('sessionId', sessionId);
+  }
+
+  var visitorId = localStorage.getItem('visitorId');
+  if (!visitorId) {
+    visitorId = 'vis_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    localStorage.setItem('visitorId', visitorId);
+  }
+
+  function getDeviceType() {
+    var ua = navigator.userAgent.toLowerCase();
+    if (/mobile|android|iphone|ipod|blackberry|windows phone/i.test(ua)) return 'mobile';
+    if (/ipad|tablet/i.test(ua)) return 'tablet';
+    return 'desktop';
+  }
+
+  function loadAd(element) {
+    var zoneName = element.getAttribute('data-ad-zone');
+    var zoneId = element.getAttribute('data-ad-zone-id');
+    var format = element.getAttribute('data-format') || 'banner';
+
+    if (!zoneName && !zoneId) return;
+
+    var endpoint = zoneId ? '/api/ads/zone/' + zoneId : '/api/ads/zone/name/' + zoneName;
+    var params = new URLSearchParams({
+      path: window.location.pathname,
+      device: getDeviceType()
+    });
+
+    fetch(endpoint + '?' + params.toString(), {
+      headers: {
+        'x-session-id': sessionId,
+        'x-visitor-id': visitorId
+      }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(ad) {
+      if (!ad || !ad.adId) {
+        element.style.display = 'none';
+        return;
+      }
+
+      element.classList.add('ad-loaded');
+
+      if (ad.html) {
+        element.innerHTML = ad.html;
+      } else if (ad.type === 'banner' && ad.imageUrl) {
+        var link = document.createElement('a');
+        link.href = ad.trackingUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer sponsored';
+        var img = document.createElement('img');
+        img.src = ad.imageUrl;
+        img.alt = ad.headline || 'Advertisement';
+        img.style.maxWidth = '100%';
+        link.appendChild(img);
+        element.appendChild(link);
+      } else if (ad.type === 'text' || ad.type === 'native') {
+        var link = document.createElement('a');
+        link.href = ad.trackingUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer sponsored';
+        link.className = 'ad-native';
+        if (ad.imageUrl) {
+          var img = document.createElement('img');
+          img.src = ad.imageUrl;
+          img.alt = '';
+          link.appendChild(img);
+        }
+        if (ad.headline) {
+          var h4 = document.createElement('h4');
+          h4.textContent = ad.headline;
+          link.appendChild(h4);
+        }
+        if (ad.description) {
+          var p = document.createElement('p');
+          p.textContent = ad.description;
+          link.appendChild(p);
+        }
+        if (ad.ctaText) {
+          var btn = document.createElement('span');
+          btn.className = 'ad-cta';
+          btn.textContent = ad.ctaText;
+          link.appendChild(btn);
+        }
+        element.appendChild(link);
+      }
+    })
+    .catch(function(err) {
+      console.warn('Ad load failed:', err);
+      element.style.display = 'none';
+    });
+  }
+
+  function init() {
+    var adElements = document.querySelectorAll('[data-ad-zone], [data-ad-zone-id]');
+    adElements.forEach(loadAd);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Expose for dynamic loading
+  window.NodePressAds = { loadAd: loadAd, reload: init };
+})();
+`;
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(script);
+  }
 
   @Get('zone/:zoneId')
   async getAdForZone(

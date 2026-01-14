@@ -31,7 +31,7 @@ import {
   UpdateHouseAdDto,
 } from './dto';
 
-@Controller('admin/ads')
+@Controller('api/admin/ads')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN', 'SUPER_ADMIN')
 export class AdsAdminController {

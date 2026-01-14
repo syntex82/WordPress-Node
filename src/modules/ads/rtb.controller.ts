@@ -4,7 +4,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { RtbService, BidRequest, BidResponse } from './rtb.service';
 
-@Controller('rtb')
+@Controller('api/rtb')
 export class RtbController {
   constructor(private readonly rtbService: RtbService) {}
 
