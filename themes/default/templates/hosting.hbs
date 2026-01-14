@@ -1,0 +1,136 @@
+{{> header}}
+
+<style>
+  .hosting-page { background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); min-height: 100vh; padding: 100px 20px 80px; }
+  .hosting-container { max-width: 1200px; margin: 0 auto; }
+  .hosting-hero { text-align: center; margin-bottom: 4rem; }
+  .hosting-hero h1 { font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem; }
+  .hosting-hero p { color: #94a3b8; font-size: 1.25rem; max-width: 700px; margin: 0 auto 2rem; }
+  .hosting-hero .badge { display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 0.9rem; margin-bottom: 2rem; }
+  .hostinger-logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 2rem; }
+  .hostinger-logo span { color: #fff; font-size: 2rem; font-weight: 700; }
+  .vps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 4rem; }
+  @media (max-width: 1024px) { .vps-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .vps-grid { grid-template-columns: 1fr; } .hosting-hero h1 { font-size: 2rem; } .why-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+  .vps-card { background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 2rem; text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden; }
+  .vps-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #a855f7); }
+  .vps-card:hover { transform: translateY(-8px); border-color: #6366f1; box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3); }
+  .vps-card.popular { border-color: #10b981; box-shadow: 0 0 30px rgba(16, 185, 129, 0.2); }
+  .vps-card.popular::before { background: linear-gradient(90deg, #10b981, #059669); }
+  .popular-badge { position: absolute; top: 20px; right: -30px; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 4px 40px; font-size: 0.7rem; font-weight: 700; transform: rotate(45deg); text-transform: uppercase; }
+  .vps-name { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+  .vps-specs { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .vps-price { margin-bottom: 1.5rem; }
+  .vps-price .amount { font-size: 2.5rem; font-weight: 800; color: #fff; }
+  .vps-price .period { color: #64748b; font-size: 0.9rem; }
+  .vps-features { text-align: left; margin-bottom: 2rem; list-style: none; padding: 0; }
+  .vps-features li { color: #cbd5e1; font-size: 0.9rem; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 10px; }
+  .vps-features li:last-child { border-bottom: none; }
+  .vps-features .check { color: #10b981; font-weight: bold; }
+  .vps-btn { display: block; width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; text-align: center; }
+  .vps-btn:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
+  .vps-card.popular .vps-btn { background: linear-gradient(135deg, #10b981, #059669); }
+  .vps-card.popular .vps-btn:hover { box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); }
+  .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+  .why-card { background: rgba(30, 41, 59, 0.6); border-radius: 16px; padding: 2rem; text-align: center; }
+  .why-card .icon { font-size: 3rem; margin-bottom: 1rem; }
+  .why-card h3 { color: #fff; font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .why-card p { color: #94a3b8; font-size: 0.9rem; }
+  .cta-box { text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 24px; padding: 3rem; margin-bottom: 2rem; }
+  .cta-box h2 { font-size: 1.75rem; font-weight: 700; color: #fff; margin-bottom: 1rem; }
+  .cta-box p { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; }
+  .cta-btn { display: inline-block; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; padding: 16px 40px; border-radius: 12px; font-weight: 600; font-size: 1.1rem; text-decoration: none; transition: all 0.3s ease; }
+  .cta-btn:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
+</style>
+
+<main class="hosting-page">
+  <div class="hosting-container">
+    <div class="hosting-hero">
+      <div class="badge">🎁 Exclusive Partner Discount</div>
+      <div class="hostinger-logo"><span>🚀 Hostinger</span></div>
+      <h1>Premium VPS Hosting</h1>
+      <p>Lightning-fast servers with full root access, NVMe SSD storage, and 24/7 support. Perfect for developers, agencies, and growing businesses.</p>
+    </div>
+
+    <div class="vps-grid">
+      <div class="vps-card">
+        <div class="vps-name">KVM 1</div>
+        <div class="vps-specs">Entry Level VPS</div>
+        <div class="vps-price"><span class="amount">£4.99</span><span class="period">/month</span></div>
+        <ul class="vps-features">
+          <li><span class="check">✓</span> 1 vCPU Core</li>
+          <li><span class="check">✓</span> 4 GB RAM</li>
+          <li><span class="check">✓</span> 50 GB NVMe SSD</li>
+          <li><span class="check">✓</span> 1 TB Bandwidth</li>
+          <li><span class="check">✓</span> Dedicated IP</li>
+          <li><span class="check">✓</span> Full Root Access</li>
+        </ul>
+        <a href="https://www.hostinger.co.uk/cart?product=vps%3Avps_kvm_1&period=12&referral_type=cart_link&REFERRALCODE=LRMMICKYBJ9K&referral_id=019bbb6a-4f50-71bd-8698-95150dec7423" class="vps-btn" target="_blank" rel="noopener">Get Started →</a>
+      </div>
+
+      <div class="vps-card popular">
+        <div class="popular-badge">Most Popular</div>
+        <div class="vps-name">KVM 2</div>
+        <div class="vps-specs">Best Value</div>
+        <div class="vps-price"><span class="amount">£7.99</span><span class="period">/month</span></div>
+        <ul class="vps-features">
+          <li><span class="check">✓</span> 2 vCPU Cores</li>
+          <li><span class="check">✓</span> 8 GB RAM</li>
+          <li><span class="check">✓</span> 100 GB NVMe SSD</li>
+          <li><span class="check">✓</span> 2 TB Bandwidth</li>
+          <li><span class="check">✓</span> Dedicated IP</li>
+          <li><span class="check">✓</span> Weekly Backups</li>
+        </ul>
+        <a href="https://www.hostinger.co.uk/cart?product=vps%3Avps_kvm_2&period=12&referral_type=cart_link&REFERRALCODE=LRMMICKYBJ9K&referral_id=019bbb6a-7a42-71c7-81c4-66567ed4cfcd" class="vps-btn" target="_blank" rel="noopener">Get Started →</a>
+      </div>
+
+      <div class="vps-card">
+        <div class="vps-name">KVM 4</div>
+        <div class="vps-specs">Professional</div>
+        <div class="vps-price"><span class="amount">£14.99</span><span class="period">/month</span></div>
+        <ul class="vps-features">
+          <li><span class="check">✓</span> 4 vCPU Cores</li>
+          <li><span class="check">✓</span> 16 GB RAM</li>
+          <li><span class="check">✓</span> 200 GB NVMe SSD</li>
+          <li><span class="check">✓</span> 4 TB Bandwidth</li>
+          <li><span class="check">✓</span> Dedicated IP</li>
+          <li><span class="check">✓</span> Daily Backups</li>
+        </ul>
+        <a href="https://www.hostinger.co.uk/cart?product=vps%3Avps_kvm_4&period=12&referral_type=cart_link&REFERRALCODE=LRMMICKYBJ9K&referral_id=019bbb6a-c34f-72f8-972e-0c88d11714fc" class="vps-btn" target="_blank" rel="noopener">Get Started →</a>
+      </div>
+
+      <div class="vps-card">
+        <div class="vps-name">KVM 8</div>
+        <div class="vps-specs">Enterprise</div>
+        <div class="vps-price"><span class="amount">£24.99</span><span class="period">/month</span></div>
+        <ul class="vps-features">
+          <li><span class="check">✓</span> 8 vCPU Cores</li>
+          <li><span class="check">✓</span> 32 GB RAM</li>
+          <li><span class="check">✓</span> 400 GB NVMe SSD</li>
+          <li><span class="check">✓</span> 8 TB Bandwidth</li>
+          <li><span class="check">✓</span> Priority Support</li>
+          <li><span class="check">✓</span> Daily Backups</li>
+        </ul>
+        <a href="https://www.hostinger.co.uk/cart?product=vps%3Avps_kvm_8&period=12&referral_type=cart_link&REFERRALCODE=LRMMICKYBJ9K&referral_id=019bbb6a-f2e3-7153-a91d-08bc04bca4c7" class="vps-btn" target="_blank" rel="noopener">Get Started →</a>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 4rem;">
+      <h2 style="font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 2rem;">Why Choose Hostinger?</h2>
+      <div class="why-grid">
+        <div class="why-card"><div class="icon">⚡</div><h3>Lightning Fast</h3><p>NVMe SSD storage for blazing performance</p></div>
+        <div class="why-card"><div class="icon">🛡️</div><h3>99.9% Uptime</h3><p>Guaranteed reliability for your projects</p></div>
+        <div class="why-card"><div class="icon">🌍</div><h3>Global Network</h3><p>Data centers across the world</p></div>
+        <div class="why-card"><div class="icon">💬</div><h3>24/7 Support</h3><p>Expert help whenever you need it</p></div>
+      </div>
+    </div>
+
+    <div class="cta-box">
+      <h2>Ready to Get Started?</h2>
+      <p>Join millions of satisfied customers worldwide</p>
+      <a href="https://hostinger.co.uk?REFERRALCODE=LRMMICKYBJ9K" target="_blank" rel="noopener" class="cta-btn">Visit Hostinger →</a>
+    </div>
+  </div>
+</main>
+
+{{> footer}}

@@ -1652,6 +1652,27 @@ Sitemap: ${baseUrl}/sitemap.xml
   }
 
   /**
+   * Hosting affiliate page
+   * GET /hosting
+   */
+  @Get('hosting')
+  @UseGuards(OptionalJwtAuthGuard)
+  async hosting(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = (req as any).user;
+      const html = await this.themeRenderer.render('hosting', {
+        title: 'Premium VPS Hosting - Hostinger',
+        description: 'Lightning-fast VPS servers with full root access, NVMe SSD storage, and 24/7 support.',
+        user,
+      });
+      res.send(html);
+    } catch (error) {
+      console.error('Error rendering hosting page:', error);
+      res.status(500).send('Error loading hosting page');
+    }
+  }
+
+  /**
    * Single page
    * GET /:slug
    */
