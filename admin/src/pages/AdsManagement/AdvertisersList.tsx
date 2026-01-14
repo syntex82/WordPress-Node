@@ -3,6 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/authStore';
+import { FiX } from 'react-icons/fi';
 
 interface Advertiser {
   id: string;
@@ -21,6 +22,8 @@ export const AdvertisersList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({ companyName: '', contactEmail: '', contactName: '' });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchAdvertisers();
@@ -34,7 +37,7 @@ export const AdvertisersList: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setAdvertisers(data.advertisers || []);
+        setAdvertisers(data.items || []);
       }
     } catch (err) {
       console.error('Failed to fetch advertisers:', err);
@@ -59,8 +62,32 @@ export const AdvertisersList: React.FC = () => {
     }
   };
 
+  const handleCreateAdvertiser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const response = await fetch('/api/admin/ads/advertisers', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        setShowAddModal(false);
+        setFormData({ companyName: '', contactEmail: '', contactName: '' });
+        fetchAdvertisers();
+      }
+    } catch (err) {
+      console.error('Failed to create advertiser:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
-    return <div className="p-6">Loading advertisers...</div>;
+    return <div className="p-6 text-gray-900 dark:text-white">Loading advertisers...</div>;
   }
 
   return (
@@ -136,6 +163,59 @@ export const AdvertisersList: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Add Advertiser Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add Advertiser</h2>
+              <button onClick={() => setShowAddModal(false)} className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white">
+                <FiX size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateAdvertiser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Company Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.companyName}
+                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Contact Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={formData.contactEmail}
+                  onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Contact Name</label>
+                <input
+                  type="text"
+                  value={formData.contactName}
+                  onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                  {saving ? 'Creating...' : 'Create Advertiser'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

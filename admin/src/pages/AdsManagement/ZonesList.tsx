@@ -3,6 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/authStore';
+import { FiX } from 'react-icons/fi';
 
 interface Zone {
   id: string;
@@ -21,6 +22,15 @@ export const ZonesList: React.FC = () => {
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    position: 'header',
+    format: 'banner',
+    width: 728,
+    height: 90,
+  });
 
   useEffect(() => {
     fetchZones();
@@ -57,6 +67,30 @@ export const ZonesList: React.FC = () => {
     }
   };
 
+  const handleCreateZone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const response = await fetch('/api/admin/ads/zones', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        setShowCreateModal(false);
+        setFormData({ name: '', description: '', position: 'header', format: 'banner', width: 728, height: 90 });
+        fetchZones();
+      }
+    } catch (err) {
+      console.error('Failed to create zone:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const copyEmbedCode = (zone: Zone) => {
     const code = `<div data-ad-zone="${zone.name}" data-format="${zone.format}"></div>
 <script src="/api/ads/loader.js" async></script>`;
@@ -65,7 +99,7 @@ export const ZonesList: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-6">Loading zones...</div>;
+    return <div className="p-6 text-gray-900 dark:text-white">Loading zones...</div>;
   }
 
   return (
@@ -132,6 +166,100 @@ export const ZonesList: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Create Zone Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Create Ad Zone</h2>
+              <button onClick={() => setShowCreateModal(false)} className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white">
+                <FiX size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateZone} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Zone Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                  placeholder="e.g., header-banner, sidebar-ad"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Description</label>
+                <input
+                  type="text"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Position</label>
+                  <select
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                  >
+                    <option value="header">Header</option>
+                    <option value="sidebar">Sidebar</option>
+                    <option value="in-content">In Content</option>
+                    <option value="footer">Footer</option>
+                    <option value="popup">Popup</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Format</label>
+                  <select
+                    value={formData.format}
+                    onChange={(e) => setFormData({ ...formData, format: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                  >
+                    <option value="banner">Banner (728x90)</option>
+                    <option value="rectangle">Rectangle (300x250)</option>
+                    <option value="skyscraper">Skyscraper (160x600)</option>
+                    <option value="leaderboard">Leaderboard (970x90)</option>
+                    <option value="native">Native</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Width (px)</label>
+                  <input
+                    type="number"
+                    value={formData.width}
+                    onChange={(e) => setFormData({ ...formData, width: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Height (px)</label>
+                  <input
+                    type="number"
+                    value={formData.height}
+                    onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                  {saving ? 'Creating...' : 'Create Zone'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
