@@ -3,7 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthStore } from '../../stores/authStore';
 
 interface Campaign {
   id: string;
@@ -22,7 +22,7 @@ interface Campaign {
 }
 
 export const CampaignsList: React.FC = () => {
-  const { token } = useAuth();
+  const { token } = useAuthStore();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');

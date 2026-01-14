@@ -2,7 +2,7 @@
  * Ads Analytics Dashboard
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthStore } from '../../stores/authStore';
 
 interface DailyStats {
   date: string;
@@ -22,7 +22,7 @@ interface TopPerformer {
 }
 
 export const AdsAnalytics: React.FC = () => {
-  const { token } = useAuth();
+  const { token } = useAuthStore();
   const [dateRange, setDateRange] = useState(30);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [topAds, setTopAds] = useState<TopPerformer[]>([]);

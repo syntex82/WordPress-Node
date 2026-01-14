@@ -2,7 +2,7 @@
  * Ads List - Manage individual ads
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthStore } from '../../stores/authStore';
 
 interface Ad {
   id: string;
@@ -18,7 +18,7 @@ interface Ad {
 }
 
 export const AdsList: React.FC = () => {
-  const { token } = useAuth();
+  const { token } = useAuthStore();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');

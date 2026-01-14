@@ -3,7 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthStore } from '../../stores/authStore';
 
 interface AdStats {
   totalAdvertisers: number;
@@ -17,7 +17,7 @@ interface AdStats {
 }
 
 export const AdsOverview: React.FC = () => {
-  const { token } = useAuth();
+  const { token } = useAuthStore();
   const [stats, setStats] = useState<AdStats | null>(null);
   const [loading, setLoading] = useState(true);
 

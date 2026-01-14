@@ -2,7 +2,7 @@
  * Zones List - Manage ad placement zones
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthStore } from '../../stores/authStore';
 
 interface Zone {
   id: string;
@@ -17,7 +17,7 @@ interface Zone {
 }
 
 export const ZonesList: React.FC = () => {
-  const { token } = useAuth();
+  const { token } = useAuthStore();
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);

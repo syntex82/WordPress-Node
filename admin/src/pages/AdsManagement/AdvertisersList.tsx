@@ -2,7 +2,7 @@
  * Advertisers List - Manage advertisers
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthStore } from '../../stores/authStore';
 
 interface Advertiser {
   id: string;
@@ -16,7 +16,7 @@ interface Advertiser {
 }
 
 export const AdvertisersList: React.FC = () => {
-  const { token } = useAuth();
+  const { token } = useAuthStore();
   const [advertisers, setAdvertisers] = useState<Advertiser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
