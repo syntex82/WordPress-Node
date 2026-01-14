@@ -97,7 +97,14 @@ export const AdsOverview: React.FC = () => {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link
+          to="/ads/house"
+          className="bg-green-50 dark:bg-green-900/30 rounded-lg shadow p-4 hover:shadow-md transition-shadow border border-green-200 dark:border-green-800"
+        >
+          <h3 className="font-semibold text-green-800 dark:text-green-300">🏠 House Ads (FREE!)</h3>
+          <p className="text-sm text-green-600 dark:text-green-400">Your own promotional ads - no payment needed</p>
+        </Link>
         <Link
           to="/ads/analytics"
           className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 hover:shadow-md transition-shadow border border-gray-200 dark:border-slate-700"
@@ -106,11 +113,11 @@ export const AdsOverview: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-slate-400">Detailed performance reports</p>
         </Link>
         <Link
-          to="/ads/advertisers/new"
+          to="/ads/advertisers"
           className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 hover:shadow-md transition-shadow border border-gray-200 dark:border-slate-700"
         >
-          <h3 className="font-semibold text-gray-900 dark:text-white">➕ Add Advertiser</h3>
-          <p className="text-sm text-gray-500 dark:text-slate-400">Register a new advertiser</p>
+          <h3 className="font-semibold text-gray-900 dark:text-white">👥 Manage Advertisers</h3>
+          <p className="text-sm text-gray-500 dark:text-slate-400">External advertisers who pay you</p>
         </Link>
       </div>
     </div>

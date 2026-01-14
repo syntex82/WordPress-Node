@@ -8,6 +8,7 @@ import { AdvertisersList } from './AdvertisersList';
 import { CampaignsList } from './CampaignsList';
 import { AdsList } from './AdsList';
 import { ZonesList } from './ZonesList';
+import { HouseAdsList } from './HouseAdsList';
 import { AdsAnalytics } from './AdsAnalytics';
 
 export const AdsManagement: React.FC = () => {
@@ -18,6 +19,7 @@ export const AdsManagement: React.FC = () => {
       <Route path="campaigns/*" element={<CampaignsList />} />
       <Route path="ads/*" element={<AdsList />} />
       <Route path="zones/*" element={<ZonesList />} />
+      <Route path="house/*" element={<HouseAdsList />} />
       <Route path="analytics" element={<AdsAnalytics />} />
       <Route path="*" element={<Navigate to="/ads" replace />} />
     </Routes>

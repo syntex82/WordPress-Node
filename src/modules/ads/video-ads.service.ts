@@ -65,7 +65,7 @@ export class VideoAdsService {
     const campaigns = await this.prisma.adCampaign.findMany({
       where: {
         status: 'active',
-        type: { in: ['cpv', 'cpcv'] }, // Cost per view, cost per completed view
+        type: { in: ['cpv', 'cpcv', 'video'] }, // Cost per view, cost per completed view, or video type
         ads: {
           some: {
             type: 'video',
@@ -73,8 +73,6 @@ export class VideoAdsService {
             videoUrl: { not: null },
           },
         },
-        // Check budget
-        spent: { lt: this.prisma.adCampaign.fields.budget },
       },
       include: {
         ads: {
