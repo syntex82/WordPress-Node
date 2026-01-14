@@ -533,7 +533,7 @@ export class AnalyticsController {
   @Post('track/update')
   async updatePageView(
     @Body()
-    body: {
+    body?: {
       pageViewId?: string;
       sessionId?: string;
       duration?: number;
@@ -541,6 +541,10 @@ export class AnalyticsController {
       interactions?: number;
     },
   ) {
+    if (!body) {
+      return { success: false, error: 'No body provided' };
+    }
+
     if (body.pageViewId) {
       await this.prisma.pageView.update({
         where: { id: body.pageViewId },
@@ -569,12 +573,16 @@ export class AnalyticsController {
   async trackWebVitals(
     @Req() req: Request,
     @Body()
-    body: {
+    body?: {
       sessionId?: string;
-      path: string;
-      metrics: Array<{ metric: string; value: number; rating?: string }>;
+      path?: string;
+      metrics?: Array<{ metric: string; value: number; rating?: string }>;
     },
   ) {
+    if (!body || !body.metrics || !Array.isArray(body.metrics) || !body.path) {
+      return { count: 0, error: 'Invalid body' };
+    }
+
     const userAgent = req.headers['user-agent'] || '';
     const { device, browser } = this.parseUserAgent(userAgent);
 
@@ -583,7 +591,7 @@ export class AnalyticsController {
         this.prisma.webVital.create({
           data: {
             sessionId: body.sessionId,
-            path: body.path,
+            path: body.path!,
             metric: m.metric,
             value: m.value,
             rating: m.rating,
