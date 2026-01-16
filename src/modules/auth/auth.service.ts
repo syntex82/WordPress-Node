@@ -130,13 +130,17 @@ export class AuthService {
 
   /**
    * Register new user
+   * SECURITY: Always assigns STUDENT role regardless of any input
    */
   async register(registerDto: RegisterDto) {
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
+    // SECURITY: Force STUDENT role - never trust client-provided role
     const user = await this.usersService.create({
-      ...registerDto,
+      email: registerDto.email,
+      name: registerDto.name,
       password: hashedPassword,
+      role: 'STUDENT', // Always STUDENT - admins must promote users manually
     });
 
     // Send welcome email (non-blocking)

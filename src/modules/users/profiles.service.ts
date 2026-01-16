@@ -170,13 +170,22 @@ export class ProfilesService {
 
   /**
    * Update user profile
+   * SECURITY: Explicitly strips sensitive fields to prevent privilege escalation
    */
   async updateProfile(userId: string, data: UpdateProfileDto) {
+    // SECURITY: Strip any sensitive fields that should never be updated via profile
+    const sanitizedData = { ...data };
+    delete (sanitizedData as any).role;
+    delete (sanitizedData as any).password;
+    delete (sanitizedData as any).email;
+    delete (sanitizedData as any).id;
+    delete (sanitizedData as any).demoInstanceId;
+
     // Check username uniqueness if being updated
-    if (data.username) {
+    if (sanitizedData.username) {
       const existing = await this.prisma.user.findFirst({
         where: {
-          username: data.username,
+          username: sanitizedData.username,
           NOT: { id: userId },
         },
       });
@@ -187,7 +196,7 @@ export class ProfilesService {
 
     return this.prisma.user.update({
       where: { id: userId },
-      data,
+      data: sanitizedData,
       select: this.publicProfileSelect,
     });
   }

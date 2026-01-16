@@ -1,10 +1,12 @@
 /**
  * Register DTO
  * Validates user registration data
+ *
+ * SECURITY: Role field intentionally omitted to prevent privilege escalation
+ * New users are always assigned STUDENT role by the service
  */
 
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
-import { UserRole } from '@prisma/client';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -20,7 +22,6 @@ export class RegisterDto {
   @MinLength(6)
   password: string;
 
-  @IsEnum(UserRole)
-  @IsOptional()
-  role?: UserRole;
+  // SECURITY: No role field - prevents users from self-assigning admin roles
+  // Role is always set to STUDENT by the auth service
 }
