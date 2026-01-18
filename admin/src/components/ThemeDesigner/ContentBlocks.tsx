@@ -1548,10 +1548,24 @@ export function AudioPlayerBlock({
 }
 
 // ============ Video URL Helpers ============
+// Helper to check video host using URL parsing (prevents bypass attacks)
+function isYouTubeHost(url: string): boolean {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === 'youtube.com' || h === 'www.youtube.com' || h === 'youtu.be' || h === 'm.youtube.com';
+  } catch { return false; }
+}
+function isVimeoHost(url: string): boolean {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === 'vimeo.com' || h === 'www.vimeo.com' || h === 'player.vimeo.com';
+  } catch { return false; }
+}
+
 function getVideoType(url: string): 'youtube' | 'vimeo' | 'native' | null {
   if (!url) return null;
-  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
-  if (url.includes('vimeo.com')) return 'vimeo';
+  if (isYouTubeHost(url)) return 'youtube';
+  if (isVimeoHost(url)) return 'vimeo';
   return 'native';
 }
 

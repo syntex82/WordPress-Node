@@ -249,13 +249,27 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     toast.success(`${capturedMedia.type === 'VIDEO' ? 'Video' : 'Audio'} added to post!`);
   };
 
+  // Helper to check video embed hosts using URL parsing (prevents bypass attacks)
+  const isYouTubeUrl = (u: string) => {
+    try {
+      const h = new URL(u).hostname.toLowerCase();
+      return h === 'youtube.com' || h === 'www.youtube.com' || h === 'youtu.be' || h === 'm.youtube.com';
+    } catch { return false; }
+  };
+  const isVimeoUrl = (u: string) => {
+    try {
+      const h = new URL(u).hostname.toLowerCase();
+      return h === 'vimeo.com' || h === 'www.vimeo.com' || h === 'player.vimeo.com';
+    } catch { return false; }
+  };
+
   // Handle external URL input
   const handleAddExternalUrl = async () => {
     if (!externalUrl.trim()) return;
 
     const url = externalUrl.trim();
-    const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
-    const isVimeo = url.includes('vimeo.com');
+    const isYouTube = isYouTubeUrl(url);
+    const isVimeo = isVimeoUrl(url);
     const isDirectImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
     const isDirectVideo = /\.(mp4|webm|ogg|mov)$/i.test(url);
     const isVideoEmbed = isYouTube || isVimeo;
@@ -468,8 +482,8 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 const mediaItem = media[index];
                 const isLink = mediaItem?.type === 'LINK';
                 const isVideo = mediaItem?.type === 'VIDEO';
-                const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
-                const isVimeo = url.includes('vimeo.com');
+                const isYouTube = isYouTubeUrl(url);
+                const isVimeo = isVimeoUrl(url);
                 const isExternalVideo = isYouTube || isVimeo;
 
                 return (

@@ -332,8 +332,16 @@ export class EmailService implements OnModuleInit {
 
       return result.trim();
     } catch {
-      // Fallback: just strip tags if parsing fails
-      return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      // Fallback: strip tags manually if parsing fails (avoid regex to prevent ReDoS)
+      let result = '';
+      let inTag = false;
+      for (const char of html) {
+        if (char === '<') { inTag = true; continue; }
+        if (char === '>') { inTag = false; result += ' '; continue; }
+        if (!inTag) result += char;
+      }
+      // Normalize whitespace (safe patterns)
+      return result.split(/\s+/).filter(Boolean).join(' ');
     }
   }
 

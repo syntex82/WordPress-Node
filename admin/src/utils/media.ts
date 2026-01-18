@@ -45,22 +45,48 @@ export function resolveMediaUrl(path: string | undefined | null): string {
 }
 
 /**
+ * Check if a hostname matches a video service domain
+ * Uses hostname comparison instead of string includes to prevent bypass attacks
+ */
+function isVideoHost(hostname: string, service: string): boolean {
+  const h = hostname.toLowerCase();
+  switch (service) {
+    case 'youtube':
+      return h === 'youtube.com' || h === 'www.youtube.com' || h === 'youtu.be' || h === 'm.youtube.com';
+    case 'vimeo':
+      return h === 'vimeo.com' || h === 'www.vimeo.com' || h === 'player.vimeo.com';
+    default:
+      return false;
+  }
+}
+
+/**
  * Check if a URL is a video embed (YouTube, Vimeo)
+ * Uses URL parsing for secure hostname validation
  */
 export function isVideoEmbed(url: string): boolean {
   if (!url) return false;
-  return url.includes('youtube.com') || 
-         url.includes('youtu.be') || 
-         url.includes('vimeo.com');
+  try {
+    const parsed = new URL(url);
+    return isVideoHost(parsed.hostname, 'youtube') || isVideoHost(parsed.hostname, 'vimeo');
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Get video type from URL
+ * Uses URL parsing for secure hostname validation
  */
 export function getVideoType(url: string): 'youtube' | 'vimeo' | 'direct' | 'unknown' {
   if (!url) return 'unknown';
-  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
-  if (url.includes('vimeo.com')) return 'vimeo';
+  try {
+    const parsed = new URL(url);
+    if (isVideoHost(parsed.hostname, 'youtube')) return 'youtube';
+    if (isVideoHost(parsed.hostname, 'vimeo')) return 'vimeo';
+  } catch {
+    // Not a valid URL, check for direct video file
+  }
   if (url.match(/\.(mp4|webm|ogg|mov)$/i)) return 'direct';
   return 'unknown';
 }

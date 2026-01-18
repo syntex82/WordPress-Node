@@ -585,9 +585,19 @@ export function ModernVideoPlayer({
     wide: 'aspect-[21/9]',
   };
 
-  // Check if it's a YouTube or Vimeo URL
-  const isYouTube = videoUrl?.includes('youtube.com') || videoUrl?.includes('youtu.be');
-  const isVimeo = videoUrl?.includes('vimeo.com');
+  // Check if it's a YouTube or Vimeo URL using URL parsing (prevents bypass attacks)
+  const isYouTube = (() => {
+    try {
+      const h = new URL(videoUrl || '').hostname.toLowerCase();
+      return h === 'youtube.com' || h === 'www.youtube.com' || h === 'youtu.be' || h === 'm.youtube.com';
+    } catch { return false; }
+  })();
+  const isVimeo = (() => {
+    try {
+      const h = new URL(videoUrl || '').hostname.toLowerCase();
+      return h === 'vimeo.com' || h === 'www.vimeo.com' || h === 'player.vimeo.com';
+    } catch { return false; }
+  })();
 
   const getEmbedUrl = () => {
     if (isYouTube) {

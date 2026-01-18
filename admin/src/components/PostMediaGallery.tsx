@@ -58,8 +58,19 @@ export default function PostMediaGallery({ media, className = '', immersive = tr
   };
 
   // Check if URL is external (YouTube, Vimeo, etc.)
-  const isYouTube = (url: string) => url.includes('youtube.com') || url.includes('youtu.be');
-  const isVimeo = (url: string) => url.includes('vimeo.com');
+  // Uses URL parsing for secure hostname validation (prevents bypass attacks)
+  const isYouTube = (url: string) => {
+    try {
+      const h = new URL(url).hostname.toLowerCase();
+      return h === 'youtube.com' || h === 'www.youtube.com' || h === 'youtu.be' || h === 'm.youtube.com';
+    } catch { return false; }
+  };
+  const isVimeo = (url: string) => {
+    try {
+      const h = new URL(url).hostname.toLowerCase();
+      return h === 'vimeo.com' || h === 'www.vimeo.com' || h === 'player.vimeo.com';
+    } catch { return false; }
+  };
 
   const getYouTubeId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&\n?#]+)/);
