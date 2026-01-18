@@ -8,6 +8,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import * as Handlebars from 'handlebars';
+import * as cheerio from 'cheerio';
 import { PrismaService } from '../../database/prisma.service';
 import { EmailStatus } from '@prisma/client';
 import { SystemConfigService, SmtpConfig } from '../settings/system-config.service';
@@ -180,17 +181,28 @@ export class EmailService implements OnModuleInit {
 
   /**
    * Render a template with variables
-   * Uses strict mode and noEscape:false to prevent code injection
+   * Uses a sandboxed Handlebars environment to prevent code injection
    */
   renderTemplate(template: string, variables: Record<string, any>): string {
+    // Create isolated Handlebars environment without dangerous helpers
+    const sandboxedHandlebars = Handlebars.create();
+
+    // Remove potentially dangerous built-in helpers
+    sandboxedHandlebars.unregisterHelper('helperMissing');
+    sandboxedHandlebars.unregisterHelper('blockHelperMissing');
+
     // Compile with strict mode to prevent prototype pollution attacks
-    const compiled = Handlebars.compile(template, {
+    const compiled = sandboxedHandlebars.compile(template, {
       strict: true,          // Throw errors for missing variables
       noEscape: false,       // Escape HTML by default (use {{{var}}} for unescaped)
+      preventIndent: true,   // Prevent indent issues
     });
 
+    // Create a safe context without prototype chain access
+    const safeVariables = JSON.parse(JSON.stringify(variables || {}));
+
     // Execute in a sandbox with prototype access disabled
-    return compiled(variables, {
+    return compiled(safeVariables, {
       allowProtoPropertiesByDefault: false,
       allowProtoMethodsByDefault: false,
     });
@@ -289,48 +301,40 @@ export class EmailService implements OnModuleInit {
   }
 
   /**
-   * Convert HTML to plain text safely
-   * Uses iterative approach to handle nested tags properly
+   * Convert HTML to plain text safely using DOM parsing
+   * Uses cheerio for proper HTML parsing instead of regex
    */
   private htmlToText(html: string): string {
     if (!html || typeof html !== 'string') return '';
 
-    let result = html;
+    try {
+      // Use cheerio to properly parse HTML (safe DOM-based approach)
+      const $ = cheerio.load(html);
 
-    // Remove style and script blocks completely (loop to handle nested)
-    let prevLength = 0;
-    while (result.length !== prevLength) {
-      prevLength = result.length;
-      result = result.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-      result = result.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      // Remove style and script elements completely
+      $('style, script, noscript').remove();
+
+      // Add newlines for block elements
+      $('br').replaceWith('\n');
+      $('p, div, h1, h2, h3, h4, h5, h6').each((_, el) => {
+        $(el).append('\n');
+      });
+      $('li').each((_, el) => {
+        $(el).prepend('• ').append('\n');
+      });
+
+      // Get text content (cheerio handles entity decoding)
+      let result = $.text();
+
+      // Normalize whitespace
+      result = result.replace(/[ \t]+/g, ' ');
+      result = result.replace(/\n\s*\n\s*\n/g, '\n\n');
+
+      return result.trim();
+    } catch {
+      // Fallback: just strip tags if parsing fails
+      return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     }
-
-    // Convert common block elements to newlines
-    result = result.replace(/<br\s*\/?>/gi, '\n');
-    result = result.replace(/<\/p>/gi, '\n\n');
-    result = result.replace(/<\/div>/gi, '\n');
-    result = result.replace(/<\/li>/gi, '\n');
-
-    // Remove all remaining tags (loop to handle any nested/malformed tags)
-    prevLength = 0;
-    while (result.length !== prevLength) {
-      prevLength = result.length;
-      result = result.replace(/<[^>]+>/g, ' ');
-    }
-
-    // Decode common HTML entities
-    result = result.replace(/&nbsp;/gi, ' ');
-    result = result.replace(/&amp;/gi, '&');
-    result = result.replace(/&lt;/gi, '<');
-    result = result.replace(/&gt;/gi, '>');
-    result = result.replace(/&quot;/gi, '"');
-    result = result.replace(/&#39;/gi, "'");
-
-    // Normalize whitespace
-    result = result.replace(/[ \t]+/g, ' ');
-    result = result.replace(/\n\s*\n\s*\n/g, '\n\n');
-
-    return result.trim();
   }
 
   /**

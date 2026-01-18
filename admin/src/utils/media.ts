@@ -18,23 +18,29 @@ export function getMediaBaseUrl(): string {
 /**
  * Resolve a media path to a full URL
  * Handles both relative paths (/uploads/...) and absolute URLs (https://...)
+ * Uses URL parsing to properly check protocol (prevents bypass attacks)
  */
 export function resolveMediaUrl(path: string | undefined | null): string {
   if (!path) return '';
-  
-  // Already a full URL
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
+
+  // Check if already a full URL using URL parsing (not string matching)
+  try {
+    const parsed = new URL(path);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return path;
+    }
+  } catch {
+    // Not a valid absolute URL, continue to handle as relative
   }
-  
+
   // Data URLs (base64)
   if (path.startsWith('data:')) {
     return path;
   }
-  
+
   // Relative path - ensure it starts with /
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  
+
   return `${getMediaBaseUrl()}${normalizedPath}`;
 }
 
@@ -105,25 +111,27 @@ export function getAudioMimeType(url: string): string {
 
 /**
  * Validate media URL format
+ * Uses URL parsing to properly validate protocol (prevents bypass attacks)
  */
 export function isValidMediaUrl(url: string): boolean {
   if (!url) return false;
-  
-  // Check for valid URL patterns
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    try {
-      new URL(url);
+
+  // Check for valid URL patterns - parse first to prevent bypass attacks
+  try {
+    const parsed = new URL(url);
+    // Check protocol using parsed URL (not string matching)
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
       return true;
-    } catch {
-      return false;
     }
+  } catch {
+    // Not a valid absolute URL, check for relative paths
   }
-  
+
   // Check for valid relative paths
   if (url.startsWith('/uploads/') || url.startsWith('/media/')) {
     return true;
   }
-  
+
   return false;
 }
 

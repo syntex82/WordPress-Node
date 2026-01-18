@@ -7,6 +7,8 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import * as dns from 'dns';
+import * as http from 'http';
+import * as https from 'https';
 import { promisify } from 'util';
 
 const dnsLookup = promisify(dns.lookup);
@@ -97,6 +99,35 @@ export class UrlPreviewService {
     }
   }
 
+  /**
+   * Create a custom DNS lookup function that validates IPs at connection time
+   * This prevents TOCTOU (time-of-check-time-of-use) attacks
+   */
+  private createSafeLookup(): typeof dns.lookup {
+    const isBlockedIP = this.isBlockedIP.bind(this);
+
+    return ((hostname: string, options: any, callback: any) => {
+      // Handle both (hostname, callback) and (hostname, options, callback) signatures
+      if (typeof options === 'function') {
+        callback = options;
+        options = {};
+      }
+
+      dns.lookup(hostname, options, (err, address, family) => {
+        if (err) {
+          return callback(err, address, family);
+        }
+
+        // Validate the resolved IP at connection time
+        if (isBlockedIP(address)) {
+          return callback(new Error('URL resolves to a blocked IP address'), address, family);
+        }
+
+        callback(null, address, family);
+      });
+    }) as typeof dns.lookup;
+  }
+
   async fetchPreview(url: string): Promise<UrlPreviewData> {
     try {
       // Validate URL format
@@ -105,13 +136,30 @@ export class UrlPreviewService {
         throw new Error('Invalid URL protocol');
       }
 
-      // SSRF protection: validate URL is safe to fetch
-      await this.validateUrlSafety(url);
+      // Check blocked hostnames
+      const hostname = parsedUrl.hostname.toLowerCase();
+      if (BLOCKED_HOSTNAMES.includes(hostname)) {
+        throw new Error('URL hostname is not allowed');
+      }
 
-      // Fetch the page
+      // Check if hostname is an IP address directly
+      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+      if (ipv4Regex.test(hostname) && this.isBlockedIP(hostname)) {
+        throw new Error('URL points to a blocked IP address');
+      }
+
+      // Create HTTP agents with custom lookup to validate IP at connection time
+      const safeLookup = this.createSafeLookup();
+      const httpAgent = new http.Agent({ lookup: safeLookup } as any);
+      const httpsAgent = new https.Agent({ lookup: safeLookup } as any);
+
+      // Fetch the page with safe agents
       const response = await axios.get(url, {
         timeout: this.timeout,
         maxContentLength: this.maxContentLength,
+        maxRedirects: 5,
+        httpAgent,
+        httpsAgent,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; NodePress/1.0; +https://nodepress.io)',
           Accept: 'text/html,application/xhtml+xml',

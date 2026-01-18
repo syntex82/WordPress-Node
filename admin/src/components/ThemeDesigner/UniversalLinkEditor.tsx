@@ -123,9 +123,10 @@ export function validateUrl(url: string, type: EnhancedLinkType): { valid: boole
   
   if (type === 'external') {
     try {
-      new URL(url);
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        return { valid: false, message: 'URL must start with http:// or https://' };
+      const parsed = new URL(url);
+      // Use parsed protocol to prevent bypass attacks (not string matching)
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return { valid: false, message: 'URL must use http:// or https://' };
       }
       return { valid: true };
     } catch {

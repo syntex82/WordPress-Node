@@ -805,17 +805,21 @@ export class TimelineService {
    * Search users for mention autocomplete
    */
   async searchUsersForMention(query: string, limit = 10) {
-    if (!query || query.length < 2) return [];
+    // Type safety: ensure query is a string to prevent type confusion attacks
+    const safeQuery = typeof query === 'string' ? query : String(query || '');
+    const safeLimit = typeof limit === 'number' && limit > 0 ? Math.min(limit, 50) : 10;
+
+    if (!safeQuery || safeQuery.length < 2) return [];
 
     const users = await this.prisma.user.findMany({
       where: {
         OR: [
-          { username: { contains: query, mode: 'insensitive' } },
-          { name: { contains: query, mode: 'insensitive' } },
+          { username: { contains: safeQuery, mode: 'insensitive' } },
+          { name: { contains: safeQuery, mode: 'insensitive' } },
         ],
       },
       select: this.userSelect,
-      take: limit,
+      take: safeLimit,
     });
 
     return users;
