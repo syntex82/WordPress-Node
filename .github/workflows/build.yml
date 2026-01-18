@@ -12,6 +12,11 @@ on:
   pull_request:
     branches: [main, master, develop]
 
+# Explicitly declare permissions for security best practices
+permissions:
+  contents: read
+  actions: read
+
 env:
   NODE_VERSION: '20'
 

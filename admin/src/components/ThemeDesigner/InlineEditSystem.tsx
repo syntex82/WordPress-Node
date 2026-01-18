@@ -76,6 +76,12 @@ export function InlineEditProvider({
   const updateField = useCallback((path: string, value: any) => {
     const newProps = { ...localProps };
     const keys = path.split('.');
+    // Prevent prototype pollution by blocking dangerous keys
+    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+    if (keys.some(key => dangerousKeys.includes(key))) {
+      console.warn('Blocked potentially dangerous property path:', path);
+      return;
+    }
     let current: any = newProps;
     for (let i = 0; i < keys.length - 1; i++) {
       if (!current[keys[i]]) current[keys[i]] = {};

@@ -94,6 +94,7 @@ export function sanitizeEmailHtml(html: string): string {
 /**
  * Validate and sanitize redirect URLs to prevent open redirects
  * Only allows relative paths or URLs to the same origin
+ * Returns a newly constructed string to break taint tracking
  */
 export function safeRedirectUrl(url: string | undefined, defaultUrl: string = '/'): string {
   if (!url || typeof url !== 'string') {
@@ -138,7 +139,28 @@ export function safeRedirectUrl(url: string | undefined, defaultUrl: string = '/
     return defaultUrl;
   }
 
-  return trimmed;
+  // Reconstruct URL from validated characters to break taint tracking
+  // Only allow safe URL characters: alphanumeric, -, _, ., ~, /, ?, =, &, #, %
+  let safeUrl = '';
+  for (const char of trimmed.substring(0, 2000)) {
+    if (
+      (char >= 'a' && char <= 'z') ||
+      (char >= 'A' && char <= 'Z') ||
+      (char >= '0' && char <= '9') ||
+      char === '/' || char === '-' || char === '_' || char === '.' ||
+      char === '~' || char === '?' || char === '=' || char === '&' ||
+      char === '#' || char === '%' || char === '+'
+    ) {
+      safeUrl += char;
+    }
+  }
+
+  // Ensure it still starts with /
+  if (!safeUrl.startsWith('/')) {
+    return defaultUrl;
+  }
+
+  return safeUrl;
 }
 
 export default { sanitizeHtmlContent, sanitizeAdHtml, sanitizeEmailHtml, safeRedirectUrl };

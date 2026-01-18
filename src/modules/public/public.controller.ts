@@ -564,7 +564,8 @@ Sitemap: ${baseUrl}/sitemap.xml
       res.send(html);
     } catch (error) {
       console.error('Error rendering login page:', error);
-      res.status(500).send(`Error rendering login page: ${error.message}`);
+      // Return generic error message to prevent exception text leaking into HTML
+      res.status(500).send('An error occurred while loading the login page. Please try again later.');
     }
   }
 

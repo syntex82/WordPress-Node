@@ -442,6 +442,12 @@ export default function ThemeCustomizer() {
   const updateSettings = useCallback((path: string, value: any, actionName?: string) => {
     const newSettings = JSON.parse(JSON.stringify(draftSettings));
     const keys = path.split('.');
+    // Prevent prototype pollution by blocking dangerous keys
+    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+    if (keys.some(key => dangerousKeys.includes(key))) {
+      console.warn('Blocked potentially dangerous property path:', path);
+      return;
+    }
     let current: any = newSettings;
     for (let i = 0; i < keys.length - 1; i++) {
       current = current[keys[i]];
