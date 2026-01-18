@@ -444,7 +444,12 @@ export class ThemesService implements OnModuleInit {
 
         if (!entryPath) continue;
 
-        const fullPath = path.join(themePath, entryPath);
+        const fullPath = path.resolve(themePath, entryPath);
+
+        // Prevent path traversal attacks
+        if (!fullPath.startsWith(path.resolve(themePath) + path.sep) && fullPath !== path.resolve(themePath)) {
+          throw new BadRequestException(`Invalid path in theme archive: ${entryPath}`);
+        }
 
         if (entry.isDirectory) {
           await fs.mkdir(fullPath, { recursive: true });
