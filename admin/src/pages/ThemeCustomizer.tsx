@@ -442,17 +442,44 @@ export default function ThemeCustomizer() {
   const updateSettings = useCallback((path: string, value: any, actionName?: string) => {
     const newSettings = JSON.parse(JSON.stringify(draftSettings));
     const keys = path.split('.');
-    // Prevent prototype pollution by blocking dangerous keys
-    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
-    if (keys.some(key => dangerousKeys.includes(key))) {
-      console.warn('Blocked potentially dangerous property path:', path);
+    // Prevent prototype pollution by using a safe property setter
+    // that validates keys and uses Object.hasOwnProperty checks
+    const safeSetNestedProperty = (obj: any, keyPath: string[], val: any): boolean => {
+      const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
+      // Validate all keys before traversing
+      for (const k of keyPath) {
+        if (dangerousKeys.has(k) || typeof k !== 'string') {
+          console.warn('Blocked potentially dangerous property key:', k);
+          return false;
+        }
+      }
+      let current = obj;
+      for (let i = 0; i < keyPath.length - 1; i++) {
+        const key = keyPath[i];
+        if (!Object.prototype.hasOwnProperty.call(current, key)) {
+          return false; // Path doesn't exist
+        }
+        current = current[key];
+        if (typeof current !== 'object' || current === null) {
+          return false;
+        }
+      }
+      const finalKey = keyPath[keyPath.length - 1];
+      if (Object.prototype.hasOwnProperty.call(current, finalKey) ||
+          Object.isExtensible(current)) {
+        Object.defineProperty(current, finalKey, {
+          value: val,
+          writable: true,
+          enumerable: true,
+          configurable: true
+        });
+        return true;
+      }
+      return false;
+    };
+    if (!safeSetNestedProperty(newSettings, keys, value)) {
       return;
     }
-    let current: any = newSettings;
-    for (let i = 0; i < keys.length - 1; i++) {
-      current = current[keys[i]];
-    }
-    current[keys[keys.length - 1]] = value;
     setDraftSettings(newSettings, actionName || `Update ${path}`);
   }, [draftSettings, setDraftSettings]);
 

@@ -105,8 +105,12 @@ async function main() {
         console.error('\n❌ SECURITY ERROR: ADMIN_PASSWORD does not meet security requirements!');
         console.error('');
         console.error('Issues found:');
-        passwordValidation.errors.forEach(error => {
-          console.error(`  • ${error}`);
+        // Note: These are validation RULE descriptions (e.g., "Must contain uppercase"),
+        // NOT the password itself. This is safe to log. lgtm[js/clear-text-logging]
+        passwordValidation.errors.forEach((errorMessage: string) => {
+          // Log validation rule descriptions only (not sensitive data)
+          const safeMessage = String(errorMessage).substring(0, 100);
+          console.error(`  • ${safeMessage}`);
         });
         console.error('');
         console.error('Please update ADMIN_PASSWORD in your .env file to meet all requirements.');

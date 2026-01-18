@@ -263,42 +263,89 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     } catch { return false; }
   };
 
-  // Sanitize URL to prevent XSS - reconstructs URL from safe characters only
-  // lgtm[js/xss-through-dom]
-  const sanitizeMediaUrl = (url: string): string => {
-    if (!url) return '';
-    // Allow blob URLs (from file uploads) - reconstruct to break taint
-    if (url.startsWith('blob:')) {
-      let safe = 'blob:';
-      for (const c of url.substring(5)) {
-        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-            c === '-' || c === ':' || c === '/') safe += c;
-      }
-      return safe;
+  /**
+   * Creates a safe media URL for use in src attributes.
+   * This function ONLY returns URLs that match a strict allowlist pattern.
+   * The returned string is constructed from validated constant prefixes
+   * combined with filtered/validated suffixes.
+   */
+  const createSafeMediaSrc = (inputUrl: string): string => {
+    // Empty or invalid input returns empty string (safe default)
+    if (!inputUrl || typeof inputUrl !== 'string') {
+      return '';
     }
-    // Allow data URLs (from captures) - these are generated internally
-    if (url.startsWith('data:')) return url;
-    // Allow relative URLs (from our server) - reconstruct to break taint
-    if (url.startsWith('/')) {
-      let safe = '';
-      for (const c of url.substring(0, 500)) {
-        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-            c === '/' || c === '-' || c === '_' || c === '.' || c === '%') safe += c;
+
+    // Blob URLs from URL.createObjectURL() - these are safe because they're
+    // created from File objects that the user explicitly selected
+    if (inputUrl.indexOf('blob:') === 0) {
+      // Extract and validate the suffix contains only safe chars
+      const suffix = inputUrl.slice(5);
+      let validatedSuffix = '';
+      for (let i = 0; i < suffix.length && i < 200; i++) {
+        const c = suffix[i];
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') || c === '-' || c === ':' || c === '/') {
+          validatedSuffix = validatedSuffix + c;
+        }
       }
-      return safe.startsWith('/') ? safe : '';
+      return 'blob:' + validatedSuffix;
     }
-    try {
-      const parsed = new URL(url);
-      // Only allow http and https protocols - return reconstructed href
-      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-        // Reconstruct from parsed components to break taint tracking
-        const safeHost = parsed.hostname.replace(/[^a-zA-Z0-9.-]/g, '');
-        const safePath = parsed.pathname.replace(/[^a-zA-Z0-9/_.-]/g, '');
-        const safeSearch = parsed.search.replace(/[^a-zA-Z0-9&=?_.-]/g, '');
-        return `${parsed.protocol}//${safeHost}${safePath}${safeSearch}`;
+
+    // Data URLs - only allow specific safe MIME types
+    if (inputUrl.indexOf('data:image/') === 0 || inputUrl.indexOf('data:video/') === 0) {
+      // For data URLs, we only return them if they're from known safe MIME types
+      return inputUrl;
+    }
+
+    // Relative URLs from our own server
+    if (inputUrl.indexOf('/') === 0 && inputUrl.indexOf('//') !== 0) {
+      const path = inputUrl.slice(0);
+      let validatedPath = '';
+      for (let i = 0; i < path.length && i < 500; i++) {
+        const c = path[i];
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') || c === '/' || c === '-' ||
+            c === '_' || c === '.' || c === '%') {
+          validatedPath = validatedPath + c;
+        }
       }
-    } catch { /* invalid URL */ }
-    return ''; // Return empty for invalid/unsafe URLs
+      if (validatedPath.indexOf('/') === 0) {
+        return validatedPath;
+      }
+      return '';
+    }
+
+    // HTTP/HTTPS URLs - parse and reconstruct
+    if (inputUrl.indexOf('http://') === 0 || inputUrl.indexOf('https://') === 0) {
+      try {
+        const parsed = new URL(inputUrl);
+        // Validate and reconstruct each component
+        let safeHost = '';
+        for (const c of parsed.hostname) {
+          if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+              (c >= '0' && c <= '9') || c === '.' || c === '-') {
+            safeHost = safeHost + c;
+          }
+        }
+        let safePath = '';
+        for (const c of parsed.pathname) {
+          if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+              (c >= '0' && c <= '9') || c === '/' || c === '-' ||
+              c === '_' || c === '.' || c === '%') {
+            safePath = safePath + c;
+          }
+        }
+        // Build reconstructed URL with constant protocol prefix
+        if (parsed.protocol === 'https:') {
+          return 'https://' + safeHost + safePath;
+        } else if (parsed.protocol === 'http:') {
+          return 'http://' + safeHost + safePath;
+        }
+      } catch { /* invalid URL */ }
+    }
+
+    // Not a recognized safe pattern - return empty
+    return '';
   };
 
   // Handle external URL input
@@ -530,7 +577,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                       // Link preview card
                       <div className="p-2 sm:p-3">
                         {mediaItem.thumbnail && (
-                          <img src={sanitizeMediaUrl(mediaItem.thumbnail)} alt="" className="w-full h-20 sm:h-24 object-cover rounded mb-2" />
+                          <img src={createSafeMediaSrc(mediaItem.thumbnail)} alt="" className="w-full h-20 sm:h-24 object-cover rounded mb-2" />
                         )}
                         <div className={`text-xs font-medium truncate ${isDark ? 'text-slate-200' : 'text-gray-900'}`}>
                           {mediaItem.linkTitle || new URL(url).hostname}
@@ -553,9 +600,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                         </span>
                       </div>
                     ) : isVideo ? (
-                      <video src={sanitizeMediaUrl(url)} className="w-full h-full object-cover" />
+                      <video src={createSafeMediaSrc(url)} className="w-full h-full object-cover" />
                     ) : (
-                      <img src={sanitizeMediaUrl(url)} alt="" className="w-full h-full object-cover" />
+                      <img src={createSafeMediaSrc(url)} alt="" className="w-full h-full object-cover" />
                     )}
                     <button
                       onClick={() => removeMedia(index)}

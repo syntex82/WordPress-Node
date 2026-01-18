@@ -1,0 +1,23 @@
+# CodeQL Configuration for NodePress CMS
+# This file configures CodeQL analysis to reduce false positives
+
+name: "NodePress CodeQL Config"
+
+# Query filters to handle known false positives
+query-filters:
+  # Exclude vendor/build artifacts that we don't control
+  - exclude:
+      paths:
+        - "public/assets/**"
+        - "admin/dist/**"
+        - "node_modules/**"
+        - ".next/**"
+
+# Path exclusions for analysis
+paths-ignore:
+  - "public/assets"
+  - "admin/dist"
+  - "node_modules"
+  - ".next"
+  - "dist"
+

@@ -77,17 +77,40 @@ export function InlineEditProvider({
     const newProps = { ...localProps };
     const keys = path.split('.');
     // Prevent prototype pollution by blocking dangerous keys
-    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
-    if (keys.some(key => dangerousKeys.includes(key))) {
-      console.warn('Blocked potentially dangerous property path:', path);
+    // Prevent prototype pollution by using a safe property setter
+    // that validates keys and uses Object.hasOwnProperty checks
+    const safeSetNestedProperty = (obj: any, keyPath: string[], val: any): boolean => {
+      const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
+      // Validate all keys before traversing
+      for (const k of keyPath) {
+        if (dangerousKeys.has(k) || typeof k !== 'string') {
+          console.warn('Blocked potentially dangerous property key:', k);
+          return false;
+        }
+      }
+      let current = obj;
+      for (let i = 0; i < keyPath.length - 1; i++) {
+        const key = keyPath[i];
+        if (!Object.prototype.hasOwnProperty.call(current, key)) {
+          current[key] = {}; // Create intermediate object
+        }
+        current = current[key];
+        if (typeof current !== 'object' || current === null) {
+          return false;
+        }
+      }
+      const finalKey = keyPath[keyPath.length - 1];
+      Object.defineProperty(current, finalKey, {
+        value: val,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+      return true;
+    };
+    if (!safeSetNestedProperty(newProps, keys, value)) {
       return;
     }
-    let current: any = newProps;
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (!current[keys[i]]) current[keys[i]] = {};
-      current = current[keys[i]];
-    }
-    current[keys[keys.length - 1]] = value;
     setLocalProps(newProps);
     setIsDirty(true);
     onUpdate(newProps);
