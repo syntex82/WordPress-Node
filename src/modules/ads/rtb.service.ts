@@ -5,6 +5,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
+/**
+ * Escape special regex characters to prevent ReDoS attacks
+ * Only allows * as a wildcard (converted to .*)
+ */
+function escapeRegexPattern(pattern: string): string {
+  // First escape all special regex characters except *
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  // Then convert * to .*
+  return escaped.replace(/\*/g, '.*');
+}
+
 export interface BidRequest {
   id: string;
   zoneId: string;
@@ -156,10 +167,10 @@ export class RtbService {
     if (campaign.targetCountries?.length > 0 && request.device.geo?.country) {
       if (!campaign.targetCountries.includes(request.device.geo.country)) return false;
     }
-    // Page targeting
+    // Page targeting (with regex escaping to prevent ReDoS)
     if (campaign.targetPages?.length > 0) {
       const matches = campaign.targetPages.some((pattern: string) => {
-        const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+        const regex = new RegExp(escapeRegexPattern(pattern));
         return regex.test(request.site.page);
       });
       if (!matches) return false;
