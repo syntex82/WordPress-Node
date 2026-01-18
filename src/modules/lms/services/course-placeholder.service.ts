@@ -172,8 +172,14 @@ export class CoursePlaceholderService {
         if (!response.ok) return null;
         return Buffer.from(await response.arrayBuffer());
       } else {
-        // Local file
-        const localPath = path.join(process.cwd(), url.replace(/^\//, ''));
+        // Local file - validate path to prevent traversal
+        const baseDir = process.cwd();
+        const localPath = path.resolve(baseDir, url.replace(/^\//, ''));
+        // Ensure path stays within project directory
+        if (!localPath.startsWith(baseDir + path.sep)) {
+          console.log('Path traversal attempt blocked:', url);
+          return null;
+        }
         if (fs.existsSync(localPath)) {
           return fs.readFileSync(localPath);
         }
