@@ -1,0 +1,43 @@
+# NodePress CMS - Development Docker Compose
+# Runs only PostgreSQL and Redis for local development
+# The app runs directly on your machine for hot-reload
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: nodepress-dev-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nodepress
+      POSTGRES_PASSWORD: nodepress123
+      POSTGRES_DB: nodepress
+    ports:
+      - "5432:5432"
+    volumes:
+      - nodepress_postgres_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nodepress"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and sessions (optional but recommended)
+  redis:
+    image: redis:7-alpine
+    container_name: nodepress-dev-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - nodepress_redis_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  nodepress_postgres_dev:
+  nodepress_redis_dev:
+
