@@ -422,7 +422,14 @@ export class UsersService {
     try {
       // Convert URL path to filesystem path
       const relativePath = filePath.replace(/^\/uploads\//, '');
-      const fullPath = path.join(this.uploadsDir, relativePath);
+      const fullPath = path.resolve(this.uploadsDir, relativePath);
+
+      // Prevent path traversal attacks
+      const uploadsBase = path.resolve(this.uploadsDir);
+      if (!fullPath.startsWith(uploadsBase + path.sep) && fullPath !== uploadsBase) {
+        this.logger.warn(`Path traversal attempt blocked: ${filePath}`);
+        return;
+      }
 
       await fs.unlink(fullPath);
       this.logger.debug(`Deleted file: ${fullPath}`);
