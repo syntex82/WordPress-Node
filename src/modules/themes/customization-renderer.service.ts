@@ -37,6 +37,37 @@ export class CustomizationRendererService {
   }
 
   /**
+   * Sanitize custom CSS to prevent XSS attacks
+   * Removes dangerous patterns like </style>, javascript:, expression(), etc.
+   */
+  private sanitizeCustomCSS(css: string): string {
+    if (!css || typeof css !== 'string') return '';
+
+    // Remove any closing style tags that could break out of the style element
+    let sanitized = css.replace(/<\/style>/gi, '');
+
+    // Remove javascript: URLs
+    sanitized = sanitized.replace(/javascript\s*:/gi, '');
+
+    // Remove expression() (IE-specific XSS vector)
+    sanitized = sanitized.replace(/expression\s*\(/gi, '');
+
+    // Remove behavior: (IE-specific)
+    sanitized = sanitized.replace(/behavior\s*:/gi, '');
+
+    // Remove -moz-binding (Firefox-specific)
+    sanitized = sanitized.replace(/-moz-binding\s*:/gi, '');
+
+    // Remove @import (can load external resources)
+    sanitized = sanitized.replace(/@import\s+/gi, '');
+
+    // Remove url() with data: or javascript: schemes
+    sanitized = sanitized.replace(/url\s*\(\s*["']?\s*(data:|javascript:)/gi, 'url(blocked:');
+
+    return sanitized;
+  }
+
+  /**
    * Apply page customization to rendered HTML
    */
   async applyPageCustomization(html: string, pageId: string): Promise<string> {
@@ -120,9 +151,10 @@ export class CustomizationRendererService {
       result = result.replace(/<aside[^>]*>[\s\S]*?<\/aside>/i, '');
     }
 
-    // Inject custom CSS
+    // Inject custom CSS (sanitized to prevent XSS)
     if (customization.customCSS) {
-      const styleTag = `<style>${customization.customCSS}</style>`;
+      const sanitizedCSS = this.sanitizeCustomCSS(customization.customCSS);
+      const styleTag = `<style>${sanitizedCSS}</style>`;
       result = result.replace('</head>', `${styleTag}</head>`);
     }
 
