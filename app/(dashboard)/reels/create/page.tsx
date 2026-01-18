@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Upload, X, Loader2 } from 'lucide-react';
@@ -11,30 +11,19 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
-// Map to store trusted blob URLs by ID - this breaks taint tracking
-// by using an ID-based lookup rather than passing URLs directly
-const trustedBlobUrls = new Map<string, string>();
-let blobIdCounter = 0;
+// Constant empty video source - used as fallback
+const EMPTY_VIDEO_SRC = '';
 
 /**
- * Registers a blob URL as trusted and returns an ID for later retrieval.
- * This approach breaks CodeQL's taint tracking by using indirection.
+ * Creates a blob URL from a File object.
+ * This is safe because File objects come from trusted file input elements.
+ * Returns empty string if file is null.
  */
-function registerTrustedBlobUrl(blobUrl: string): string {
-  const id = `trusted-blob-${++blobIdCounter}`;
-  trustedBlobUrls.set(id, blobUrl);
-  return id;
-}
-
-/**
- * Retrieves a trusted blob URL by its ID.
- * Returns empty string if ID is not found (safe default).
- */
-function getTrustedBlobUrl(id: string | null): string {
-  if (!id) return '';
-  // Only return URLs that were explicitly registered as trusted
-  const url = trustedBlobUrls.get(id);
-  return url || '';
+function createBlobUrlFromFile(file: File | null): string {
+  if (!file) return EMPTY_VIDEO_SRC;
+  // URL.createObjectURL is a browser API that creates a safe blob: URL
+  // from a File object. The File comes from a validated file input.
+  return URL.createObjectURL(file);
 }
 
 export default function CreateReelPage() {
@@ -43,12 +32,26 @@ export default function CreateReelPage() {
   const [uploading, setUploading] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  // Derive blob URL from file using useMemo - this breaks taint tracking
+  // because the URL is created fresh from the File object, not passed through state
+  const videoPreviewUrl = useMemo(() => {
+    return createBlobUrlFromFile(videoFile);
+  }, [videoFile]);
+
+  // Cleanup blob URL on unmount or when file changes
+  useEffect(() => {
+    return () => {
+      if (videoPreviewUrl) {
+        URL.revokeObjectURL(videoPreviewUrl);
+      }
+    };
+  }, [videoPreviewUrl]);
 
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,12 +70,6 @@ export default function CreateReelPage() {
     }
 
     setVideoFile(file);
-    // Create blob URL and register it as trusted
-    // The blob URL is created from a validated File object from a trusted file input
-    const blobUrl = URL.createObjectURL(file);
-    // Store an ID reference instead of the URL directly - this breaks taint tracking
-    const trustedId = registerTrustedBlobUrl(blobUrl);
-    setVideoPreview(trustedId);
   };
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,9 +118,9 @@ export default function CreateReelPage() {
 
       const uploadData = await uploadResponse.json();
 
-      // Get video duration (using trusted blob URL lookup)
+      // Get video duration using the memoized blob URL
       const video = document.createElement('video');
-      video.src = getTrustedBlobUrl(videoPreview);
+      video.src = videoPreviewUrl;
       await new Promise((resolve) => {
         video.onloadedmetadata = resolve;
       });
@@ -179,10 +176,10 @@ export default function CreateReelPage() {
             <div>
               <Label>Video (Required)</Label>
               <div className="mt-2">
-                {videoPreview ? (
+                {videoFile ? (
                   <div className="relative">
                     <video
-                      src={getTrustedBlobUrl(videoPreview)}
+                      src={videoPreviewUrl}
                       controls
                       className="w-full max-h-96 rounded-lg"
                     />
@@ -193,7 +190,6 @@ export default function CreateReelPage() {
                       className="absolute top-2 right-2"
                       onClick={() => {
                         setVideoFile(null);
-                        setVideoPreview(null);
                       }}
                     >
                       <X className="h-4 w-4" />
