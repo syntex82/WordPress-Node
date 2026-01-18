@@ -373,9 +373,27 @@ export function EditableVideo({
   const [isPlaying, setIsPlaying] = useState(autoplay);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Detect video type
-  const isYouTube = src?.includes('youtube.com') || src?.includes('youtu.be');
-  const isVimeo = src?.includes('vimeo.com');
+  // Detect video type using URL parsing for security
+  const isYouTube = (() => {
+    if (!src) return false;
+    try {
+      const url = new URL(src);
+      const hostname = url.hostname.toLowerCase();
+      return hostname === 'youtube.com' || hostname === 'www.youtube.com' || hostname === 'youtu.be';
+    } catch {
+      return false;
+    }
+  })();
+  const isVimeo = (() => {
+    if (!src) return false;
+    try {
+      const url = new URL(src);
+      const hostname = url.hostname.toLowerCase();
+      return hostname === 'vimeo.com' || hostname === 'www.vimeo.com';
+    } catch {
+      return false;
+    }
+  })();
   const isEmbed = isYouTube || isVimeo;
 
   const getYouTubeId = (url: string) => {

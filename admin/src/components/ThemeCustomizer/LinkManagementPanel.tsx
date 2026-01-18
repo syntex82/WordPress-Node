@@ -97,12 +97,18 @@ function SortableLinkCard({
   const groupInfo = LINK_GROUPS.find(g => g.id === link.group) || LINK_GROUPS[4];
   const TypeIcon = typeInfo.icon;
 
-  // Get social icon if it's a social link
+  // Get social icon if it's a social link using URL hostname parsing
   const getSocialIcon = () => {
     if (link.type !== 'social') return null;
-    const urlLower = link.url.toLowerCase();
-    for (const [platform, icon] of Object.entries(SOCIAL_ICONS)) {
-      if (urlLower.includes(platform)) return icon;
+    try {
+      const url = new URL(link.url);
+      const hostname = url.hostname.toLowerCase();
+      for (const [platform, icon] of Object.entries(SOCIAL_ICONS)) {
+        // Check if hostname contains the platform name (e.g., twitter.com, facebook.com)
+        if (hostname.includes(platform)) return icon;
+      }
+    } catch {
+      // Invalid URL, fall through to default
     }
     return '🔗';
   };
