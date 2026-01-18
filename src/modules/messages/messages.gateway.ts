@@ -17,7 +17,10 @@ import { MessagesService } from './messages.service';
  * WebSocket Gateway for real-time direct messaging
  */
 @WebSocketGateway({
-  cors: { origin: '*', credentials: true },
+  cors: {
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
+    credentials: true,
+  },
   namespace: '/messages',
 })
 export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect {

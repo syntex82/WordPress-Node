@@ -18,7 +18,10 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 @WebSocketGateway({
-  cors: { origin: '*', credentials: true },
+  cors: {
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
+    credentials: true,
+  },
   namespace: '/timeline',
 })
 export class TimelineGateway implements OnGatewayConnection, OnGatewayDisconnect {

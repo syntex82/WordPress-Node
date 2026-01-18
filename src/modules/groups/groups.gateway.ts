@@ -17,7 +17,7 @@ import { JwtService } from '@nestjs/jwt';
  */
 @WebSocketGateway({
   cors: {
-    origin: '*', // Configure this properly in production
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
     credentials: true,
   },
   namespace: '/groups',
