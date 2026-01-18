@@ -14,7 +14,7 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 
 ### How to Report
 
-1. **Email**: Send details to **security@nodepress.co.uk**
+1. **Email**: Send details to **support@nodepress.co.uk**
 2. **Do NOT** open a public GitHub issue for security vulnerabilities
 
 ### What to Include
