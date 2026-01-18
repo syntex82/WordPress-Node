@@ -313,7 +313,12 @@ export class PluginsService {
           const relativePath = entry.entryName.substring(rootFolder.length + 1);
           if (!relativePath) continue;
 
-          const targetPath = path.join(extractPath, relativePath);
+          // Prevent path traversal attacks
+          const targetPath = path.resolve(extractPath, relativePath);
+          if (!targetPath.startsWith(path.resolve(extractPath) + path.sep)) {
+            throw new BadRequestException(`Invalid path in plugin archive: ${relativePath}`);
+          }
+
           if (entry.isDirectory) {
             await fs.mkdir(targetPath, { recursive: true });
           } else {
