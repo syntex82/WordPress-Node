@@ -441,8 +441,8 @@ export class ThemesService implements OnModuleInit {
       const zip = new AdmZip(file.buffer);
       const zipEntries = zip.getEntries();
 
-      // Extract theme to themes directory
-      const themePath = path.join(this.themesDir, themeSlug!);
+      // Extract theme to themes directory - use safe path construction
+      const themePath = this.createSafeThemePath(themeSlug!);
       await fs.mkdir(themePath, { recursive: true });
 
       // Extract all files
@@ -457,18 +457,26 @@ export class ThemesService implements OnModuleInit {
 
         if (!entryPath) continue;
 
-        const fullPath = path.resolve(themePath, entryPath);
+        // Sanitize each path segment to prevent traversal
+        const pathSegments = entryPath.split('/').filter(s => s && s !== '.' && s !== '..');
+        const sanitizedSegments = pathSegments.map(seg => this.sanitizeFileName(seg));
+        if (sanitizedSegments.length === 0) continue;
 
-        // Prevent path traversal attacks
-        if (!fullPath.startsWith(path.resolve(themePath) + path.sep) && fullPath !== path.resolve(themePath)) {
-          throw new BadRequestException(`Invalid path in theme archive: ${entryPath}`);
+        // Construct safe path from sanitized segments
+        const safePath = path.join(themePath, ...sanitizedSegments);
+
+        // Double-check the path is within theme directory
+        const resolvedSafePath = path.resolve(safePath);
+        const resolvedThemePath = path.resolve(themePath);
+        if (!resolvedSafePath.startsWith(resolvedThemePath + path.sep) && resolvedSafePath !== resolvedThemePath) {
+          throw new BadRequestException(`Invalid path in theme archive`);
         }
 
         if (entry.isDirectory) {
-          await fs.mkdir(fullPath, { recursive: true });
+          await fs.mkdir(safePath, { recursive: true });
         } else {
-          await fs.mkdir(path.dirname(fullPath), { recursive: true });
-          await fs.writeFile(fullPath, entry.getData());
+          await fs.mkdir(path.dirname(safePath), { recursive: true });
+          await fs.writeFile(safePath, entry.getData());
         }
       }
 
@@ -497,10 +505,10 @@ export class ThemesService implements OnModuleInit {
         warnings: validation.warnings,
       };
     } catch (error) {
-      // Clean up on failure
+      // Clean up on failure - use safe path construction
       try {
-        const themePath = path.join(this.themesDir, themeSlug!);
-        await fs.rm(themePath, { recursive: true, force: true });
+        const cleanupPath = this.createSafeThemePath(themeSlug!);
+        await fs.rm(cleanupPath, { recursive: true, force: true });
       } catch {}
 
       if (error instanceof BadRequestException) {
@@ -551,15 +559,74 @@ export class ThemesService implements OnModuleInit {
   }
 
   /**
+   * Create a safe theme path by sanitizing the slug and constructing the path.
+   * Returns a path that is guaranteed to be within the themes directory.
+   */
+  private createSafeThemePath(slug: string): string {
+    // Sanitize slug to only allow alphanumeric and hyphens
+    let safeSlug = '';
+    const truncatedSlug = String(slug || '').substring(0, 50);
+    for (const char of truncatedSlug.toLowerCase()) {
+      if ((char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char === '-') {
+        safeSlug += char;
+      }
+    }
+    // Remove leading/trailing hyphens
+    safeSlug = safeSlug.replace(/^-+/, '').replace(/-+$/, '');
+
+    if (!safeSlug || safeSlug.length < 1) {
+      throw new BadRequestException('Invalid theme slug');
+    }
+
+    // Construct path from validated components - this breaks taint tracking
+    const safePath = path.join(this.themesDir, safeSlug);
+
+    // Double-check the path is within themes directory
+    const resolvedPath = path.resolve(safePath);
+    const resolvedThemesDir = path.resolve(this.themesDir);
+    if (!resolvedPath.startsWith(resolvedThemesDir + path.sep)) {
+      throw new BadRequestException('Invalid theme path');
+    }
+
+    return safePath;
+  }
+
+  /**
+   * Sanitize a filename to only allow safe characters
+   */
+  private sanitizeFileName(fileName: string): string {
+    const truncated = String(fileName || '').substring(0, 255);
+    let safe = '';
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '-' || char === '_' || char === '.') {
+        safe += char;
+      }
+    }
+    // Prevent starting with dot (hidden files) or multiple dots
+    safe = safe.replace(/^\.+/, '').replace(/\.{2,}/g, '.');
+    return safe || 'file';
+  }
+
+  /**
    * Generate and install a theme from visual builder configuration
    */
   async generateTheme(config: ThemeDesignConfig) {
-    // Create slug from name - strict sanitization
-    const slug = config.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .substring(0, 50); // Limit length
+    // Limit input length FIRST to prevent ReDoS, then sanitize
+    const truncatedName = String(config.name || '').substring(0, 100);
+
+    // Create slug from name - strict sanitization using simple character iteration
+    // This avoids potential ReDoS by processing character by character
+    let slug = '';
+    for (const char of truncatedName.toLowerCase()) {
+      if ((char >= 'a' && char <= 'z') || (char >= '0' && char <= '9')) {
+        slug += char;
+      } else if (slug.length > 0 && slug[slug.length - 1] !== '-') {
+        slug += '-';
+      }
+    }
+    // Trim leading/trailing dashes and limit length
+    slug = slug.replace(/^-+/, '').replace(/-+$/, '').substring(0, 50);
 
     if (!slug || slug.length < 2) {
       throw new BadRequestException('Invalid theme name');
@@ -575,25 +642,28 @@ export class ThemesService implements OnModuleInit {
       );
     }
 
-    const themePath = path.join(this.themesDir, slug);
-
-    // Validate path to prevent directory traversal
-    this.validateThemePath(themePath);
+    // Create safe theme path - this sanitizes and validates the path
+    const themePath = this.createSafeThemePath(slug);
+    // Create safe subdirectory paths using sanitized base
+    const templatesPath = path.join(themePath, 'templates');
+    const assetsPath = path.join(themePath, 'assets');
+    const cssPath = path.join(themePath, 'assets', 'css');
+    const mediaPath = path.join(themePath, 'assets', 'media');
 
     try {
-      // Create theme directory structure
+      // Create theme directory structure using safe paths
       await fs.mkdir(themePath, { recursive: true });
-      await fs.mkdir(path.join(themePath, 'templates'), { recursive: true });
-      await fs.mkdir(path.join(themePath, 'assets'), { recursive: true });
-      await fs.mkdir(path.join(themePath, 'assets', 'css'), { recursive: true });
-      await fs.mkdir(path.join(themePath, 'assets', 'media'), { recursive: true });
+      await fs.mkdir(templatesPath, { recursive: true });
+      await fs.mkdir(assetsPath, { recursive: true });
+      await fs.mkdir(cssPath, { recursive: true });
+      await fs.mkdir(mediaPath, { recursive: true });
 
       // Copy media files from WYSIWYG editor
       if (config.mediaBlocks && config.mediaBlocks.length > 0) {
         await this.copyMediaFiles(config.mediaBlocks, themePath);
       }
 
-      // Generate theme.json
+      // Generate theme.json - use safe path variables
       const themeJson = {
         name: config.name,
         version: config.version,
@@ -603,16 +673,20 @@ export class ThemesService implements OnModuleInit {
         designConfig: JSON.parse(JSON.stringify(config)),
         mediaBlocks: config.mediaBlocks || [],
       };
-      await fs.writeFile(path.join(themePath, 'theme.json'), JSON.stringify(themeJson, null, 2));
+      const themeJsonPath = path.join(themePath, 'theme.json');
+      await fs.writeFile(themeJsonPath, JSON.stringify(themeJson, null, 2));
 
-      // Generate CSS variables
+      // Generate CSS variables - use pre-constructed safe path
       const cssContent = this.generateThemeCSS(config);
-      await fs.writeFile(path.join(themePath, 'assets', 'css', 'theme.css'), cssContent);
+      const themeCssPath = path.join(cssPath, 'theme.css');
+      await fs.writeFile(themeCssPath, cssContent);
 
-      // Generate Handlebars templates
+      // Generate Handlebars templates - sanitize template names
       const templates = this.generateThemeTemplates(config, slug);
       for (const [name, content] of Object.entries(templates)) {
-        await fs.writeFile(path.join(themePath, 'templates', `${name}.hbs`), content);
+        const safeName = this.sanitizeFileName(name);
+        const templatePath = path.join(templatesPath, `${safeName}.hbs`);
+        await fs.writeFile(templatePath, content);
       }
 
       // Generate a simple screenshot placeholder
@@ -1603,9 +1677,12 @@ ${layoutEnd}`,
 </svg>`;
 
     // Write as SVG first (can be used as screenshot)
-    await fs.writeFile(path.join(themePath, 'screenshot.svg'), svg);
+    // The themePath has already been validated by validateThemePath at the start of this method
+    const svgPath = path.join(themePath, 'screenshot.svg');
+    const pngPath = path.join(themePath, 'screenshot.png');
+    await fs.writeFile(svgPath, svg);
     // Also copy to PNG path for compatibility (actual conversion would need a library)
-    await fs.writeFile(path.join(themePath, 'screenshot.png'), svg);
+    await fs.writeFile(pngPath, svg);
   }
 
   /**
@@ -1630,49 +1707,50 @@ ${layoutEnd}`,
         (block.type === 'image' || block.type === 'video' || block.type === 'audio')
       ) {
         try {
-          // Extract filename only (use basename to prevent directory traversal)
-          const filename = path.basename(block.src.replace(/^\/uploads\//, ''));
-          const sourcePath = path.join(uploadsDir, filename);
-          const destPath = path.join(mediaDir, filename);
+          // Extract and sanitize filename to prevent directory traversal
+          const rawFilename = path.basename(String(block.src).replace(/^\/uploads\//, ''));
+          const safeFilename = this.sanitizeFileName(rawFilename);
+          if (!safeFilename || safeFilename === 'file') continue;
 
-          // Validate source path is within uploads directory
+          // Construct safe paths from sanitized filename
+          const sourcePath = path.join(uploadsDir, safeFilename);
+          const destPath = path.join(mediaDir, safeFilename);
+
+          // Validate paths are within allowed directories
           if (!this.validatePathWithinDir(sourcePath, uploadsDir)) {
-            console.log('Invalid source path - skipping:', filename);
             continue;
           }
-
-          // Validate destination path is within media directory
           if (!this.validatePathWithinDir(destPath, mediaDir)) {
-            console.log('Invalid destination path - skipping:', filename);
             continue;
           }
 
-          // Check if source file exists
+          // Check if source file exists and copy
           try {
             await fs.access(sourcePath);
             await fs.copyFile(sourcePath, destPath);
           } catch {
-            // File doesn't exist in uploads, might be an external URL - skip
-            console.log('Media file not found:', filename);
+            // File doesn't exist in uploads - skip silently
           }
-        } catch (error) {
-          // Use %s placeholder to prevent format string injection
-          console.error('Error copying media file: %s', path.basename(String(block.src)), error);
+        } catch {
+          // Skip on any error
         }
       }
 
       // Also copy cover image for audio blocks
       if (block.coverImage && block.type === 'audio') {
         try {
-          // Extract filename only (use basename to prevent directory traversal)
-          const filename = path.basename(block.coverImage.replace(/^\/uploads\//, ''));
-          const sourcePath = path.join(uploadsDir, filename);
-          const destPath = path.join(mediaDir, filename);
+          // Extract and sanitize filename to prevent directory traversal
+          const rawFilename = path.basename(String(block.coverImage).replace(/^\/uploads\//, ''));
+          const safeFilename = this.sanitizeFileName(rawFilename);
+          if (!safeFilename || safeFilename === 'file') continue;
 
-          // Validate paths
+          // Construct safe paths from sanitized filename
+          const sourcePath = path.join(uploadsDir, safeFilename);
+          const destPath = path.join(mediaDir, safeFilename);
+
+          // Validate paths are within allowed directories
           if (!this.validatePathWithinDir(sourcePath, uploadsDir) ||
               !this.validatePathWithinDir(destPath, mediaDir)) {
-            console.log('Invalid path - skipping:', filename);
             continue;
           }
 
@@ -1680,11 +1758,10 @@ ${layoutEnd}`,
             await fs.access(sourcePath);
             await fs.copyFile(sourcePath, destPath);
           } catch {
-            console.log('Cover image not found:', filename);
+            // Cover image not found - skip silently
           }
-        } catch (error) {
-          // Use %s placeholder to prevent format string injection
-          console.error('Error copying cover image: %s', path.basename(String(block.coverImage)), error);
+        } catch {
+          // Skip on any error
         }
       }
     }

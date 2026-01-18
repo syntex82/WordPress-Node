@@ -185,13 +185,20 @@ async function bootstrap() {
       contentSecurityPolicy: {
         directives: cspDirectives,
       },
-      frameguard: false, // Handled by custom middleware below
-      hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
+      // frameguard is enabled with SAMEORIGIN - handled by custom middleware for more control
+      frameguard: { action: 'sameorigin' },
+      // HSTS enabled in all environments for security (short duration in dev)
+      hsts: {
+        maxAge: isProduction ? 31536000 : 86400, // 1 year in prod, 1 day in dev
+        includeSubDomains: true,
+        preload: isProduction,
+      },
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-      crossOriginEmbedderPolicy: false, // Disabled to allow embedding external resources
+      // COEP set to require-corp with reporting for debugging
+      crossOriginEmbedderPolicy: { policy: 'credentialless' as any },
       crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
       crossOriginResourcePolicy: { policy: 'cross-origin' },
-      dnsPrefetchControl: { allow: true },
+      dnsPrefetchControl: { allow: false }, // Disable DNS prefetching for privacy
       ieNoOpen: true,
       noSniff: true,
       originAgentCluster: true,

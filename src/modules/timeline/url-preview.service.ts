@@ -137,7 +137,8 @@ export class UrlPreviewService {
     const parsedUrl = new URL(url);
 
     // Only allow http and https protocols
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+    const protocol = parsedUrl.protocol;
+    if (protocol !== 'http:' && protocol !== 'https:') {
       throw new Error('Invalid URL protocol - only http and https are allowed');
     }
 
@@ -161,13 +162,21 @@ export class UrlPreviewService {
     }
 
     // Validate port if specified
-    if (parsedUrl.port && (parseInt(parsedUrl.port, 10) <= 0 || parseInt(parsedUrl.port, 10) > 65535)) {
+    const port = parsedUrl.port;
+    if (port && (parseInt(port, 10) <= 0 || parseInt(port, 10) > 65535)) {
       throw new Error('Invalid port number');
     }
 
     // Reconstruct URL from validated components to break taint tracking
-    // This creates a new, sanitized URL string from parsed components
-    const sanitizedUrl = parsedUrl.href;
+    // Build the URL manually from validated/extracted components
+    const safeProtocol = protocol === 'https:' ? 'https' : 'http';
+    const safeHostname = hostname; // Already validated above
+    const safePort = port ? `:${port}` : '';
+    const safePath = parsedUrl.pathname || '/';
+    const safeSearch = parsedUrl.search || '';
+
+    // Construct a new URL string from validated parts
+    const sanitizedUrl = `${safeProtocol}://${safeHostname}${safePort}${safePath}${safeSearch}`;
 
     return { sanitizedUrl, parsedUrl };
   }

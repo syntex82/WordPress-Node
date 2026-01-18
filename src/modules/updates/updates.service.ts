@@ -53,6 +53,66 @@ export class UpdatesService {
     return /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(version);
   }
 
+  /**
+   * Sanitize version string and return a safe filename.
+   * Returns null if the version is invalid.
+   */
+  private createSafeVersionFilename(version: string): string | null {
+    // Validate version format first
+    if (!this.isValidVersion(version)) {
+      return null;
+    }
+
+    // Build safe version string character by character
+    let safeVersion = '';
+    const truncated = String(version).substring(0, 50);
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '.' || char === '-') {
+        safeVersion += char;
+      }
+    }
+
+    if (!safeVersion) {
+      return null;
+    }
+
+    return `NodePress-${safeVersion}.zip`;
+  }
+
+  /**
+   * Create a safe file path within a directory
+   */
+  private createSafeFilePath(directory: string, filename: string): string {
+    // Sanitize filename - only allow safe characters
+    let safeFilename = '';
+    const truncated = String(filename).substring(0, 255);
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '.' || char === '-' || char === '_') {
+        safeFilename += char;
+      }
+    }
+
+    // Prevent hidden files and empty names
+    safeFilename = safeFilename.replace(/^\.+/, '');
+    if (!safeFilename) {
+      throw new BadRequestException('Invalid filename');
+    }
+
+    // Construct the path
+    const filePath = path.join(directory, safeFilename);
+
+    // Validate the path is within the directory
+    const resolvedPath = path.resolve(filePath);
+    const resolvedDir = path.resolve(directory);
+    if (!resolvedPath.startsWith(resolvedDir + path.sep)) {
+      throw new BadRequestException('Invalid file path');
+    }
+
+    return filePath;
+  }
+
   constructor(
     private prisma: PrismaService,
     private versionService: VersionService,
@@ -119,8 +179,9 @@ export class UpdatesService {
   async downloadUpdate(
     version: string,
   ): Promise<{ success: boolean; filePath?: string; error?: string }> {
-    // Validate version format
-    if (!this.isValidVersion(version)) {
+    // Create safe filename from version - this validates and sanitizes
+    const safeFilename = this.createSafeVersionFilename(version);
+    if (!safeFilename) {
       throw new BadRequestException('Invalid version format');
     }
 
@@ -135,13 +196,8 @@ export class UpdatesService {
       throw new BadRequestException('No download URL available for this version');
     }
 
-    // Sanitize filename and validate path
-    const sanitizedVersion = version.replace(/[^a-zA-Z0-9.-]/g, '');
-    const fileName = `NodePress-${sanitizedVersion}.zip`;
-    const filePath = path.join(this.updatesDir, fileName);
-
-    // Validate the resulting path
-    this.validateFilePath(filePath, this.updatesDir);
+    // Create safe file path using sanitized filename
+    const filePath = this.createSafeFilePath(this.updatesDir, safeFilename);
 
     // Create update history record
     const updateHistory = await this.prisma.updateHistory.create({
