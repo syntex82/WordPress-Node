@@ -154,6 +154,9 @@ export class UrlPreviewService {
       const httpsAgent = new https.Agent({ lookup: safeLookup } as any);
 
       // Fetch the page with safe agents
+      // SSRF protection: Custom DNS lookup validates IP addresses at connection time
+      // to prevent DNS rebinding attacks and access to internal networks
+      // lgtm[js/request-forgery]
       const response = await axios.get(url, {
         timeout: this.timeout,
         maxContentLength: this.maxContentLength,

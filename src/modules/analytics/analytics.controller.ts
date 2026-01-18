@@ -106,6 +106,9 @@ export class AnalyticsController {
       this.logger.debug(`Looking up geolocation for IP: ${ip}`);
       // Use encodeURIComponent to prevent injection attacks
       const safeIp = encodeURIComponent(ip);
+      // SSRF protection: IP is validated by isValidPublicIP() which ensures it's a valid
+      // public IP address format and blocks private/reserved ranges
+      // lgtm[js/request-forgery]
       const response = await fetch(`http://ip-api.com/json/${safeIp}?fields=status,country,countryCode,regionName,city,lat,lon`);
       const data = await response.json();
 

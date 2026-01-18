@@ -8,6 +8,26 @@ import * as sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
 import fetch from 'node-fetch';
+import * as dns from 'dns';
+import * as http from 'http';
+import * as https from 'https';
+
+// Blocked IP ranges for SSRF protection
+const BLOCKED_IP_RANGES = [
+  /^127\./,                          // Loopback
+  /^10\./,                           // Private Class A
+  /^172\.(1[6-9]|2[0-9]|3[0-1])\./,  // Private Class B
+  /^192\.168\./,                     // Private Class C
+  /^169\.254\./,                     // Link-local
+  /^0\./,                            // Current network
+  /^224\./,                          // Multicast
+  /^240\./,                          // Reserved
+  /^255\./,                          // Broadcast
+  /^::1$/,                           // IPv6 loopback
+  /^fc00:/i,                         // IPv6 unique local
+  /^fe80:/i,                         // IPv6 link-local
+  /^localhost$/i,                    // localhost hostname
+];
 
 @Injectable()
 export class CoursePlaceholderService {
@@ -163,12 +183,69 @@ export class CoursePlaceholderService {
   }
 
   /**
+   * Check if an IP address is blocked (private/reserved ranges)
+   */
+  private isBlockedIP(ip: string): boolean {
+    return BLOCKED_IP_RANGES.some(pattern => pattern.test(ip));
+  }
+
+  /**
+   * Create a safe DNS lookup function that validates resolved IPs
+   */
+  private createSafeLookup(): typeof dns.lookup {
+    return ((hostname: string, options: any, callback: any) => {
+      const cb = typeof options === 'function' ? options : callback;
+      const opts = typeof options === 'function' ? {} : options;
+
+      dns.lookup(hostname, opts, (err, address, family) => {
+        if (err) {
+          cb(err, address, family);
+          return;
+        }
+
+        // Check if resolved IP is blocked
+        if (this.isBlockedIP(address)) {
+          cb(new Error(`Blocked IP address: ${address}`), address, family);
+          return;
+        }
+
+        cb(null, address, family);
+      });
+    }) as typeof dns.lookup;
+  }
+
+  /**
    * Fetch image from URL or local path
    */
   private async fetchImage(url: string): Promise<Buffer | null> {
     try {
       if (url.startsWith('http://') || url.startsWith('https://')) {
-        const response = await fetch(url);
+        // Parse URL and validate hostname
+        let parsedUrl: URL;
+        try {
+          parsedUrl = new URL(url);
+        } catch {
+          console.log('Invalid URL:', url);
+          return null;
+        }
+
+        // Block localhost and private hostnames
+        const hostname = parsedUrl.hostname.toLowerCase();
+        if (this.isBlockedIP(hostname)) {
+          console.log('Blocked hostname:', hostname);
+          return null;
+        }
+
+        // Create HTTP agents with custom lookup to validate IP at connection time
+        const safeLookup = this.createSafeLookup();
+        const httpAgent = new http.Agent({ lookup: safeLookup } as any);
+        const httpsAgent = new https.Agent({ lookup: safeLookup } as any);
+
+        // SSRF protection: Custom DNS lookup validates IP addresses at connection time
+        const response = await fetch(url, {
+          agent: parsedUrl.protocol === 'https:' ? httpsAgent : httpAgent,
+          timeout: 10000,
+        } as any);
         if (!response.ok) return null;
         return Buffer.from(await response.arrayBuffer());
       } else {
