@@ -204,6 +204,12 @@ export class MediaService {
     filename: string,
     width?: number,
   ): Promise<{ path: string; contentType: string }> {
+    // Sanitize filename to prevent path traversal
+    const sanitizedFilename = path.basename(filename);
+    if (sanitizedFilename !== filename || filename.includes('..')) {
+      throw new BadRequestException('Invalid filename');
+    }
+
     // Try responsive size first
     if (width && sharp) {
       const targetSize =
