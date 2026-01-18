@@ -12,6 +12,49 @@ const execAsync = promisify(exec);
 const app = express();
 app.use(express.json());
 
+// Simple in-memory rate limiting
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute per IP
+
+/**
+ * Rate limiting middleware
+ */
+function rateLimit(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  const now = Date.now();
+
+  // Get or create rate limit entry for this IP
+  let entry = rateLimitStore.get(ip);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry = { windowStart: now, count: 0 };
+    rateLimitStore.set(ip, entry);
+  }
+
+  entry.count++;
+
+  // Clean up old entries periodically
+  if (rateLimitStore.size > 10000) {
+    for (const [key, val] of rateLimitStore) {
+      if (now - val.windowStart > RATE_LIMIT_WINDOW_MS) {
+        rateLimitStore.delete(key);
+      }
+    }
+  }
+
+  if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
+    return res.status(429).json({
+      error: 'Too many requests',
+      retryAfter: Math.ceil((entry.windowStart + RATE_LIMIT_WINDOW_MS - now) / 1000),
+    });
+  }
+
+  next();
+}
+
+// Apply rate limiting to all routes
+app.use(rateLimit);
+
 // Database connection
 const pool = new Pool({
   host: process.env.POSTGRES_HOST || 'postgres',

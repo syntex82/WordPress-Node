@@ -11,6 +11,25 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
+// Sanitize URL to prevent XSS - only allow safe URL protocols
+const sanitizeMediaUrl = (url: string | null): string => {
+  if (!url) return '';
+  // Allow blob URLs (from file uploads)
+  if (url.startsWith('blob:')) return url;
+  // Allow data URLs (from captures)
+  if (url.startsWith('data:')) return url;
+  // Allow relative URLs (from our server)
+  if (url.startsWith('/')) return url;
+  try {
+    const parsed = new URL(url);
+    // Only allow http and https protocols
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch { /* invalid URL */ }
+  return ''; // Return empty for invalid/unsafe URLs
+};
+
 export default function CreateReelPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -90,9 +109,9 @@ export default function CreateReelPage() {
 
       const uploadData = await uploadResponse.json();
 
-      // Get video duration
+      // Get video duration (using sanitized URL for safety)
       const video = document.createElement('video');
-      video.src = videoPreview!;
+      video.src = sanitizeMediaUrl(videoPreview);
       await new Promise((resolve) => {
         video.onloadedmetadata = resolve;
       });
@@ -151,7 +170,7 @@ export default function CreateReelPage() {
                 {videoPreview ? (
                   <div className="relative">
                     <video
-                      src={videoPreview}
+                      src={sanitizeMediaUrl(videoPreview)}
                       controls
                       className="w-full max-h-96 rounded-lg"
                     />

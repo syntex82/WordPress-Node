@@ -439,17 +439,48 @@ export class MediaService {
   }
 
   /**
+   * Sanitize a filename to only allow safe characters
+   */
+  private sanitizeFileName(filename: string): string {
+    let safe = '';
+    const truncated = String(filename || '').substring(0, 255);
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '-' || char === '_' || char === '.') {
+        safe += char;
+      }
+    }
+    // Prevent hidden files and directory traversal
+    safe = safe.replace(/^\.+/, '').replace(/\.+$/, '').replace(/\.{2,}/g, '.');
+    return safe || 'file';
+  }
+
+  /**
    * Generate srcset string for responsive images
    * Returns srcset attribute value for use in <img> tags
    */
   async generateSrcset(filename: string): Promise<string> {
-    const baseName = filename.replace(/\.[^.]+$/, '');
+    // Sanitize the filename to prevent path traversal
+    const safeFilename = this.sanitizeFileName(filename);
+
+    // Extract base name safely (remove extension)
+    const lastDot = safeFilename.lastIndexOf('.');
+    const baseName = lastDot > 0 ? safeFilename.substring(0, lastDot) : safeFilename;
+    const safeBaseName = this.sanitizeFileName(baseName);
+
     const responsiveDir = path.join(this.uploadDir, 'responsive');
     const srcsetParts: string[] = [];
 
     for (const size of RESPONSIVE_SIZES) {
-      const responsiveFilename = `${baseName}-${size}w.webp`;
+      const responsiveFilename = `${safeBaseName}-${size}w.webp`;
       const responsivePath = path.join(responsiveDir, responsiveFilename);
+
+      // Validate path is within responsive directory
+      const resolved = path.resolve(responsivePath);
+      const resolvedDir = path.resolve(responsiveDir);
+      if (!resolved.startsWith(resolvedDir + path.sep)) {
+        continue;
+      }
 
       if (fsSync.existsSync(responsivePath)) {
         srcsetParts.push(`/uploads/responsive/${responsiveFilename} ${size}w`);

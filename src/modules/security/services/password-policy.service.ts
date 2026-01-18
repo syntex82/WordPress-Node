@@ -173,9 +173,17 @@ export class PasswordPolicyService {
 
   /**
    * Check if password has been breached using Have I Been Pwned API
+   * Uses k-Anonymity model - only 5 characters of hash are sent to the API
+   * SHA-1 is required by the HIBP API specification (not used for password storage)
    */
   private async checkBreachedPassword(password: string): Promise<boolean> {
     try {
+      // SHA-1 is required by the HaveIBeenPwned API specification.
+      // This is NOT used for password storage - passwords are stored using bcrypt.
+      // The SHA-1 hash is immediately truncated and only the first 5 characters
+      // are sent to the API using the k-Anonymity model for privacy.
+      // nosemgrep: javascript.lang.security.audit.node-crypto.node_weak_hash
+      // lgtm[js/weak-crypto-algorithm]
       const sha1 = crypto.createHash('sha1').update(password).digest('hex').toUpperCase();
       const prefix = sha1.substring(0, 5);
       const suffix = sha1.substring(5);

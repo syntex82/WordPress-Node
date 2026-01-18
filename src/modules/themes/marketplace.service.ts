@@ -57,6 +57,37 @@ export class MarketplaceService {
     this.ensureUploadDir();
   }
 
+  /**
+   * Sanitize a filename to only allow safe characters
+   */
+  private sanitizeFileName(filename: string): string {
+    let safe = '';
+    const truncated = String(filename || '').substring(0, 100);
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '-' || char === '_' || char === '.') {
+        safe += char;
+      }
+    }
+    // Prevent hidden files and consecutive dots
+    safe = safe.replace(/^\.+/, '').replace(/\.+$/, '').replace(/\.{2,}/g, '.');
+    return safe || 'file';
+  }
+
+  /**
+   * Create a safe file path within a directory
+   */
+  private createSafeFilePath(directory: string, filename: string): string {
+    const safeFilename = this.sanitizeFileName(filename);
+    const filePath = path.join(directory, safeFilename);
+    const resolved = path.resolve(filePath);
+    const resolvedDir = path.resolve(directory);
+    if (!resolved.startsWith(resolvedDir + path.sep)) {
+      throw new BadRequestException('Invalid file path');
+    }
+    return filePath;
+  }
+
   private async ensureUploadDir() {
     try {
       await fs.mkdir(this.uploadsDir, { recursive: true });
@@ -202,11 +233,19 @@ export class MarketplaceService {
   async submitTheme(dto: SubmitThemeDto, files: SubmitThemeFiles, userId: string) {
     const { themeFile, thumbnailFile } = files;
 
-    // Generate slug from name
-    const slug = dto.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+    // Generate safe slug from name character by character
+    let slug = '';
+    const truncatedName = String(dto.name || '').substring(0, 50).toLowerCase();
+    for (const char of truncatedName) {
+      if ((char >= 'a' && char <= 'z') || (char >= '0' && char <= '9')) {
+        slug += char;
+      } else if (char === ' ' || char === '-') {
+        if (slug.length > 0 && slug[slug.length - 1] !== '-') {
+          slug += '-';
+        }
+      }
+    }
+    slug = slug.replace(/^-+/, '').replace(/-+$/, '') || 'theme';
 
     // Check for duplicate slug
     const existing = await this.prisma.marketplaceTheme.findUnique({ where: { slug } });
@@ -223,9 +262,9 @@ export class MarketplaceService {
       });
     }
 
-    // Save the theme file
-    const fileName = `${slug}-${Date.now()}.zip`;
-    const filePath = path.join(this.uploadsDir, fileName);
+    // Save the theme file using safe path construction
+    const safeFileName = this.sanitizeFileName(`${slug}-${Date.now()}.zip`);
+    const filePath = this.createSafeFilePath(this.uploadsDir, safeFileName);
     await fs.writeFile(filePath, themeFile.buffer);
 
     // Get file size
@@ -234,11 +273,16 @@ export class MarketplaceService {
     // Handle thumbnail upload
     let thumbnailUrl = validation.themeConfig?.thumbnail || null;
     if (thumbnailFile) {
-      const ext = path.extname(thumbnailFile.originalname) || '.jpg';
-      const thumbnailName = `${slug}-${Date.now()}${ext}`;
-      const thumbnailPath = path.join(this.thumbnailsDir, thumbnailName);
+      // Sanitize extension
+      let ext = '.jpg';
+      const origExt = path.extname(thumbnailFile.originalname);
+      if (origExt === '.jpg' || origExt === '.jpeg' || origExt === '.png' || origExt === '.webp') {
+        ext = origExt;
+      }
+      const safeThumbnailName = this.sanitizeFileName(`${slug}-${Date.now()}${ext}`);
+      const thumbnailPath = this.createSafeFilePath(this.thumbnailsDir, safeThumbnailName);
       await fs.writeFile(thumbnailPath, thumbnailFile.buffer);
-      thumbnailUrl = `/uploads/marketplace/thumbnails/${thumbnailName}`;
+      thumbnailUrl = `/uploads/marketplace/thumbnails/${safeThumbnailName}`;
     }
 
     // Create marketplace theme entry

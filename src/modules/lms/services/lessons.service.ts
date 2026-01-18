@@ -33,6 +33,37 @@ export class LessonsService {
     return resolvedPath.startsWith(videoBase);
   }
 
+  /**
+   * Sanitize a filename to only allow safe characters
+   */
+  private sanitizeFileName(filename: string): string {
+    let safe = '';
+    const truncated = String(filename || '').substring(0, 255);
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '-' || char === '_' || char === '.') {
+        safe += char;
+      }
+    }
+    // Prevent hidden files and directory traversal
+    safe = safe.replace(/^\.+/, '').replace(/\.+$/, '').replace(/\.{2,}/g, '.');
+    return safe || 'file';
+  }
+
+  /**
+   * Create a safe file path within the video directory
+   */
+  private createSafeVideoPath(filename: string): string {
+    const safeFilename = this.sanitizeFileName(filename);
+    const filepath = path.join(this.videoUploadDir, safeFilename);
+    const resolved = path.resolve(filepath);
+    const resolvedDir = path.resolve(this.videoUploadDir);
+    if (!resolved.startsWith(resolvedDir + path.sep)) {
+      throw new ForbiddenException('Invalid file path');
+    }
+    return filepath;
+  }
+
   async create(courseId: string, dto: CreateLessonDto) {
     // Get the max order index for existing lessons
     const maxOrder = await this.prisma.lesson.aggregate({
@@ -201,10 +232,20 @@ export class LessonsService {
       }
     }
 
-    // Generate unique filename
-    const ext = path.extname(file.originalname);
-    const filename = `${courseId}-${lessonId}-${Date.now()}${ext}`;
-    const filepath = path.join(this.videoUploadDir, filename);
+    // Sanitize IDs for filename (only alphanumeric and hyphens)
+    const safeCourseId = this.sanitizeFileName(courseId);
+    const safeLessonId = this.sanitizeFileName(lessonId);
+
+    // Sanitize extension (only allow video extensions)
+    const origExt = path.extname(file.originalname).toLowerCase();
+    let ext = '.mp4';
+    if (['.mp4', '.webm', '.mov', '.avi', '.mkv'].includes(origExt)) {
+      ext = origExt;
+    }
+
+    // Generate safe filename
+    const safeFilename = `${safeCourseId}-${safeLessonId}-${Date.now()}${ext}`;
+    const filepath = this.createSafeVideoPath(safeFilename);
 
     // Save file
     await fs.writeFile(filepath, file.buffer);
@@ -213,7 +254,7 @@ export class LessonsService {
     const videoAsset = await this.prisma.videoAsset.create({
       data: {
         provider: 'UPLOAD',
-        url: `/uploads/videos/${filename}`,
+        url: `/uploads/videos/${safeFilename}`,
         filePath: filepath,
         isProtected: true,
       },

@@ -263,6 +263,25 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     } catch { return false; }
   };
 
+  // Sanitize URL to prevent XSS - only allow http/https/data/blob URLs
+  const sanitizeMediaUrl = (url: string): string => {
+    if (!url) return '';
+    // Allow blob URLs (from file uploads)
+    if (url.startsWith('blob:')) return url;
+    // Allow data URLs (from captures)
+    if (url.startsWith('data:')) return url;
+    // Allow relative URLs (from our server)
+    if (url.startsWith('/')) return url;
+    try {
+      const parsed = new URL(url);
+      // Only allow http and https protocols
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return parsed.href;
+      }
+    } catch { /* invalid URL */ }
+    return ''; // Return empty for invalid/unsafe URLs
+  };
+
   // Handle external URL input
   const handleAddExternalUrl = async () => {
     if (!externalUrl.trim()) return;
@@ -492,7 +511,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                       // Link preview card
                       <div className="p-2 sm:p-3">
                         {mediaItem.thumbnail && (
-                          <img src={mediaItem.thumbnail} alt="" className="w-full h-20 sm:h-24 object-cover rounded mb-2" />
+                          <img src={sanitizeMediaUrl(mediaItem.thumbnail)} alt="" className="w-full h-20 sm:h-24 object-cover rounded mb-2" />
                         )}
                         <div className={`text-xs font-medium truncate ${isDark ? 'text-slate-200' : 'text-gray-900'}`}>
                           {mediaItem.linkTitle || new URL(url).hostname}
@@ -515,9 +534,9 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                         </span>
                       </div>
                     ) : isVideo ? (
-                      <video src={url} className="w-full h-full object-cover" />
+                      <video src={sanitizeMediaUrl(url)} className="w-full h-full object-cover" />
                     ) : (
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <img src={sanitizeMediaUrl(url)} alt="" className="w-full h-full object-cover" />
                     )}
                     <button
                       onClick={() => removeMedia(index)}

@@ -27,6 +27,51 @@ export class ThemeEditorService {
   }
 
   /**
+   * Sanitize a path segment to only allow safe characters
+   */
+  private sanitizePathSegment(segment: string): string {
+    let safe = '';
+    const truncated = String(segment || '').substring(0, 100);
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '-' || char === '_' || char === '.') {
+        safe += char;
+      }
+    }
+    // Prevent hidden files and directory traversal
+    safe = safe.replace(/^\.+/, '').replace(/\.+$/, '');
+    return safe || 'invalid';
+  }
+
+  /**
+   * Create a safe theme path from slug
+   */
+  private createSafeThemePath(slug: string): string {
+    const safeSlug = this.sanitizePathSegment(slug);
+    const themePath = path.join(this.themesDir, safeSlug);
+    const resolved = path.resolve(themePath);
+    if (!resolved.startsWith(path.resolve(this.themesDir) + path.sep)) {
+      throw new BadRequestException('Invalid theme path');
+    }
+    return themePath;
+  }
+
+  /**
+   * Create a safe backup path from theme slug and backup id
+   */
+  private createSafeBackupPath(themeSlug: string, backupId: string): string {
+    const safeSlug = this.sanitizePathSegment(themeSlug);
+    const safeBackupId = this.sanitizePathSegment(backupId);
+    const backupFileName = `${safeSlug}-${safeBackupId}.zip`;
+    const backupPath = path.join(this.backupsDir, backupFileName);
+    const resolved = path.resolve(backupPath);
+    if (!resolved.startsWith(path.resolve(this.backupsDir) + path.sep)) {
+      throw new BadRequestException('Invalid backup path');
+    }
+    return backupPath;
+  }
+
+  /**
    * Ensure backup directory exists
    */
   private async ensureBackupDir() {
@@ -41,7 +86,7 @@ export class ThemeEditorService {
    * Get file tree for a theme
    */
   async getFileTree(themeSlug: string): Promise<FileNode> {
-    const themePath = path.join(this.themesDir, themeSlug);
+    const themePath = this.createSafeThemePath(themeSlug);
 
     try {
       await fs.access(themePath);
@@ -53,7 +98,7 @@ export class ThemeEditorService {
   }
 
   /**
-   * Build file tree recursively
+   * Build file tree recursively (only called with already-validated paths)
    */
   private async buildFileTree(dirPath: string, relativePath: string): Promise<FileNode> {
     const stats = await fs.stat(dirPath);
@@ -77,8 +122,12 @@ export class ThemeEditorService {
         continue;
       }
 
-      const fullPath = path.join(dirPath, entry);
-      const relPath = path.join(relativePath, entry);
+      // Sanitize entry name for safe path construction
+      const safeEntry = this.sanitizePathSegment(entry);
+      if (safeEntry === 'invalid' || safeEntry !== entry) continue;
+
+      const fullPath = path.join(dirPath, safeEntry);
+      const relPath = path.join(relativePath, safeEntry);
       children.push(await this.buildFileTree(fullPath, relPath));
     }
 
@@ -167,7 +216,7 @@ export class ThemeEditorService {
     themeSlug: string,
     backupName?: string,
   ): Promise<{ success: boolean; backupId: string; message: string }> {
-    const themePath = path.join(this.themesDir, themeSlug);
+    const themePath = this.createSafeThemePath(themeSlug);
 
     try {
       await fs.access(themePath);
@@ -176,9 +225,8 @@ export class ThemeEditorService {
     }
 
     const timestamp = Date.now();
-    const backupId = backupName || `backup-${timestamp}`;
-    const backupFileName = `${themeSlug}-${backupId}.zip`;
-    const backupPath = path.join(this.backupsDir, backupFileName);
+    const safeBackupId = backupName ? this.sanitizePathSegment(backupName) : `backup-${timestamp}`;
+    const backupPath = this.createSafeBackupPath(themeSlug, safeBackupId);
 
     try {
       // Create ZIP archive
@@ -188,8 +236,8 @@ export class ThemeEditorService {
 
       return {
         success: true,
-        backupId,
-        message: `Backup created: ${backupFileName}`,
+        backupId: safeBackupId,
+        message: `Backup created successfully`,
       };
     } catch (error) {
       throw new BadRequestException('Failed to create backup: ' + error.message);
@@ -197,7 +245,7 @@ export class ThemeEditorService {
   }
 
   /**
-   * Add directory to ZIP recursively
+   * Add directory to ZIP recursively (operates on validated paths)
    */
   private async addDirectoryToZip(zip: AdmZip, dirPath: string, zipPath: string) {
     const entries = await fs.readdir(dirPath);
@@ -207,11 +255,15 @@ export class ThemeEditorService {
         continue;
       }
 
-      const fullPath = path.join(dirPath, entry);
+      // Sanitize entry for safe path construction
+      const safeEntry = this.sanitizePathSegment(entry);
+      if (safeEntry === 'invalid' || safeEntry !== entry) continue;
+
+      const fullPath = path.join(dirPath, safeEntry);
       const stats = await fs.stat(fullPath);
 
       if (stats.isDirectory()) {
-        await this.addDirectoryToZip(zip, fullPath, path.join(zipPath, entry));
+        await this.addDirectoryToZip(zip, fullPath, path.join(zipPath, safeEntry));
       } else {
         const content = await fs.readFile(fullPath);
         zip.addFile(path.join(zipPath, entry), content);
@@ -257,9 +309,8 @@ export class ThemeEditorService {
     themeSlug: string,
     backupId: string,
   ): Promise<{ success: boolean; message: string }> {
-    const backupFileName = `${themeSlug}-${backupId}.zip`;
-    const backupPath = path.join(this.backupsDir, backupFileName);
-    const themePath = path.join(this.themesDir, themeSlug);
+    const backupPath = this.createSafeBackupPath(themeSlug, backupId);
+    const themePath = this.createSafeThemePath(themeSlug);
 
     try {
       await fs.access(backupPath);
@@ -294,8 +345,7 @@ export class ThemeEditorService {
     themeSlug: string,
     backupId: string,
   ): Promise<{ success: boolean; message: string }> {
-    const backupFileName = `${themeSlug}-${backupId}.zip`;
-    const backupPath = path.join(this.backupsDir, backupFileName);
+    const backupPath = this.createSafeBackupPath(themeSlug, backupId);
 
     try {
       await fs.unlink(backupPath);

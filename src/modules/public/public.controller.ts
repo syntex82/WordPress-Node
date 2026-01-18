@@ -137,6 +137,23 @@ Sitemap: ${baseUrl}/sitemap.xml
   }
 
   /**
+   * Sanitize a filename to only allow safe characters
+   */
+  private sanitizeFileName(filename: string): string {
+    let safe = '';
+    const truncated = String(filename || '').substring(0, 255);
+    for (const char of truncated) {
+      if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+          (char >= '0' && char <= '9') || char === '-' || char === '_' || char === '.') {
+        safe += char;
+      }
+    }
+    // Prevent hidden files and directory traversal
+    safe = safe.replace(/^\.+/, '').replace(/\.+$/, '').replace(/\.{2,}/g, '.');
+    return safe || 'invalid';
+  }
+
+  /**
    * Optimized Image Endpoint
    * Serves WebP images with responsive sizing and proper caching
    * GET /img/:filename
@@ -148,13 +165,20 @@ Sitemap: ${baseUrl}/sitemap.xml
     @Req() req: Request,
     @Res() res: Response,
   ) {
+    // Sanitize filename to prevent path traversal
+    const safeFilename = this.sanitizeFileName(filename);
+    if (safeFilename === 'invalid') {
+      res.status(400).send('Invalid filename');
+      return;
+    }
+
     try {
       const requestedWidth = width ? parseInt(width, 10) : undefined;
       const supportsWebP = req.headers.accept?.includes('image/webp');
 
-      // Get optimized image path
+      // Get optimized image path (uses sanitized filename)
       const { path: imagePath, contentType } = await this.mediaService.getOptimizedPath(
-        filename,
+        safeFilename,
         supportsWebP ? requestedWidth : undefined,
       );
 
@@ -171,8 +195,18 @@ Sitemap: ${baseUrl}/sitemap.xml
       const stream = createReadStream(imagePath);
       stream.pipe(res);
     } catch (error) {
-      // Fall back to original upload path
-      const originalPath = join(process.cwd(), 'uploads', filename);
+      // Fall back to original upload path (use sanitized filename)
+      const uploadsDir = join(process.cwd(), 'uploads');
+      const originalPath = join(uploadsDir, safeFilename);
+
+      // Validate path is within uploads directory
+      const resolvedPath = require('path').resolve(originalPath);
+      const resolvedDir = require('path').resolve(uploadsDir);
+      if (!resolvedPath.startsWith(resolvedDir + require('path').sep)) {
+        res.status(400).send('Invalid path');
+        return;
+      }
+
       if (existsSync(originalPath)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000');
         const stream = createReadStream(originalPath);
