@@ -4,12 +4,13 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export interface MigrationResult {
   success: boolean;
@@ -124,12 +125,16 @@ export class MigrationService {
       const backupPath = path.join(backupDir, `pre-migration-${timestamp}.sql`);
 
       // For PostgreSQL, use pg_dump if available
+      // Use execFile with arguments array to prevent command injection
       const databaseUrl = process.env.DATABASE_URL || '';
       if (databaseUrl.includes('postgresql')) {
         try {
-          await execAsync(`pg_dump "${databaseUrl}" > "${backupPath}"`, {
+          // Use execFile with separate arguments to prevent shell injection
+          const { stdout } = await execFileAsync('pg_dump', [databaseUrl], {
             timeout: 300000,
+            maxBuffer: 100 * 1024 * 1024, // 100MB buffer for large databases
           });
+          fs.writeFileSync(backupPath, stdout);
           return { success: true, backupPath };
         } catch {
           this.logger.warn('pg_dump not available, skipping SQL backup');
