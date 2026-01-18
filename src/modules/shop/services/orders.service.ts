@@ -3,6 +3,7 @@
  * Handles order management
  */
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateOrderDto, UpdateOrderStatusDto, OrderQueryDto } from '../dto/order.dto';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -11,12 +12,12 @@ import { Decimal } from '@prisma/client/runtime/library';
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
-  // Generate unique order number
+  // Generate unique order number using cryptographically secure random
   private generateOrderNumber(): string {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const random = randomBytes(4).toString('hex').toUpperCase();
     return `ORD-${year}${month}-${random}`;
   }
 

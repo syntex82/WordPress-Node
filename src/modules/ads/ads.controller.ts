@@ -30,15 +30,21 @@ export class AdsController {
 (function() {
   'use strict';
 
+  function secureRandomId(prefix) {
+    var arr = new Uint8Array(8);
+    crypto.getRandomValues(arr);
+    return prefix + Array.from(arr, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+
   var sessionId = sessionStorage.getItem('sessionId');
   if (!sessionId) {
-    sessionId = 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    sessionId = secureRandomId('sess_');
     sessionStorage.setItem('sessionId', sessionId);
   }
 
   var visitorId = localStorage.getItem('visitorId');
   if (!visitorId) {
-    visitorId = 'vis_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    visitorId = secureRandomId('vis_');
     localStorage.setItem('visitorId', visitorId);
   }
 
