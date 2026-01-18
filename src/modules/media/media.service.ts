@@ -412,12 +412,19 @@ export class MediaService {
   async remove(id: string) {
     const media = await this.findById(id);
 
-    // Delete file from filesystem
-    const filepath = path.join(process.cwd(), media.path);
-    try {
-      await fs.unlink(filepath);
-    } catch (error) {
-      console.error('Error deleting file:', error);
+    // Delete file from filesystem with path traversal protection
+    const uploadsBase = path.resolve(process.cwd(), 'uploads');
+    const filepath = path.resolve(process.cwd(), media.path);
+
+    // Ensure the file is within the uploads directory
+    if (filepath.startsWith(uploadsBase)) {
+      try {
+        await fs.unlink(filepath);
+      } catch (error) {
+        console.error('Error deleting file:', error);
+      }
+    } else {
+      this.logger.warn(`Blocked attempt to delete file outside uploads: ${media.path}`);
     }
 
     return this.prisma.media.delete({

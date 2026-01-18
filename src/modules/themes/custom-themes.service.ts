@@ -1905,12 +1905,19 @@ img { max-width: 100%; height: auto; display: block; }
       var currentLangEl = document.getElementById('currentLangCode');
       if (!toggle || !dropdown) return;
 
+      function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      }
+
       function getCurrentLang() {
         var match = document.cookie.match(/(?:^|; )language=([^;]*)/);
         return match ? match[1] : 'en';
       }
 
       function setLang(code) {
+        // Validate language code format
+        if (!/^[a-z]{2}(-[A-Z]{2})?$/.test(code)) return;
         document.cookie = 'language=' + code + ';path=/;max-age=31536000';
         window.location.reload();
       }
@@ -1927,9 +1934,12 @@ img { max-width: 100%; height: auto; display: block; }
           if (currentLangEl) currentLangEl.textContent = currentLangData.code.toUpperCase();
           dropdown.innerHTML = languages.map(function(lang) {
             var isActive = lang.code === currentLang;
-            return '<button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: ' + (isActive ? 'rgba(16,185,129,0.15)' : 'none') + '; border: none; border-radius: 8px; color: ' + (isActive ? '#10b981' : 'var(--color-text)') + '; font-size: 0.9rem; cursor: pointer; text-align: left;" data-code="' + lang.code + '">' +
-              '<span style="font-size: 1.1rem;">' + (lang.flagEmoji || '🌐') + '</span>' +
-              '<span>' + lang.nativeName + '</span>' +
+            var safeCode = escapeHtml(lang.code);
+            var safeName = escapeHtml(lang.nativeName);
+            var safeEmoji = escapeHtml(lang.flagEmoji || '🌐');
+            return '<button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: ' + (isActive ? 'rgba(16,185,129,0.15)' : 'none') + '; border: none; border-radius: 8px; color: ' + (isActive ? '#10b981' : 'var(--color-text)') + '; font-size: 0.9rem; cursor: pointer; text-align: left;" data-code="' + safeCode + '">' +
+              '<span style="font-size: 1.1rem;">' + safeEmoji + '</span>' +
+              '<span>' + safeName + '</span>' +
               (isActive ? '<span style="margin-left: auto;">✓</span>' : '') +
             '</button>';
           }).join('');
@@ -2419,9 +2429,10 @@ ${pageBlocks}
     const cartJs = `(function(){
   'use strict';
   var API='/api/shop/cart';
+  function escapeHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   document.addEventListener('DOMContentLoaded',function(){setupEventListeners();loadCart();});
   async function loadCart(){var items=document.getElementById('cartItems'),empty=document.getElementById('emptyCart'),content=document.getElementById('cartContent');if(!items)return;try{var r=await fetch(API,{credentials:'include',headers:getAuthHeaders()});if(!r.ok)throw new Error();var cart=await r.json();if(!cart.items||cart.items.length===0){if(content)content.style.display='none';if(empty)empty.style.display='block';return;}if(content)content.style.display='grid';if(empty)empty.style.display='none';renderItems(cart.items);updateSummary(cart);}catch(e){items.innerHTML='<p>Failed to load cart</p>';}}
-  function renderItems(items){var el=document.getElementById('cartItems');if(!el)return;el.innerHTML=items.map(i=>{var isCourse=i.type==='COURSE';var img=i.product?.images?.[0]||i.course?.thumbnail||'/placeholder.jpg';var title=i.product?.name||i.course?.title||'Item';var price=i.product?.price||i.course?.price||0;return '<div class="cart-item" data-item-id="'+i.id+'"><img src="'+img+'" alt="'+title+'" style="width:100px;height:100px;object-fit:cover;border-radius:8px;"><div style="flex:1;"><div style="font-weight:600;">'+title+'</div><div style="font-size:0.8rem;color:var(--color-primary);">'+(isCourse?'Course':'Product')+'</div><div style="color:var(--color-text-muted);">$'+parseFloat(price).toFixed(2)+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem;">'+(isCourse?'':'<div style="display:flex;align-items:center;gap:0.5rem;"><button class="qty-btn" data-item-id="'+i.id+'" data-qty="'+(i.quantity-1)+'" style="width:32px;height:32px;border:1px solid var(--color-border);background:var(--color-background);border-radius:4px;cursor:pointer;">-</button><span>'+i.quantity+'</span><button class="qty-btn" data-item-id="'+i.id+'" data-qty="'+(i.quantity+1)+'" style="width:32px;height:32px;border:1px solid var(--color-border);background:var(--color-background);border-radius:4px;cursor:pointer;">+</button></div>')+'<button class="remove-btn" data-item-id="'+i.id+'" style="background:none;border:none;color:var(--color-error);cursor:pointer;">Remove</button></div></div>';}).join('');}
+  function renderItems(items){var el=document.getElementById('cartItems');if(!el)return;el.innerHTML=items.map(i=>{var isCourse=i.type==='COURSE';var img=escapeHtml(i.product?.images?.[0]||i.course?.thumbnail||'/placeholder.jpg');var title=escapeHtml(i.product?.name||i.course?.title||'Item');var price=i.product?.price||i.course?.price||0;var itemId=escapeHtml(i.id);return '<div class="cart-item" data-item-id="'+itemId+'"><img src="'+img+'" alt="'+title+'" style="width:100px;height:100px;object-fit:cover;border-radius:8px;"><div style="flex:1;"><div style="font-weight:600;">'+title+'</div><div style="font-size:0.8rem;color:var(--color-primary);">'+(isCourse?'Course':'Product')+'</div><div style="color:var(--color-text-muted);">$'+parseFloat(price).toFixed(2)+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem;">'+(isCourse?'':'<div style="display:flex;align-items:center;gap:0.5rem;"><button class="qty-btn" data-item-id="'+itemId+'" data-qty="'+(i.quantity-1)+'" style="width:32px;height:32px;border:1px solid var(--color-border);background:var(--color-background);border-radius:4px;cursor:pointer;">-</button><span>'+i.quantity+'</span><button class="qty-btn" data-item-id="'+itemId+'" data-qty="'+(i.quantity+1)+'" style="width:32px;height:32px;border:1px solid var(--color-border);background:var(--color-background);border-radius:4px;cursor:pointer;">+</button></div>')+'<button class="remove-btn" data-item-id="'+itemId+'" style="background:none;border:none;color:var(--color-error);cursor:pointer;">Remove</button></div></div>';}).join('');}
   function updateSummary(cart){var sub=cart.items.reduce((s,i)=>{var p=i.product?.price||i.course?.price||0;return s+(parseFloat(p)*i.quantity);},0);var tax=sub*0.1;document.getElementById('subtotal').textContent='$'+sub.toFixed(2);document.getElementById('tax').textContent='$'+tax.toFixed(2);document.getElementById('total').textContent='$'+(sub+tax).toFixed(2);}
   async function updateQuantity(id,qty){if(qty<1){removeItem(id);return;}try{await fetch(API+'/item/'+id,{method:'PUT',headers:{'Content-Type':'application/json',...getAuthHeaders()},body:JSON.stringify({quantity:qty}),credentials:'include'});loadCart();if(window.updateCartCount)window.updateCartCount();}catch(e){}}
   async function removeItem(id){try{await fetch(API+'/item/'+id,{method:'DELETE',headers:getAuthHeaders(),credentials:'include'});loadCart();if(window.updateCartCount)window.updateCartCount();}catch(e){}}
@@ -2432,11 +2443,12 @@ ${pageBlocks}
     const checkoutJs = `(function(){
   'use strict';
   var API='/api/shop';
+  function escapeHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   document.addEventListener('DOMContentLoaded',function(){loadOrderSummary();setupForm();});
   async function loadOrderSummary(){var el=document.getElementById('orderItems');if(!el)return;try{var r=await fetch(API+'/cart',{credentials:'include',headers:getAuthHeaders()});if(!r.ok)throw new Error();var cart=await r.json();if(!cart.items||cart.items.length===0){window.location.href='/cart';return;}renderItems(cart.items);updateTotals(cart);}catch(e){el.innerHTML='<p>Failed to load</p>';}}
-  function renderItems(items){var el=document.getElementById('orderItems');if(!el)return;el.innerHTML=items.map(i=>{var isCourse=i.type==='COURSE';var img=i.product?.images?.[0]||i.course?.thumbnail||'/placeholder.jpg';var title=i.product?.name||i.course?.title||'Item';var price=i.product?.price||i.course?.price||0;return '<div style="display:flex;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid var(--color-border);font-size:0.9rem;"><img src="'+img+'" style="width:50px;height:50px;object-fit:cover;border-radius:4px;"><div style="flex:1;"><div style="font-weight:500;">'+title+'</div><div style="color:var(--color-text-muted);font-size:0.85rem;">'+(isCourse?'Course':'Qty: '+i.quantity)+'</div></div><div style="font-weight:500;">$'+(parseFloat(price)*i.quantity).toFixed(2)+'</div></div>';}).join('');}
+  function renderItems(items){var el=document.getElementById('orderItems');if(!el)return;el.innerHTML=items.map(i=>{var isCourse=i.type==='COURSE';var img=escapeHtml(i.product?.images?.[0]||i.course?.thumbnail||'/placeholder.jpg');var title=escapeHtml(i.product?.name||i.course?.title||'Item');var price=i.product?.price||i.course?.price||0;return '<div style="display:flex;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid var(--color-border);font-size:0.9rem;"><img src="'+img+'" style="width:50px;height:50px;object-fit:cover;border-radius:4px;"><div style="flex:1;"><div style="font-weight:500;">'+title+'</div><div style="color:var(--color-text-muted);font-size:0.85rem;">'+(isCourse?'Course':'Qty: '+i.quantity)+'</div></div><div style="font-weight:500;">$'+(parseFloat(price)*i.quantity).toFixed(2)+'</div></div>';}).join('');}
   function updateTotals(cart){var sub=cart.items.reduce((s,i)=>{var p=i.product?.price||i.course?.price||0;return s+(parseFloat(p)*i.quantity);},0);var tax=sub*0.1;document.getElementById('subtotal').textContent='$'+sub.toFixed(2);document.getElementById('tax').textContent='$'+tax.toFixed(2);document.getElementById('total').textContent='$'+(sub+tax).toFixed(2);}
-  function setupForm(){var form=document.getElementById('checkoutForm');if(!form)return;form.addEventListener('submit',async function(e){e.preventDefault();var btn=document.getElementById('placeOrderBtn'),txt=btn.querySelector('.btn-text'),load=btn.querySelector('.btn-loading');txt.style.display='none';load.style.display='inline';btn.disabled=true;var fd=new FormData(form);try{var r=await fetch(API+'/orders',{method:'POST',headers:{'Content-Type':'application/json',...getAuthHeaders()},body:JSON.stringify({email:fd.get('email'),billingAddress:{firstName:fd.get('firstName'),lastName:fd.get('lastName'),address1:fd.get('address'),city:fd.get('city'),state:fd.get('state'),postalCode:fd.get('postalCode'),country:fd.get('country')}}),credentials:'include'});if(r.ok){var o=await r.json();alert('Order placed! ID: '+o.id);window.location.href='/';}else{var e=await r.json();alert(e.message||'Failed');resetBtn(btn,txt,load);}}catch(e){alert('Error');resetBtn(btn,txt,load);}});}
+  function setupForm(){var form=document.getElementById('checkoutForm');if(!form)return;form.addEventListener('submit',async function(e){e.preventDefault();var btn=document.getElementById('placeOrderBtn'),txt=btn.querySelector('.btn-text'),load=btn.querySelector('.btn-loading');txt.style.display='none';load.style.display='inline';btn.disabled=true;var fd=new FormData(form);try{var r=await fetch(API+'/orders',{method:'POST',headers:{'Content-Type':'application/json',...getAuthHeaders()},body:JSON.stringify({email:fd.get('email'),billingAddress:{firstName:fd.get('firstName'),lastName:fd.get('lastName'),address1:fd.get('address'),city:fd.get('city'),state:fd.get('state'),postalCode:fd.get('postalCode'),country:fd.get('country')}}),credentials:'include'});if(r.ok){var o=await r.json();alert('Order placed! ID: '+escapeHtml(o.id));window.location.href='/';}else{var e=await r.json();alert(escapeHtml(e.message)||'Failed');resetBtn(btn,txt,load);}}catch(e){alert('Error');resetBtn(btn,txt,load);}});}
   function resetBtn(b,t,l){t.style.display='inline';l.style.display='none';b.disabled=false;}
   function getAuthHeaders(){var t=localStorage.getItem('access_token');return t?{'Authorization':'Bearer '+t}:{};}
 })();`;

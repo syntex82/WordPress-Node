@@ -29,6 +29,13 @@ function StripePricingTable({ pricingTableId }: { pricingTableId: string }) {
     }
   }, []);
 
+  // Validate pricing table ID format to prevent XSS
+  const isValidId = /^prctbl_[a-zA-Z0-9]+$/.test(pricingTableId);
+  if (!isValidId) {
+    console.error('Invalid pricing table ID format');
+    return null;
+  }
+
   return (
     <div
       dangerouslySetInnerHTML={{

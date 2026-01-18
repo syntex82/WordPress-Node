@@ -5,6 +5,7 @@
 
 import { FiX, FiDownload, FiMail } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { sanitizeEmailHtml } from '../../utils/sanitize';
 
 interface EmailTemplatePreviewProps {
   isOpen: boolean;
@@ -84,7 +85,7 @@ export default function EmailTemplatePreview({
               <div className="bg-white p-6 overflow-auto max-h-96">
                 <div
                   className="text-sm"
-                  dangerouslySetInnerHTML={{ __html: htmlContent }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(htmlContent) }}
                 />
               </div>
             </div>

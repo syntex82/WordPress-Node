@@ -7,6 +7,7 @@ import React, { useState, lazy, Suspense } from 'react';
 import { FiEdit2, FiImage, FiSettings, FiPlay, FiPause, FiVolume2, FiVolumeX, FiMaximize } from 'react-icons/fi';
 import { CustomThemeSettings } from '../../services/api';
 import MediaPickerModal from '../MediaPickerModal';
+import { sanitizeHtml } from '../../utils/sanitize';
 
 // Import inline editing components
 import {
@@ -63,7 +64,7 @@ function MiniRichTextEditor({
           setIsEditing(true);
         }}
         className={`cursor-text hover:bg-blue-500/10 hover:outline hover:outline-2 hover:outline-dashed hover:outline-blue-400 rounded transition-all ${className} ${!value ? 'text-gray-500 italic' : ''}`}
-        dangerouslySetInnerHTML={{ __html: value || placeholder }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(value || placeholder) }}
       />
     );
   }

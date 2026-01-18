@@ -6,6 +6,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { FraudDetectionService } from './fraud-detection.service';
+import { sanitizeAdHtml } from '../../utils/sanitize';
 
 @Injectable()
 export class AdsService {
@@ -29,7 +30,8 @@ export class AdsService {
   }) {
     const zone = await this.prisma.adZone.findUnique({ where: { id: zoneId } });
     if (!zone || !zone.isActive) {
-      return zone?.fallbackHtml ? { html: zone.fallbackHtml } : null;
+      // Sanitize fallback HTML to prevent XSS
+      return zone?.fallbackHtml ? { html: sanitizeAdHtml(zone.fallbackHtml) } : null;
     }
 
     const now = new Date();
@@ -95,7 +97,8 @@ export class AdsService {
     });
 
     if (eligiblePlacements.length === 0) {
-      return zone.fallbackHtml ? { html: zone.fallbackHtml } : null;
+      // Sanitize fallback HTML to prevent XSS
+      return zone.fallbackHtml ? { html: sanitizeAdHtml(zone.fallbackHtml) } : null;
     }
 
     // Select ad using weighted random (based on bid amount and priority)
@@ -103,7 +106,8 @@ export class AdsService {
     const campaign = selectedPlacement.campaign;
     const ad = this.selectAdVariant(campaign.ads);
 
-    if (!ad) return zone.fallbackHtml ? { html: zone.fallbackHtml } : null;
+    // Sanitize fallback HTML to prevent XSS
+    if (!ad) return zone.fallbackHtml ? { html: sanitizeAdHtml(zone.fallbackHtml) } : null;
 
     // Record impression
     const impression = await this.recordImpression(ad.id, {
@@ -129,7 +133,8 @@ export class AdsService {
       description: ad.description,
       imageUrl: ad.imageUrl,
       videoUrl: ad.videoUrl,
-      html: ad.html,
+      // Sanitize HTML to prevent XSS attacks
+      html: ad.html ? sanitizeAdHtml(ad.html) : null,
       ctaText: ad.ctaText,
       targetUrl: campaign.targetUrl,
       trackingUrl: `/api/ads/click/${ad.id}/${impression.id}`,

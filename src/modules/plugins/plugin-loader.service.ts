@@ -3,14 +3,32 @@
  * Handles plugin loading and lifecycle hooks
  */
 
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, BadRequestException } from '@nestjs/common';
 import { PluginsService } from './plugins.service';
 import * as path from 'path';
 import * as fs from 'fs';
+import { createRequire } from 'module';
 
-// Use eval to prevent webpack from transforming require
+// Use createRequire for dynamic module loading (safer than eval)
 // This allows runtime loading of plugins that aren't bundled
-const dynamicRequire = eval('require');
+const dynamicRequire = createRequire(__filename);
+
+/**
+ * Validate plugin slug to prevent path traversal attacks
+ */
+function validatePluginSlug(slug: string): void {
+  if (!slug || typeof slug !== 'string') {
+    throw new BadRequestException('Plugin slug is required');
+  }
+  // Only allow alphanumeric, hyphens, and underscores
+  if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
+    throw new BadRequestException('Plugin slug contains invalid characters');
+  }
+  // Prevent path traversal
+  if (slug.includes('..') || slug.includes('/') || slug.includes('\\')) {
+    throw new BadRequestException('Invalid plugin slug');
+  }
+}
 
 export interface PluginHooks {
   onActivate?: () => Promise<void> | void;
@@ -71,9 +89,19 @@ export class PluginLoaderService implements OnModuleInit {
    * Load a single plugin
    */
   async loadPlugin(slug: string) {
+    // Validate plugin slug to prevent path traversal
+    validatePluginSlug(slug);
+
     try {
       const pluginPath = this.pluginsService.getPluginPath(slug);
       const entryFile = path.join(pluginPath, 'index.js');
+
+      // Validate that the resolved path is within the plugins directory
+      const pluginsBaseDir = path.resolve(process.cwd(), 'plugins');
+      const resolvedPath = path.resolve(entryFile);
+      if (!resolvedPath.startsWith(pluginsBaseDir)) {
+        throw new BadRequestException('Invalid plugin path');
+      }
 
       // Check if the plugin file exists
       if (!fs.existsSync(entryFile)) {
@@ -82,7 +110,8 @@ export class PluginLoaderService implements OnModuleInit {
       }
 
       // Clear require cache to allow hot reloading
-      delete dynamicRequire.cache[dynamicRequire.resolve(entryFile)];
+      const resolvedModule = dynamicRequire.resolve(entryFile);
+      delete dynamicRequire.cache[resolvedModule];
 
       // Use dynamic require to load plugin at runtime (bypasses webpack bundling)
       const pluginModule = dynamicRequire(entryFile);

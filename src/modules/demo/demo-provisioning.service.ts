@@ -1,11 +1,27 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { exec } from 'child_process';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, mkdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { PrismaService } from '../../database/prisma.service';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
+
+/**
+ * Validate identifier to prevent command injection
+ * Only allows alphanumeric characters, underscores, and hyphens
+ */
+function validateIdentifier(value: string, fieldName: string): void {
+  if (!value || typeof value !== 'string') {
+    throw new BadRequestException(`${fieldName} is required`);
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+    throw new BadRequestException(`${fieldName} contains invalid characters. Only alphanumeric, underscores, and hyphens are allowed.`);
+  }
+  if (value.length > 63) {
+    throw new BadRequestException(`${fieldName} is too long (max 63 characters)`);
+  }
+}
 
 interface ProvisioningConfig {
   subdomain: string;
@@ -79,37 +95,49 @@ export class DemoProvisioningService {
   // ==================== DATABASE OPERATIONS ====================
 
   private async createDatabase(dbName: string): Promise<void> {
+    // Validate database name to prevent SQL injection
+    validateIdentifier(dbName, 'Database name');
+
     const pgHost = process.env.POSTGRES_HOST || 'localhost';
     const pgUser = process.env.POSTGRES_USER || 'postgres';
     const pgPassword = process.env.POSTGRES_PASSWORD || '';
 
     const env = { ...process.env, PGPASSWORD: pgPassword };
 
-    // Create database
-    await execAsync(
-      `psql -h ${pgHost} -U ${pgUser} -c "CREATE DATABASE ${dbName};"`,
-      { env },
-    );
+    // Create database using execFile with arguments array (prevents command injection)
+    await execFileAsync('psql', [
+      '-h', pgHost,
+      '-U', pgUser,
+      '-c', `CREATE DATABASE ${dbName};`,
+    ], { env });
 
-    // Run migrations
+    // Run migrations using execFile
     const demoPath = join(this.DEMO_BASE_PATH, 'template');
-    await execAsync(
-      `DATABASE_URL="postgresql://${pgUser}:${pgPassword}@${pgHost}:5432/${dbName}" npx prisma db push --skip-generate`,
-      { cwd: demoPath, env },
-    );
+    await execFileAsync('npx', ['prisma', 'db', 'push', '--skip-generate'], {
+      cwd: demoPath,
+      env: {
+        ...env,
+        DATABASE_URL: `postgresql://${pgUser}:${pgPassword}@${pgHost}:5432/${dbName}`,
+      },
+    });
 
     this.logger.log(`Database created: ${dbName}`);
   }
 
   private async dropDatabase(dbName: string): Promise<void> {
+    // Validate database name to prevent SQL injection
+    validateIdentifier(dbName, 'Database name');
+
     const pgHost = process.env.POSTGRES_HOST || 'localhost';
     const pgUser = process.env.POSTGRES_USER || 'postgres';
     const pgPassword = process.env.POSTGRES_PASSWORD || '';
 
-    await execAsync(
-      `psql -h ${pgHost} -U ${pgUser} -c "DROP DATABASE IF EXISTS ${dbName};"`,
-      { env: { ...process.env, PGPASSWORD: pgPassword } },
-    );
+    // Use execFile with arguments array (prevents command injection)
+    await execFileAsync('psql', [
+      '-h', pgHost,
+      '-U', pgUser,
+      '-c', `DROP DATABASE IF EXISTS ${dbName};`,
+    ], { env: { ...process.env, PGPASSWORD: pgPassword } });
 
     this.logger.log(`Database dropped: ${dbName}`);
   }
@@ -177,25 +205,30 @@ ADMIN_URL=https://${config.subdomain}.${process.env.DEMO_BASE_DOMAIN || 'demo.no
   // ==================== DOCKER OPERATIONS ====================
 
   private async startDockerContainer(config: ProvisioningConfig): Promise<string> {
+    // Validate all inputs to prevent command injection
+    validateIdentifier(config.subdomain, 'Subdomain');
+
     const imageName = process.env.DEMO_DOCKER_IMAGE || 'nodepress:demo';
     const networkName = process.env.DEMO_DOCKER_NETWORK || 'nodepress-demos';
     const demoPath = join(this.DEMO_BASE_PATH, config.subdomain);
+    const baseDomain = process.env.DEMO_BASE_DOMAIN || 'demo.nodepress.io';
 
-    const { stdout } = await execAsync(`
-      docker run -d \
-        --name nodepress-demo-${config.subdomain} \
-        --network ${networkName} \
-        -p ${config.port}:3000 \
-        -v ${demoPath}/uploads:/app/uploads \
-        -v ${demoPath}/themes:/app/themes \
-        --env-file ${demoPath}/.env \
-        --label "traefik.enable=true" \
-        --label "traefik.http.routers.${config.subdomain}.rule=Host(\`${config.subdomain}.${process.env.DEMO_BASE_DOMAIN}\`)" \
-        --label "traefik.http.routers.${config.subdomain}.tls=true" \
-        --label "traefik.http.routers.${config.subdomain}.tls.certresolver=letsencrypt" \
-        --restart unless-stopped \
-        ${imageName}
-    `);
+    // Use execFile with argument array to prevent command injection
+    const { stdout } = await execFileAsync('docker', [
+      'run', '-d',
+      '--name', `nodepress-demo-${config.subdomain}`,
+      '--network', networkName,
+      '-p', `${config.port}:3000`,
+      '-v', `${demoPath}/uploads:/app/uploads`,
+      '-v', `${demoPath}/themes:/app/themes`,
+      '--env-file', `${demoPath}/.env`,
+      '--label', 'traefik.enable=true',
+      '--label', `traefik.http.routers.${config.subdomain}.rule=Host(\`${config.subdomain}.${baseDomain}\`)`,
+      '--label', `traefik.http.routers.${config.subdomain}.tls=true`,
+      '--label', `traefik.http.routers.${config.subdomain}.tls.certresolver=letsencrypt`,
+      '--restart', 'unless-stopped',
+      imageName,
+    ]);
 
     const containerId = stdout.trim();
     this.logger.log(`Docker container started: ${containerId}`);
@@ -203,14 +236,34 @@ ADMIN_URL=https://${config.subdomain}.${process.env.DEMO_BASE_DOMAIN || 'demo.no
   }
 
   private async stopDockerContainer(subdomain: string): Promise<void> {
-    await execAsync(`docker stop nodepress-demo-${subdomain} || true`);
-    await execAsync(`docker rm nodepress-demo-${subdomain} || true`);
+    // Validate subdomain to prevent command injection
+    validateIdentifier(subdomain, 'Subdomain');
+
+    const containerName = `nodepress-demo-${subdomain}`;
+
+    // Stop container (ignore errors if not running)
+    try {
+      await execFileAsync('docker', ['stop', containerName]);
+    } catch {
+      // Container may not be running
+    }
+
+    // Remove container (ignore errors if doesn't exist)
+    try {
+      await execFileAsync('docker', ['rm', containerName]);
+    } catch {
+      // Container may not exist
+    }
+
     this.logger.log(`Docker container stopped: ${subdomain}`);
   }
 
   // ==================== PM2 OPERATIONS ====================
 
   private async startPM2Process(config: ProvisioningConfig): Promise<void> {
+    // Validate subdomain to prevent command injection
+    validateIdentifier(config.subdomain, 'Subdomain');
+
     const templatePath = join(this.DEMO_BASE_PATH, 'template');
     const demoPath = join(this.DEMO_BASE_PATH, config.subdomain);
 
@@ -230,17 +283,30 @@ ADMIN_URL=https://${config.subdomain}.${process.env.DEMO_BASE_DOMAIN || 'demo.no
       }],
     };
 
+    const ecosystemPath = join(demoPath, 'ecosystem.config.js');
     await writeFile(
-      join(demoPath, 'ecosystem.config.js'),
+      ecosystemPath,
       `module.exports = ${JSON.stringify(pm2Config, null, 2)}`,
     );
 
-    await execAsync(`pm2 start ${join(demoPath, 'ecosystem.config.js')}`);
+    // Use execFile with argument array to prevent command injection
+    await execFileAsync('pm2', ['start', ecosystemPath]);
     this.logger.log(`PM2 process started: demo-${config.subdomain}`);
   }
 
   private async stopPM2Process(subdomain: string): Promise<void> {
-    await execAsync(`pm2 delete demo-${subdomain} || true`);
+    // Validate subdomain to prevent command injection
+    validateIdentifier(subdomain, 'Subdomain');
+
+    const processName = `demo-${subdomain}`;
+
+    // Use execFile with argument array to prevent command injection
+    try {
+      await execFileAsync('pm2', ['delete', processName]);
+    } catch {
+      // Process may not exist
+    }
+
     this.logger.log(`PM2 process stopped: ${subdomain}`);
   }
 

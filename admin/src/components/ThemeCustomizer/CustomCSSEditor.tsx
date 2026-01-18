@@ -11,9 +11,18 @@ interface CustomCSSEditorProps {
   onChange: (css: string) => void;
 }
 
-// Simple syntax highlighting for CSS
+// Escape HTML entities to prevent XSS
+function escapeHtml(text: string): string {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Simple syntax highlighting for CSS (with XSS protection)
 function highlightCSS(code: string): string {
-  return code
+  // First escape all HTML entities to prevent XSS
+  const escaped = escapeHtml(code);
+  return escaped
     // Comments
     .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="text-gray-500">$1</span>')
     // Selectors

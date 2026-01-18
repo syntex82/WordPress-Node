@@ -36,6 +36,22 @@ export class BackupService {
   }
 
   /**
+   * Validate file path to prevent path traversal attacks
+   */
+  private validateFilePath(fileName: string): string {
+    // Remove any path components and only keep the filename
+    const sanitizedName = path.basename(fileName);
+    const fullPath = path.resolve(this.backupDir, sanitizedName);
+
+    // Ensure the resolved path is within the backup directory
+    if (!fullPath.startsWith(path.resolve(this.backupDir))) {
+      throw new BadRequestException('Invalid file path');
+    }
+
+    return fullPath;
+  }
+
+  /**
    * Create a new backup
    */
   async create(dto: CreateBackupDto, userId?: string) {
@@ -279,9 +295,13 @@ export class BackupService {
   async delete(id: string) {
     const backup = await this.prisma.backup.findUnique({ where: { id } });
     if (backup?.filePath) {
-      const fullPath = path.join(this.backupDir, backup.filePath);
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
+      try {
+        const fullPath = this.validateFilePath(backup.filePath);
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      } catch (e) {
+        this.logger.warn(`Invalid backup file path: ${backup.filePath}`);
       }
     }
     return this.prisma.backup.delete({ where: { id } });
@@ -291,9 +311,13 @@ export class BackupService {
    * Get backup file path for download
    */
   getFilePath(fileName: string): string | null {
-    const fullPath = path.join(this.backupDir, fileName);
-    if (fs.existsSync(fullPath)) {
-      return fullPath;
+    try {
+      const fullPath = this.validateFilePath(fileName);
+      if (fs.existsSync(fullPath)) {
+        return fullPath;
+      }
+    } catch (e) {
+      this.logger.warn(`Invalid backup file path requested: ${fileName}`);
     }
     return null;
   }
@@ -368,6 +392,35 @@ export class BackupService {
         }
       }
 
+      // Helper function to safely extract files with path traversal protection
+      const safeExtractEntry = (entry: AdmZip.IZipEntry, baseDir: string, prefix: string): boolean => {
+        if (entry.isDirectory) return false;
+
+        // Validate entry name doesn't contain path traversal
+        const entryName = entry.entryName;
+        if (entryName.includes('..') || entryName.includes('\\..') || entryName.includes('../')) {
+          this.logger.warn(`Skipping potentially malicious entry: ${entryName}`);
+          return false;
+        }
+
+        // Remove the prefix and get relative path
+        const relativePath = entryName.substring(prefix.length);
+        const targetPath = path.resolve(baseDir, relativePath);
+
+        // Ensure target is within base directory
+        if (!targetPath.startsWith(path.resolve(baseDir))) {
+          this.logger.warn(`Path traversal attempt blocked: ${entryName}`);
+          return false;
+        }
+
+        const targetDir = path.dirname(targetPath);
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        fs.writeFileSync(targetPath, entry.getData());
+        return true;
+      };
+
       // Restore media files
       if (restoreMedia) {
         const mediaEntries = zipEntries.filter((e) => e.entryName.startsWith('uploads/'));
@@ -376,17 +429,13 @@ export class BackupService {
           if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
           }
+          let filesRestored = 0;
           for (const entry of mediaEntries) {
-            if (!entry.isDirectory) {
-              const targetPath = path.join(process.cwd(), entry.entryName);
-              const targetDir = path.dirname(targetPath);
-              if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
-              }
-              fs.writeFileSync(targetPath, entry.getData());
+            if (safeExtractEntry(entry, process.cwd(), '')) {
+              filesRestored++;
             }
           }
-          results.media = { filesRestored: mediaEntries.filter((e) => !e.isDirectory).length };
+          results.media = { filesRestored };
         }
       }
 
@@ -394,17 +443,13 @@ export class BackupService {
       if (restoreThemes) {
         const themeEntries = zipEntries.filter((e) => e.entryName.startsWith('themes/'));
         if (themeEntries.length > 0) {
+          let filesRestored = 0;
           for (const entry of themeEntries) {
-            if (!entry.isDirectory) {
-              const targetPath = path.join(process.cwd(), entry.entryName);
-              const targetDir = path.dirname(targetPath);
-              if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
-              }
-              fs.writeFileSync(targetPath, entry.getData());
+            if (safeExtractEntry(entry, process.cwd(), '')) {
+              filesRestored++;
             }
           }
-          results.themes = { filesRestored: themeEntries.filter((e) => !e.isDirectory).length };
+          results.themes = { filesRestored };
         }
       }
 
@@ -412,17 +457,13 @@ export class BackupService {
       if (restorePlugins) {
         const pluginEntries = zipEntries.filter((e) => e.entryName.startsWith('plugins/'));
         if (pluginEntries.length > 0) {
+          let filesRestored = 0;
           for (const entry of pluginEntries) {
-            if (!entry.isDirectory) {
-              const targetPath = path.join(process.cwd(), entry.entryName);
-              const targetDir = path.dirname(targetPath);
-              if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
-              }
-              fs.writeFileSync(targetPath, entry.getData());
+            if (safeExtractEntry(entry, process.cwd(), '')) {
+              filesRestored++;
             }
           }
-          results.plugins = { filesRestored: pluginEntries.filter((e) => !e.isDirectory).length };
+          results.plugins = { filesRestored };
         }
       }
 

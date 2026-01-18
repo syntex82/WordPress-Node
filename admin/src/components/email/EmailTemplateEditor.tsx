@@ -3,9 +3,10 @@
  * Beautiful editor with HTML/visual mode toggle and live preview
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { FiCode, FiEye, FiCopy, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { sanitizeEmailHtml } from '../../utils/sanitize';
 
 interface EmailTemplateEditorProps {
   htmlContent: string;
@@ -93,12 +94,12 @@ export default function EmailTemplateEditor({
               {previewHtml ? (
                 <div
                   className="max-w-2xl mx-auto"
-                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(previewHtml) }}
                 />
               ) : (
                 <div
                   className="max-w-2xl mx-auto"
-                  dangerouslySetInnerHTML={{ __html: htmlContent }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(htmlContent) }}
                 />
               )}
             </div>

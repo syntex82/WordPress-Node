@@ -154,8 +154,11 @@ export class ThemeRendererService {
       if (current && typeof current === 'string') {
         value = current;
         // Replace interpolation variables {{varName}}
+        // Use string replacement instead of RegExp to prevent regex injection
         for (const [varKey, varValue] of Object.entries(vars)) {
-          value = value.replace(new RegExp(`\\{\\{${varKey}\\}\\}`, 'g'), String(varValue));
+          const placeholder = `{{${varKey}}}`;
+          // Use split/join for safe global replacement without regex
+          value = value.split(placeholder).join(String(varValue));
         }
       }
 

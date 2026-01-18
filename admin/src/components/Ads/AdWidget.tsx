@@ -2,7 +2,8 @@
  * Ad Widget Component - Self-hosted Ad Display
  * Alternative to Google AdSense scripts
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { sanitizeAdHtml } from '../../utils/sanitize';
 
 interface AdData {
   adId: string;
@@ -101,11 +102,14 @@ export const AdWidget: React.FC<AdWidgetProps> = ({
   }
 
   // Render based on ad type
+  // Sanitize HTML to prevent XSS attacks
+  const sanitizedHtml = useMemo(() => ad?.html ? sanitizeAdHtml(ad.html) : '', [ad?.html]);
+
   if (ad.html) {
     return (
       <div
         className={`ad-widget ad-html ${className}`}
-        dangerouslySetInnerHTML={{ __html: ad.html }}
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         onClick={handleClick}
       />
     );

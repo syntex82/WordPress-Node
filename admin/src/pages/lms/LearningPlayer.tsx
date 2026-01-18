@@ -8,6 +8,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { lmsApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import { FiCheck, FiPlay, FiChevronLeft, FiChevronRight, FiAward, FiBookOpen, FiFileText, FiMenu, FiX } from 'react-icons/fi';
+import { sanitizeHtml } from '../../utils/sanitize';
 
 interface LessonProgress {
   id: string;
@@ -336,7 +337,7 @@ export default function LearningPlayer() {
             {/* Lesson Content */}
             {currentLesson.content && (
               <div className="prose prose-invert max-w-none bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700/50 p-6 mb-6">
-                <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
+                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(currentLesson.content) }} />
               </div>
             )}
 

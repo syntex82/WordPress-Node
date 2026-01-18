@@ -3,7 +3,7 @@
  * Displays a single blog post with full content, author info, and related articles
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { postsApi, recommendationsApi, RecommendationItem } from '../services/api';
 import { useSiteTheme } from '../contexts/SiteThemeContext';
@@ -13,6 +13,7 @@ import {
   FiHeart, FiMessageCircle, FiBookmark, FiExternalLink
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { sanitizeHtml } from '../utils/sanitize';
 
 interface Post {
   id: string;
@@ -173,7 +174,7 @@ export default function BlogPost() {
         <div
           className={`prose prose-lg max-w-none ${isDark ? 'prose-invert' : ''}`}
           style={isDark ? { color: '#e2e8f0' } : undefined}
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
         />
         {isDark && (
           <style>{`

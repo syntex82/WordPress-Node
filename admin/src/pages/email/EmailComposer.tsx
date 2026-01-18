@@ -8,6 +8,7 @@ import { emailApi, usersApi } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { FiSend, FiUsers, FiMail, FiEye, FiX, FiCheck, FiAlertCircle } from 'react-icons/fi';
+import { sanitizeEmailHtml } from '../../utils/sanitize';
 
 interface EmailTemplate {
   id: string;
@@ -277,7 +278,7 @@ export default function EmailComposer() {
               <button onClick={() => setShowPreview(false)} className="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 hover:text-white transition-colors"><FiX /></button>
             </div>
             <div className="flex-1 overflow-auto p-4 bg-slate-900/50">
-              <div className="bg-white rounded-xl shadow max-w-xl mx-auto" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+              <div className="bg-white rounded-xl shadow max-w-xl mx-auto" dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(previewHtml) }} />
             </div>
           </div>
         </div>

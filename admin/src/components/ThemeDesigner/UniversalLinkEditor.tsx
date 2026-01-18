@@ -868,11 +868,20 @@ export function ClickableElement({
           }
           if (link!.type === 'javascript' && link!.jsAction) {
             e.preventDefault();
-            try {
-              // eslint-disable-next-line no-eval
-              eval(link!.jsAction);
-            } catch (err) {
-              console.error('Link JS action error:', err);
+            // JavaScript actions are disabled for security reasons
+            // Only predefined safe actions are allowed
+            const safeActions: Record<string, () => void> = {
+              'print': () => window.print(),
+              'back': () => window.history.back(),
+              'forward': () => window.history.forward(),
+              'reload': () => window.location.reload(),
+              'scrollTop': () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+            };
+            const action = safeActions[link!.jsAction];
+            if (action) {
+              action();
+            } else {
+              console.warn('Unknown JS action:', link!.jsAction);
             }
           }
         }}
