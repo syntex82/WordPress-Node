@@ -290,8 +290,13 @@ ${urlEntries}
       score -= 5;
     }
 
-    // Content checks
-    const plainContent = (content.content || content.description || '').replace(/<[^>]*>/g, '');
+    // Content checks - safely strip HTML tags (loop handles nested/malformed tags)
+    let plainContent = content.content || content.description || '';
+    let prevLength = 0;
+    while (plainContent.length !== prevLength) {
+      prevLength = plainContent.length;
+      plainContent = plainContent.replace(/<[^>]+>/g, '');
+    }
     if (plainContent.length < 300) {
       issues.push('Content too short (<300 chars)');
       score -= 10;

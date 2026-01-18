@@ -174,9 +174,16 @@ export default function Posts() {
     }
   };
 
-  // Extract excerpt from HTML content
+  // Extract excerpt from HTML content (safely handles nested/malformed tags)
   const extractExcerpt = (content: string, maxLength: number = 150) => {
-    const stripped = content?.replace(/<[^>]*>/g, '') || '';
+    if (!content) return '';
+    let stripped = content;
+    let prevLength = 0;
+    // Loop to handle nested or malformed HTML tags
+    while (stripped.length !== prevLength) {
+      prevLength = stripped.length;
+      stripped = stripped.replace(/<[^>]+>/g, '');
+    }
     return stripped.length > maxLength ? stripped.substring(0, maxLength) + '...' : stripped;
   };
 

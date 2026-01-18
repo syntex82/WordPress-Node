@@ -180,10 +180,20 @@ export class EmailService implements OnModuleInit {
 
   /**
    * Render a template with variables
+   * Uses strict mode and noEscape:false to prevent code injection
    */
   renderTemplate(template: string, variables: Record<string, any>): string {
-    const compiled = Handlebars.compile(template);
-    return compiled(variables);
+    // Compile with strict mode to prevent prototype pollution attacks
+    const compiled = Handlebars.compile(template, {
+      strict: true,          // Throw errors for missing variables
+      noEscape: false,       // Escape HTML by default (use {{{var}}} for unescaped)
+    });
+
+    // Execute in a sandbox with prototype access disabled
+    return compiled(variables, {
+      allowProtoPropertiesByDefault: false,
+      allowProtoMethodsByDefault: false,
+    });
   }
 
   /**
@@ -279,15 +289,48 @@ export class EmailService implements OnModuleInit {
   }
 
   /**
-   * Convert HTML to plain text
+   * Convert HTML to plain text safely
+   * Uses iterative approach to handle nested tags properly
    */
   private htmlToText(html: string): string {
-    return html
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    if (!html || typeof html !== 'string') return '';
+
+    let result = html;
+
+    // Remove style and script blocks completely (loop to handle nested)
+    let prevLength = 0;
+    while (result.length !== prevLength) {
+      prevLength = result.length;
+      result = result.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+      result = result.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    }
+
+    // Convert common block elements to newlines
+    result = result.replace(/<br\s*\/?>/gi, '\n');
+    result = result.replace(/<\/p>/gi, '\n\n');
+    result = result.replace(/<\/div>/gi, '\n');
+    result = result.replace(/<\/li>/gi, '\n');
+
+    // Remove all remaining tags (loop to handle any nested/malformed tags)
+    prevLength = 0;
+    while (result.length !== prevLength) {
+      prevLength = result.length;
+      result = result.replace(/<[^>]+>/g, ' ');
+    }
+
+    // Decode common HTML entities
+    result = result.replace(/&nbsp;/gi, ' ');
+    result = result.replace(/&amp;/gi, '&');
+    result = result.replace(/&lt;/gi, '<');
+    result = result.replace(/&gt;/gi, '>');
+    result = result.replace(/&quot;/gi, '"');
+    result = result.replace(/&#39;/gi, "'");
+
+    // Normalize whitespace
+    result = result.replace(/[ \t]+/g, ' ');
+    result = result.replace(/\n\s*\n\s*\n/g, '\n\n');
+
+    return result.trim();
   }
 
   /**

@@ -2261,55 +2261,76 @@ We believe in the power of technology to solve real problems and create meaningf
   }
 
   /**
+   * Allowed block types for validation (prevents unvalidated dynamic method calls)
+   */
+  private static readonly ALLOWED_BLOCK_TYPES: ReadonlySet<string> = new Set([
+    'hero', 'features', 'featureCards', 'testimonials', 'logoCloud', 'socialProof',
+    'cta', 'newsletter', 'productGrid', 'courseGrid', 'pricing', 'teamGrid',
+    'about', 'timeline', 'stats', 'blogPosts', 'gallery', 'video', 'accordion',
+    'contactForm', 'contactInfo',
+  ]);
+
+  /**
    * Create block by type - comprehensive mapping for all block types
+   * Uses explicit validation to prevent unvalidated dynamic method calls
    */
   private createBlockByType(
     blockType: ContentBlockType,
     dto: GenerateAiThemeDto,
   ): ContentBlockData | null {
-    const blockCreators: Record<string, () => ContentBlockData> = {
-      // Hero blocks
-      hero: () => this.createHeroBlock(dto),
+    // Validate blockType against allowed list before proceeding
+    const blockTypeStr = String(blockType);
+    if (!AiThemeGeneratorService.ALLOWED_BLOCK_TYPES.has(blockTypeStr)) {
+      return null;
+    }
 
-      // Feature blocks
-      features: () => this.createFeaturesBlock(dto),
-      featureCards: () => this.createFeatureCardsBlock(),
-
-      // Testimonial & Social Proof
-      testimonials: () => this.createTestimonialsBlock(),
-      logoCloud: () => this.createLogoCloudBlock(),
-      socialProof: () => this.createSocialProofBlock(),
-
-      // CTA blocks
-      cta: () => this.createCtaBlock(dto),
-      newsletter: () => this.createNewsletterBlock(),
-
-      // Commerce blocks
-      productGrid: () => this.createProductGridBlock(),
-      courseGrid: () => this.createCourseGridBlock(),
-      pricing: () => this.createPricingBlock(),
-
-      // Team & About
-      teamGrid: () => this.createTeamGridBlock(),
-      about: () => this.createAboutBlock(),
-      timeline: () => this.createTimelineBlock(),
-      stats: () => this.createStatsBlock(),
-
-      // Content blocks
-      blogPosts: () => this.createBlogGridBlock(),
-      gallery: () => this.createGalleryBlock(),
-      video: () => this.createVideoBlock(),
-
-      // Interactive blocks
-      accordion: () => this.createAccordionBlock(),
-
-      // Contact blocks
-      contactForm: () => this.createContactFormBlock(),
-      contactInfo: () => this.createContactInfoBlock(),
-    };
-
-    const creator = blockCreators[blockType];
-    return creator ? creator() : null;
+    // Now safe to use blockType as it's been validated
+    switch (blockTypeStr) {
+      case 'hero':
+        return this.createHeroBlock(dto);
+      case 'features':
+        return this.createFeaturesBlock(dto);
+      case 'featureCards':
+        return this.createFeatureCardsBlock();
+      case 'testimonials':
+        return this.createTestimonialsBlock();
+      case 'logoCloud':
+        return this.createLogoCloudBlock();
+      case 'socialProof':
+        return this.createSocialProofBlock();
+      case 'cta':
+        return this.createCtaBlock(dto);
+      case 'newsletter':
+        return this.createNewsletterBlock();
+      case 'productGrid':
+        return this.createProductGridBlock();
+      case 'courseGrid':
+        return this.createCourseGridBlock();
+      case 'pricing':
+        return this.createPricingBlock();
+      case 'teamGrid':
+        return this.createTeamGridBlock();
+      case 'about':
+        return this.createAboutBlock();
+      case 'timeline':
+        return this.createTimelineBlock();
+      case 'stats':
+        return this.createStatsBlock();
+      case 'blogPosts':
+        return this.createBlogGridBlock();
+      case 'gallery':
+        return this.createGalleryBlock();
+      case 'video':
+        return this.createVideoBlock();
+      case 'accordion':
+        return this.createAccordionBlock();
+      case 'contactForm':
+        return this.createContactFormBlock();
+      case 'contactInfo':
+        return this.createContactInfoBlock();
+      default:
+        return null;
+    }
   }
 
   /**

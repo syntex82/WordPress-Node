@@ -6,6 +6,37 @@ export class CustomizationRendererService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Escape HTML attribute value to prevent XSS
+   */
+  private escapeHtmlAttribute(value: string): string {
+    if (!value || typeof value !== 'string') return '';
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  /**
+   * Validate CSS color value (prevent injection)
+   */
+  private isValidCssColor(color: string): boolean {
+    if (!color || typeof color !== 'string') return false;
+    // Allow hex, rgb, rgba, hsl, hsla, and named colors
+    const colorPattern = /^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-zA-Z]+)$/;
+    return colorPattern.test(color.trim());
+  }
+
+  /**
+   * Validate CSS class name (alphanumeric, hyphens, underscores only)
+   */
+  private isValidClassName(className: string): boolean {
+    if (!className || typeof className !== 'string') return false;
+    return /^[a-zA-Z][a-zA-Z0-9_-]*$/.test(className);
+  }
+
+  /**
    * Apply page customization to rendered HTML
    */
   async applyPageCustomization(html: string, pageId: string): Promise<string> {
@@ -47,24 +78,28 @@ export class CustomizationRendererService {
 
   /**
    * Apply customization styles to HTML
+   * Uses validation to prevent XSS and injection attacks
    */
   private applyCustomizationStyles(html: string, customization: any): string {
     let result = html;
 
-    // Apply layout class
-    if (customization.layout) {
-      result = result.replace(/<main[^>]*>/, `<main class="layout-${customization.layout}">`);
+    // Apply layout class (validated)
+    if (customization.layout && this.isValidClassName(customization.layout)) {
+      const safeLayout = this.escapeHtmlAttribute(customization.layout);
+      result = result.replace(/<main[^>]*>/, `<main class="layout-${safeLayout}">`);
     }
 
-    // Apply background color
-    if (customization.backgroundColor) {
-      const bgStyle = `background-color: ${customization.backgroundColor};`;
+    // Apply background color (validated)
+    if (customization.backgroundColor && this.isValidCssColor(customization.backgroundColor)) {
+      const safeBgColor = this.escapeHtmlAttribute(customization.backgroundColor);
+      const bgStyle = `background-color: ${safeBgColor};`;
       result = result.replace(/<main[^>]*>/, (match) => match.replace('>', ` style="${bgStyle}">`));
     }
 
-    // Apply text color
-    if (customization.textColor) {
-      const textStyle = `color: ${customization.textColor};`;
+    // Apply text color (validated)
+    if (customization.textColor && this.isValidCssColor(customization.textColor)) {
+      const safeTextColor = this.escapeHtmlAttribute(customization.textColor);
+      const textStyle = `color: ${safeTextColor};`;
       result = result.replace(/<main[^>]*>/, (match) =>
         match.replace('>', ` style="${textStyle}">`),
       );

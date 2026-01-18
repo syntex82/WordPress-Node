@@ -51,14 +51,48 @@ export class AnalyticsController {
   ) {}
 
   /**
+   * Validate IP address format to prevent SSRF
+   */
+  private isValidPublicIP(ip: string): boolean {
+    if (!ip) return false;
+
+    // IPv4 validation regex
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+    // IPv6 validation (simplified)
+    const ipv6Regex = /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/;
+
+    if (!ipv4Regex.test(ip) && !ipv6Regex.test(ip)) {
+      return false; // Not a valid IP format
+    }
+
+    // Block private/reserved IP ranges
+    const blockedPatterns = [
+      /^127\./,                          // Loopback
+      /^10\./,                           // Private Class A
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./,  // Private Class B
+      /^192\.168\./,                     // Private Class C
+      /^169\.254\./,                     // Link-local
+      /^0\./,                            // Current network
+      /^224\./,                          // Multicast
+      /^240\./,                          // Reserved
+      /^255\./,                          // Broadcast
+      /^::1$/,                           // IPv6 loopback
+      /^fc00:/i,                         // IPv6 unique local
+      /^fe80:/i,                         // IPv6 link-local
+    ];
+
+    return !blockedPatterns.some(pattern => pattern.test(ip));
+  }
+
+  /**
    * Get geolocation data from IP address using ip-api.com (free service)
    * Rate limit: 45 requests/minute for free tier
    */
   private async getGeoFromIp(ip: string): Promise<GeoData | null> {
-    // Skip private/local IPs
-    if (!ip || ip === '127.0.0.1' || ip.startsWith('192.168.') ||
-        ip.startsWith('10.') || ip.startsWith('172.') || ip === '::1') {
-      this.logger.debug(`Skipping geolocation for local IP: ${ip}`);
+    // Validate IP format and ensure it's a public IP (SSRF protection)
+    if (!this.isValidPublicIP(ip)) {
+      this.logger.debug(`Skipping geolocation for invalid/private IP: ${ip}`);
       return null;
     }
 
@@ -70,7 +104,9 @@ export class AnalyticsController {
 
     try {
       this.logger.debug(`Looking up geolocation for IP: ${ip}`);
-      const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,lat,lon`);
+      // Use encodeURIComponent to prevent injection attacks
+      const safeIp = encodeURIComponent(ip);
+      const response = await fetch(`http://ip-api.com/json/${safeIp}?fields=status,country,countryCode,regionName,city,lat,lon`);
       const data = await response.json();
 
       if (data.status === 'success') {

@@ -121,7 +121,9 @@ async function bootstrap() {
     );
   }
 
-  // Security middleware
+  // Security middleware with Helmet
+  // Note: 'unsafe-inline' is required for Stripe and theme customization
+  // 'unsafe-eval' is needed for Tailwind CDN in dev mode
   app.use(
     helmet({
       contentSecurityPolicy: isProduction
@@ -130,7 +132,7 @@ async function bootstrap() {
               defaultSrc: ["'self'"],
               styleSrc: [
                 "'self'",
-                "'unsafe-inline'",
+                "'unsafe-inline'", // Required for inline styles and Tailwind
                 'https://fonts.googleapis.com',
                 'https://cdn.tailwindcss.com',
               ],
@@ -138,8 +140,7 @@ async function bootstrap() {
               imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
               scriptSrc: [
                 "'self'",
-                "'unsafe-inline'",
-                "'unsafe-eval'",
+                "'unsafe-inline'", // Required for Stripe.js integration
                 'https://js.stripe.com',
                 'https://cdn.tailwindcss.com',
                 'https://www.googletagmanager.com',
@@ -147,7 +148,7 @@ async function bootstrap() {
                 'https://googleads.g.doubleclick.net',
                 'https://www.googleadservices.com',
               ],
-              scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
+              scriptSrcAttr: ["'unsafe-inline'"], // Required for inline event handlers
               connectSrc: [
                 "'self'",
                 'https://api.stripe.com',
@@ -175,11 +176,25 @@ async function bootstrap() {
                 'https://www.google.com',
               ],
               mediaSrc: ["'self'", 'https:', 'blob:'],
+              objectSrc: ["'none'"],          // Block plugins like Flash
+              baseUri: ["'self'"],            // Restrict base tag
+              formAction: ["'self'"],         // Restrict form submissions
+              upgradeInsecureRequests: [],    // Upgrade HTTP to HTTPS
             },
           }
         : false,
       frameguard: false, // Handled by custom middleware below
       hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+      crossOriginEmbedderPolicy: false, // Disabled to allow embedding external resources
+      crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      dnsPrefetchControl: { allow: true },
+      ieNoOpen: true,
+      noSniff: true,
+      originAgentCluster: true,
+      permittedCrossDomainPolicies: { permittedPolicies: 'none' },
+      xssFilter: true,
     }),
   );
 

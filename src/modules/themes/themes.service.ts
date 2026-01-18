@@ -1552,10 +1552,11 @@ ${layoutEnd}`,
             await fs.copyFile(sourcePath, destPath);
           } catch {
             // File doesn't exist in uploads, might be an external URL - skip
-            console.log(`Media file not found: ${sourcePath}`);
+            console.log('Media file not found:', sourcePath);
           }
         } catch (error) {
-          console.error(`Error copying media file: ${block.src}`, error);
+          // Use %s placeholder to prevent format string injection
+          console.error('Error copying media file: %s', String(block.src), error);
         }
       }
 
@@ -1570,10 +1571,11 @@ ${layoutEnd}`,
             await fs.access(sourcePath);
             await fs.copyFile(sourcePath, destPath);
           } catch {
-            console.log(`Cover image not found: ${sourcePath}`);
+            console.log('Cover image not found:', sourcePath);
           }
         } catch (error) {
-          console.error(`Error copying cover image: ${block.coverImage}`, error);
+          // Use %s placeholder to prevent format string injection
+          console.error('Error copying cover image: %s', String(block.coverImage), error);
         }
       }
     }

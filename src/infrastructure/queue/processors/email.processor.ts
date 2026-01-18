@@ -71,14 +71,26 @@ export class EmailQueueProcessor extends WorkerHost {
   }
 
   private htmlToText(html: string): string {
-    return html
+    if (!html || typeof html !== 'string') return '';
+
+    let result = html
       .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p>/gi, '\n\n')
-      .replace(/<[^>]+>/g, '')
+      .replace(/<\/p>/gi, '\n\n');
+
+    // Loop to safely handle nested/malformed tags
+    let prevLength = 0;
+    while (result.length !== prevLength) {
+      prevLength = result.length;
+      result = result.replace(/<[^>]+>/g, '');
+    }
+
+    return result
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
       .trim();
   }
 

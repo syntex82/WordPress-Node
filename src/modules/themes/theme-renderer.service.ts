@@ -40,10 +40,23 @@ export class ThemeRendererService {
       return new Date(date).toLocaleDateString();
     });
 
+    // Helper function to safely strip HTML tags (handles nested/malformed tags)
+    const stripHtmlTags = (html: string): string => {
+      if (!html || typeof html !== 'string') return '';
+      let result = html;
+      let prevLength = 0;
+      // Loop to handle nested or malformed tags
+      while (result.length !== prevLength) {
+        prevLength = result.length;
+        result = result.replace(/<[^>]+>/g, '');
+      }
+      return result;
+    };
+
     // Excerpt helper
     Handlebars.registerHelper('excerpt', (text: any, length: any = 150) => {
       if (!text) return '';
-      const textStr = String(text).replace(/<[^>]*>/g, ''); // Strip HTML tags
+      const textStr = stripHtmlTags(String(text));
       const lengthNum = typeof length === 'number' ? length : 150;
       if (textStr.length <= lengthNum) return textStr;
       return textStr.substring(0, lengthNum) + '...';
@@ -52,7 +65,7 @@ export class ThemeRendererService {
     // Truncate helper (alias for excerpt, commonly used in themes)
     Handlebars.registerHelper('truncate', (text: any, length: any = 150) => {
       if (!text) return '';
-      const textStr = String(text).replace(/<[^>]*>/g, ''); // Strip HTML tags
+      const textStr = stripHtmlTags(String(text));
       const lengthNum = typeof length === 'number' ? length : 150;
       if (textStr.length <= lengthNum) return textStr;
       return textStr.substring(0, lengthNum) + '...';

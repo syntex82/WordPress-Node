@@ -69,7 +69,16 @@ export default function DragDropUploadZone({
     // Check file type
     if (accept !== 'all') {
       const acceptedTypes = ACCEPT_TYPES[accept].split(',');
-      if (!acceptedTypes.some(type => file.type.match(type.replace('*', '.*')))) {
+      // Convert MIME type wildcards to regex patterns safely
+      // Replace all occurrences of '*' with '.*' for regex matching
+      if (!acceptedTypes.some(type => {
+        const pattern = type.split('*').join('.*');
+        try {
+          return new RegExp(`^${pattern}$`).test(file.type);
+        } catch {
+          return false;
+        }
+      })) {
         return { valid: false, error: `Invalid file type for ${accept}` };
       }
     }

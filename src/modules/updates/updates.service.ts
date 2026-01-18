@@ -399,7 +399,22 @@ export class UpdatesService {
     });
   }
 
+  /**
+   * Validate file path to prevent directory traversal attacks
+   */
+  private validateFilePath(filePath: string, allowedDir: string): void {
+    const resolvedPath = path.resolve(filePath);
+    const resolvedAllowedDir = path.resolve(allowedDir);
+
+    if (!resolvedPath.startsWith(resolvedAllowedDir + path.sep) && resolvedPath !== resolvedAllowedDir) {
+      throw new BadRequestException('Invalid file path: directory traversal attempt detected');
+    }
+  }
+
   private async calculateChecksum(filePath: string): Promise<string> {
+    // Validate path is within updates directory
+    this.validateFilePath(filePath, this.updatesDir);
+
     return new Promise((resolve, reject) => {
       const hash = createHash('sha256');
       const stream = fs.createReadStream(filePath);

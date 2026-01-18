@@ -43,8 +43,13 @@ const calculateSeoScore = (content) => {
     }
   }
 
-  // Content length
-  const plainContent = (content.content || '').replace(/<[^>]*>/g, '');
+  // Content length - safely strip HTML tags (loop handles nested/malformed tags)
+  let plainContent = content.content || '';
+  let prevLength = 0;
+  while (plainContent.length !== prevLength) {
+    prevLength = plainContent.length;
+    plainContent = plainContent.replace(/<[^>]+>/g, '');
+  }
   if (plainContent.length < 300) {
     issues.push('Content too short (< 300 chars)');
     score -= 10;
@@ -116,8 +121,14 @@ module.exports = {
     // Auto-generate meta description
     if (!data.metaDescription) {
       const source = data.excerpt || data.content || '';
-      const plainText = source.replace(/<[^>]*>/g, '').trim();
-      data.metaDescription = plainText.substring(0, 160);
+      // Safely strip HTML tags (loop handles nested/malformed tags)
+      let plainText = source;
+      let prevLen = 0;
+      while (plainText.length !== prevLen) {
+        prevLen = plainText.length;
+        plainText = plainText.replace(/<[^>]+>/g, '');
+      }
+      data.metaDescription = plainText.trim().substring(0, 160);
     }
     // Auto-generate social title/description
     if (!data.ogTitle) data.ogTitle = data.metaTitle;
