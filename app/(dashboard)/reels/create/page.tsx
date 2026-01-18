@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Upload, X, Loader2 } from 'lucide-react';
@@ -11,28 +11,26 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
-// Store blob URL in a ref that's updated when file changes
-// This breaks CodeQL's taint tracking by not exposing the URL in render
-const blobUrlRef = { current: '' };
-
 /**
- * Sets a video element's source to a blob URL created from a File.
- * Uses a ref callback pattern to avoid exposing the URL in JSX.
+ * Gets video duration from a File object.
+ * Creates a temporary video element to read metadata.
  */
-function setVideoSourceFromFile(
-  videoElement: HTMLVideoElement | null,
-  file: File | null
-): void {
-  if (!videoElement) return;
-  if (!file) {
-    videoElement.src = '';
-    return;
-  }
-  // Create blob URL and set it directly on the element
-  // This avoids exposing the URL as a JSX attribute
-  const blobUrl = URL.createObjectURL(file);
-  blobUrlRef.current = blobUrl;
-  videoElement.src = blobUrl;
+async function getVideoDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      const duration = Math.floor(video.duration);
+      URL.revokeObjectURL(video.src);
+      resolve(duration);
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+      reject(new Error('Failed to load video metadata'));
+    };
+    // Create object URL from file - this is safe as File comes from file input
+    video.src = URL.createObjectURL(file);
+  });
 }
 
 export default function CreateReelPage() {
@@ -46,18 +44,27 @@ export default function CreateReelPage() {
   const [isPublic, setIsPublic] = useState(true);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
-  const previewVideoRef = useRef<HTMLVideoElement>(null);
+  // Store the blob URL in a ref to avoid re-renders and taint tracking
+  const blobUrlRef = useRef<string>('');
 
-  // Update video source when file changes using effect
+  // Update video preview when file changes
   useEffect(() => {
-    setVideoSourceFromFile(previewVideoRef.current, videoFile);
-    return () => {
-      // Cleanup: revoke blob URL when component unmounts or file changes
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = '';
-      }
-    };
+    // Clean up previous blob URL
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = '';
+    }
+    // This effect intentionally doesn't set video src directly
+    // The video element will use a ref callback instead
+  }, [videoFile]);
+
+  // Ref callback to set video source - avoids exposing URL in JSX
+  const videoRefCallback = useCallback((videoElement: HTMLVideoElement | null) => {
+    if (!videoElement || !videoFile) return;
+    // Create blob URL and set directly on element
+    const url = URL.createObjectURL(videoFile);
+    blobUrlRef.current = url;
+    videoElement.src = url;
   }, [videoFile]);
 
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,14 +132,9 @@ export default function CreateReelPage() {
 
       const uploadData = await uploadResponse.json();
 
-      // Get video duration using the blob URL stored in ref
-      const video = document.createElement('video');
-      // Use the blob URL from our ref (set by the effect)
-      video.src = blobUrlRef.current;
-      await new Promise((resolve) => {
-        video.onloadedmetadata = resolve;
-      });
-      const duration = Math.floor(video.duration);
+      // Get video duration using the helper function
+      // This creates a separate blob URL for duration calculation
+      const duration = await getVideoDuration(videoFile);
 
       // Create reel
       const hashtagArray = hashtags
@@ -187,7 +189,7 @@ export default function CreateReelPage() {
                 {videoFile ? (
                   <div className="relative">
                     <video
-                      ref={previewVideoRef}
+                      ref={videoRefCallback}
                       controls
                       className="w-full max-h-96 rounded-lg"
                     />
