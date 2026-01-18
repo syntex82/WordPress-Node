@@ -22,6 +22,18 @@ const REQUIRED_THEME_JSON_FIELDS = ['name', 'version', 'author'];
 // Maximum theme file size (10MB)
 const MAX_THEME_SIZE = 10 * 1024 * 1024;
 
+/**
+ * Sanitize theme slug to prevent path traversal
+ */
+function sanitizeSlug(slug: string): string {
+  return slug
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 50);
+}
+
 export interface ThemeValidationResult {
   valid: boolean;
   errors: string[];
@@ -321,7 +333,8 @@ export class ThemesService implements OnModuleInit {
             themeConfig = JSON.parse(configContent);
             const parts = entry.entryName.split('/');
             rootFolder = parts.length > 1 ? parts[0] : null;
-            themeSlug = rootFolder || file.originalname.replace('.zip', '');
+            // Sanitize slug to prevent path traversal
+            themeSlug = sanitizeSlug(rootFolder || file.originalname.replace('.zip', ''));
           } catch (_parseError) {
             errors.push('theme.json contains invalid JSON');
             return { valid: false, errors, warnings };
