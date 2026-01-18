@@ -4,6 +4,7 @@
  */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
 
 export interface ConversionMetrics {
@@ -759,11 +760,8 @@ export class DemoAnalyticsService {
 
   private generateAccessToken(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let token = '';
-    for (let i = 0; i < 32; i++) {
-      token += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return token;
+    const bytes = randomBytes(32);
+    return Array.from(bytes, (byte) => chars[byte % chars.length]).join('');
   }
 }
 

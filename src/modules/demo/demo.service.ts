@@ -414,7 +414,13 @@ export class DemoService {
   // ==================== HELPER METHODS ====================
 
   private async generateSubdomain(preferred?: string, name?: string): Promise<string> {
-    let base = preferred || name?.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 20) || 'demo';
+    // Sanitize both preferred and name to prevent URL injection
+    const sanitize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 20);
+    let base = (preferred ? sanitize(preferred) : null) || (name ? sanitize(name) : null) || 'demo';
+    // Ensure base is not empty after sanitization
+    if (!base || base.length === 0) {
+      base = 'demo';
+    }
     let subdomain = base;
     let counter = 1;
 
@@ -442,7 +448,8 @@ export class DemoService {
 
   private generatePassword(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const bytes = randomBytes(12);
+    return Array.from(bytes, (byte) => chars[byte % chars.length]).join('');
   }
 
   private async getConfigValue(key: string, defaultValue: number): Promise<number> {

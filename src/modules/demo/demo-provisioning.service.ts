@@ -3,6 +3,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, mkdir, rm } from 'fs/promises';
 import { join } from 'path';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
 
 const execFileAsync = promisify(execFile);
@@ -314,7 +315,8 @@ ADMIN_URL=https://${config.subdomain}.${process.env.DEMO_BASE_DOMAIN || 'demo.no
 
   private generateSecret(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    return Array.from({ length: 64 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const bytes = randomBytes(64);
+    return Array.from(bytes, (byte) => chars[byte % chars.length]).join('');
   }
 
   /**
