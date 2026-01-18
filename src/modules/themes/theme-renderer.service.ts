@@ -351,8 +351,10 @@ export class ThemeRendererService {
         }
       }
 
-      // Compile template
-      const compiledTemplate = Handlebars.compile(templateContent);
+      // Compile template with security options to prevent prototype pollution
+      const compiledTemplate = Handlebars.compile(templateContent, {
+        noEscape: false,  // Escape HTML by default
+      });
 
       // Get site settings
       const siteSettings = await this.settingsService.getSettings([
@@ -413,8 +415,11 @@ export class ThemeRendererService {
           : null,
       };
 
-      // Render template
-      return compiledTemplate(renderData);
+      // Render template with prototype access disabled
+      return compiledTemplate(renderData, {
+        allowProtoPropertiesByDefault: false,
+        allowProtoMethodsByDefault: false,
+      });
     } catch (error) {
       console.error('Error rendering template:', error);
       throw error;
