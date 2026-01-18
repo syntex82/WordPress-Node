@@ -14,6 +14,19 @@ import {
 import { Response } from 'express';
 import { VideoAdsService, VideoAdRequest } from './video-ads.service';
 
+/**
+ * Escape special XML characters to prevent XML injection
+ */
+function escapeXml(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 @Controller('api/ads')
 export class VideoAdsController {
   constructor(private readonly videoAdsService: VideoAdsService) {}
@@ -86,13 +99,17 @@ export class VideoAdsController {
   ) {
     // This would generate VAST XML for third-party video players
     // VAST = Video Ad Serving Template (industry standard)
-    
+
+    // Escape user input to prevent XML injection
+    const safeAdId = escapeXml(adId);
+    const safeImpressionId = escapeXml(impressionId || '');
+
     const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-    const trackingBase = `${baseUrl}/api/ads/video/track/${adId}/${impressionId}`;
+    const trackingBase = `${baseUrl}/api/ads/video/track/${encodeURIComponent(adId)}/${encodeURIComponent(impressionId || '')}`;
 
     const vastXml = `<?xml version="1.0" encoding="UTF-8"?>
 <VAST version="4.0">
-  <Ad id="${adId}">
+  <Ad id="${safeAdId}">
     <InLine>
       <AdSystem>YourAdSystem</AdSystem>
       <AdTitle>Video Ad</AdTitle>
