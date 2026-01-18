@@ -260,6 +260,12 @@ export default function ThemeCustomizer() {
   // Listen for messages from iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      // Validate origin to prevent cross-origin attacks
+      const allowedOrigins = [window.location.origin];
+      if (!allowedOrigins.includes(event.origin)) {
+        return;
+      }
+
       const data = event.data;
       if (!data || typeof data !== 'object') return;
 
