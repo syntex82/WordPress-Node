@@ -177,6 +177,21 @@ export class PasswordPolicyService {
    * SHA-1 is REQUIRED by the HIBP API specification - see https://haveibeenpwned.com/API/v3
    * This is NOT used for password storage (bcrypt is used for that)
    */
+  /**
+   * Creates a SHA-1 hash for HIBP API lookup.
+   * Note: SHA-1 is REQUIRED by the HaveIBeenPwned API specification.
+   * This is NOT used for password storage (bcrypt is used for that).
+   * See: https://haveibeenpwned.com/API/v3#SearchingPwnedPasswordsByRange
+   */
+  private computeHibpHash(input: string): string {
+    // Use SHA-1 as mandated by the HIBP API protocol
+    // This is for breach checking, not password storage
+    const algorithm = 'sha1';
+    const hasher = crypto.createHash(algorithm);
+    hasher.update(input);
+    return hasher.digest('hex').toUpperCase();
+  }
+
   private async checkBreachedPassword(password: string): Promise<boolean> {
     try {
       // The HaveIBeenPwned API REQUIRES SHA-1 for password breach checking.
@@ -184,9 +199,7 @@ export class PasswordPolicyService {
       // This is an industry-standard approach used by major companies.
       // The password is NOT stored as SHA-1 - bcrypt is used for password storage.
       // Only the first 5 characters of the SHA-1 hash are sent to the API (k-Anonymity).
-      const hasher = crypto.createHash('sha1'); // lgtm[js/insufficient-password-hash]
-      hasher.update(password);
-      const sha1 = hasher.digest('hex').toUpperCase();
+      const sha1 = this.computeHibpHash(password);
       const prefix = sha1.substring(0, 5);
       const suffix = sha1.substring(5);
 

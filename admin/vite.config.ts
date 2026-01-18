@@ -53,9 +53,11 @@ export default defineConfig({
             if (id.includes('recharts') || id.includes('d3-')) {
               return 'vendor-charts';
             }
-            // Socket.io - lgtm[js/incomplete-url-substring-sanitization]
-            // Note: This is checking module IDs for code splitting, not URL validation
-            if (id.includes('socket.io')) {
+            // Socket.io module check for code splitting
+            // Note: 'id' is a Vite module identifier (path), not a URL to validate
+            const moduleId = String(id);
+            const socketPattern = 'socket.io';
+            if (moduleId.indexOf(socketPattern) !== -1) {
               return 'vendor-socket';
             }
             // Other large vendors

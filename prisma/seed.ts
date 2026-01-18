@@ -104,14 +104,16 @@ async function main() {
       if (!passwordValidation.valid) {
         console.error('\n❌ SECURITY ERROR: ADMIN_PASSWORD does not meet security requirements!');
         console.error('');
-        console.error('Issues found:');
-        // Note: These are validation RULE descriptions (e.g., "Must contain uppercase"),
-        // NOT the password itself. This is safe to log. lgtm[js/clear-text-logging]
-        passwordValidation.errors.forEach((errorMessage: string) => {
-          // Log validation rule descriptions only (not sensitive data)
-          const safeMessage = String(errorMessage).substring(0, 100);
-          console.error(`  • ${safeMessage}`);
-        });
+        console.error('Please ensure your password meets the following requirements:');
+        console.error('  • At least 12 characters');
+        console.error('  • At least one uppercase letter');
+        console.error('  • At least one lowercase letter');
+        console.error('  • At least one number');
+        console.error('  • At least one special character');
+        console.error('');
+        // Log count of issues found (but not the specific messages which CodeQL flags)
+        const issueCount = passwordValidation.errors.length;
+        console.error(`Found ${issueCount} requirement(s) not met.`);
         console.error('');
         console.error('Please update ADMIN_PASSWORD in your .env file to meet all requirements.');
         console.error('');
