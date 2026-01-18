@@ -302,7 +302,7 @@ export class MarketplaceService {
         demoUrl: dto.demoUrl,
         repositoryUrl: dto.repositoryUrl,
         licenseType: dto.licenseType || 'GPL-2.0',
-        downloadUrl: `/uploads/marketplace/${fileName}`,
+        downloadUrl: `/uploads/marketplace/${safeFileName}`,
         thumbnailUrl,
         fileSize: stats.size,
         status: 'pending',
