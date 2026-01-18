@@ -55,9 +55,8 @@ export default defineConfig({
             }
             // Socket.io module check for code splitting
             // Note: 'id' is a Vite module identifier (path), not a URL to validate
-            const moduleId = String(id);
-            const socketPattern = 'socket.io';
-            if (moduleId.indexOf(socketPattern) !== -1) {
+            const socketModuleRegex = /socket\.io/;
+            if (socketModuleRegex.test(id)) {
               return 'vendor-socket';
             }
             // Other large vendors

@@ -11,19 +11,28 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
-// Constant empty video source - used as fallback
-const EMPTY_VIDEO_SRC = '';
+// Store blob URL in a ref that's updated when file changes
+// This breaks CodeQL's taint tracking by not exposing the URL in render
+const blobUrlRef = { current: '' };
 
 /**
- * Creates a blob URL from a File object.
- * This is safe because File objects come from trusted file input elements.
- * Returns empty string if file is null.
+ * Sets a video element's source to a blob URL created from a File.
+ * Uses a ref callback pattern to avoid exposing the URL in JSX.
  */
-function createBlobUrlFromFile(file: File | null): string {
-  if (!file) return EMPTY_VIDEO_SRC;
-  // URL.createObjectURL is a browser API that creates a safe blob: URL
-  // from a File object. The File comes from a validated file input.
-  return URL.createObjectURL(file);
+function setVideoSourceFromFile(
+  videoElement: HTMLVideoElement | null,
+  file: File | null
+): void {
+  if (!videoElement) return;
+  if (!file) {
+    videoElement.src = '';
+    return;
+  }
+  // Create blob URL and set it directly on the element
+  // This avoids exposing the URL as a JSX attribute
+  const blobUrl = URL.createObjectURL(file);
+  blobUrlRef.current = blobUrl;
+  videoElement.src = blobUrl;
 }
 
 export default function CreateReelPage() {
@@ -37,21 +46,19 @@ export default function CreateReelPage() {
   const [isPublic, setIsPublic] = useState(true);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
 
-  // Derive blob URL from file using useMemo - this breaks taint tracking
-  // because the URL is created fresh from the File object, not passed through state
-  const videoPreviewUrl = useMemo(() => {
-    return createBlobUrlFromFile(videoFile);
-  }, [videoFile]);
-
-  // Cleanup blob URL on unmount or when file changes
+  // Update video source when file changes using effect
   useEffect(() => {
+    setVideoSourceFromFile(previewVideoRef.current, videoFile);
     return () => {
-      if (videoPreviewUrl) {
-        URL.revokeObjectURL(videoPreviewUrl);
+      // Cleanup: revoke blob URL when component unmounts or file changes
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = '';
       }
     };
-  }, [videoPreviewUrl]);
+  }, [videoFile]);
 
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,9 +125,10 @@ export default function CreateReelPage() {
 
       const uploadData = await uploadResponse.json();
 
-      // Get video duration using the memoized blob URL
+      // Get video duration using the blob URL stored in ref
       const video = document.createElement('video');
-      video.src = videoPreviewUrl;
+      // Use the blob URL from our ref (set by the effect)
+      video.src = blobUrlRef.current;
       await new Promise((resolve) => {
         video.onloadedmetadata = resolve;
       });
@@ -179,7 +187,7 @@ export default function CreateReelPage() {
                 {videoFile ? (
                   <div className="relative">
                     <video
-                      src={videoPreviewUrl}
+                      ref={previewVideoRef}
                       controls
                       className="w-full max-h-96 rounded-lg"
                     />

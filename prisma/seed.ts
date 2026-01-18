@@ -111,9 +111,7 @@ async function main() {
         console.error('  • At least one number');
         console.error('  • At least one special character');
         console.error('');
-        // Log count of issues found (but not the specific messages which CodeQL flags)
-        const issueCount = passwordValidation.errors.length;
-        console.error(`Found ${issueCount} requirement(s) not met.`);
+        console.error('Please check your password meets all requirements above.');
         console.error('');
         console.error('Please update ADMIN_PASSWORD in your .env file to meet all requirements.');
         console.error('');
