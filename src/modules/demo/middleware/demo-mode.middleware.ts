@@ -231,8 +231,9 @@ export class DemoPaymentInterceptor {
       return { success: false, transactionId: '', message: 'Not in demo mode' };
     }
 
-    // Simulate successful payment
-    const transactionId = `demo_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    // Simulate successful payment (use crypto for secure random ID)
+    const { randomBytes } = require('crypto');
+    const transactionId = `demo_${Date.now()}_${randomBytes(6).toString('hex')}`;
 
     console.log('[DEMO MODE] Payment simulated:', {
       amount,
