@@ -118,8 +118,11 @@ export class DemoModeMiddleware implements NestMiddleware {
     res.setHeader('X-Demo-Mode', 'true');
 
     if (demoInfo) {
-      res.setHeader('X-Demo-Id', demoInfo.id || '');
-      res.setHeader('X-Demo-Subdomain', demoInfo.subdomain || '');
+      // Sanitize header values to prevent header injection
+      const safeId = String(demoInfo.id || '').replace(/[\r\n]/g, '');
+      const safeSubdomain = String(demoInfo.subdomain || '').replace(/[\r\n]/g, '');
+      res.setHeader('X-Demo-Id', safeId);
+      res.setHeader('X-Demo-Subdomain', safeSubdomain);
       if (demoInfo.expiresAt) {
         const remaining = new Date(demoInfo.expiresAt).getTime() - Date.now();
         res.setHeader('X-Demo-Remaining-Ms', Math.max(0, remaining).toString());
