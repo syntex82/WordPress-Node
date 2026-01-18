@@ -114,26 +114,30 @@ export class CustomizationRendererService {
   private applyCustomizationStyles(html: string, customization: any): string {
     let result = html;
 
+    // Collect styles and classes for main element
+    const mainClasses: string[] = [];
+    const mainStyles: string[] = [];
+
     // Apply layout class (validated)
     if (customization.layout && this.isValidClassName(customization.layout)) {
-      const safeLayout = this.escapeHtmlAttribute(customization.layout);
-      result = result.replace(/<main[^>]*>/, `<main class="layout-${safeLayout}">`);
+      mainClasses.push(`layout-${customization.layout}`);
     }
 
     // Apply background color (validated)
     if (customization.backgroundColor && this.isValidCssColor(customization.backgroundColor)) {
-      const safeBgColor = this.escapeHtmlAttribute(customization.backgroundColor);
-      const bgStyle = `background-color: ${safeBgColor};`;
-      result = result.replace(/<main[^>]*>/, (match) => match.replace('>', ` style="${bgStyle}">`));
+      mainStyles.push(`background-color: ${customization.backgroundColor}`);
     }
 
     // Apply text color (validated)
     if (customization.textColor && this.isValidCssColor(customization.textColor)) {
-      const safeTextColor = this.escapeHtmlAttribute(customization.textColor);
-      const textStyle = `color: ${safeTextColor};`;
-      result = result.replace(/<main[^>]*>/, (match) =>
-        match.replace('>', ` style="${textStyle}">`),
-      );
+      mainStyles.push(`color: ${customization.textColor}`);
+    }
+
+    // Apply all attributes at once to avoid multiple string replacements
+    if (mainClasses.length > 0 || mainStyles.length > 0) {
+      const classAttr = mainClasses.length > 0 ? ` class="${this.escapeHtmlAttribute(mainClasses.join(' '))}"` : '';
+      const styleAttr = mainStyles.length > 0 ? ` style="${this.escapeHtmlAttribute(mainStyles.join('; '))}"` : '';
+      result = result.replace(/<main([^>]*)>/, `<main$1${classAttr}${styleAttr}>`);
     }
 
     // Hide header if needed

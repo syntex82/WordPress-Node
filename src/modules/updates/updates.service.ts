@@ -33,6 +33,26 @@ export class UpdatesService {
   private updateInProgress = false;
   private currentProgress: UpdateProgress = { stage: 'idle', progress: 0, message: '' };
 
+  /**
+   * Validate filename to prevent directory traversal
+   */
+  private sanitizeFileName(filename: string): string {
+    // Only allow alphanumeric, dash, underscore, and dot
+    const sanitized = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '');
+    if (!sanitized || sanitized.startsWith('.')) {
+      throw new BadRequestException('Invalid filename');
+    }
+    return sanitized;
+  }
+
+  /**
+   * Validate version string format
+   */
+  private isValidVersion(version: string): boolean {
+    // Allow semver format with optional v prefix
+    return /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(version);
+  }
+
   constructor(
     private prisma: PrismaService,
     private versionService: VersionService,
@@ -99,6 +119,11 @@ export class UpdatesService {
   async downloadUpdate(
     version: string,
   ): Promise<{ success: boolean; filePath?: string; error?: string }> {
+    // Validate version format
+    if (!this.isValidVersion(version)) {
+      throw new BadRequestException('Invalid version format');
+    }
+
     const manifest = await this.versionService.fetchUpdateManifest();
     const versionInfo = manifest?.versions.find((v) => v.version === version);
 
@@ -110,8 +135,13 @@ export class UpdatesService {
       throw new BadRequestException('No download URL available for this version');
     }
 
-    const fileName = `NodePress-${version}.zip`;
+    // Sanitize filename and validate path
+    const sanitizedVersion = version.replace(/[^a-zA-Z0-9.-]/g, '');
+    const fileName = `NodePress-${sanitizedVersion}.zip`;
     const filePath = path.join(this.updatesDir, fileName);
+
+    // Validate the resulting path
+    this.validateFilePath(filePath, this.updatesDir);
 
     // Create update history record
     const updateHistory = await this.prisma.updateHistory.create({
@@ -367,6 +397,9 @@ export class UpdatesService {
     dest: string,
     onProgress?: (p: number) => void,
   ): Promise<void> {
+    // Validate destination path is within allowed directory
+    this.validateFilePath(dest, this.updatesDir);
+
     return new Promise((resolve, reject) => {
       const file = fs.createWriteStream(dest);
       const protocol = url.startsWith('https') ? https : http;

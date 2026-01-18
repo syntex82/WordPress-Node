@@ -539,14 +539,31 @@ export class ThemesService implements OnModuleInit {
   }
 
   /**
+   * Validate and sanitize path to prevent directory traversal
+   */
+  private validateThemePath(themePath: string): void {
+    const resolvedPath = path.resolve(themePath);
+    const resolvedThemesDir = path.resolve(this.themesDir);
+
+    if (!resolvedPath.startsWith(resolvedThemesDir + path.sep) && resolvedPath !== resolvedThemesDir) {
+      throw new BadRequestException('Invalid theme path: directory traversal attempt detected');
+    }
+  }
+
+  /**
    * Generate and install a theme from visual builder configuration
    */
   async generateTheme(config: ThemeDesignConfig) {
-    // Create slug from name
+    // Create slug from name - strict sanitization
     const slug = config.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 50); // Limit length
+
+    if (!slug || slug.length < 2) {
+      throw new BadRequestException('Invalid theme name');
+    }
 
     // Check if theme already exists
     const existingTheme = await this.prisma.theme.findUnique({
@@ -559,6 +576,9 @@ export class ThemesService implements OnModuleInit {
     }
 
     const themePath = path.join(this.themesDir, slug);
+
+    // Validate path to prevent directory traversal
+    this.validateThemePath(themePath);
 
     try {
       // Create theme directory structure
@@ -1516,34 +1536,85 @@ ${layoutEnd}`,
   }
 
   /**
+   * Escape XML/SVG special characters
+   */
+  private escapeXml(str: string): string {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * Validate CSS color value
+   */
+  private isValidSvgColor(color: string): boolean {
+    // Only allow safe color formats
+    return /^#[0-9a-fA-F]{3,8}$/.test(color) ||
+           /^(rgb|rgba|hsl|hsla)\([^()]*\)$/.test(color) ||
+           /^[a-zA-Z]+$/.test(color); // Named colors
+  }
+
+  /**
    * Generate a simple SVG screenshot placeholder
    */
   private async generateScreenshotPlaceholder(
     themePath: string,
     config: ThemeDesignConfig,
   ): Promise<void> {
+    // Validate theme path
+    this.validateThemePath(themePath);
+
     const { colors } = config;
+
+    // Sanitize all color values
+    const safeColors = {
+      background: this.isValidSvgColor(colors.background) ? colors.background : '#ffffff',
+      surface: this.isValidSvgColor(colors.surface) ? colors.surface : '#f5f5f5',
+      heading: this.isValidSvgColor(colors.heading) ? colors.heading : '#333333',
+      textMuted: this.isValidSvgColor(colors.textMuted) ? colors.textMuted : '#666666',
+      primary: this.isValidSvgColor(colors.primary) ? colors.primary : '#3b82f6',
+      border: this.isValidSvgColor(colors.border) ? colors.border : '#e5e5e5',
+    };
+
+    // Sanitize numeric values
+    const borderRadius = Math.min(Math.max(Number(config.borders?.radius) || 0, 0), 50);
+
+    // Escape the name for XML
+    const safeName = this.escapeXml(config.name.substring(0, 50));
+
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
-  <rect fill="${colors.background}" width="1200" height="900"/>
-  <rect fill="${colors.surface}" x="0" y="0" width="1200" height="80"/>
-  <text x="40" y="50" font-family="system-ui" font-size="24" font-weight="bold" fill="${colors.heading}">${config.name}</text>
-  <rect fill="${colors.surface}" x="40" y="120" width="800" height="400" rx="${config.borders.radius}"/>
-  <rect fill="${colors.primary}" x="60" y="140" width="200" height="20" rx="4"/>
-  <rect fill="${colors.textMuted}" x="60" y="180" width="720" height="12" rx="2"/>
-  <rect fill="${colors.textMuted}" x="60" y="200" width="680" height="12" rx="2"/>
-  <rect fill="${colors.textMuted}" x="60" y="220" width="700" height="12" rx="2"/>
-  <rect fill="${colors.primary}" x="60" y="480" width="120" height="30" rx="${config.borders.radius}"/>
-  <rect fill="${colors.surface}" x="880" y="120" width="280" height="200" rx="${config.borders.radius}"/>
-  <rect fill="${colors.border}" x="900" y="140" width="240" height="2"/>
-  <rect fill="${colors.surface}" x="880" y="340" width="280" height="180" rx="${config.borders.radius}"/>
-  <rect fill="${colors.surface}" x="0" y="820" width="1200" height="80"/>
-  <text x="600" y="860" font-family="system-ui" font-size="14" fill="${colors.textMuted}" text-anchor="middle">Theme Preview - ${config.name}</text>
+  <rect fill="${safeColors.background}" width="1200" height="900"/>
+  <rect fill="${safeColors.surface}" x="0" y="0" width="1200" height="80"/>
+  <text x="40" y="50" font-family="system-ui" font-size="24" font-weight="bold" fill="${safeColors.heading}">${safeName}</text>
+  <rect fill="${safeColors.surface}" x="40" y="120" width="800" height="400" rx="${borderRadius}"/>
+  <rect fill="${safeColors.primary}" x="60" y="140" width="200" height="20" rx="4"/>
+  <rect fill="${safeColors.textMuted}" x="60" y="180" width="720" height="12" rx="2"/>
+  <rect fill="${safeColors.textMuted}" x="60" y="200" width="680" height="12" rx="2"/>
+  <rect fill="${safeColors.textMuted}" x="60" y="220" width="700" height="12" rx="2"/>
+  <rect fill="${safeColors.primary}" x="60" y="480" width="120" height="30" rx="${borderRadius}"/>
+  <rect fill="${safeColors.surface}" x="880" y="120" width="280" height="200" rx="${borderRadius}"/>
+  <rect fill="${safeColors.border}" x="900" y="140" width="240" height="2"/>
+  <rect fill="${safeColors.surface}" x="880" y="340" width="280" height="180" rx="${borderRadius}"/>
+  <rect fill="${safeColors.surface}" x="0" y="820" width="1200" height="80"/>
+  <text x="600" y="860" font-family="system-ui" font-size="14" fill="${safeColors.textMuted}" text-anchor="middle">Theme Preview - ${safeName}</text>
 </svg>`;
 
     // Write as SVG first (can be used as screenshot)
     await fs.writeFile(path.join(themePath, 'screenshot.svg'), svg);
     // Also copy to PNG path for compatibility (actual conversion would need a library)
     await fs.writeFile(path.join(themePath, 'screenshot.png'), svg);
+  }
+
+  /**
+   * Validate path is within allowed directory
+   */
+  private validatePathWithinDir(filePath: string, allowedDir: string): boolean {
+    const resolvedPath = path.resolve(filePath);
+    const resolvedAllowedDir = path.resolve(allowedDir);
+    return resolvedPath.startsWith(resolvedAllowedDir + path.sep) || resolvedPath === resolvedAllowedDir;
   }
 
   /**
@@ -1559,10 +1630,22 @@ ${layoutEnd}`,
         (block.type === 'image' || block.type === 'video' || block.type === 'audio')
       ) {
         try {
-          // Extract filename from src path (e.g., /uploads/filename.jpg -> filename.jpg)
-          const srcPath = block.src.replace(/^\/uploads\//, '');
-          const sourcePath = path.join(uploadsDir, srcPath);
-          const destPath = path.join(mediaDir, path.basename(srcPath));
+          // Extract filename only (use basename to prevent directory traversal)
+          const filename = path.basename(block.src.replace(/^\/uploads\//, ''));
+          const sourcePath = path.join(uploadsDir, filename);
+          const destPath = path.join(mediaDir, filename);
+
+          // Validate source path is within uploads directory
+          if (!this.validatePathWithinDir(sourcePath, uploadsDir)) {
+            console.log('Invalid source path - skipping:', filename);
+            continue;
+          }
+
+          // Validate destination path is within media directory
+          if (!this.validatePathWithinDir(destPath, mediaDir)) {
+            console.log('Invalid destination path - skipping:', filename);
+            continue;
+          }
 
           // Check if source file exists
           try {
@@ -1570,30 +1653,38 @@ ${layoutEnd}`,
             await fs.copyFile(sourcePath, destPath);
           } catch {
             // File doesn't exist in uploads, might be an external URL - skip
-            console.log('Media file not found:', sourcePath);
+            console.log('Media file not found:', filename);
           }
         } catch (error) {
           // Use %s placeholder to prevent format string injection
-          console.error('Error copying media file: %s', String(block.src), error);
+          console.error('Error copying media file: %s', path.basename(String(block.src)), error);
         }
       }
 
       // Also copy cover image for audio blocks
       if (block.coverImage && block.type === 'audio') {
         try {
-          const srcPath = block.coverImage.replace(/^\/uploads\//, '');
-          const sourcePath = path.join(uploadsDir, srcPath);
-          const destPath = path.join(mediaDir, path.basename(srcPath));
+          // Extract filename only (use basename to prevent directory traversal)
+          const filename = path.basename(block.coverImage.replace(/^\/uploads\//, ''));
+          const sourcePath = path.join(uploadsDir, filename);
+          const destPath = path.join(mediaDir, filename);
+
+          // Validate paths
+          if (!this.validatePathWithinDir(sourcePath, uploadsDir) ||
+              !this.validatePathWithinDir(destPath, mediaDir)) {
+            console.log('Invalid path - skipping:', filename);
+            continue;
+          }
 
           try {
             await fs.access(sourcePath);
             await fs.copyFile(sourcePath, destPath);
           } catch {
-            console.log('Cover image not found:', sourcePath);
+            console.log('Cover image not found:', filename);
           }
         } catch (error) {
           // Use %s placeholder to prevent format string injection
-          console.error('Error copying cover image: %s', String(block.coverImage), error);
+          console.error('Error copying cover image: %s', path.basename(String(block.coverImage)), error);
         }
       }
     }

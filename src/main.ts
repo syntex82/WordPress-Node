@@ -124,65 +124,67 @@ async function bootstrap() {
   // Security middleware with Helmet
   // Note: 'unsafe-inline' is required for Stripe and theme customization
   // 'unsafe-eval' is needed for Tailwind CDN in dev mode
+  const cspDirectives = {
+    defaultSrc: ["'self'"],
+    styleSrc: [
+      "'self'",
+      "'unsafe-inline'", // Required for inline styles and Tailwind
+      'https://fonts.googleapis.com',
+      'https://cdn.tailwindcss.com',
+    ],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+    imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+    scriptSrc: [
+      "'self'",
+      "'unsafe-inline'", // Required for Stripe.js integration
+      'https://js.stripe.com',
+      'https://cdn.tailwindcss.com',
+      'https://www.googletagmanager.com',
+      'https://www.google-analytics.com',
+      'https://googleads.g.doubleclick.net',
+      'https://www.googleadservices.com',
+      // Development: allow eval for hot module replacement
+      ...(isProduction ? [] : ["'unsafe-eval'"]),
+    ],
+    scriptSrcAttr: ["'unsafe-inline'"], // Required for inline event handlers
+    connectSrc: [
+      "'self'",
+      'https://api.stripe.com',
+      'https://fonts.googleapis.com',
+      'https://fonts.gstatic.com',
+      'https://js.stripe.com',
+      'https://www.google-analytics.com',
+      'https://www.googletagmanager.com',
+      'https://www.google.com',
+      'https://google.com',
+      'https://stats.g.doubleclick.net',
+      'wss:',
+      'ws:',
+    ],
+    frameSrc: [
+      "'self'",
+      'https://js.stripe.com',
+      'https://www.youtube.com',
+      'https://youtube.com',
+      'https://www.youtube-nocookie.com',
+      'https://www.googletagmanager.com',
+      'https://player.vimeo.com',
+      'https://www.openstreetmap.org',
+      'https://maps.google.com',
+      'https://www.google.com',
+    ],
+    mediaSrc: ["'self'", 'https:', 'blob:'],
+    objectSrc: ["'none'"],          // Block plugins like Flash
+    baseUri: ["'self'"],            // Restrict base tag
+    formAction: ["'self'"],         // Restrict form submissions
+    ...(isProduction ? { upgradeInsecureRequests: [] } : {}), // Only upgrade in production
+  };
+
   app.use(
     helmet({
-      contentSecurityPolicy: isProduction
-        ? {
-            directives: {
-              defaultSrc: ["'self'"],
-              styleSrc: [
-                "'self'",
-                "'unsafe-inline'", // Required for inline styles and Tailwind
-                'https://fonts.googleapis.com',
-                'https://cdn.tailwindcss.com',
-              ],
-              fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-              imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
-              scriptSrc: [
-                "'self'",
-                "'unsafe-inline'", // Required for Stripe.js integration
-                'https://js.stripe.com',
-                'https://cdn.tailwindcss.com',
-                'https://www.googletagmanager.com',
-                'https://www.google-analytics.com',
-                'https://googleads.g.doubleclick.net',
-                'https://www.googleadservices.com',
-              ],
-              scriptSrcAttr: ["'unsafe-inline'"], // Required for inline event handlers
-              connectSrc: [
-                "'self'",
-                'https://api.stripe.com',
-                'https://fonts.googleapis.com',
-                'https://fonts.gstatic.com',
-                'https://js.stripe.com',
-                'https://www.google-analytics.com',
-                'https://www.googletagmanager.com',
-                'https://www.google.com',
-                'https://google.com',
-                'https://stats.g.doubleclick.net',
-                'wss:',
-                'ws:',
-              ],
-              frameSrc: [
-                "'self'",
-                'https://js.stripe.com',
-                'https://www.youtube.com',
-                'https://youtube.com',
-                'https://www.youtube-nocookie.com',
-                'https://www.googletagmanager.com',
-                'https://player.vimeo.com',
-                'https://www.openstreetmap.org',
-                'https://maps.google.com',
-                'https://www.google.com',
-              ],
-              mediaSrc: ["'self'", 'https:', 'blob:'],
-              objectSrc: ["'none'"],          // Block plugins like Flash
-              baseUri: ["'self'"],            // Restrict base tag
-              formAction: ["'self'"],         // Restrict form submissions
-              upgradeInsecureRequests: [],    // Upgrade HTTP to HTTPS
-            },
-          }
-        : false,
+      contentSecurityPolicy: {
+        directives: cspDirectives,
+      },
       frameguard: false, // Handled by custom middleware below
       hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },

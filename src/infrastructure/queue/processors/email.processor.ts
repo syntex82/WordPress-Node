@@ -77,21 +77,31 @@ export class EmailQueueProcessor extends WorkerHost {
       .replace(/<br\s*\/?>/gi, '\n')
       .replace(/<\/p>/gi, '\n\n');
 
-    // Loop to safely handle nested/malformed tags
-    let prevLength = 0;
-    while (result.length !== prevLength) {
-      prevLength = result.length;
-      result = result.replace(/<[^>]+>/g, '');
+    // Strip tags using character-by-character parsing (safe from ReDoS)
+    let stripped = '';
+    let inTag = false;
+    for (const char of result) {
+      if (char === '<') { inTag = true; continue; }
+      if (char === '>') { inTag = false; stripped += ' '; continue; }
+      if (!inTag) stripped += char;
     }
 
-    return result
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .trim();
+    // Decode HTML entities using a single pass with a map
+    // Note: This is intentional - we need to decode entities for plain text output
+    const entityMap: Record<string, string> = {
+      '&nbsp;': ' ',
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#39;': "'",
+    };
+
+    for (const [entity, char] of Object.entries(entityMap)) {
+      stripped = stripped.split(entity).join(char);
+    }
+
+    return stripped.trim();
   }
 
   @OnWorkerEvent('completed')
