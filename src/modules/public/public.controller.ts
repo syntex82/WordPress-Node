@@ -44,6 +44,7 @@ import { EmailService } from '../email/email.service';
 import { PostStatus } from '@prisma/client';
 import { CourseLevel, CoursePriceType } from '../lms/dto/course.dto';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { safeRedirectUrl } from '../../utils/sanitize';
 
 @Controller()
 export class PublicController {
@@ -523,7 +524,7 @@ Sitemap: ${baseUrl}/sitemap.xml
       const user = (req as any).user;
       // If already logged in, redirect to home or specified redirect
       if (user) {
-        return res.redirect(redirect || '/');
+        return res.redirect(safeRedirectUrl(redirect, '/'));
       }
       const html = await this.themeRenderer.renderLogin(redirect);
       res.send(html);
@@ -552,7 +553,7 @@ Sitemap: ${baseUrl}/sitemap.xml
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      res.redirect(redirect || '/');
+      res.redirect(safeRedirectUrl(redirect, '/'));
     } catch (_error) {
       const html = await this.themeRenderer.renderLogin(redirect, 'Invalid email or password');
       res.send(html);

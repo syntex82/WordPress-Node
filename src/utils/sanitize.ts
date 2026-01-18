@@ -91,5 +91,55 @@ export function sanitizeEmailHtml(html: string): string {
   });
 }
 
-export default { sanitizeHtmlContent, sanitizeAdHtml, sanitizeEmailHtml };
+/**
+ * Validate and sanitize redirect URLs to prevent open redirects
+ * Only allows relative paths or URLs to the same origin
+ */
+export function safeRedirectUrl(url: string | undefined, defaultUrl: string = '/'): string {
+  if (!url || typeof url !== 'string') {
+    return defaultUrl;
+  }
+
+  // Trim whitespace
+  const trimmed = url.trim();
+
+  // Block empty strings
+  if (!trimmed) {
+    return defaultUrl;
+  }
+
+  // Block URLs starting with // (protocol-relative) or containing :// (absolute URLs)
+  if (trimmed.startsWith('//') || trimmed.includes('://')) {
+    return defaultUrl;
+  }
+
+  // Block javascript: and data: schemes
+  if (/^(javascript|data|vbscript):/i.test(trimmed)) {
+    return defaultUrl;
+  }
+
+  // Block URLs with @ (which could be used for URL confusion attacks)
+  if (trimmed.includes('@')) {
+    return defaultUrl;
+  }
+
+  // Block backslash (Windows path separator that some browsers interpret as /)
+  if (trimmed.includes('\\')) {
+    return defaultUrl;
+  }
+
+  // Only allow paths that start with / (relative to root)
+  if (!trimmed.startsWith('/')) {
+    return defaultUrl;
+  }
+
+  // Additional check: block paths that could escape (though starting with / should be safe)
+  if (trimmed.includes('..')) {
+    return defaultUrl;
+  }
+
+  return trimmed;
+}
+
+export default { sanitizeHtmlContent, sanitizeAdHtml, sanitizeEmailHtml, safeRedirectUrl };
 
