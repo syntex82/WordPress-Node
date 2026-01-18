@@ -24,6 +24,15 @@ export class LessonsService {
     }
   }
 
+  /**
+   * Validate that a file path is within the video upload directory (prevent path traversal)
+   */
+  private validateVideoPath(filePath: string): boolean {
+    const videoBase = path.resolve(this.videoUploadDir);
+    const resolvedPath = path.resolve(filePath);
+    return resolvedPath.startsWith(videoBase);
+  }
+
   async create(courseId: string, dto: CreateLessonDto) {
     // Get the max order index for existing lessons
     const maxOrder = await this.prisma.lesson.aggregate({
@@ -253,8 +262,8 @@ export class LessonsService {
     const lesson = await this.findOne(lessonId);
 
     if (lesson.videoAsset) {
-      // Delete file if it's an upload
-      if (lesson.videoAsset.filePath) {
+      // Delete file if it's an upload (with path traversal protection)
+      if (lesson.videoAsset.filePath && this.validateVideoPath(lesson.videoAsset.filePath)) {
         try {
           await fs.unlink(lesson.videoAsset.filePath);
         } catch (e) {

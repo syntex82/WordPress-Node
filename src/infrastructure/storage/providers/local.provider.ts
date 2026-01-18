@@ -20,12 +20,28 @@ export class LocalStorageProvider implements StorageProvider {
     this.baseUrl = this.config.local.baseUrl;
   }
 
+  /**
+   * Validate that a file path is within the upload directory (prevent path traversal)
+   */
+  private validatePath(filePath: string): string {
+    const uploadBase = path.resolve(this.uploadDir);
+    const fullPath = path.resolve(this.uploadDir, filePath);
+
+    if (!fullPath.startsWith(uploadBase)) {
+      throw new Error('Invalid file path: path traversal detected');
+    }
+
+    return fullPath;
+  }
+
   async upload(file: Buffer, originalName: string, options?: UploadOptions): Promise<StorageFile> {
     const ext = path.extname(originalName);
     const filename = options?.filename || `${uuidv4()}${ext}`;
     const folder = options?.folder || this.getDateFolder();
     const relativePath = path.join(folder, filename);
-    const fullPath = path.join(this.uploadDir, relativePath);
+
+    // Validate path to prevent traversal
+    const fullPath = this.validatePath(relativePath);
 
     // Ensure directory exists
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
@@ -46,7 +62,8 @@ export class LocalStorageProvider implements StorageProvider {
 
   async delete(filePath: string): Promise<boolean> {
     try {
-      const fullPath = path.join(this.uploadDir, filePath);
+      // Validate path to prevent traversal
+      const fullPath = this.validatePath(filePath);
       await fs.unlink(fullPath);
       return true;
     } catch (_error) {
@@ -57,7 +74,8 @@ export class LocalStorageProvider implements StorageProvider {
 
   async exists(filePath: string): Promise<boolean> {
     try {
-      const fullPath = path.join(this.uploadDir, filePath);
+      // Validate path to prevent traversal
+      const fullPath = this.validatePath(filePath);
       await fs.access(fullPath);
       return true;
     } catch {

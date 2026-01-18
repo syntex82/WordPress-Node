@@ -66,6 +66,20 @@ export class PluginMarketplaceService {
   }
 
   /**
+   * Validate that a file path is within the uploads directory (prevent path traversal)
+   */
+  private validatePath(filePath: string, baseDir: string): string {
+    const base = path.resolve(baseDir);
+    const resolved = path.resolve(baseDir, filePath);
+
+    if (!resolved.startsWith(base)) {
+      throw new Error('Invalid file path: path traversal detected');
+    }
+
+    return resolved;
+  }
+
+  /**
    * Get all marketplace plugins with filtering and pagination
    */
   async findAll(query: MarketplaceQuery) {
@@ -221,7 +235,8 @@ export class PluginMarketplaceService {
     }
 
     const fileName = `${slug}-${Date.now()}.zip`;
-    const filePath = path.join(this.uploadsDir, fileName);
+    // Validate path to prevent traversal
+    const filePath = this.validatePath(fileName, this.uploadsDir);
     await fs.writeFile(filePath, pluginFile.buffer);
 
     const stats = await fs.stat(filePath);
@@ -230,7 +245,8 @@ export class PluginMarketplaceService {
     if (iconFile) {
       const ext = path.extname(iconFile.originalname) || '.png';
       const iconName = `${slug}-${Date.now()}${ext}`;
-      const iconPath = path.join(this.iconsDir, iconName);
+      // Validate path to prevent traversal
+      const iconPath = this.validatePath(iconName, this.iconsDir);
       await fs.writeFile(iconPath, iconFile.buffer);
       iconUrl = `/uploads/plugin-marketplace/icons/${iconName}`;
     }
