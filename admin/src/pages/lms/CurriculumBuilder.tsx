@@ -48,8 +48,10 @@ export default function CurriculumBuilder() {
     if (!editingModule?.title?.trim()) { toast.error('Module title required'); return; }
     setSaving(true);
     try {
-      if (editingModule.id) await lmsAdminApi.updateModule(courseId!, editingModule.id, editingModule);
-      else await lmsAdminApi.createModule(courseId!, editingModule);
+      // Only send allowed DTO fields
+      const moduleData = { title: editingModule.title, description: editingModule.description, orderIndex: editingModule.orderIndex, isPublished: editingModule.isPublished };
+      if (editingModule.id) await lmsAdminApi.updateModule(courseId!, editingModule.id, moduleData);
+      else await lmsAdminApi.createModule(courseId!, moduleData);
       toast.success(editingModule.id ? 'Module updated!' : 'Module created!');
       setShowModuleModal(false); setEditingModule(null); loadData();
     } catch (e: any) { toast.error(e.response?.data?.message || 'Failed to save module'); }
