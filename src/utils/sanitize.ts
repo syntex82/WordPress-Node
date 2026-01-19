@@ -20,6 +20,7 @@ export function sanitizeHtmlContent(html: string): string {
       'img', 'figure', 'figcaption', 'video', 'audio', 'source',
       'table', 'thead', 'tbody', 'tr', 'th', 'td',
       'hr', 'sub', 'sup', 'mark', 'del', 'ins',
+      'iframe', // Allow video embeds from trusted sources
     ],
     allowedAttributes: {
       'a': ['href', 'target', 'rel', 'title'],
@@ -27,12 +28,21 @@ export function sanitizeHtmlContent(html: string): string {
       'video': ['src', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'width', 'height'],
       'audio': ['src', 'controls', 'autoplay', 'loop', 'muted'],
       'source': ['src', 'type'],
+      'iframe': ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'title'],
       '*': ['class', 'id', 'style'],
     },
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     allowedSchemesByTag: {
       img: ['http', 'https', 'data'],
     },
+    allowedIframeHostnames: [
+      'www.youtube.com',
+      'youtube.com',
+      'www.youtube-nocookie.com',
+      'player.vimeo.com',
+      'www.dailymotion.com',
+      'www.loom.com',
+    ],
   });
 }
 
