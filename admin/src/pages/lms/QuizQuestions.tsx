@@ -40,8 +40,17 @@ export default function QuizQuestions() {
     if (!editingQuestion?.prompt) return;
     try {
       const options = optionsText.split('\n').filter(Boolean);
-      const data = { ...editingQuestion, optionsJson: options.length > 0 ? options : undefined };
-      
+      // Only send allowed DTO fields
+      const data = {
+        type: editingQuestion.type,
+        prompt: editingQuestion.prompt,
+        optionsJson: options.length > 0 ? options : undefined,
+        correctAnswerJson: editingQuestion.correctAnswerJson,
+        explanation: editingQuestion.explanation,
+        points: editingQuestion.points,
+        orderIndex: editingQuestion.orderIndex,
+      };
+
       if (editingQuestion.id) {
         await lmsAdminApi.updateQuestion(courseId!, editingQuestion.id, data);
       } else {
